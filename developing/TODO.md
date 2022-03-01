@@ -1,0 +1,28 @@
+# Todo
+- [] CLI Interface
+- [] Api
+    - [] Stop Server
+    - [] Restart Server
+    - [] Manage Devices
+    - [] Fetch Info about Devices
+- [] Web Ui 
+    - [] Manage Active Devices
+    - [] Run Cmd, Upload, Download
+- [] Exploit Creator
+    - [] Socket Listener
+    - [] Http Listener
+- [] Exploit Socket
+    - [] Handle SSL
+    - [] Inbuilt NMAP
+    - [x] Execute Commands
+    - [] Get Device Infos
+    - [] Download Files
+    - [] Upload Files
+- [] Exploit Http
+    - [] Handle SSL
+- [] Modules
+- [] Route-Forcer
+- [] Vuln Scanner
+    - [] LFI Scanner
+    - [] Inbuilt Sqlmap 
+

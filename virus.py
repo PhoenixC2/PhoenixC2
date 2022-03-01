@@ -1,7 +1,11 @@
 import time
-from cryptography.fernet import Fernet
 import subprocess as sp
 import socket
+import os
+try:
+    from cryptography.fernet import Fernet
+except:
+    os.system("pip install cryptography -q -U")
 fernet = ""
 HOST = "127.0.0.1"  # The server's hostname or IP address
 PORT = 1234  # The port used by the server
