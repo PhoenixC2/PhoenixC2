@@ -12,6 +12,7 @@
     - [] Socket Listener
     - [] Http Listener
 - [] Exploit Socket
+    - [] Change Data Types and Right Encryption & Decryption for Files and Status Codes
     - [] Handle SSL
     - [] Inbuilt NMAP
     - [x] Execute Commands
