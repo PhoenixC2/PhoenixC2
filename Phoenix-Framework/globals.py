@@ -45,27 +45,23 @@ logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 
 # Objects
 console = Console()
-logging.basicConfig(filename='example.log',
-                    format='%(levelname)s:%(message)s', encoding='utf-8')
+logging.basicConfig(filename='phoenix.log', encoding='utf-8', level=logging.ERROR)
+# disable flask logging
+logging.getLogger('werkzeug').disabled = True
 # methods 
 def log(text, alert=""):
     style = ""
     # log type is choosen by alert
     if alert == "info":
         style = "blue"
-        logging.info(text)
     elif alert == "success":
         style = "green"
-        logging.info(text)
     elif alert == "warning":
         style = "yellow"
-        logging.warning(text)
     elif alert == "error":
         style = "red"
-        logging.error(text)
     elif alert == "critical":
         style = "#9e0909"
-        logging.critical(text)
     console.print("[" + alert.upper() + "] " + text, style=style)
 
 

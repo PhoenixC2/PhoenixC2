@@ -40,31 +40,36 @@ if __name__ == "__main__":
     port = args.port
     address = args.address
     # Start Handler
-    if mode == "socket":
-        Handler = SOCKET(address, port)
+    log(f"Starting {mode.upper()} Handler.", alert="info")
+    try:
+        if mode == "socket":
+            Handler = SOCKET(address, port)
+        else:
+            Handler = HTTP(address, port)
+    except:
+        log("Could not start Handler,\nplease look at the logs for more information.", "error")
     else:
-        Handler = HTTP(address, port)
+        log(f"Handler started.", alert="success")
+        log(f"Listening on {address}:{port}", alert="info")
     # Create Web Server
     Api = create_web(Handler)
     # Start Web Server
     log("Starting Web Server", "info")
     try:
-        Api = threading.Thread(target=Api.run, kwargs={
-                               "host": api_address, "port": api_port}).start()
+        threading.Thread(target=Api.run, kwargs={
+                               "host": api_address, "port": api_port}, name="WebServer").start()
     except:
         log("Could not start Api Server", "error")
         exit()
     else:
         log("Api Server started", "success")
     log("Accessible at http://{}:{}".format(api_address, api_port), "info")
-    log(f"Starting {mode.upper()} Listener.", alert="info")
-    log(f"Listener started.", alert="success")
-    log(f"Listening on {address}:{port}", alert="info")
     log(f"Press CTRL+C to exit.", "info")
     while True:
         try:
             time.sleep(1)
         except KeyboardInterrupt:
+            Handler.stop()
             log("Exiting", alert="info")
             exit()
         except:
