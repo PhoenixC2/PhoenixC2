@@ -48,6 +48,7 @@ if __name__ == "__main__":
             Handler = HTTP(address, port)
     except:
         log("Could not start Handler,\nplease look at the logs for more information.", "error")
+        exit()
     else:
         log(f"Handler started.", alert="success")
         log(f"Listening on {address}:{port}", alert="info")
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         exit()
     else:
         log("Api Server started", "success")
-    log("Accessible at http://{}:{}".format(api_address, api_port), "info")
+    log(f"Accessible at http://{api_address}:{api_port}", "info")
     log(f"Press CTRL+C to exit.", "info")
     while True:
         try:
