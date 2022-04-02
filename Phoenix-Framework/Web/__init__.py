@@ -1,5 +1,5 @@
 from globals import *
-from Web.api import api_endpoints
+from Web.devices import devices_enpoints
 from Web.auth import auth_endpoints
 from Web.routes import routes_endpoints
 import random
@@ -16,7 +16,7 @@ click.secho = secho
 def create_web(Handler):
     Api = Flask(__name__)
     Api.config["SECRET_KEY"] = "".join(random.choice(string.ascii_letters) for i in range(32))
-    Api.register_blueprint(api_endpoints(Handler), url_prefix="/api")
+    Api.register_blueprint(devices_enpoints(Handler), url_prefix="/devices")
     Api.register_blueprint(auth_endpoints(), url_prefix="/auth")
     Api.register_blueprint(routes_endpoints(), url_prefix="/")
     return Api

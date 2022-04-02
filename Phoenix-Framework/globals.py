@@ -1,5 +1,7 @@
 # libraries
 import click
+import base64
+import subprocess
 import json
 import logging
 from sqlite3 import connect, OperationalError

