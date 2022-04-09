@@ -8,7 +8,7 @@ class SOCKET():
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stopped = False
         self.start()
-    def get_conn(self, id):
+    def get_device(self, id):
         # Get a connection by id
         try:
             id = int(id) - 1
@@ -16,8 +16,6 @@ class SOCKET():
         except ValueError:
             return Exception("Invalid ID")
         except IndexError:
-            print(1)
-            print(self.connections)
             raise Exception("Connection does not exist")
     def decrypt(self, data):
         # Decrypt the data
@@ -34,11 +32,9 @@ class SOCKET():
             if self.stopped:
                 break
             for Device in self.connections:
-                try:
-                    Device.alive()
-                except:
+                if not Device.alive():
                     self.connections.remove(Device)
-                    log(f"Connection from {Device.addr} has been lost.", alert="error")
+                    log(f"Connection to {Device.addr} has been lost.", alert="critical")
             time.sleep(10)
 
 

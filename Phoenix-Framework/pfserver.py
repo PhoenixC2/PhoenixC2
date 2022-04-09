@@ -1,3 +1,5 @@
+#import os
+#os.chdir("/usr/share/phoenix-framework")
 try:
     from globals import *
     from Handlers.SOCKET import SOCKET
@@ -15,10 +17,10 @@ try:
     curr.execute("SELECT * FROM Devices")
     curr.fetchall()
 except:
-    print("[ERROR] Database isnt configured.")
+    log("Database isnt configured.", "error")
     exit()
 # Argparser
-parser = ArgumentParser("Phoenix-Framework")
+parser = ArgumentParser("pf")
 parser.add_argument("-a", "--address", help="The Ip Address to listen on.",
                     default=socket.gethostbyname(socket.gethostname()), metavar="Address")
 parser.add_argument("-p", "--port", help="The Port to listen on.",
@@ -53,12 +55,12 @@ if __name__ == "__main__":
         log(f"Handler started.", alert="success")
         log(f"Listening on {address}:{port}", alert="info")
     # Create Web Server
-    Api = create_web(Handler)
+    Web = create_web(Handler)
     # Start Web Server
     log("Starting Web Server", "info")
     try:
-        threading.Thread(target=Api.run, kwargs={
-                               "host": web_address, "port": web_port}, name="WebServer").start()
+        threading.Thread(target=Web.run, kwargs={
+            "host": web_address, "port": web_port}, name="WebServer").start()
     except:
         log("Could not start Web Server", "error")
         exit()
