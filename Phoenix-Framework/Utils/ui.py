@@ -30,11 +30,7 @@ logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
  ▄████▀        ███    █▀     ▀██████▀    ██████████  ▀█   █▀  █▀   ████       ███▄
 {Box.DoubleCube("Made by Screamz2k")}""", 4, True)
 
-# Objects
 console = Console()
-logging.basicConfig(filename='phoenix.log', encoding='utf-8', level=logging.ERROR)
-# disable flask logging
-logging.getLogger('werkzeug').disabled = True
 # methods 
 def log(text, alert=""):
     style = ""
