@@ -1,4 +1,4 @@
-from globals import *
+from Utils.ui import *
 
 
 def devices_enpoints(Handler):

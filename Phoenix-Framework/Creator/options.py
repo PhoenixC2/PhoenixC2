@@ -5,7 +5,9 @@ payloads = [
     "socket/bind/tcp",
     "socket/bind/udp",
     "http/reverse",
-    "http/bind"]
+    "http/bind",
+    "https/reverse",
+    "https/bind",]
 # List of all Encoders:
 encoders = [
     "base64",

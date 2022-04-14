@@ -1,78 +1,49 @@
+# Change Directory 
 #import os
 #os.chdir("/usr/share/phoenix-framework")
 try:
-    from globals import *
-    from Handlers.SOCKET import SOCKET
-    from Handlers.HTTP import HTTP
-    from Web import create_web
+    from Utils import *
+    import Server as srv
 except ImportError:
     print("[ERROR] Not all required Libraries are installed.")
     exit()
 
-
-# Database
-conn = connect("Data/db.sqlite3")
-curr = conn.cursor()
-try:
-    curr.execute("SELECT * FROM Devices")
-    curr.fetchall()
-except:
-    log("Database isnt configured.", "error")
-    exit()
-# Argparser
-parser = ArgumentParser("pf")
-parser.add_argument("-a", "--address", help="The Ip Address to listen on.",
-                    default=socket.gethostbyname(socket.gethostname()), metavar="Address")
-parser.add_argument("-p", "--port", help="The Port to listen on.",
-                    default=9999, metavar="Port", type=int)
-parser.add_argument("-wa", "--waddress", help="The Address of the WebServer",
-                    default=socket.gethostbyname(socket.gethostname()))
-parser.add_argument(
-    "-wp", "--wport", help="The Port of the Web Server", type=int, default=8080)
-parser.add_argument("-m", "--mode", help="The Listener Mode.", default="socket",
-                    metavar="Mode", choices=["socket", "http"])
-
 if __name__ == "__main__":
     ph_print(logo)
-    args = parser.parse_args()
+    if not os.getuid() == 0:
+        log("Please start with Sudo or Root Rights", "error")
+        exit()
+    # Check Database
+    try:
+        conn, curr = srv.check_db()
+    except Exception as e:
+        print("[ERROR] " + str(e))
+        exit()
     # Get Arguments
-    web_address = args.waddress
-    web_port = args.wport
-    mode = args.mode
-    port = args.port
-    address = args.address
-    # Start Handler
-    log(f"Starting {mode.upper()} Handler.", alert="info")
+    args = srv.parser.parse_args()
+    # Initialize Server
+    server = srv.Server()
+    # Start Listeners
     try:
-        if mode == "socket":
-            Handler = SOCKET(address, port)
-        else:
-            Handler = HTTP(address, port)
-    except:
-        log("Could not start Handler,\nplease look at the logs for more information.", "error")
+        srv.start_listeners(server, curr)
+    except Exception as e:
+        print("[ERROR] " + str(e))
+        exit()
+    # Start the web srv
+    log("Starting Web srv", "info")
+    try:
+        web = srv.start_web(args.waddress, args.wport)
+    except Exception as e:
+        log(str(e), "error")
         exit()
     else:
-        log(f"Handler started.", alert="success")
-        log(f"Listening on {address}:{port}", alert="info")
-    # Create Web Server
-    Web = create_web(Handler)
-    # Start Web Server
-    log("Starting Web Server", "info")
-    try:
-        threading.Thread(target=Web.run, kwargs={
-            "host": web_address, "port": web_port}, name="WebServer").start()
-    except:
-        log("Could not start Web Server", "error")
-        exit()
-    else:
-        log("Web Server started", "success")
-    log(f"Accessible at http://{web_address}:{web_port}", "info")
+        log("Web srv started", "success")
+    log(f"Accessible at http://{args.waddress}:{args.wport}", "info")
     log(f"Press CTRL+C to exit.", "info")
     while True:
         try:
             time.sleep(1)
         except KeyboardInterrupt:
-            Handler.stop()
             log("Exiting", alert="info")
             exit()
         except:

@@ -1,24 +1,40 @@
 import os
+import clipboard
 curr_dir = os.getcwd()
 #os.chdir("/usr/share/phoenix-framework")
 import Creator
-from globals import *
+from Utils.ui import *
 ph_print(logo)
-parser = ArgumentParser("pfcreate", description="Create Payloads to interact with the Phoenix-Framework")
-parser.add_argument("-p", "--payload", help="The payload to use", choices=Creator.payloads)
-parser.add_argument("-f", "--format", help="The Format to use", choices=Creator.formats, default=".py")
+parser = ArgumentParser("pfcreate", description="Create Stagers to interact with the Phoenix-Framework")
+parser.add_argument("-l", "--listener", help="The Listener to use")
+parser.add_argument("-p", "--payload", help="The payload to use")
+parser.add_argument("-f", "--format", help="The Format to use", default=".py")
 parser.add_argument("-ha", "--haddress", help="The Address of the running the Handler")
 parser.add_argument("-hp", "--hport", help="The Port where the Handler is running")
-parser.add_argument("-e", "--encoding", help="The Encoding to use", choices=Creator.encoders, default="base64")
+parser.add_argument("-e", "--encoding", help="The Encoding to use", default="base64")
 parser.add_argument("-o", "--output", help="The output file", default="payload")
-parser.add_argument("-l", "--list", help="List the Options of an Argument", choices=["payloads"])
+parser.add_argument("-c", "--copy", help="Copy the payload to the clipboard", action="store_true")
+parser.add_argument("-s", "--show", help="Show the Options of an Argument")
 parser.add_argument("-v", "--verbose", help="Verbose Output", action="store_true")
 args = parser.parse_args()
-if args.list:
-    if args.list == "payloads":
+if args.show:
+    if args.show == "payloads":
         ph_print("Payloads:")
         for format in Creator.payloads:
             ph_print(format)
+    elif args.show == "encoders":
+        ph_print("Encoders:")
+        for format in Creator.encoders:
+            ph_print(format)
+    elif args.show == "formats":
+        ph_print("Formats:")
+        for format in Creator.formats:
+            ph_print(format)
+    else:
+        ph_print("Unknown List")
+    exit(0)
+if not args.listener:
+    ph_print("No Listener specified")
     exit(0)
 if not args.payload:
     ph_print("[!] Please specify a Payload")
@@ -33,22 +49,36 @@ if args.verbose:
     verbose = True
 else:
     verbose = False
-ph_print("[*] Creating Payload")
+if args.payload not in Creator.payloads:
+    ph_print(f"[!] Unknown Payload: {args.payload}", alert="error")
+    exit(1)
+if args.encoding not in Creator.encoders:
+    ph_print(f"[!] Unknown Encoding: {args.encoding}", alert="error")
+    exit(1)
+if args.format not in Creator.formats:
+    ph_print(f"[!] Unknown Format: {args.format}", alert="error")
+    exit(1)
+ph_print("[*] Creating Stager")
 ph_print("[*] Address: " + args.haddress)
 ph_print("[*] Port: " + args.hport)
-ph_print("[*] Output: " + args.output + args.format)
+output = args.output + args.format if not args.copy else "Clipboard"
+ph_print("[*] Output: " + output)
 # Create the Payload
 try:
-    payload = Creator.create(args.payload, args.haddress, args.hport, args.encoding)
+    stager = Creator.create(args.listener, args.payload, args.haddress, args.hport, args.encoding)
 except Exception as e:
     log(str(e), "error")
     exit(1)
 #os.chdir(curr_dir)
-with open(args.output + args.format, "w") as f:
-    f.write(payload)
-if payload:
-    ph_print("[*] Payload created successfully")
-    exit(0)
+if args.copy:
+    clipboard.copy(stager)
+    ph_print("[*] Copied to Clipboard")
 else:
-    ph_print("[!] Could not create the payload")
-    exit(1)
+    with open(args.output + args.format, "w") as f:
+        f.write(stager)
+    if stager:
+        ph_print("[*] Stager created successfully")
+        exit(0)
+    else:
+        ph_print("[!] Could not create the payload")
+        exit(1)

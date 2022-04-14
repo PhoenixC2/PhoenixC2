@@ -1,4 +1,2 @@
-ERROR:root:[Errno 22] Invalid argument
-ERROR:root:[Errno 22] Invalid argument
-ERROR:root:[Errno 22] Invalid argument
-ERROR:root:[Errno 22] Invalid argument
+ERROR:root:'SOCKET' object has no attribute 'context'
+ERROR:root:module 'socket' has no attribute 'accept'

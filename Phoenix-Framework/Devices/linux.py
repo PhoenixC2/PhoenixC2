@@ -1,9 +1,9 @@
-from globals import *
+from Utils.ui import *
 
 
 class Linux():
     """The Linux Device Class to interact with the Device"""
-
+    # Base
     def save_infos(self):
         """Save Infos to the Device Database"""
         conn = connect("Data/db.sqlite3")
@@ -27,6 +27,26 @@ class Linux():
         # Encrypt the data
         return self.fernet.encrypt(data.encode())
 
+    def alive(self):
+        try:
+            self.conn.send(self.encrypt("alive:"))
+        except socket.error:
+            return False
+        return True
+    # Features
+    def send_keys(self, keys):
+        """Send a list of Keys to the Device
+        Args:
+            keys (list): List of Keys to send
+        Returns:
+            output (str): Output or Error Message
+        """
+        self.conn.send(self.encrypt(f"keys:{keys}"))
+        output = self.decrypt(self.conn.recv(1024))
+        if output.startswith("!"):
+            raise Exception("Couldn't send the Keys")
+        else:
+            return output
     def load_module(self, module):
         # Send the Module to the Device
         pass
@@ -151,9 +171,3 @@ class Linux():
         else:
             return output
 
-    def alive(self):
-        try:
-            self.conn.send(self.encrypt("alive:"))
-        except socket.error:
-            return False
-        return True

