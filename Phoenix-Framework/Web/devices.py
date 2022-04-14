@@ -3,7 +3,6 @@ from Utils.ui import *
 
 def devices_enpoints(Handler):
     devices = Blueprint("devices", __name__, url_prefix="/devices")
-
     @devices.route("/revshell", methods=["POST"])
     def revshell():
         id = request.form.get("id")

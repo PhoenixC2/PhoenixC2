@@ -1,5 +1,6 @@
 class Windows():
     """The Windows Device Class to interact with the Device"""
+
     def __init__(self, connection):
         self.self.conn = connection[0]
         self.addr = connection[1]

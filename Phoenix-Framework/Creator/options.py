@@ -7,7 +7,7 @@ payloads = [
     "http/reverse",
     "http/bind",
     "https/reverse",
-    "https/bind",]
+    "https/bind", ]
 # List of all Encoders:
 encoders = [
     "base64",

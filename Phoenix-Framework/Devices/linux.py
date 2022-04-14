@@ -4,6 +4,7 @@ from Utils.ui import *
 class Linux():
     """The Linux Device Class to interact with the Device"""
     # Base
+
     def save_infos(self):
         """Save Infos to the Device Database"""
         conn = connect("Data/db.sqlite3")
@@ -34,6 +35,7 @@ class Linux():
             return False
         return True
     # Features
+
     def send_keys(self, keys):
         """Send a list of Keys to the Device
         Args:
@@ -47,6 +49,7 @@ class Linux():
             raise Exception("Couldn't send the Keys")
         else:
             return output
+
     def load_module(self, module):
         # Send the Module to the Device
         pass
@@ -170,4 +173,3 @@ class Linux():
             raise Exception("Couldn't get the File")
         else:
             return output
-

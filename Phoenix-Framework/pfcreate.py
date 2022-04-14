@@ -1,21 +1,28 @@
+from Utils.ui import *
+import Creator
 import os
 import clipboard
 curr_dir = os.getcwd()
-#os.chdir("/usr/share/phoenix-framework")
-import Creator
-from Utils.ui import *
+# os.chdir("/usr/share/phoenix-framework")
 ph_print(logo)
-parser = ArgumentParser("pfcreate", description="Create Stagers to interact with the Phoenix-Framework")
+parser = ArgumentParser(
+    "pfcreate", description="Create Stagers to interact with the Phoenix-Framework")
 parser.add_argument("-l", "--listener", help="The Listener to use")
 parser.add_argument("-p", "--payload", help="The payload to use")
 parser.add_argument("-f", "--format", help="The Format to use", default=".py")
-parser.add_argument("-ha", "--haddress", help="The Address of the running the Handler")
-parser.add_argument("-hp", "--hport", help="The Port where the Handler is running")
-parser.add_argument("-e", "--encoding", help="The Encoding to use", default="base64")
-parser.add_argument("-o", "--output", help="The output file", default="payload")
-parser.add_argument("-c", "--copy", help="Copy the payload to the clipboard", action="store_true")
+parser.add_argument("-ha", "--haddress",
+                    help="The Address of the running the Handler")
+parser.add_argument(
+    "-hp", "--hport", help="The Port where the Handler is running")
+parser.add_argument("-e", "--encoding",
+                    help="The Encoding to use", default="base64")
+parser.add_argument(
+    "-o", "--output", help="The output file", default="payload")
+parser.add_argument(
+    "-c", "--copy", help="Copy the payload to the clipboard", action="store_true")
 parser.add_argument("-s", "--show", help="Show the Options of an Argument")
-parser.add_argument("-v", "--verbose", help="Verbose Output", action="store_true")
+parser.add_argument("-v", "--verbose",
+                    help="Verbose Output", action="store_true")
 args = parser.parse_args()
 if args.show:
     if args.show == "payloads":
@@ -65,11 +72,12 @@ output = args.output + args.format if not args.copy else "Clipboard"
 ph_print("[*] Output: " + output)
 # Create the Payload
 try:
-    stager = Creator.create(args.listener, args.payload, args.haddress, args.hport, args.encoding)
+    stager = Creator.create(args.listener, args.payload,
+                            args.haddress, args.hport, args.encoding)
 except Exception as e:
     log(str(e), "error")
     exit(1)
-#os.chdir(curr_dir)
+# os.chdir(curr_dir)
 if args.copy:
     clipboard.copy(stager)
     ph_print("[*] Copied to Clipboard")

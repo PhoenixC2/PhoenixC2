@@ -31,7 +31,9 @@ logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 {Box.DoubleCube("Made by Screamz2k")}""", 4, True)
 
 console = Console()
-# methods 
+
+
+
 def log(text, alert=""):
     style = ""
     # log type is choosen by alert

