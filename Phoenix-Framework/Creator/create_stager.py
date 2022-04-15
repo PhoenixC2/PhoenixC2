@@ -1,14 +1,11 @@
 from binascii import hexlify
-import base64
-import sqlite3
-import random
-import string
 import urllib.parse
+from Utils import *
 
 
-def create(listener, payload, address, port, encoder, random_size):
+def create_stager(listener, payload, address, port, encoder, random_size):
     """
-    Create a payload 
+    Create a Stager
     """
     try:
         with open("Payloads/" + payload + ".py", "r") as f:
@@ -16,8 +13,6 @@ def create(listener, payload, address, port, encoder, random_size):
     except:
         raise Exception("Could not find the payload")
     # Check if Listener exists
-    conn = sqlite3.connect("Data/db.sqlite3")
-    curr = conn.cursor()
     curr.execute("SELECT * FROM Listeners WHERE Id = ?", (listener,))
     if curr.fetchone() is None:
         raise Exception("Could not find the listener")

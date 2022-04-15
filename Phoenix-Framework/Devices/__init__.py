@@ -1,3 +1,3 @@
-from Devices.linux import Linux
-from Devices.windows import Windows
+from Devices.Socket.linux import Linux
+from Devices.Socket.windows import Windows
 

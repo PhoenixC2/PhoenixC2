@@ -72,7 +72,7 @@ output = args.output + args.format if not args.copy else "Clipboard"
 ph_print("[*] Output: " + output)
 # Create the Payload
 try:
-    stager = Creator.create(args.listener, args.payload,
+    stager = Creator.create_stager(args.listener, args.payload,
                             args.haddress, args.hport, args.encoding)
 except Exception as e:
     log(str(e), "error")

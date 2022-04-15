@@ -1,5 +1,5 @@
 from Utils.ui import *
-
+from Devices.Socket.device import Base_Device
 
 class Linux():
     """The Linux Device Class to interact with the Device"""
@@ -34,21 +34,7 @@ class Linux():
         except socket.error:
             return False
         return True
-    # Features
-
-    def send_keys(self, keys):
-        """Send a list of Keys to the Device
-        Args:
-            keys (list): List of Keys to send
-        Returns:
-            output (str): Output or Error Message
-        """
-        self.conn.send(self.encrypt(f"keys:{keys}"))
-        output = self.decrypt(self.conn.recv(1024))
-        if output.startswith("!"):
-            raise Exception("Couldn't send the Keys")
-        else:
-            return output
+    # BASE Features
 
     def load_module(self, module):
         # Send the Module to the Device

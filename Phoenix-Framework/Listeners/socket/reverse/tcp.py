@@ -1,26 +1,16 @@
 # Reverse Socket TCP Listener
-from Utils.ui import *
-from Devices import *
-
-
-class Listener():
-    def __init__(self, Server, config):
-        self.address = config["address"]
-        self.server = Server
-        self.port = config["port"]
+from Utils import *
+from Devices.Socket.linux import Linux
+from Devices.Socket.windows import Windows
+from Listeners.listener import Base_Listener
+class Listener(Base_Listener):
+    """The Reverse Tcp Listener Class"""
+    def __init__(self, server, config, id):
+        super().__init__(server, config, id)
         #self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         #self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stopped = False
-        self.start()
-
-    def decrypt(self, data):
-        # Decrypt the data
-        return self.fernet.decrypt(data).decode()
-
-    def encrypt(self, data):
-        # Encrypt the data
-        return self.fernet.encrypt(data.encode())
 
     def refresh_connections(self):
         # Check if the connections are still alive
@@ -28,9 +18,9 @@ class Listener():
             # Check if Server is stopped
             if self.stopped:
                 exit()
-            for Device in self.connections:
+            for Device in self.devices:
                 if not Device.alive():
-                    self.connections.remove(Device)
+                    self.server.remove_device(Device.id)
                     log(f"Connection to {Device.addr} has been lost.",
                         alert="critical")
             time.sleep(10)
@@ -42,7 +32,7 @@ class Listener():
                 exit()
             try:
                 # with self.context.wrap_socket(self.socket, server_side=True) as socket:
-                conn, addr = socket.accept()
+                connection, addr = socket.accept()
             except Exception as e:
                 logging.error(e)
                 exit()
@@ -51,20 +41,22 @@ class Listener():
                 self.fernet = Fernet(self.key)
                 ph_print(f"New Connection established from {addr[0]}")
                 logging.info(f"New Connection established from {addr}")
-                conn.send(self.key)
-                operating_system = self.decrypt(conn.recv(1024)).lower()
+                connection.send(self.key)
+                operating_system = self.decrypt(connection.recv(1024)).lower()
                 if operating_system == "windows":
-                    self.server.connections.append(
-                        Windows(conn, addr[0], self.key))
+                    self.server.add_device(
+                        Windows(connection, addr[0], self.key)) # Create a Windows Object to store the connection
+                    self.add_device(Windows(connection, addr[0], self.key))
                 elif operating_system == "linux":
-                    self.server.connections.append(
-                        Linux(conn, addr[0], self.key))
+                    self.server.remove_device(
+                        Linux(connection, addr[0], self.key)) # Create a Linux Object to store the connection
+                    self.add_device(Linux(connection, addr[0], self.key))
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")
                     logging.error(
                         f"Unknown Operating System: {operating_system}")
-                    conn.close()
+                    connection.close()
                     continue
 
     def start(self):
@@ -75,15 +67,15 @@ class Listener():
             raise Exception("Port is already in use.")
         self.listener.listen()
         # Start the Listener and Refresher
-        self.listener = threading.Thread(target=self.listen, name="Listener")
-        self.listener.start()
-        self.refresher = threading.Thread(
+        self.listener_thread = threading.Thread(target=self.listen, name="Listener " + str(self.id))
+        self.listener_thread.start()
+        self.refresher_thread = threading.Thread(
             target=self.refresh_connections, name="Refresher")
-        self.refresher.start()
+        self.refresher_thread.start()
 
     def stop(self):
         # Stop the Server
-        self.listener.shutdown(socket.SHUT_RDWR)
+        self.listener_thread.shutdown(socket.SHUT_RDWR)
         self.stopped = True
 
     def status(self):
@@ -94,4 +86,4 @@ class Listener():
             bool: True if listener is running, False if not
             bool: True if refresher is running, False if not"""
         # Return the Status of the Server
-        return self.stopped, self.listener.is_alive(), self.refresher.is_alive()
+        return self.stopped, self.listener_thread.is_alive(), self.refresher_thread.is_alive()

@@ -9,7 +9,7 @@ def devices_enpoints(Handler):
         address = request.form.get("address")
         port = request.form.get("port")
         try:
-            conn = Handler.get_device(id).revshell(address, port)
+            Handler.get_device(id).revshell(address, port)
         except Exception as e:
             return jsonify({"status": "error", "message": "Couldn't open a Reverse Shell"})
         else:
