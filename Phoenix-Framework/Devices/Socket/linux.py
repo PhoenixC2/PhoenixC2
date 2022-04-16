@@ -1,32 +1,16 @@
 from Utils.ui import *
 from Devices.Socket.device import Base_Device
 
-class Linux():
+class Linux(Base_Device):
     """The Linux Device Class to interact with the Device"""
-    # Base
-
     def save_infos(self):
         """Save Infos to the Device Database"""
         conn = connect("Data/db.sqlite3")
         curr = conn.cursor()
         infos = self.infos()
 
-    def __str__(self) -> str:
-        return str(self.addr[0])
-
-    def __init__(self, conn, addr, key):
-        self.conn = conn
-        self.addr = addr
-        self.key = key
-        self.fernet = Fernet(key)
-
-    def decrypt(self, data):
-        # Decrypt the data
-        return self.fernet.decrypt(data).decode()
-
-    def encrypt(self, data):
-        # Encrypt the data
-        return self.fernet.encrypt(data.encode())
+    def __init__(self, conn, addr, key, id):
+        super().__init__(conn, addr, key, id)
 
     def alive(self):
         try:

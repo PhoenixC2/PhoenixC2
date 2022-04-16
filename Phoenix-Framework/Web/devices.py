@@ -1,5 +1,4 @@
-from Utils.ui import *
-
+from Utils import *
 
 def devices_enpoints(Handler):
     devices = Blueprint("devices", __name__, url_prefix="/devices")

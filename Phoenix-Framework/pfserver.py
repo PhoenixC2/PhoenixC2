@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # Change Directory
 #import os
 # os.chdir("/usr/share/phoenix-framework")
@@ -30,16 +31,17 @@ if __name__ == "__main__":
     server = srv.Server_Class()
 
     # Start Listeners
+    log("Starting Listeners", "info")
     try:
         srv.start_listeners(server, curr)
     except Exception as e:
-        print("[ERROR] " + str(e))
+        
         exit()
-    
+    log("Listeners started", "success")
     # Start the web srv
-    log("Starting Web srv", "info")
+    log("Starting Web Server", "info")
     try:
-        web = srv.start_web(args.waddress, args.wport)
+        web = srv.start_web(args.waddress, args.wport, server)
         pass
     except Exception as e:
         log(str(e), "error")

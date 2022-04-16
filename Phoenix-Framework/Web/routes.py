@@ -1,4 +1,4 @@
-from Utils.ui import *
+from Utils import *
 
 
 def routes_endpoints():

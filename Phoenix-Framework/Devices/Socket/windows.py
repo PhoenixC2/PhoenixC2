@@ -1,4 +1,5 @@
-class Windows():
+from Devices.Socket.device import Base_Device
+class Windows(Base_Device):
     """The Windows Device Class to interact with the Device"""
 
     def __init__(self, connection):
