@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
-import os
-os.chdir
+
+import sys, os
+sys.path.insert(0, '/usr/share/Phoenix-Framework/')
+os.chdir('/usr/share/Phoenix-Framework/')
+
 from Utils import *
 import Creator
-import os
 import clipboard
-ph_print(logo)
+
 
 parser = ArgumentParser(
     "pfcreate", description="Create Stagers to interact with the chosen listener.")
@@ -26,6 +28,7 @@ parser.add_argument(
 parser.add_argument("-s", "--show", help="Show the Options of an Argument", metavar="Category")
 
 if __name__ == "__main__":
+    ph_print(logo)
     args = parser.parse_args()
 
     if args.show:

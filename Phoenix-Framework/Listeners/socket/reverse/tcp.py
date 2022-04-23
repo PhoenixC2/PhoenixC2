@@ -24,7 +24,6 @@ class Listener(Base_Listener):
                     self.remove_device(Device)
                     log(f"Connection to {Device.addr}  has been lost. [ID : {Device.id}]",
                         alert="critical")
-                    logging.info(f"Connection to {Device.addr}  has been lost. [ID : {Device.id}]")
                     device_disconnected = True
                     break
             if not device_disconnected:
@@ -39,13 +38,11 @@ class Listener(Base_Listener):
                 # with self.context.wrap_socket(self.socket, server_side=True) as socket:
                 connection, addr = self.listener.accept()
             except Exception as e:
-                logging.error(e)
                 exit()
             else:
                 self.key = Fernet.generate_key()
                 self.fernet = Fernet(self.key)
                 log(f"New Connection established from {addr[0]}", alert="success")
-                logging.info(f"New Connection established from {addr}")
                 connection.send(self.key)
                 try:
                     operating_system = self.decrypt(connection.recv(1024)).lower()
@@ -64,8 +61,6 @@ class Listener(Base_Listener):
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")
-                    logging.error(
-                        f"Unknown Operating System: {operating_system}")
                     connection.close()
                     continue
 

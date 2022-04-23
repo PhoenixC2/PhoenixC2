@@ -1,8 +1,14 @@
 #! /usr/bin/env python3
 
-#Change Directory
-#import os
-#os.chdir("/usr/share/phoenix-framework")
+import os
+# Check if the user is root
+if not os.getuid() == 0:
+        print("Please start with Sudo or Root Rights")
+        exit()
+import sys
+sys.path.insert(0, '/usr/share/Phoenix-Framework/')
+os.chdir('/usr/share/Phoenix-Framework/')
+
 try:
     from Utils import *
     import Server as srv
@@ -13,10 +19,6 @@ except ImportError:
 if __name__ == "__main__":
     ph_print(logo)
 
-    # Check if the user is root
-    if not os.getuid() == 0:
-        log("Please start with Sudo or Root Rights", "error")
-        exit()
 
     # Check Database
     try:
@@ -36,10 +38,10 @@ if __name__ == "__main__":
     try:
         srv.start_listeners(server, curr)
     except Exception as e:
-        
         exit()
     log("Listeners started", "success")
-    # Start the web srv
+
+    # Start the webserver
     log("Starting Web Server", "info")
     try:
         web = srv.start_web(args.waddress, args.wport, server)
@@ -52,7 +54,6 @@ if __name__ == "__main__":
 
     log(f"Accessible at http://{args.waddress}:{args.wport}", "info")
     log(f"Press CTRL+C to exit.", "info")
-
     while True:
         try:
             time.sleep(1)
