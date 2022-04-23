@@ -1,5 +1,5 @@
 from Utils import *
-def create_listener(type : str, name : str = None, address : str = None, port : int = None):
+def create_listener(type : str = None, name : str = None, address : str = None, port : int = None, ssl : bool = False):
     """
     Create a Listener
 
@@ -23,8 +23,10 @@ def create_listener(type : str, name : str = None, address : str = None, port : 
     # Create Config
     config = {
         "address": address,
-        "port": port
+        "port": port,
+        "ssl": ssl
     }
     # Save Listener
     curr.execute("INSERT INTO Listeners (Name, Type, Config) VALUES (?, ?, ?)", (name, type, json.dumps(config)))
     conn.commit()
+    return f"Listener {name} created"
