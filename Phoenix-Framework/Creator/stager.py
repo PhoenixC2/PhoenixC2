@@ -3,7 +3,7 @@ import urllib.parse
 from Utils import *
 
 
-def create_stager(listener: str, encoder: str = "base64", random_size : bool = False, timeout : int = 5000, exisiting_stager: str = None, name : str = None, format : str = "py", delay : int = 1) -> str:
+def create_stager(listener: str, encoder: str = "base64", random_size : bool = False, timeout : int = 5000, exisiting_stager: str = None, name : str = None, format : str = "py", delay : int = 1) -> any:
     """
     Create a Stager
     :param listener: The Listener to use

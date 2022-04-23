@@ -1,7 +1,7 @@
 from Utils import *
 from Server import Server_Class
 class Base_Listener():
-    """This is the Parent Class for all Listeners"""
+    """This is the Base Class for all Listeners"""
     def __init__(self, server, config, id):
         self.address = config["address"]
         self.server : Server_Class = server

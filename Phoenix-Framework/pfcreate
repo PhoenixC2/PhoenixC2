@@ -88,8 +88,12 @@ if __name__ == "__main__":
         clipboard.copy(stager)
         ph_print("[*] Copied to Clipboard")
     else:
-        with open(args.output + args.format, "w") as f:
-            f.write(stager)
+        if args.f == ".py":
+            with open(args.output + args.format, "w") as f:
+                f.write(stager)
+        elif args.f == ".exe":
+            with open(args.output + args.format, "wb") as f:
+                f.write(stager)
         if stager:
             ph_print("[*] Stager created successfully")
             exit(0)

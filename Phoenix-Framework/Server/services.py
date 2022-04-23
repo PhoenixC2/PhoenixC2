@@ -1,9 +1,9 @@
 from Utils import *
-from Web import *
+from Web import create_web
 from Server.server_class import *
 
 
-def start_listeners(server : Server_Class, curr):
+def start_listeners(server : Server_Class):
     """Start all Listeners by querying the database
     and initializing the corresponding listener class"""
     # Get Listeners from Database

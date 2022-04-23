@@ -1,8 +1,8 @@
 # Reverse Socket TCP Listener
 from Utils import *
-from Devices.Socket.linux import Linux
-from Devices.Socket.windows import Windows
-from Listeners.listener import Base_Listener
+from Handlers.socket.reverse.tcp.linux import Linux
+from Handlers.socket.reverse.tcp.windows import Windows
+from Listeners.base import Base_Listener
 class Listener(Base_Listener):
     """The Reverse Tcp Listener Class"""
     def __init__(self, server, config, id):

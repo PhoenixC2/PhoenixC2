@@ -35,8 +35,8 @@ console = Console()
 
 
 def log(text, alert=""):
+    """Log important information to the console"""
     style = ""
-    # log type is choosen by alert
     if alert == "info":
         style = "blue"
     elif alert == "success":

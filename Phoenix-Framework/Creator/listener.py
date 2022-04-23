@@ -1,5 +1,5 @@
 from Utils import *
-def create_listener(type : str = None, name : str = None, address : str = None, port : int = None, ssl : bool = False):
+def create_listener(type : str = None, name : str = None, address : str = None, port : int = None, ssl : bool = False) -> str:
     """
     Create a Listener
 

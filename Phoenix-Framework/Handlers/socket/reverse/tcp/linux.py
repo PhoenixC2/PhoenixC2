@@ -1,8 +1,8 @@
 from Utils.ui import *
-from Devices.Socket.device import Base_Device
+from Handlers.base import Base_Handler
 
-class Linux(Base_Device):
-    """The Linux Device Class to interact with the Device"""
+class Linux(Base_Handler):
+    """The Linux Handler Class to interact with the Device"""
     def save_infos(self):
         """Save Infos to the Device Database"""
         conn = connect("Data/db.sqlite3")

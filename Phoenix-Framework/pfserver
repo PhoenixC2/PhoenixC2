@@ -36,8 +36,9 @@ if __name__ == "__main__":
     # Start Listeners
     log("Starting Listeners", "info")
     try:
-        srv.start_listeners(server, curr)
+        srv.start_listeners(server)
     except Exception as e:
+        log(str(e), "error")
         exit()
     log("Listeners started", "success")
 
