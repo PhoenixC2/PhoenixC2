@@ -32,7 +32,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.show:
-        if args.show == "listeners":
+        if args.show.lower() == "listeners":
             ph_print("Listeners:")
             curr.execute("SELECT * FROM Listeners")
             listeners = curr.fetchall()
@@ -40,7 +40,7 @@ if __name__ == "__main__":
                 ph_print("No Listeners found")
             for listener in listeners:
                 ph_print(f"({listener[0]}) {listener[1]} [{listener[2]}]")
-        elif args.show == "stagers":
+        elif args.show.lower() == "stagers":
             ph_print("Stagers:")
             curr.execute("SELECT * FROM Stagers")
             stagers = curr.fetchall()
@@ -48,16 +48,21 @@ if __name__ == "__main__":
                 ph_print("No Stagers found")
             for stager in stagers:
                 ph_print(f"({stager[0]}) {stager[1]} [{stager[2]}]")
-        elif args.show == "encoders":
+        elif args.show.lower() == "encoders":
             ph_print("Encoders:")
             for format in Creator.encoders:
                 ph_print(format)
-        elif args.show == "formats":
+        elif args.show.lower() == "formats":
             ph_print("Formats:")
             for format in Creator.formats:
                 ph_print(format)
         else:
             ph_print("Unknown List")
+            ph_print("Choose one of the following:")
+            ph_print("Listeners")
+            ph_print("Stagers")
+            ph_print("Encoders")
+            ph_print("Formats")
         exit(0)
     if not args.listener and not args.stager:
         ph_print("No Listener specified")
