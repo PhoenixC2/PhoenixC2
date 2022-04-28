@@ -6,21 +6,13 @@ import importlib
 import string
 import subprocess
 path = "/usr/share/Phoenix-Framework/"
-modules = ["cryptography", "flask", "requests", "clipboard", "pystyle"]
 if os.getuid() != 0:
     print("[ERROR] Please start with Sudo or Root Rights")
     exit()
 print("[INFO] Starting Setup")
 
 print("[INFO] Install Python Modules")
-for module in modules:
-    try:
-        importlib.import_module(module)
-    except:
-        print("[INFO] Installing " + module)
-        os.system("pip3 install " + module + " -q -U")
-    else:
-        print("[INFO] " + module + " is already installed")
+os.system("pip3 install -r requirements.txt -q")
 
 print("[INFO] Creating Directory")
 shutil.copytree(os.getcwd() + "/Phoenix-Framework", path)
@@ -29,7 +21,7 @@ print("[INFO] Creating Database")
 conn = sqlite3.connect(path + "Data/db.sqlite3")
 curr = conn.cursor()
 curr.execute("CREATE TABLE IF NOT EXISTS Users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, admin INTEGER);")
-curr.execute("CREATE TABLE IF NOT EXISTS Devices (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Hostname TEXT, Address VARCHAR(20), Connection_Date VARCHAR(20), Last_Online VARCHAR(20));")
+curr.execute("CREATE TABLE IF NOT EXISTS Devices (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Hostname TEXT, Address VARCHAR(20), Connection_Date DATE, Last_Online DATE);")
 curr.execute("CREATE TABLE IF NOT EXISTS Listeners (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name TEXT, Type TEXT, Config TEXT);")
 curr.execute("CREATE TABLE IF NOT EXISTS Stagers (Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name TEXT, ListenerId INTEGER, Encoder TEXT)")
 conn.commit()

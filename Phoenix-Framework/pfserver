@@ -9,16 +9,15 @@ import sys
 sys.path.insert(0, '/usr/share/Phoenix-Framework/')
 os.chdir('/usr/share/Phoenix-Framework/')
 
-try:
-    from Utils import *
-    import Server as srv
-except ImportError:
+#try:
+from Utils import *
+import Server as srv
+"""except ImportError:
     print("[ERROR] Not all required Libraries are installed.")
-    exit()
+    exit()"""
 
 if __name__ == "__main__":
     ph_print(logo)
-
 
     # Check Database
     try:
@@ -45,16 +44,16 @@ if __name__ == "__main__":
     # Start the webserver
     log("Starting Web Server", "info")
     try:
-        web = srv.start_web(args.waddress, args.wport, server)
+        web = srv.start_web(args.address, args.port, args.ssl, server)
         pass
     except Exception as e:
         log(str(e), "error")
         exit()
     else:
         log("Web Server started", "success")
-
-    log(f"Accessible at http://{args.waddress}:{args.wport}", "info")
+    log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port}", "info")
     log(f"Press CTRL+C to exit.", "info")
+
     while True:
         try:
             time.sleep(1)

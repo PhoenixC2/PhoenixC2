@@ -1,5 +1,6 @@
 class Server_Class():
     """This is the C2 Server Class which handles the devices & listeners"""
+    
     def __init__(self):
         self.all_devices = 0
         self.all_listeners = 0

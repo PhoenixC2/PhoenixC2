@@ -1,0 +1,5 @@
+click
+flask
+rich
+pystyle
+cryptography
