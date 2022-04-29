@@ -2,6 +2,7 @@
 import click
 import base64
 import ssl
+from hashlib import md5
 import subprocess
 import json
 from sqlite3 import connect, OperationalError

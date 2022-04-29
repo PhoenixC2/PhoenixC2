@@ -1,5 +1,6 @@
 import os
 import shutil
+from hashlib import md5
 import sqlite3
 import random
 import importlib
@@ -23,13 +24,14 @@ curr = conn.cursor()
 curr.execute("CREATE TABLE IF NOT EXISTS Users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, admin INTEGER);")
 curr.execute("CREATE TABLE IF NOT EXISTS Devices (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Hostname TEXT, Address VARCHAR(20), Connection_Date DATE, Last_Online DATE);")
 curr.execute("CREATE TABLE IF NOT EXISTS Listeners (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name TEXT, Type TEXT, Config TEXT);")
-curr.execute("CREATE TABLE IF NOT EXISTS Stagers (Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name TEXT, ListenerId INTEGER, Encoder TEXT)")
+curr.execute("CREATE TABLE IF NOT EXISTS Stagers (Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, Name TEXT, ListenerId INTEGER)")
 conn.commit()
 
 print("[INFO] Creating Admin User")
 username = "Phoenix"
 password = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
-curr.execute(f"INSERT INTO Users (username, password, admin) VALUES ('phoenix', '{password}', 1);")
+hashed_password = md5(password.encode()).hexdigest()
+curr.execute(f"INSERT INTO Users (username, password, admin) VALUES ('phoenix', '{hashed_password}', 1);")
 conn.commit()
 print("[SUCCESS] Admin User Created")
 print(f"Credentials: {username}:{password}")

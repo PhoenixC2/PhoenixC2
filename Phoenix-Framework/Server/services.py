@@ -1,28 +1,25 @@
 from Utils import *
 from Web import create_web
+from Creator import start_listener
 from Server.server_class import *
 
 
 def start_listeners(server : Server_Class):
+    """! REDO THIS"""
     """Start all Listeners by querying the database
     and initializing the corresponding listener class"""
+
     # Get Listeners from Database
     curr.execute("SELECT * FROM Listeners")
     listeners = curr.fetchall()
+
     # Start Listeners
     for listener in listeners:
-        id = listener[0]
-        name = listener[1]
-        type = listener[2]
-        type = type.replace("/", ".")
-        type = "Listeners." + type
-        config = json.loads(listener[3])
-        # Get the Listener from the File
-        server.all_listeners += 1
-        listener = importlib.import_module(type).Listener(server, config, server.all_listeners)
-        listener.start()
-        server.add_listener(listener)
-        log(f"Started {name} ({id})", "info")
+        try:
+            start_listener(listener[0], server)
+        except Exception as e:
+            log(str(e), "error")
+
 
 
 def start_web(web_address, web_port, ssl, server : Server_Class):

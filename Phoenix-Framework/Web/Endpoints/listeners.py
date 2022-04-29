@@ -73,3 +73,29 @@ def put_edit():
         return f"Changed Listener with ID {id} to {port}"
     else:
         return "Invalid Change", 400
+
+@listeners.route("/list", methods=["GET"])
+@authorized
+def get_list():
+    # improve this
+    curr.execute("SELECT * FROM Listeners")
+    data = curr.fetchall()
+    return jsonify(data)
+
+@listeners.route("/start", methods=["POST"])
+@authorized
+def post_start():
+    
+    # Get Request Data
+    id = request.form.get("id")
+     
+    # Check if Listener exists
+    curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
+    listener = curr.fetchone()
+    if not listener:
+        return f"Listener with ID {id} does not exist", 404
+    
+    # Start Listener
+    listener_type, name, address, port, ssl = listener
+    try:
+        

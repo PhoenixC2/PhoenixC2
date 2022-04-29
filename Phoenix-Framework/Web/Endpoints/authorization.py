@@ -23,8 +23,9 @@ def admin(func):
         return func(*args, **kwargs)
     return wrapper
 
-
 def check_creds(username, password):
+    # hash the password
+    password = md5(password.encode()).hexdigest()
     try:
         curr.execute(
             "SELECT * FROM users WHERE username=? AND password=?", (username, password))

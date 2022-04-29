@@ -1,12 +1,10 @@
-from Utils.ui import *
+from Utils import *
 from Handlers.base import Base_Handler
 
 class Linux(Base_Handler):
     """The Linux Handler Class to interact with the Device"""
     def save_infos(self):
         """Save Infos to the Device Database"""
-        conn = connect("Data/db.sqlite3")
-        curr = conn.cursor()
         infos = self.infos()
 
     def __init__(self, conn, addr, key, id):

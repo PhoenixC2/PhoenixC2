@@ -1,6 +1,6 @@
 from Utils import *
 from Web.Endpoints.authorization import authorized, admin
-from Creator import create_stager
+from Creator import get_stager
 
 stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
 
@@ -26,7 +26,7 @@ def post_add():
     delay = request.form.get("delay")
     # Create Stager
     try:
-        create_stager(listener_type, encoder, random_size=="True", int(timeout), exisiting_stager, name, format, int(delay))
+        get_stager(listener_type, encoder, random_size=="True", int(timeout), exisiting_stager, name, format, int(delay))
     except Exception as e:
         return str(e)
     return f"Stager {name} created"

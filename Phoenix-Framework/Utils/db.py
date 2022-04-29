@@ -1,7 +1,11 @@
 from Utils.libraries import *
+"""Connect to the Database"""
 conn = connect("Data/db.sqlite3")
 curr = conn.cursor()
-
+def close_db():
+    """Close the Database connection"""
+    curr.close()
+    conn.close()
 def get_listeners():
     """Return all Listeners from the Database"""
     curr.execute("SELECT * FROM Listeners")
