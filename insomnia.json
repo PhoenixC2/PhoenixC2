@@ -1,1 +1,349 @@
-{"_type":"export","__export_format":4,"__export_date":"2022-04-29T15:59:52.172Z","__export_source":"insomnia.desktop.app:v2022.3.0","resources":[{"_id":"req_10c0de22b8e140638cc83a53451d7c09","parentId":"fld_0553129e29bd4dcfb55cb17a8bbbc022","modified":1651244676250,"created":1651222807929,"url":"https://127.0.0.1:8080/auth/login","name":"Login","description":"","method":"POST","body":{"mimeType":"application/x-www-form-urlencoded","params":[{"id":"pair_514f1be091884fd9acba2c859286e529","name":"username","value":"phoenix","description":""},{"id":"pair_85606c363e30455a8bb42146cd6b1c5d","name":"password","value":"GkPIMZT096","description":""}]},"parameters":[],"headers":[{"name":"Content-Type","value":"application/x-www-form-urlencoded","id":"pair_2d3e2ce927c84ebc84a2e1753f227ac9"}],"authentication":{},"metaSortKey":-1651222807930,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"fld_0553129e29bd4dcfb55cb17a8bbbc022","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651244672108,"created":1651244672108,"name":"Auth","description":"","environment":{},"environmentPropertyOrder":null,"metaSortKey":-1651244672108,"_type":"request_group"},{"_id":"wrk_d2b422b1107a40c78fa4c774350d3003","parentId":null,"modified":1651222792187,"created":1651222792187,"name":"Phoenix Framework","description":"","scope":"collection","_type":"workspace"},{"_id":"req_1844c447e6fd419ebf7455cf17d22170","parentId":"fld_34a96e59d46340949bb42328ca72fb9a","modified":1651247932573,"created":1651244635732,"url":" ","name":"Edit","description":"","method":"PUT","body":{},"parameters":[],"headers":[],"authentication":{},"metaSortKey":-1651244635732,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"fld_34a96e59d46340949bb42328ca72fb9a","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651244604433,"created":1651244604433,"name":"Listeners","description":"","environment":{},"environmentPropertyOrder":null,"metaSortKey":-1651244604433,"_type":"request_group"},{"_id":"req_b9e1f094d3e649209894014b72ca0481","parentId":"fld_34a96e59d46340949bb42328ca72fb9a","modified":1651244648994,"created":1651244630052,"url":"","name":"Delete","description":"","method":"DELETE","body":{},"parameters":[],"headers":[],"authentication":{},"metaSortKey":-1651244630052,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"req_52297714b0a14651a879467d27b0d741","parentId":"fld_34a96e59d46340949bb42328ca72fb9a","modified":1651244622408,"created":1651243692805,"url":"","name":"Add","description":"","method":"POST","body":{"mimeType":"application/x-www-form-urlencoded","params":[{"id":"pair_63af1e407c354c42af9ea76409f254a9","name":"type","value":"/socket/reverse/tcp","description":""},{"id":"pair_c1c5bb8897d3439683ac7b6b6a1b2977","name":"name","value":"Listener2","description":""},{"id":"pair_8adfe357044f485ea0f0b5781d57a061","name":"address","value":"192.168.178.107","description":""},{"id":"pair_c55a0ade351a445db7b691a1fc810df6","name":"port","value":"9999","description":""},{"id":"pair_2c8ea47177054345b2a36fa58410e630","name":"ssl","value":"False","description":""}]},"parameters":[],"headers":[{"name":"Content-Type","value":"application/x-www-form-urlencoded","id":"pair_06bbda202122404e9b78c60ebd0a74f0"}],"authentication":{},"metaSortKey":-1651244604483,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"req_77d0b436e4b54a8787bb0ea293eeb11e","parentId":"fld_d5e17787e83e4d7d8ad4e777a53f602f","modified":1651244656067,"created":1651244656067,"url":"","name":"Edit","description":"","method":"PUT","body":{},"parameters":[],"headers":[],"authentication":{},"metaSortKey":-1651244635732,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"fld_d5e17787e83e4d7d8ad4e777a53f602f","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651244656049,"created":1651244656049,"name":"Stagers","description":"","environment":{},"environmentPropertyOrder":null,"metaSortKey":-1651244604383,"_type":"request_group"},{"_id":"req_613db0d17c904790833b0286c3d3a197","parentId":"fld_d5e17787e83e4d7d8ad4e777a53f602f","modified":1651244656064,"created":1651244656064,"url":"","name":"Delete","description":"","method":"DELETE","body":{},"parameters":[],"headers":[],"authentication":{},"metaSortKey":-1651244630052,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"req_a6d0d32f8fcc4dc6a760bf34fa4e1849","parentId":"fld_d5e17787e83e4d7d8ad4e777a53f602f","modified":1651244656056,"created":1651244656056,"url":"","name":"Add","description":"","method":"POST","body":{"mimeType":"application/x-www-form-urlencoded","params":[{"id":"pair_63af1e407c354c42af9ea76409f254a9","name":"type","value":"/socket/reverse/tcp","description":""},{"id":"pair_c1c5bb8897d3439683ac7b6b6a1b2977","name":"name","value":"Listener2","description":""},{"id":"pair_8adfe357044f485ea0f0b5781d57a061","name":"address","value":"192.168.178.107","description":""},{"id":"pair_c55a0ade351a445db7b691a1fc810df6","name":"port","value":"9999","description":""},{"id":"pair_2c8ea47177054345b2a36fa58410e630","name":"ssl","value":"False","description":""}]},"parameters":[],"headers":[{"name":"Content-Type","value":"application/x-www-form-urlencoded","id":"pair_06bbda202122404e9b78c60ebd0a74f0"}],"authentication":{},"metaSortKey":-1651244604483,"isPrivate":false,"settingStoreCookies":true,"settingSendCookies":true,"settingDisableRenderRequestBody":false,"settingEncodeUrl":true,"settingRebuildPath":true,"settingFollowRedirects":"global","_type":"request"},{"_id":"env_b361236819c4c76b5249c334d9a09afcaa2a2624","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651244589196,"created":1651222792195,"name":"Base Environment","data":{},"dataPropertyOrder":{},"color":null,"isPrivate":false,"metaSortKey":1651222792195,"_type":"environment"},{"_id":"jar_b361236819c4c76b5249c334d9a09afcaa2a2624","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651222792196,"created":1651222792196,"name":"Default Jar","cookies":[],"_type":"cookie_jar"},{"_id":"spc_707e16d43f004329b183b134c192bc2d","parentId":"wrk_d2b422b1107a40c78fa4c774350d3003","modified":1651222792190,"created":1651222792190,"fileName":"Phoenix Framework","contents":"","contentType":"yaml","_type":"api_spec"}]}
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2022-04-29T15:59:52.172Z",
+    "__export_source": "insomnia.desktop.app:v2022.3.0",
+    "resources": [
+        {
+            "_id": "req_10c0de22b8e140638cc83a53451d7c09",
+            "parentId": "fld_0553129e29bd4dcfb55cb17a8bbbc022",
+            "modified": 1651244676250,
+            "created": 1651222807929,
+            "url": "https://127.0.0.1:8080/auth/login",
+            "name": "Login",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/x-www-form-urlencoded",
+                "params": [
+                    {
+                        "id": "pair_514f1be091884fd9acba2c859286e529",
+                        "name": "username",
+                        "value": "phoenix",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_85606c363e30455a8bb42146cd6b1c5d",
+                        "name": "password",
+                        "value": "GkPIMZT096",
+                        "description": ""
+                    }
+                ]
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                    "id": "pair_2d3e2ce927c84ebc84a2e1753f227ac9"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1651222807930,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_0553129e29bd4dcfb55cb17a8bbbc022",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651244672108,
+            "created": 1651244672108,
+            "name": "Auth",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1651244672108,
+            "_type": "request_group"
+        },
+        {
+            "_id": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "parentId": null,
+            "modified": 1651222792187,
+            "created": 1651222792187,
+            "name": "Phoenix Framework",
+            "description": "",
+            "scope": "collection",
+            "_type": "workspace"
+        },
+        {
+            "_id": "req_1844c447e6fd419ebf7455cf17d22170",
+            "parentId": "fld_34a96e59d46340949bb42328ca72fb9a",
+            "modified": 1651247932573,
+            "created": 1651244635732,
+            "url": " ",
+            "name": "Edit",
+            "description": "",
+            "method": "PUT",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": -1651244635732,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_34a96e59d46340949bb42328ca72fb9a",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651244604433,
+            "created": 1651244604433,
+            "name": "Listeners",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1651244604433,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_b9e1f094d3e649209894014b72ca0481",
+            "parentId": "fld_34a96e59d46340949bb42328ca72fb9a",
+            "modified": 1651244648994,
+            "created": 1651244630052,
+            "url": "",
+            "name": "Delete",
+            "description": "",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": -1651244630052,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_52297714b0a14651a879467d27b0d741",
+            "parentId": "fld_34a96e59d46340949bb42328ca72fb9a",
+            "modified": 1651244622408,
+            "created": 1651243692805,
+            "url": "",
+            "name": "Add",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/x-www-form-urlencoded",
+                "params": [
+                    {
+                        "id": "pair_63af1e407c354c42af9ea76409f254a9",
+                        "name": "type",
+                        "value": "/socket/reverse/tcp",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_c1c5bb8897d3439683ac7b6b6a1b2977",
+                        "name": "name",
+                        "value": "Listener2",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_8adfe357044f485ea0f0b5781d57a061",
+                        "name": "address",
+                        "value": "192.168.178.107",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_c55a0ade351a445db7b691a1fc810df6",
+                        "name": "port",
+                        "value": "9999",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_2c8ea47177054345b2a36fa58410e630",
+                        "name": "ssl",
+                        "value": "False",
+                        "description": ""
+                    }
+                ]
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                    "id": "pair_06bbda202122404e9b78c60ebd0a74f0"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1651244604483,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_77d0b436e4b54a8787bb0ea293eeb11e",
+            "parentId": "fld_d5e17787e83e4d7d8ad4e777a53f602f",
+            "modified": 1651244656067,
+            "created": 1651244656067,
+            "url": "",
+            "name": "Edit",
+            "description": "",
+            "method": "PUT",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": -1651244635732,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "fld_d5e17787e83e4d7d8ad4e777a53f602f",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651244656049,
+            "created": 1651244656049,
+            "name": "Stagers",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1651244604383,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_613db0d17c904790833b0286c3d3a197",
+            "parentId": "fld_d5e17787e83e4d7d8ad4e777a53f602f",
+            "modified": 1651244656064,
+            "created": 1651244656064,
+            "url": "",
+            "name": "Delete",
+            "description": "",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [],
+            "authentication": {},
+            "metaSortKey": -1651244630052,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "req_a6d0d32f8fcc4dc6a760bf34fa4e1849",
+            "parentId": "fld_d5e17787e83e4d7d8ad4e777a53f602f",
+            "modified": 1651244656056,
+            "created": 1651244656056,
+            "url": "",
+            "name": "Add",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/x-www-form-urlencoded",
+                "params": [
+                    {
+                        "id": "pair_63af1e407c354c42af9ea76409f254a9",
+                        "name": "type",
+                        "value": "/socket/reverse/tcp",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_c1c5bb8897d3439683ac7b6b6a1b2977",
+                        "name": "name",
+                        "value": "Listener2",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_8adfe357044f485ea0f0b5781d57a061",
+                        "name": "address",
+                        "value": "192.168.178.107",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_c55a0ade351a445db7b691a1fc810df6",
+                        "name": "port",
+                        "value": "9999",
+                        "description": ""
+                    },
+                    {
+                        "id": "pair_2c8ea47177054345b2a36fa58410e630",
+                        "name": "ssl",
+                        "value": "False",
+                        "description": ""
+                    }
+                ]
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                    "id": "pair_06bbda202122404e9b78c60ebd0a74f0"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1651244604483,
+            "isPrivate": false,
+            "settingStoreCookies": true,
+            "settingSendCookies": true,
+            "settingDisableRenderRequestBody": false,
+            "settingEncodeUrl": true,
+            "settingRebuildPath": true,
+            "settingFollowRedirects": "global",
+            "_type": "request"
+        },
+        {
+            "_id": "env_b361236819c4c76b5249c334d9a09afcaa2a2624",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651244589196,
+            "created": 1651222792195,
+            "name": "Base Environment",
+            "data": {},
+            "dataPropertyOrder": {},
+            "color": null,
+            "isPrivate": false,
+            "metaSortKey": 1651222792195,
+            "_type": "environment"
+        },
+        {
+            "_id": "jar_b361236819c4c76b5249c334d9a09afcaa2a2624",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651222792196,
+            "created": 1651222792196,
+            "name": "Default Jar",
+            "cookies": [],
+            "_type": "cookie_jar"
+        },
+        {
+            "_id": "spc_707e16d43f004329b183b134c192bc2d",
+            "parentId": "wrk_d2b422b1107a40c78fa4c774350d3003",
+            "modified": 1651222792190,
+            "created": 1651222792190,
+            "fileName": "Phoenix Framework",
+            "contents": "",
+            "contentType": "yaml",
+            "_type": "api_spec"
+        }
+    ]
+}

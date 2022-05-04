@@ -1,5 +1,4 @@
 from Utils import *
-from Server import Server_Class
 def create_listener(listener_type : str = None, name : str = None, address : str = None, port : int = None, ssl : bool = False) -> str:
     """
     Create a Listener
@@ -32,7 +31,7 @@ def create_listener(listener_type : str = None, name : str = None, address : str
     conn.commit()
     return f"Listener {name} created"
 
-def start_listener(id: int, server : Server_Class) -> None:
+def start_listener(id: int, server) -> None:
     """
     Start a Listener
 
@@ -48,7 +47,6 @@ def start_listener(id: int, server : Server_Class) -> None:
         raise Exception(f"Listener with ID {id} does not exist")
     
     # Load Listener
-    id = listener[0]
     name = listener[1]
     type = listener[2]
     type = type.replace("/", ".")
@@ -59,19 +57,16 @@ def start_listener(id: int, server : Server_Class) -> None:
     listener = importlib.import_module(type).Listener(server, config, server.active_listeners_count + 1)
 
     # Start Listener
-    try:
-
-        listener.start()
-        server.add_listener(listener)
-        server.active_listeners_count += 1
-    except:
-        log(f"Failed to start {name} ({server.active_devices_count})", "error")
+    #try:
+    listener.start()
+    server.add_listener(listener)
+    server.active_listeners_count += 1
+    """except:
         raise Exception(f"Failed to start Listener [{name}]")
     else:
-        log(f"Started {name} ({server.active_listeners_count})", "info")
-        return f"Started Listener with ID {id}"
+        return f"Started Listener with ID {id}" """
 
-def stop_listener(id: int, server : Server_Class) -> None:
+def stop_listener(id: int, server) -> None:
     """
     Stop a Listener
 

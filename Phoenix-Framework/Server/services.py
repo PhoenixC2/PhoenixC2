@@ -1,13 +1,10 @@
 from Utils import *
 from Web import create_web
 from Creator import start_listener
-from Server.server_class import *
+from Server.server_class import Server_Class
 
 
 def start_listeners(server : Server_Class):
-    """! REDO THIS"""
-    """Start all Listeners by querying the database
-    and initializing the corresponding listener class"""
 
     # Get Listeners from Database
     curr.execute("SELECT * FROM Listeners")
@@ -17,6 +14,7 @@ def start_listeners(server : Server_Class):
     for listener in listeners:
         try:
             start_listener(listener[0], server)
+            log(f"Started Listener {listener[1]} ({listener[0]})", "success")
         except Exception as e:
             log(str(e), "error")
 

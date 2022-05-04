@@ -1,6 +1,6 @@
 from Utils import *
 from Web.Endpoints.authorization import authorized, admin
-from Creator import get_stager
+from Creator import get_stager, create_stager
 
 stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
 
@@ -14,31 +14,40 @@ def index():
 @stagers.route("/add", methods=["POST"])
 @authorized
 def post_add():
-
+    """Add a stager
+    Request Body Example:
+    {
+        "listener": "1",
+        "name": "Test Stager1"
+    }
+    """
     # Get Form Data
-    listener_type = request.form.get("listener")
-    encoder = request.form.get("encoder")
-    random_size = request.form.get("random_size")
-    timeout = request.form.get("timeout")
-    exisiting_stager = request.form.get("exisiting_stager")
+    listener_id = request.form.get("listener")
     name = request.form.get("name")
-    format = request.form.get("format")
-    delay = request.form.get("delay")
     # Create Stager
     try:
-        get_stager(listener_type, encoder, random_size=="True", int(timeout), exisiting_stager, name, format, int(delay))
+        create_stager(name, listener_id)
     except Exception as e:
         return str(e)
-    return f"Stager {name} created"
+    else:
+        return f"Stager {name} created"
 
 
 @stagers.route("/remove", methods=["DELETE"])
 @authorized
 def delete_remove():
+    """Remove a stager
+    \nRequest Args Example:
+    \nhttp://localhost:8080/stagers/remove?id=1
+    """
 
     # Get Request Data
     id = request.args.get("id")
-
+    try:
+        id = int(id)
+    except ValueError:
+        return "Invalid ID", 400
+    
     # Check if Stager exists
     curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
     if not curr.fetchone():
@@ -51,10 +60,25 @@ def delete_remove():
 @stagers.route("/edit", methods=["PUT"])
 @authorized
 def put_edit():
+    """Edit a stager
+    Request Body Example:
+    {
+        "id": "1",
+        "changed": "name",
+        "value": "Test Stager1"
+    }"""
 
     # Get Request Data
     change = request.form.get("change")
     id = request.form.get("id")
+    try:
+        id = int(id)
+    except ValueError:
+        return "Invalid ID", 400
+    
+    
+
+    value = request.form.get("value")
 
     # Check if Stager exists
     curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
@@ -63,18 +87,50 @@ def put_edit():
 
     # Change Stager
     if change == "name":
-        name = request.form.get("name")
-        curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (name, id))
+        curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (value, id))
         conn.commit()
-        return f"Changed Stager with ID {id} to {name}"
-    elif change == "format":
-        format = request.form.get("format")
-        curr.execute(
-            "UPDATE Stagers SET Format = ? WHERE ID = ?", (format, id))
-        conn.commit()
-        return f"Changed Stager with ID {id} to {format}"
-    elif change == "delay":
-        delay = request.form.get("delay")
-        curr.execute("UPDATE Stagers SET Delay = ? WHERE ID = ?", (delay, id))
-        conn.commit()
-        return f"Changed Stager with ID {id} to {delay}"
+        return f"Changed Stager with ID {id} to {value}"
+    else:
+        return f"Invalid Change", 400
+
+@stagers.route("/download", methods=["GET"])
+@authorized
+def post_download():
+    """Download a stager
+    Request Body Example:
+    {
+        "id": "1"
+        "encoding": "base64"
+        "random_size": "True"
+        "timeout": 5
+        "format": "exe"
+        "delay": 5
+    }
+    """
+    # Get Request Data
+    id = request.body.get("id")
+    encoding = request.body.get("encoding")
+    random_size = request.body.get("random_size")
+    timeout = request.body.get("timeout")
+    format = request.body.get("format")
+    delay = request.body.get("delay")
+    try:
+        id = int(id)
+    except ValueError:
+        return "Invalid ID", 400
+    
+    
+
+
+    # Check if Stager exists
+    curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
+    if not curr.fetchone():
+        return f"Stager with ID {id} does not exist", 404
+
+    # Get Stager
+    try:
+        stager = get_stager(id, encoding, random_size, timeout, format, delay)
+    except Exception as e:
+        return str(e), 400
+    else:
+        return send_file(stager, as_attachment=True, download_name=f"Stager.{format}")
