@@ -4,8 +4,7 @@ from Creator import get_stager, create_stager
 
 stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
 
-#TODO: Overthink Creation of Stagers and how to access the finished stager
-@stagers.route("/")
+@stagers.route("/", methods=["GET"])
 @authorized
 def index():
     return render_template("stagers.html")
@@ -97,31 +96,22 @@ def put_edit():
 @authorized
 def post_download():
     """Download a stager
-    Request Body Example:
-    {
-        "id": "1"
-        "encoding": "base64"
-        "random_size": "True"
-        "timeout": 5
-        "format": "exe"
-        "delay": 5
-    }
+    \nRequest Args Example:
+    \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10
     """
     # Get Request Data
-    id = request.body.get("id")
-    encoding = request.body.get("encoding")
-    random_size = request.body.get("random_size")
-    timeout = request.body.get("timeout")
-    format = request.body.get("format")
-    delay = request.body.get("delay")
+    id = request.args.get("id")
+    encoding = request.args.get("encoding")
+    random_size = request.args.get("random_size")
+    timeout = request.args.get("timeout")
+    format = request.args.get("format")
+    delay = request.args.get("delay")
+
     try:
         id = int(id)
     except ValueError:
         return "Invalid ID", 400
     
-    
-
-
     # Check if Stager exists
     curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
     if not curr.fetchone():

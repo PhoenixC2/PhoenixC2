@@ -5,7 +5,7 @@ from Creator import create_listener, start_listener, stop_listener
 def listeners_endpoints(server):
     listeners = Blueprint("listeners", __name__, url_prefix="/listeners")
 
-    @listeners.route("/")
+    @listeners.route("/", methods=["GET"])
     @authorized
     def index():
         return render_template("listeners.html")
@@ -107,11 +107,18 @@ def listeners_endpoints(server):
         listnrs = curr.fetchall()
         data = []
         for i, l in enumerate(listnrs):
+            try:
+                active = server.get_listener(l[0])
+            except:
+                active = False
+            else:
+                active = True
             data[i] = {
                 "id": l[0],
                 "name": l[1],
                 "type": l[2],
-                "config": json.loads(l[3])
+                "config": json.loads(l[3]),
+                "active": active
             }
         return jsonify(data)
 
