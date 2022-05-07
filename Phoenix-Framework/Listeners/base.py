@@ -1,5 +1,5 @@
 from Utils import *
-from Server import Server_Class
+from Server.Server import Server_Class
 class Base_Listener():
     """This is the Base Class for all Listeners"""
     def __init__(self, server, config, id):

@@ -41,7 +41,7 @@ print("[SUCCESS] Admin User Created")
 print(f"Credentials: {username}:{password}")
 
 print("[INFO] Copying Binaries")
-binaries = ["pfserver", "pfclient", "pfcreate"]
+binaries = ["pfserver", "pfclient"]
 for binary in binaries:
     shutil.copy(os.getcwd() + "/Phoenix-Framework/" +
                 binary, "/usr/bin/" + binary)

@@ -1,3 +1,4 @@
+"""Argument Parsing for the Server."""
 from Utils import *
 parser = ArgumentParser("pfserver", usage="sudo pfserver [options]", description="Start the Phoenix Framework Server.")
 parser.add_argument("-a", "--address", help="The Address of the WebServer",

@@ -3,11 +3,11 @@
 import os
 # Check if the user is root
 if not os.getuid() == 0:
-        print("Please start with Sudo or Root Rights")
-        exit()
+    print("Please start with Sudo or Root Rights")
+    exit()
 import sys
 sys.path.insert(0, '/usr/share/Phoenix-Framework/')
-os.chdir('/usr/share/Phoenix-Framework/')
+os.chdir('/usr/share/Phoenix-Framework/Server/')
 
 try:
     from Utils import *
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         exit()
     else:
         log("Web Server started", "success")
-    
+
     log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port}", "info")
     log(f"Press CTRL+C to exit.", "info")
 

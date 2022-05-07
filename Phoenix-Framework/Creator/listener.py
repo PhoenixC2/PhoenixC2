@@ -1,5 +1,7 @@
 from Utils import *
-def create_listener(listener_type : str = None, name : str = None, address : str = None, port : int = None, ssl : bool = False) -> str:
+
+
+def create_listener(listener_type: str = None, name: str = None, address: str = None, port: int = None, ssl: bool = False) -> str:
     """
     Create a Listener
 
@@ -27,9 +29,11 @@ def create_listener(listener_type : str = None, name : str = None, address : str
         "ssl": ssl
     }
     # Save Listener
-    curr.execute("INSERT INTO Listeners (Name, Type, Config) VALUES (?, ?, ?)", (name, listener_type, json.dumps(config)))
+    curr.execute("INSERT INTO Listeners (Name, Type, Config) VALUES (?, ?, ?)",
+                 (name, listener_type, json.dumps(config)))
     conn.commit()
     return f"Listener {name} created"
+
 
 def start_listener(id: int, server) -> None:
     """
@@ -45,25 +49,27 @@ def start_listener(id: int, server) -> None:
     listener = curr.fetchone()
     if not listener:
         raise Exception(f"Listener with ID {id} does not exist")
-    
+
     # Load Listener
     name = listener[1]
     type = listener[2]
     type = type.replace("/", ".")
     type = "Listeners." + type
     config = json.loads(listener[3])
-    
+
     # Get the Listener from the File
-    listener = importlib.import_module(type).Listener(server, config, server.active_listeners_count + 1)
+    listener = importlib.import_module(type).Listener(
+        server, config, server.active_listeners_count + 1)
 
     # Start Listener
-    #try:
+    # try:
     listener.start()
     server.add_listener(listener)
     """except:
         raise Exception(f"Failed to start Listener [{name}]")
     else:
         return f"Started Listener with ID {id}" """
+
 
 def stop_listener(id: int, server) -> None:
     """

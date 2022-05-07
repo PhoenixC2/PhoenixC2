@@ -25,6 +25,7 @@ def admin(func):
         return func(*args, **kwargs)
     return wrapper
 
+
 def check_creds(username, password):
     # hash the password
     password = md5(password.encode()).hexdigest()
@@ -58,3 +59,41 @@ def post_login():
     else:
         log(f"{username} failed to log in", "error")
         return render_template("login.html", error="Invalid Credentials")
+
+
+@auth.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("routes.index"))
+
+@auth.route("/user", methods=["GET"])
+@authorized
+def get_user():
+    data = {
+        "username": session["username"],
+        "admin": session["admin"]
+    }
+    return jsonify(data)
+
+@auth.route("/add", methods=["POST"])
+@admin
+def add_user():
+    username = request.form.get("username")
+    password = request.form.get("password")
+    admin = True if request.form.get("admin").lower() == "true" else False
+    if not username or not password:
+        abort(400)
+
+    # Check if user exists
+    curr.execute("SELECT * FROM users WHERE username=?", (username,))
+    data = curr.fetchone()
+    if data:
+        abort(409)
+    
+    # Hash the password
+    password = md5(password.encode()).hexdigest()
+    curr.execute(f"INSERT INTO users (username, password, admin) VALUES (?, ?, ?)", (username, password, admin))
+    conn.commit()
+    log(f"{'Admin' if admin else 'User'} {username} added", "success")
+    return f"{'Admin' if admin else 'User'} {username} added"
+
