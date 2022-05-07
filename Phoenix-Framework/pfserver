@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/python3
 
 import os
 # Check if the user is root
@@ -9,12 +9,12 @@ import sys
 sys.path.insert(0, '/usr/share/Phoenix-Framework/')
 os.chdir('/usr/share/Phoenix-Framework/')
 
-#try:
-from Utils import *
-import Server as srv
-"""except ImportError:
+try:
+    from Utils import *
+    import Server as srv
+except ImportError:
     print("[ERROR] Not all required Libraries are installed.")
-    exit()"""
+    exit()
 
 if __name__ == "__main__":
     ph_print(logo)
@@ -51,6 +51,7 @@ if __name__ == "__main__":
         exit()
     else:
         log("Web Server started", "success")
+    
     log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port}", "info")
     log(f"Press CTRL+C to exit.", "info")
 

@@ -2,6 +2,7 @@ from Utils import *
 from Web.Endpoints.authorization import authorized, admin
 from Creator import create_listener, start_listener, stop_listener
 
+
 def listeners_endpoints(server):
     listeners = Blueprint("listeners", __name__, url_prefix="/listeners")
 
@@ -30,11 +31,16 @@ def listeners_endpoints(server):
         port = request.form.get("port")
         ssl = request.form.get("ssl")
 
+        # Check if Data is Valid
+        if not listener_type or not name or not address or not port or not ssl:
+            abort(400, "Missing required data")
+
         # Create Listener
         try:
             create_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
-            return str(e)
+            return str(e), 400
+        log(f"Created Listener {name} [{listener_type}]", "success")
         return f"Listener {name} created"
 
     @listeners.route("/remove", methods=["DELETE"])
@@ -57,6 +63,7 @@ def listeners_endpoints(server):
             return f"Listener with ID {id} does not exist", 404
         curr.execute("DELETE FROM Listeners WHERE ID = ?", (id,))
         conn.commit()
+        log(f"Deleted Listener with ID {id}", "info")
         return f"Removed Listener with ID {id}"
 
     @listeners.route("/edit", methods=["PUT"])
@@ -71,29 +78,38 @@ def listeners_endpoints(server):
         }
         """
         # Get Request Data
+        change = request.form.get("change")
+        value = request.form.get("value")
         id = request.form.get("id")
+
+        # Check if Data is Valid
+        if not change or not value or not id:
+            abort(400, "Missing required data")
+
         try:
             id = int(id)
         except ValueError:
             return "Invalid ID", 400
-        change = request.form.get("change")
-        value = request.form.get("value")
         # Check if Listener exists
         curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
         if curr.fetchone():
             return f"Listener with ID {id} does not exist", 404
-        
+
+        log("Edited {change} to {value} for Listener with ID {id}", "sucess")
         # Change Listener
         if change == "name":
-            curr.execute("UPDATE Listeners SET Name = ? WHERE ID = ?", (value, id))
+            curr.execute(
+                "UPDATE Listeners SET Name = ? WHERE ID = ?", (value, id))
             conn.commit()
             return f"Changed Listener with ID {id} to {value}"
         elif change == "address":
-            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?", (json.dumps({"address": value}), id))
+            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
+                         (json.dumps({"address": value}), id))
             conn.commit()
             return f"Changed Listener with ID {id} to {value}"
         elif change == "port":
-            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?", (json.dumps({"port": value}), id))
+            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
+                         (json.dumps({"port": value}), id))
             conn.commit()
             return f"Changed Listener with ID {id} to {value}"
         else:
@@ -106,20 +122,21 @@ def listeners_endpoints(server):
         curr.execute("SELECT * FROM Listeners")
         listnrs = curr.fetchall()
         data = []
-        for i, l in enumerate(listnrs):
+        for index, l in enumerate(listnrs):
             try:
-                active = server.get_listener(l[0])
-            except:
+                active = server.get_listener(index + 1)
+            except Exception as e:
+                print(e)
                 active = False
             else:
                 active = True
-            data[i] = {
+            data.append({
                 "id": l[0],
                 "name": l[1],
                 "type": l[2],
                 "config": json.loads(l[3]),
                 "active": active
-            }
+            })
         return jsonify(data)
 
     @listeners.route("/start", methods=["POST"])
@@ -137,20 +154,22 @@ def listeners_endpoints(server):
             id = int(id)
         except ValueError:
             return "Invalid ID", 400
-        
+
         # Check if Listener exists
         curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
         listener = curr.fetchone()
         if not listener:
             return f"Listener with ID {id} does not exist", 404
-        
+
+        log(f"Starting Listener with ID {id}", "info")
         try:
             start_listener(id, server)
         except Exception as e:
             return str(e), 500
         else:
+            log(f"Started Listener with ID {id}", "success")
             return f"Started Listener with ID {id}"
-    
+
     @listeners.route("/stop", methods=["POST"])
     @authorized
     def post_stop():
@@ -166,17 +185,20 @@ def listeners_endpoints(server):
             id = int(id)
         except ValueError:
             return "Invalid ID", 400
-        
+
         # Check if Listener exists
         curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
         listener = curr.fetchone()
         if not listener:
             return f"Listener with ID {id} does not exist", 404
         
+        log(f"Stopping Listener with ID {id}", "info")
         try:
             stop_listener(id)
         except Exception as e:
+            log(str(e), "error")
             return str(e), 500
         else:
+            log(f"Stopped Listener with ID {id}", "success")
             return f"Stopped Listener with ID {id}"
     return listeners

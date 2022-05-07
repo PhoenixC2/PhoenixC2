@@ -4,8 +4,9 @@ class Base_Listener():
     """This is the Base Class for all Listeners"""
     def __init__(self, server, config, id):
         self.address = config["address"]
-        self.server : Server_Class = server
         self.port = config["port"]
+        self.ssl = config["ssl"]
+        self.server : Server_Class = server
         self.id = id
         self.devices = {}
 

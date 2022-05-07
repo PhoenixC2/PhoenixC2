@@ -60,7 +60,6 @@ def start_listener(id: int, server) -> None:
     #try:
     listener.start()
     server.add_listener(listener)
-    server.active_listeners_count += 1
     """except:
         raise Exception(f"Failed to start Listener [{name}]")
     else:
@@ -85,10 +84,9 @@ def stop_listener(id: int, server) -> None:
     listener.stop()
     try:
         server.remove_listener(id)
-        server.active_listeners_count -= 1
     except:
-        log(f"Failed to stop {name} ({server.active_devices_count})", "error")
+        log(f"Failed to stop {name} ({id})", "error")
         return f"Failed to stop Listener with ID {id}"
     else:
-        log(f"Stopped {name} ({server.active_devices_count})", "info")
+        log(f"Stopped {name} ({id})", "info")
         return f"Stopped Listener with ID {id}"
