@@ -1,7 +1,7 @@
 from Utils import *
 from Web import create_web
 from Creator import start_listener
-from Server.Server.server_class import Server_Class
+from Server.server_class import Server_Class
 
 
 def start_listeners(server : Server_Class):

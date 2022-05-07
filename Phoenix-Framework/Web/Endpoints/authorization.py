@@ -55,7 +55,7 @@ def post_login():
         session["username"] = username
         session["admin"] = False
         log(f"{username} logged in", "success")
-        return redirect(url_for("routes.index"))
+        return "Logged in", 200
     else:
         log(f"{username} failed to log in", "error")
         return render_template("login.html", error="Invalid Credentials")

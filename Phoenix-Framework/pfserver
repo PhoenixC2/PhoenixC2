@@ -7,7 +7,7 @@ if not os.getuid() == 0:
     exit()
 import sys
 sys.path.insert(0, '/usr/share/Phoenix-Framework/')
-os.chdir('/usr/share/Phoenix-Framework/Server/')
+os.chdir('/usr/share/Phoenix-Framework/')
 
 try:
     from Utils import *

@@ -1,11 +1,11 @@
 from Utils import *
-from Server.Server import Server_Class
+from Server import Server_Class
 class Base_Listener():
     """This is the Base Class for all Listeners"""
     def __init__(self, server, config, id):
         self.address = config["address"]
         self.port = config["port"]
-        self.ssl = config["ssl"]
+        self.ssl = True if config["ssl"].lower() == "true" else False
         self.server : Server_Class = server
         self.id = id
         self.devices = {}

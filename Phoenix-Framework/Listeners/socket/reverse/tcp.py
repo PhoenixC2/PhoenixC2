@@ -10,10 +10,11 @@ class Listener(Base_Listener):
 
     def __init__(self, server, config, id):
         super().__init__(server, config, id)
+        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.ssl:
             self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
-        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.listener = self.ssl_context.wrap_socket(self.listener, server_side=True)
         self.stopped = False
 
     def refresh_connections(self):
@@ -39,12 +40,9 @@ class Listener(Base_Listener):
             if self.stopped:
                 exit()
             try:
-                if self.ssl:
-                    with self.context.wrap_socket(self.socket, server_side=True) as socket:
-                        connection, addr = self.listener.accept()
-                else:
-                    connection, addr = self.listener.accept()
-            except Exception as e:
+                # Accept the Connection
+                connection, addr = self.listener.accept()
+            except Exception:
                 exit()
             else:
                 self.key = Fernet.generate_key()
