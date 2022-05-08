@@ -5,7 +5,6 @@ from Server.server_class import Server_Class
 
 
 def start_listeners(server : Server_Class):
-
     # Get Listeners from Database
     curr.execute("SELECT * FROM Listeners")
     listeners = curr.fetchall()

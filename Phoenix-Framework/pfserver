@@ -32,6 +32,7 @@ if __name__ == "__main__":
     # Initialize Server
     server = srv.Server_Class()
 
+    log("Welcome to Phoenix Framework", "success")
     # Start Listeners
     log("Starting Listeners", "info")
     try:

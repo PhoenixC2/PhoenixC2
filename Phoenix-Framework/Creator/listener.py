@@ -18,6 +18,8 @@ def create_listener(listener_type: str = None, name: str = None, address: str = 
     if listener:
         raise Exception(f"Listener {name} already exists")
     # Check if type is valid
+    if listener_type[0] == "/":
+        listener_type = listener_type[1:]
     try:
         open("Listeners/" + listener_type + ".py", "r").close()
     except:
@@ -50,6 +52,8 @@ def start_listener(id: int, server) -> None:
     if not listener:
         raise Exception(f"Listener with ID {id} does not exist")
 
+    # Check if Listener is already active
+    
     # Load Listener
     name = listener[1]
     type = listener[2]
@@ -59,16 +63,16 @@ def start_listener(id: int, server) -> None:
 
     # Get the Listener from the File
     listener = importlib.import_module(type).Listener(
-        server, config, server.active_listeners_count + 1)
+        server, config, id)
 
     # Start Listener
-    # try:
-    listener.start()
-    server.add_listener(listener)
-    """except:
-        raise Exception(f"Failed to start Listener [{name}]")
+    try:
+        listener.start()
+        server.add_listener(listener)
+    except:
+        raise Exception(f"Failed to start Listener {name}")
     else:
-        return f"Started Listener with ID {id}" """
+        return f"Started Listener with ID {id}"
 
 
 def stop_listener(id: int, server) -> None:
