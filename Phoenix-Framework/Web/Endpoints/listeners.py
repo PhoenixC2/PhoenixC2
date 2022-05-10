@@ -44,19 +44,21 @@ def listeners_endpoints(server):
             create_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
-        log(f"Created Listener {name} ({listener_type})", "success")
+        log(f"({session['username']}) Created Listener {name} ({listener_type})", "success")
         return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})"}) if use_json else f"Created Listener {name} ({listener_type})"
 
     @listeners.route("/remove", methods=["DELETE"])
     @authorized
     def delete_remove():
         """Remove a listener
-        \nRequest Args Example:
-        \nhttp://localhost:5000/listeners/remove?id=1
+        Request Body Example:
+        {
+            "id": 1,
+        }
         """
         # Get Request Data
         use_json = True if request.args.get("json") == "true" else False
-        id = request.args.get("id")
+        id = request.form.get("id")
         try:
             id = int(id)
         except ValueError:
@@ -68,7 +70,7 @@ def listeners_endpoints(server):
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
         curr.execute("DELETE FROM Listeners WHERE ID = ?", (id,))
         conn.commit()
-        log(f"Deleted Listener with ID {id}", "info")
+        log(f"({session['username']}) Deleted Listener with ID {id}", "info")
         return jsonify({"status": "success", "message": f"Deleted Listener with ID {id}"}) if use_json else f"Deleted Listener with ID {id}"
 
     @listeners.route("/edit", methods=["PUT"])
@@ -101,7 +103,7 @@ def listeners_endpoints(server):
         if not curr.fetchone():
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
 
-        log("Edited {change} to {value} for Listener with ID {id}", "sucess")
+        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}", "sucess")
         # Change Listener
         if change == "name":
             curr.execute(
@@ -167,13 +169,13 @@ def listeners_endpoints(server):
         if not listener:
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
 
-        log(f"Starting Listener with ID {id}", "info")
+        log(f"({session['username']}) Starting Listener with ID {id}", "info")
         try:
             start_listener(id, server)
         except Exception as e:
             return jsonify({"status": "error", "message": f"Failed to start Listener with ID {id}"}), 500 if use_json else abort(500, f"Failed to start Listener with ID {id}")
         else:
-            log(f"Started Listener with ID {id}", "success")
+            log(f"({session['username']}) Started Listener with ID {id}", "success")
             return jsonify({"status": "success", "message": f"Started Listener with ID {id}"}) if use_json else f"Started Listener with ID {id}"
 
     @listeners.route("/stop", methods=["POST"])
@@ -199,13 +201,13 @@ def listeners_endpoints(server):
         if not listener:
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
 
-        log(f"Stopping Listener with ID {id}", "info")
+        log(f"({session['username']}) Stopping Listener with ID {id}", "info")
         try:
-            stop_listener(id)
+            stop_listener(id, server)
         except Exception as e:
-            log(str(e), "error")
+            log(f"({session['username']})" + str(e), "error")
             return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}"}), 500 if use_json else abort(500, f"Failed to stop Listener with ID {id}")
         else:
-            log(f"Stopped Listener with ID {id}", "success")
+            log(f"({session['username']}) Stopped Listener with ID {id}", "success")
             return jsonify({"status": "success", "message": f"Stopped Listener with ID {id}"}) if use_json else f"Stopped Listener with ID {id}"
     return listeners

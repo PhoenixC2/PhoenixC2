@@ -48,7 +48,7 @@ class Server_Class():
     def remove_device(self, id):
         """Remove a device from the server"""
         try:
-            self.active_devices.pop(str(id))
+            self.active_devices.pop(id + 1)
             self.active_devices_count -= 1
         except ValueError:
             return Exception("Invalid ID")

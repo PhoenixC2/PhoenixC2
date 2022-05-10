@@ -36,20 +36,22 @@ def post_add():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
     else:
-        log(f"Created Stager {name}", "success")
+        log(f"({session['username']}) Created Stager {name}", "success")
         return jsonify({"status": "success", "message": f"Created Stager {name}"}) if use_json else f"Created Stager {name}"
 
 @stagers.route("/remove", methods=["DELETE"])
 @authorized
 def delete_remove():
     """Remove a stager
-    \nRequest Args Example:
-    \nhttp://localhost:8080/stagers/remove?id=1
+    Request Body Example:
+    {
+        "id": 1,
+    }
     """
 
     # Get Request Data
     use_json = True if request.args.get("json") == "true" else False
-    id = request.args.get("id")
+    id = request.form.get("id")
     try:
         id = int(id)
     except ValueError:
@@ -60,7 +62,7 @@ def delete_remove():
         return jsonify({"status": "error", "message": "Stager does not exist"}), 404 if use_json else abort(404, "Stager does not exist")
     curr.execute("DELETE FROM Stagers WHERE ID = ?", (id,))
     conn.commit()
-    log(f"Deleted Stager with ID {id}", "info")
+    log(f"({session['username']}) Deleted Stager with ID {id}", "info")
     return jsonify({"status": "success", "message": f"Deleted Stager with ID {id}"}) if use_json else f"Deleted Stager with ID {id}"
 
 
@@ -94,7 +96,7 @@ def put_edit():
     if not curr.fetchone():
         return jsonify({"status": "error", "message": "Stager does not exist"}), 404 if use_json else abort(404, "Stager does not exist")
 
-    log("Edited {change} to {value} for Stager with ID {id}", "sucess")
+    log(f"({session['username']}) Edited {change} to {value} for Stager with ID {id}", "sucess")
     # Change Stager
     if change == "name":
         curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (value, id))

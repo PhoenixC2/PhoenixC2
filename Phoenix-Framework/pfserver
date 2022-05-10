@@ -6,8 +6,8 @@ if not os.getuid() == 0:
     print("Please start with Sudo or Root Rights")
     exit()
 import sys
-sys.path.insert(0, '/usr/share/Phoenix-Framework/')
-os.chdir('/usr/share/Phoenix-Framework/')
+#sys.path.insert(0, '/usr/share/Phoenix-Framework/')
+#os.chdir('/usr/share/Phoenix-Framework/')
 
 try:
     from Utils import *

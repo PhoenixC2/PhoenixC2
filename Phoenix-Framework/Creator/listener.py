@@ -83,20 +83,6 @@ def stop_listener(id: int, server) -> None:
     :return: Status
 
     """
-
-    # Check if Listener exists
-    curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
-    listener = curr.fetchone()
-    if not listener:
-        raise Exception(f"Listener with ID {id} does not exist")
-    name = listener[1]
-
+    listener = server.get_listener(id)
     listener.stop()
-    try:
-        server.remove_listener(id)
-    except:
-        log(f"Failed to stop {name} ({id})", "error")
-        return f"Failed to stop Listener with ID {id}"
-    else:
-        log(f"Stopped {name} ({id})", "info")
-        return f"Stopped Listener with ID {id}"
+    server.remove_listener(id)

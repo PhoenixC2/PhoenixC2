@@ -11,6 +11,7 @@ class Listener(Base_Listener):
     def __init__(self, server, config, id):
         super().__init__(server, config, id)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listener.settimeout(1)
         if self.ssl:
             self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             self.ssl_context.load_cert_chain(certfile="Data/ssl.pem", keyfile="Data/ssl.key")
@@ -23,7 +24,7 @@ class Listener(Base_Listener):
             # Check if Server is stopped
             device_disconnected = False
             if self.stopped:
-                exit()
+                break
             for Device in self.devices.values():
                 if not Device.alive():
                     self.remove_device(Device)
@@ -38,12 +39,14 @@ class Listener(Base_Listener):
         while True:
             # Check if Server stopped
             if self.stopped:
-                exit()
+                break
             try:
                 # Accept the Connection
                 connection, addr = self.listener.accept()
-            except Exception:
-                exit()
+            except socket.timeout:
+                pass
+            except Exception as e:
+                print(e)
             else:
                 key = Fernet.generate_key()
                 self.fernet = Fernet(key)
@@ -91,7 +94,6 @@ class Listener(Base_Listener):
 
     def stop(self):
         # Stop the Server
-        self.listener_thread.shutdown(socket.SHUT_RDWR)
         self.stopped = True
 
     def status(self):
