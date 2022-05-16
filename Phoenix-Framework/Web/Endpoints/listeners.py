@@ -45,7 +45,7 @@ def listeners_endpoints(server):
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
         log(f"({session['username']}) Created Listener {name} ({listener_type})", "success")
-        return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})"}) if use_json else f"Created Listener {name} ({listener_type})"
+        return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})"}) if use_json else "Created Listener"
 
     @listeners.route("/remove", methods=["DELETE"])
     @authorized
@@ -109,17 +109,17 @@ def listeners_endpoints(server):
             curr.execute(
                 "UPDATE Listeners SET Name = ? WHERE ID = ?", (value, id))
             conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited {change} to {value} for Listener with ID {id}"
+            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
         elif change == "address":
             curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
                          (json.dumps({"address": value}), id))
             conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited {change} to {value} for Listener with ID {id}"
+            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
         elif change == "port":
             curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
                          (json.dumps({"port": value}), id))
             conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited {change} to {value} for Listener with ID {id}"
+            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
         else:
             return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
 

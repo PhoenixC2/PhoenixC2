@@ -37,7 +37,7 @@ def post_add():
         return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
     else:
         log(f"({session['username']}) Created Stager {name}", "success")
-        return jsonify({"status": "success", "message": f"Created Stager {name}"}) if use_json else f"Created Stager {name}"
+        return jsonify({"status": "success", "message": f"Created Stager {name}"}) if use_json else "Created Stager"
 
 @stagers.route("/remove", methods=["DELETE"])
 @authorized
@@ -101,7 +101,7 @@ def put_edit():
     if change == "name":
         curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (value, id))
         conn.commit()
-        return jsonify({"status": "success", "message": f"Edited {change} to {value} for Stager with ID {id}"}) if use_json else f"Edited {change} to {value} for Stager with ID {id}"
+        return jsonify({"status": "success", "message": f"Edited {change} to {value} for Stager with ID {id}"}) if use_json else f"Edited Stager with ID {id}"
     else:
         return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
 

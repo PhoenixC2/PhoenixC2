@@ -1,9 +1,38 @@
 from Utils import *
 from Web.Endpoints.authorization import authorized, admin
 
+
 def devices_enpoints(Server):
     devices = Blueprint("devices", __name__, url_prefix="/devices")
-    
+
+    @devices.route("/", methods=["GET"])
+    @authorized
+    def devices_index():
+        return render_template("devices/index.html")
+
+    @devices.route("/list", methods=["GET"])
+    @authorized
+    def devices_list():
+        # Get the list of devices
+        curr.execute("SELECT * FROM devices")
+        devices = curr.fetchall()
+        data = []
+        for device in devices:
+            try:
+                Server.get_device(device[0])
+            except:
+                active = False
+            else:
+                active = True
+            data.append({
+                "id": device[0],
+                "hostname": device[1],
+                "address": device[2],
+                "connection_date": device[3],
+                "last_seen": device[4],
+                "status": active
+            })
+
     @devices.route("/revshell", methods=["POST"])
     @authorized
     def revshell():
@@ -91,31 +120,3 @@ def devices_enpoints(Server):
             return jsonify({"status": "error", "message": str(e)})
         else:
             return jsonify({"status": "success", "message": output})
-
-    @devices.route("/start", methods=["POST"])
-    @admin
-    def start():
-        address = request.form.get("address")
-        port = request.form.get("port")
-        try:
-            Server.start(address, port)
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
-        else:
-            return jsonify({"status": "success", "output": "Server started"}), 200
-
-    @devices.route("/stop", methods=["POST"])
-    @admin
-    def stop():
-        try:
-            Server.stop()
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
-        else:
-            return jsonify({"status": "success", "output": "Server stopped"}), 200
-
-    @devices.route("/connections", methods=["GET"])
-    @authorized
-    def connections():
-        return jsonify({"status": "success", "output": Server.connections}), 200
-    return devices

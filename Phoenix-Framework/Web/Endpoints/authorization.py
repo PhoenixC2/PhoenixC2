@@ -41,7 +41,7 @@ def check_creds(username, password):
 
 @auth.route("/login", methods=["GET"])
 def get_login():
-    return render_template("login.html")
+    return render_template("auth/login.html")
 
 
 @auth.route("/login", methods=["POST"])
@@ -49,6 +49,8 @@ def post_login():
     use_json = True if request.args.get("json") == "true" else False
     username = request.form.get("username")
     password = request.form.get("password")
+    if not username or not password:
+        return jsonify({"status": "error", "message": "Missing username or password"}) if use_json else render_template("login.html", error="Missing username or password")
     data = check_creds(username, password)
     if data:
         old_user = session.get("username")
