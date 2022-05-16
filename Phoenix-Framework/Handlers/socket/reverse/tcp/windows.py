@@ -2,9 +2,9 @@ from Handlers.base import Base_Handler
 class Windows(Base_Handler):
     """The Windows Device Class to interact with the Device"""
 
-    def __init__(self, connection):
-        self.self.conn = connection[0]
-        self.addr = connection[1]
+    def __init__(self, connection, address, key, id):
+        super().__init__(address, key, id)
+        self.conn = connection
 
     def decrypt(self, data):
         # Decrypt the data

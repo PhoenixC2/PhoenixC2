@@ -8,8 +8,8 @@ class Linux(Base_Handler):
         infos = self.infos()
 
     def __init__(self, conn, addr, key, id):
-        super().__init__(conn, addr, key, id)
-
+        super().__init__(addr, key, id)
+        self.conn = conn
     def alive(self):
         try:
             self.conn.send(self.encrypt("alive:"))

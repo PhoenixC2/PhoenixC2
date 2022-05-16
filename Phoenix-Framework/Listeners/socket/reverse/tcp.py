@@ -60,8 +60,6 @@ class Listener(Base_Listener):
                     operating_system = self.decrypt(
                         connection.recv(1024)).lower()
                 except:
-                    log(f"Connection to {addr[0]} has been lost.",
-                        alert="critical")
                     connection.close()
                     continue
                 if operating_system == "windows":

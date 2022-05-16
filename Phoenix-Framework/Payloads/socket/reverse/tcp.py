@@ -42,7 +42,7 @@ def encrypt(data):
 for i in range(1, TIMEOUT):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if ssl:
+        if SSL:
             cert = ssl.get_server_certificate((HOST, PORT), ssl_version=ssl.PROTOCOL_TLS_CLIENT)
             with open("/tmp/cert.pem", "w") as f:
                 f.write(cert)
@@ -51,6 +51,7 @@ for i in range(1, TIMEOUT):
             s = context.wrap_socket(s, server_hostname=HOST)
         s.connect((HOST, PORT))
     except socket.error as e:
+        print(e)
         print("Trying to connect")
         time.sleep(1)
         continue

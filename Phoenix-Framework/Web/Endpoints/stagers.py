@@ -54,7 +54,7 @@ def delete_remove():
     id = request.form.get("id")
     try:
         id = int(id)
-    except ValueError:
+    except:
         return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
     # Check if Stager exists
     curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
@@ -107,10 +107,10 @@ def put_edit():
 
 @stagers.route("/download", methods=["GET"])
 @authorized
-def post_download():
+def get_download():
     """Download a stager
     \nRequest Args Example:
-    \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10
+    \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10&finished=true
     """
     # Get Request Data
     use_json = True if request.args.get("json") == "true" else False
@@ -120,6 +120,7 @@ def post_download():
     timeout = request.args.get("timeout")
     format = request.args.get("format")
     delay = request.args.get("delay")
+    finished = True if request.args.get("finished") == "true" else False
 
     # Check if Data is Valid
     if not id or not encoding or not random_size or not timeout or not format or not delay:
@@ -144,7 +145,7 @@ def post_download():
     # Get Stager
     try:
         stager = get_stager(id, encoding, True if random_size.lower(
-        ) == "true" else False, timeout, format, delay)
+        ) == "true" else False, timeout, format, delay, finished)
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
     else:

