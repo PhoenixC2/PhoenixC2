@@ -1,7 +1,7 @@
 from Utils import *
 from Web.Endpoints.authorization import authorized, admin
-from Creator import create_listener, start_listener, stop_listener
-
+from Creator.listener import create_listener, start_listener, stop_listener
+import Creator.options
 
 def listeners_endpoints(server):
     listeners = Blueprint("listeners", __name__, url_prefix="/listeners")
@@ -10,7 +10,10 @@ def listeners_endpoints(server):
     @authorized
     def index():
         return render_template("listeners.html")
-
+    @listeners.route("/available", methods=["POST"])
+    @authorized
+    def available():
+        return jsonify(Creator.options.listeners)
     @listeners.route("/add", methods=["POST"])
     @authorized
     def post_add():

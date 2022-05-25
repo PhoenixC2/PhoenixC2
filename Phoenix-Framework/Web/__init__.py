@@ -26,5 +26,6 @@ def create_web(server):
     Webserver.register_blueprint(routes, url_prefix="/")
     Webserver.register_blueprint(stagers, url_prefix="/stagers")
     Webserver.register_blueprint(listeners_endpoints(server), url_prefix="/listeners")
-    
+    Webserver.register_blueprint(modules, url_prefix="/modules")
+    Webserver.register_blueprint(loaders, url_prefix="/loaders")
     return Webserver

@@ -66,7 +66,7 @@ def post_login():
             return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if data[3] else 'User'})"}) if use_json else redirect("/")
     else:
         log(f"{username} failed to log in", "warning")
-        return jsonify({"status": "error", "message": "Invalid username or password"}) if use_json else redirect("/auth/login")
+        return jsonify({"status": "error", "message": "Invalid username or password"}), 401 if use_json else redirect("/auth/login")
 
 
 @auth.route("/logout")

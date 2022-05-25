@@ -1,6 +1,7 @@
 from Utils import *
 from Web.Endpoints.authorization import authorized, admin
-from Creator import get_stager, create_stager
+from Creator.stager import get_stager, create_stager
+import Creator.options
 
 stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
 
@@ -10,6 +11,10 @@ stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
 def index():
     return render_template("stagers.html")
 
+@stagers.route("/available", methods=["POST"])
+@authorized
+def available():
+    return jsonify(Creator.options.stagers)
 
 @stagers.route("/add", methods=["POST"])
 @authorized
