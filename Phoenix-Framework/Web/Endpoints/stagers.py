@@ -106,7 +106,6 @@ def put_edit():
         return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
 
 @stagers.route("/download", methods=["GET"])
-@authorized
 def get_download():
     """Download a stager
     \nRequest Args Example:

@@ -120,3 +120,4 @@ def devices_enpoints(Server):
             return jsonify({"status": "error", "message": str(e)})
         else:
             return jsonify({"status": "success", "message": output})
+    return devices
