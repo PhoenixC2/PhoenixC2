@@ -17,7 +17,6 @@ class Linux(Base_Handler):
             return False
         return True
     # BASE Features
-
     def load_module(self, module):
         # Send the Module to the Device
         pass

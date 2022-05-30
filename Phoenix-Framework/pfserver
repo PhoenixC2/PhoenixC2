@@ -1,13 +1,41 @@
 #!/usr/bin/python3
-
+import logging
+import socket
 import os
+from argparse import ArgumentParser
+
 # Check if the user is root
 if not os.getuid() == 0:
     print("Please start with Sudo or Root Rights")
     exit()
+
+parser = ArgumentParser("pfserver", usage="sudo pfserver [options]", description="Start the Phoenix Framework Server.")
+
+web = parser.add_argument_group("Web Server")
+web.add_argument("-a", "--address", help=f"The Address [{socket.gethostbyname(socket.gethostname())}]",
+                    default=socket.gethostbyname(socket.gethostname()))
+web.add_argument(
+    "-p", "--port", help="The Port [8080]", type=int, default=8080)
+web.add_argument("-s", "--ssl", help="Use SSL [false]", action="store_true")
+
+cli = parser.add_argument_group("CLI")
+cli.add_argument("-d", "--debug", help="Enable Debugging [false]", action="store_true")
+cli.add_argument("-b", "--banner", help="Disable Banner [false]", action="store_true")
+cli.add_argument("-q", "--quiet", help="Disable all output [false]", action="store_true")
+
+misc = parser.add_argument_group("Misc")
+misc.add_argument("-v", "--version", help="Print the Version", action="store_true")
+misc.add_argument("-l", "--location", help="The Location of the Framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/")
+args = parser.parse_args()
+
+# Check if location is valid
+if not os.path.isdir(args.location):
+    print("[ERROR] Invalid Location.")
+    exit()
+
 import sys
-#sys.path.insert(0, '/usr/share/Phoenix-Framework/')
-#os.chdir('/usr/share/Phoenix-Framework/')
+sys.path.insert(0, args.location)
+os.chdir(args.location)
 
 try:
     from Utils import *
@@ -17,8 +45,6 @@ except ImportError:
     exit()
 
 if __name__ == "__main__":
-    ph_print(logo)
-
     # Check Database
     try:
         check_db()
@@ -27,8 +53,21 @@ if __name__ == "__main__":
         exit()
 
     # Get Arguments
-    args = srv.parser.parse_args()
-
+    if args.version:
+        ph_print("Phoenix Framework Server v" + version)
+        exit()
+    if args.quiet and args.debug:
+        print("[ERROR] -q and -d are mutually exclusive")
+        exit()
+    if args.quiet:
+        os.environ["PHOENIX_LOG"] = "false"
+        print("Starting Phoenix Framework Server in Quiet Mode")
+    if not args.banner:
+        ph_print(logo)
+    # Set Debugging
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    
     # Initialize Server
     server = srv.Server_Class()
 
@@ -55,7 +94,8 @@ if __name__ == "__main__":
 
     log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port}", "info")
     log(f"Press CTRL+C to exit.", "info")
-
+    if args.quiet:
+        print("Finished Startup")
     while True:
         try:
             time.sleep(1)

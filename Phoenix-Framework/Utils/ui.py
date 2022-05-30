@@ -1,6 +1,6 @@
 from Utils.libraries import *
 # logo
-logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+logo = Add.Add("""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣈⠀⠀⠀⠀⠀⢀⣬⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⠀⠀⠀⠀⣬⣿⣯⣮⣌⣌⣌⢌⢈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⣿⠀⠀⠀⣸⣿⣿⠁⠀⠐⠑⠑⠳⡳⣷⣮⢌⠈⠀⠀⠀⠀⠀⠀⠀⠀
@@ -33,9 +33,10 @@ logo = Add.Add("""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 console = Console()
 
 
-
 def log(text, alert=""):
     """Log important information to the console"""
+    if os.getenv("PHOENIX_LOG") == "false":
+        return
     style = ""
     if alert == "info":
         style = "blue"
@@ -51,4 +52,7 @@ def log(text, alert=""):
 
 
 def ph_print(text):
+    """Print phoenix-styled text to the console"""
+    if os.getenv("PHOENIX_LOG") == "false":
+        return
     print(Colorate.Horizontal(Colors.yellow_to_red, text))

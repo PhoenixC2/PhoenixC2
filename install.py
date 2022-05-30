@@ -1,16 +1,15 @@
 import os
+import sys
 import shutil
 from hashlib import md5
 import sqlite3
 import random
 import string
 import subprocess
-
-path = "/usr/share/Phoenix-Framework/"
-
 if os.getuid() != 0:
     print("[ERROR] Please start with Sudo or Root Rights")
     exit()
+path = sys.argv[1]
 print("[INFO] Starting Setup")
 
 print("[INFO] Install Python Modules")
