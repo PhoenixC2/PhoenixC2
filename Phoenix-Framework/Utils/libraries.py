@@ -1,5 +1,4 @@
 # libraries
-import click
 import base64
 import ssl
 from hashlib import md5
