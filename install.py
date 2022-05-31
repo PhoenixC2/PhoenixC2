@@ -10,15 +10,21 @@ if os.getuid() != 0:
     print("[ERROR] Please start with Sudo or Root Rights")
     exit()
 path = sys.argv[1]
+
 print("[INFO] Starting Setup")
+
+if not os.path.exists(path):
+    print("[INFO] Creating Directory")
+    os.makedirs(path)
 
 print("[INFO] Install Python Modules")
 os.system("pip3 install -r requirements.txt -q")
-print("[INFO] Creating Directory")
-shutil.copytree(os.getcwd() + "/Phoenix-Framework", path)
+
+print("[INFO] Copying Files")
+shutil.copytree(os.getcwd() + "/Phoenix-Framework", path + "/Phoenix-Framework")
 
 print("[INFO] Creating Database")
-conn = sqlite3.connect(path + "Data/db.sqlite3")
+conn = sqlite3.connect(path + "Phoenix-Framework/Data/db.sqlite3")
 curr = conn.cursor()
 curr.execute("CREATE TABLE IF NOT EXISTS Users (id INTEGER NOT NULL PRIMARY KEY, username TEXT, password TEXT, admin INTEGER);")
 curr.execute("CREATE TABLE IF NOT EXISTS Devices (id INTEGER NOT NULL PRIMARY KEY, Hostname TEXT, Address VARCHAR(20), Connection_Date DATE, Last_Online DATE);")
@@ -45,6 +51,7 @@ for binary in binaries:
     shutil.copy(os.getcwd() + "/Phoenix-Framework/" +
                 binary, "/usr/bin/" + binary)
     os.system("chmod +x /usr/bin/" + binary)
+    os.remove(path + "/Phoenix-Framework/" + binary)
 print("[SUCCESS] Binaries Copied")
 
 

@@ -54,7 +54,7 @@ def post_login():
     data = check_creds(username, password)
     if data:
         old_user = session.get("username")
-        if old_user:
+        if old_user and old_user != username:
             session["username"] = username
             session["admin"] = True if data[3] else False            
             log(f"{old_user} changed to {username}", "success")

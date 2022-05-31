@@ -9,7 +9,6 @@ class Communication(requests.Session):
         """Login to the server"""
         data = {'username': username, 'password': password}
         res = self.post(self.url + '/auth/login', data=data, headers=self.headers)
-        print(res.)
         self.cookies.update(res.cookies)
         return True if res.status_code == 200 else False
     def user(self):
