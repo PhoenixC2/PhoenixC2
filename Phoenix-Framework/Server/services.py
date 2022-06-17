@@ -1,10 +1,12 @@
-from Utils import *
+"""Starts the diffrent services"""
+from Utils import curr, log, threading
 from Web import create_web
 from Creator.listener import start_listener
-from Server.server_class import Server_Class
+from Server.server_class import ServerClass
 
 
-def start_listeners(server : Server_Class):
+def start_listeners(server: ServerClass):
+    """Start all listeners in the database"""
     # Get Listeners from Database
     curr.execute("SELECT * FROM Listeners")
     listeners = curr.fetchall()
@@ -14,24 +16,30 @@ def start_listeners(server : Server_Class):
         try:
             start_listener(listener[0], server)
             log(f"Started Listener {listener[1]} ({listener[0]})", "success")
-        except Exception as e:
-            log(str(e), "error")
+        except Exception as error:
+            log(str(error), "error")
 
 
-
-def start_web(web_address, web_port, ssl, server : Server_Class):
+def start_web(web_address, web_port, ssl, server: ServerClass):
     """Start the web server"""
-    Web = create_web(server)
-    try:
-        if ssl:
-            threading.Thread(target=Web.run, kwargs={
-            "host": web_address, "port": web_port, "ssl_context": ("Data/ssl.pem", "Data/ssl.key"), "threaded": True}, name="WebServer").start()
-        else:
-            threading.Thread(target=Web.run, kwargs={
-            "host": web_address, "port": web_port, "threaded": True}, name="WebServer").start()
-    except:
-        raise Exception("Could not start Web Server")
+    web_server = create_web(server)
+    if ssl:
+        threading.Thread(
+            target=web_server.run,
+            kwargs={
+                "host": web_address,
+                "port": web_port,
+                "ssl_context": ("Data/ssl.pem", "Data/ssl.key"),
+                "threaded": True},
+            name="WebServer"
+        ).start()
     else:
-        return Web
-
-
+        threading.Thread(
+            target=web_server.run,
+            kwargs={
+                "host": web_address,
+                "port": web_port,
+                "threaded": True},
+            name="WebServer"
+        ).start()
+    return web_server

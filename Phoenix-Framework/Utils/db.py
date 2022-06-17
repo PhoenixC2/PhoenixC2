@@ -13,3 +13,15 @@ def check_db():
         curr.fetchall()
     except:
         raise Exception("Database isnt configured.")
+
+def get_device(id: str) -> any:
+    """
+    Get a Device from the Database
+    :param id: The ID of the Device
+    :return: The Device
+    """
+    curr.execute("SELECT * FROM Devices WHERE id = ?", (id,))
+    device = curr.fetchone()
+    if not device:
+        raise Exception(f"Device with ID {id} does not exist")
+    return device

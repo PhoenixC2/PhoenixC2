@@ -1,5 +1,5 @@
 """The Main Server Class to
 - handle Devices and Listeners
 - control Services"""
-from Server.services import *
-from Server.server_class import *
+from .services import *
+from .server_class import *

@@ -2,12 +2,13 @@
 import logging
 import socket
 import os
+import sys
 from argparse import ArgumentParser
 
 # Check if the user is root
-if not os.getuid() == 0:
+"""if not os.getuid() == 0:
     print("Please start with Sudo or Root Rights")
-    exit()
+    exit()"""
 
 parser = ArgumentParser("pfserver", usage="sudo pfserver [options]", description="Start the Phoenix Framework Server.")
 
@@ -33,12 +34,11 @@ if not os.path.isdir(args.location):
     print("[ERROR] Invalid Location.")
     exit()
 
-import sys
 sys.path.insert(0, args.location)
 os.chdir(args.location)
 
 try:
-    from Utils import *
+    from Utils import log, check_db, ph_print, version, logo, time
     import Server as srv
 except ImportError:
     print("[ERROR] Not all required Libraries are installed.")
@@ -78,17 +78,16 @@ if __name__ == "__main__":
         srv.start_listeners(server)
     except Exception as e:
         log(str(e), "error")
-        exit()
+        os._exit(1)
     log("Listeners started", "success")
 
     # Start the webserver
     log("Starting Web Server", "info")
     try:
         web = srv.start_web(args.address, args.port, args.ssl, server)
-        pass
     except Exception as e:
         log(str(e), "error")
-        exit()
+        os._exit(1)
     else:
         log("Web Server started", "success")
 
@@ -101,7 +100,8 @@ if __name__ == "__main__":
             time.sleep(1)
         except KeyboardInterrupt:
             log("Exiting", alert="info")
-            exit()
-        except:
+            os._exit(1)
+        except Exception as error:
             log("Unknown Error", alert="critical")
-            exit()
+            log(str(error), "error")
+            os._exit(1)

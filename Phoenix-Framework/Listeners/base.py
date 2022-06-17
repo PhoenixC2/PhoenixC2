@@ -1,22 +1,22 @@
-from Utils import *
-from Server import Server_Class
+from Utils import Fernet
+from Server import ServerClass
 class Base_Listener():
     """This is the Base Class for all Listeners"""
     def __init__(self, server, config, id):
         self.address = config["address"]
         self.port = config["port"]
         self.ssl = True if str(config["ssl"]).lower() == "true" else False
-        self.server : Server_Class = server
+        self.server : ServerClass = server
         self.id = id
         self.devices = {}
 
-    def decrypt(self, data) -> str:
+    def decrypt(self, data, key) -> str:
         """Decrypt Data"""
-        return self.fernet.decrypt(data).decode()
+        return Fernet(key).decrypt(data).decode()
 
-    def encrypt(self, data) -> bytes:
+    def encrypt(self, data: str, key: str) -> bytes:
         """Encrypt Data"""
-        return self.fernet.encrypt(data.encode())
+        return Fernet(key).encrypt(data.encode())
     
     def add_device(self, device):
         """Add a Device to the Listener"""

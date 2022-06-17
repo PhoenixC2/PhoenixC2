@@ -1,7 +1,16 @@
-from Utils import *
+"""Create Listeners"""
+from Utils import (
+    curr,
+    conn,
+    json,
+    importlib)
 
 
-def create_listener(listener_type: str = None, name: str = None, address: str = None, port: int = None, ssl: bool = False) -> str:
+def create_listener(listener_type: str = None,
+                    name: str = None,
+                    address: str = None,
+                    port: int = None,
+                    ssl: bool = False) -> str:
     """
     Create a Listener
 
@@ -23,7 +32,7 @@ def create_listener(listener_type: str = None, name: str = None, address: str = 
     try:
         open("Listeners/" + listener_type + ".py", "r").close()
     except:
-        raise Exception(f"Listener {listener_type} does not exist")
+        raise Exception(f"Listener {listener_type} does not exist") from None
     # Create Config
     config = {
         "address": address,
@@ -37,7 +46,7 @@ def create_listener(listener_type: str = None, name: str = None, address: str = 
     return f"Listener {name} created"
 
 
-def start_listener(id: int, server) -> None:
+def start_listener(listener_id: int, server) -> None:
     """
     Start a Listener
 
@@ -47,35 +56,35 @@ def start_listener(id: int, server) -> None:
     """
 
     # Check if Listener exists
-    curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
+    curr.execute("SELECT * FROM Listeners WHERE ID = ?", (listener_id,))
     listener = curr.fetchone()
     if not listener:
-        raise Exception(f"Listener with ID {id} does not exist")
+        raise Exception(f"Listener with ID {listener_id} does not exist")
 
     # Check if Listener is already active
-    
+
     # Load Listener
     name = listener[1]
-    type = listener[2]
-    type = type.replace("/", ".")
-    type = "Listeners." + type
+    listener_type = listener[2]
+    listener_type = listener_type.replace("/", ".")
+    listener_type = "Listeners." + listener_type
     config = json.loads(listener[3])
 
     # Get the Listener from the File
-    listener = importlib.import_module(type).Listener(
-        server, config, id)
+    listener = importlib.import_module(listener_type).Listener(
+        server, config, listener_id)
 
     # Start Listener
     try:
         listener.start()
         server.add_listener(listener)
     except:
-        raise Exception(f"Failed to start Listener {name}")
+        raise Exception(f"Failed to start Listener {name}") from None
     else:
-        return f"Started Listener with ID {id}"
+        return f"Started Listener with ID {listener_id}"
 
 
-def stop_listener(id: int, server) -> None:
+def stop_listener(listener_id: int, server) -> None:
     """
     Stop a Listener
 
@@ -83,6 +92,6 @@ def stop_listener(id: int, server) -> None:
     :return: Status
 
     """
-    listener = server.get_listener(id)
+    listener = server.get_listener(listener_id)
     listener.stop()
-    server.remove_listener(id)
+    server.remove_listener(listener_id)
