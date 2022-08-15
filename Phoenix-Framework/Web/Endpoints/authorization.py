@@ -260,6 +260,14 @@ def edit_user():
             flash(f"Updated {username}'s username to {value}.", "success")
             return redirect("/users")
         return jsonify({"status": "success", "message": f"{username}'s username edited."})
+    elif change == "disabled":
+        user.disabled = value.lower() == "true"
+        db_session.commit()
+        log(f"{current_user.username} disabled {'Admin' if user.admin else 'User'} {user.username}")
+        if not use_json:
+            flash(f"Disabled {user.username}.", "success")
+            return redirect("/users")
+        return jsonify({"status": "success", "message": f"Disabled {user.username}."})
     else:
         if not use_json:
             flash("Invalid change.", "error")

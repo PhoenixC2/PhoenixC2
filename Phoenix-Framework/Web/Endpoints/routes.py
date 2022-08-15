@@ -1,4 +1,4 @@
-from Utils import *
+from Utils.libraries import Blueprint, render_template
 
 routes = Blueprint("routes", __name__, url_prefix="/auth")
 

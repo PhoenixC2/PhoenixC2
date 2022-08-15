@@ -1,5 +1,5 @@
-from Utils import *
+from Utils.libraries import Blueprint
 from Web.Endpoints.authorization import authorized, admin
-from Creator.loader import *
+#from Creator.loader import *
 
 loaders = Blueprint("loaders", __name__, url_prefix="/loaders")
