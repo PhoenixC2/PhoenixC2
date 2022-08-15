@@ -4,7 +4,13 @@ import urllib.parse
 from Utils import curr, conn, json, string, random, base64
 
 
-def create_stager(name: str, listener_id: int) -> any:
+def create_stager(name: str, listener_id: int,
+                  encoder: str = "base64",
+                  random_size: bool = False,
+                  timeout: int = 5000,
+                  stager_format: str = "py",
+                  delay: int = 1,
+                  finished: bool = True) -> any:
     """
     Create a Stager
     :name: The Name of the Stager
@@ -27,22 +33,12 @@ def create_stager(name: str, listener_id: int) -> any:
     return "Created Stager successfully!"
 
 
-def get_stager(stager_id: str,
-               encoder: str = "base64",
-               random_size: bool = False,
-               timeout: int = 5000,
-               stager_format: str = "py",
-               delay: int = 1,
-               finished: bool = True) -> any:
+def get_stager(stager_id: str, one_liner: bool = True) -> any:
     """
     Get Content of a Stager to download or copy
 
-    :param id: The ID of the Stager
-    :param encoder: The Encoder to use
-    :param random_size: Randomize the size of the payload
-    :param timeout: How often the Stager should try to connect before exiting
-    :param format: The Format to use
-    :param delay: How long to wait before starting the Stager
+    :param stager_id: The ID of the Stager
+    :param one_liner: Return Stager as one-liner
     :return: The Stager as a string
 
     """
@@ -98,7 +94,7 @@ def get_stager(stager_id: str,
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
-    if not finished:
+    if not one_liner:
         if encoder == "base64":
             finished_payload = base64.b64encode(
                 finished_payload.encode()).decode()
@@ -130,7 +126,7 @@ def get_stager(stager_id: str,
     if stager_format == "py":
         return finished_payload
     elif stager_format == "exe":
-        if not finished:
+        if not one_liner:
             raise Exception("Cannot create an exe from a non finished payload")
         # Create the EXE
         pass

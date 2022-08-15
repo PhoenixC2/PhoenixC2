@@ -51,10 +51,10 @@ class Listener(Base_Listener):
                     continue
                 if operating_system == "windows":
                     self.add_device(
-                        Windows(connection, addr[0], key, self.server.active_devices_count + 1))  # Create a Windows Object to store the connection
+                        Windows(connection, addr[0], key, self.server.active_handlers_count + 1))  # Create a Windows Object to store the connection
                 elif operating_system == "linux":
                     self.add_device(
-                        Linux(connection, addr[0], key, self.server.active_devices_count + 1))  # Create a Linux Object to store the connection
+                        Linux(connection, addr[0], key, self.server.active_handlers_count + 1))  # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")

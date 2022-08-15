@@ -1,9 +1,7 @@
 """Create Listeners"""
-from Utils import (
-    curr,
-    conn,
-    json,
-    importlib)
+from Utils.libraries import json, importlib
+from Database.
+from Server.server_class import ServerClass
 
 
 def create_listener(listener_type: str = None,
@@ -22,9 +20,7 @@ def create_listener(listener_type: str = None,
 
     """
     # Check if Listener exists
-    curr.execute("SELECT * FROM Listeners WHERE Name = ?", (name,))
-    listener = curr.fetchone()
-    if listener:
+    if session.query(Listener).filter_by(name=name).first:
         raise Exception(f"Listener {name} already exists")
     # Check if type is valid
     if listener_type[0] == "/":
@@ -40,13 +36,11 @@ def create_listener(listener_type: str = None,
         "ssl": ssl
     }
     # Save Listener
-    curr.execute("INSERT INTO Listeners (Name, Type, Config) VALUES (?, ?, ?)",
-                 (name, listener_type, json.dumps(config)))
-    conn.commit()
+    listener = Listener()
     return f"Listener {name} created"
 
 
-def start_listener(listener_id: int, server) -> None:
+def start_listener(listener_id: int, server:ServerClass) -> None:
     """
     Start a Listener
 

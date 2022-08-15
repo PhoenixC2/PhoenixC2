@@ -21,9 +21,9 @@ class Base_Listener():
     def add_device(self, device):
         """Add a Device to the Listener"""
         self.devices[str(device.id)] = device
-        self.server.add_device(device)
+        self.server.add_handler(device)
     
     def remove_device(self, device):
         """Remove a Device from the Listener"""
         self.devices.pop(str(device.id))
-        self.server.remove_device(device)
+        self.server.remove_handler(device)

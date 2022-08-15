@@ -1,4 +1,5 @@
 from Utils import *
+from Modules.base import Base_Module
 
 class Base_Handler():
     """The Base Handler Class for all Devices"""
@@ -8,10 +9,9 @@ class Base_Handler():
 
     def __init__(self, addr, key, id):
         self.addr = addr
-        self.key = key
         self.fernet = Fernet(key)
-        self.id = id
-        self.modules = []
+        self.id: int = id
+        self.modules: list[Base_Module] = []
 
     def decrypt(self, data):
         """Decrypt the data"""
@@ -23,7 +23,7 @@ class Base_Handler():
     def load_module(self, name):
         """Load a module"""
         # Get module
-        module = importlib.import_module("Modules." + name).Module()
+        module: Base_Module = importlib.import_module("Modules." + name).Module()
         # Add to list
         self.modules.append(module)
         # Return module
