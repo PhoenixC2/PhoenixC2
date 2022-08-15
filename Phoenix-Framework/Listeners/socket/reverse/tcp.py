@@ -31,9 +31,9 @@ class Listener(Base_Listener):
             device_disconnected = False
             if self.stopped:
                 break
-            for device in self.devices.values():
+            for device in self.handlers.values():
                 if not device.alive():
-                    self.remove_device(device)
+                    self.remove_handler(device)
                     log(f"Connection to {device.addr}  has been lost. [ID : {device.id}]",
                         alert="critical")
                     break
@@ -67,7 +67,7 @@ class Listener(Base_Listener):
                     f"New Connection established from {addr[0]}", alert="success")
                 if operating_system == "windows":
                     # Create a Windows Object to store the connection
-                    self.add_device(
+                    self.add_handler(
                         Windows(
                             connection,
                             addr[0],
@@ -75,7 +75,7 @@ class Listener(Base_Listener):
                             self.server.active_handlers_count + 1))
                 elif operating_system == "linux":
                     # Create a Linux Object to store the connection
-                    self.add_device(
+                    self.add_handler(
                         Linux(
                             connection, addr[0],
                             key,

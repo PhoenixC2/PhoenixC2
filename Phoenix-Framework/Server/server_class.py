@@ -1,5 +1,7 @@
-from Handlers.base import Base_Handler
 """This is the C2 Server Class which handles the devices & listeners"""
+from typing import Optional
+from Handlers.base import Base_Handler
+from Listeners.base import Base_Listener
 
 
 class ServerClass():
@@ -8,10 +10,10 @@ class ServerClass():
     def __init__(self):
         self.active_handlers_count = 0
         self.active_listeners_count = 0
-        self.active_listeners = {}
+        self.active_listeners: dict[str, Base_Listener] = {}
         self.active_handlers = {}
 
-    def get_handler(self, handler_id):
+    def get_active_handler(self, handler_id: int) -> Optional[Base_Handler]:
         """Get a handler by id"""
         try:
             return self.active_handlers[str(handler_id)]
@@ -20,7 +22,7 @@ class ServerClass():
         except IndexError:
             raise Exception("Handler does not exist") from None
 
-    def get_listener(self, listener_id):
+    def get_active_listener(self, listener_id: int) -> Optional[Base_Listener]:
         """Get a listener by id"""
         try:
             return self.active_listeners[str(listener_id)]
@@ -29,12 +31,12 @@ class ServerClass():
         except IndexError:
             raise Exception("Listener does not exist") from None
 
-    def add_listener(self, listener):
+    def add_active_listener(self, listener: Base_Listener):
         """Add a listener to the server"""
         self.active_listeners_count += 1
         self.active_listeners[str(listener.id)] = listener
 
-    def add_handler(self, handler: Base_Handler):
+    def add_active_handler(self, handler: Base_Handler):
         """Add a handler to the server"""
         self.active_handlers_count += 1
         self.active_handlers[str(handler.id)] = handler

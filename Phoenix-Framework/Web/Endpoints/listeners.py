@@ -28,7 +28,7 @@ def listeners_endpoints(server):
         }
         """
         # Get Form Data
-        use_json = True if request.args.get("json") == "true" else False
+        use_json = request.args.get("json") == "true"
         listener_type = request.form.get("type")
         name = request.form.get("name")
         address = request.form.get("address")
@@ -60,7 +60,7 @@ def listeners_endpoints(server):
         }
         """
         # Get Request Data
-        use_json = True if request.args.get("json") == "true" else False
+        use_json = request.args.get("json") == "true"
         id = request.form.get("id")
         try:
             id = int(id)
@@ -88,7 +88,7 @@ def listeners_endpoints(server):
         }
         """
         # Get Request Data
-        use_json = True if request.args.get("json") == "true" else False
+        use_json = request.args.get("json") == "true"
         change = request.form.get("change")
         value = request.form.get("value")
         id = request.form.get("id")
@@ -159,27 +159,22 @@ def listeners_endpoints(server):
         }
         """
         # Get Request Data
-        use_json = True if request.args.get("json") == "true" else False
+        use_json = request.args.get("json") == "true"
         id = request.form.get("id")
         try:
             id = int(id)
         except ValueError:
             return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
 
-        # Check if Listener exists
-        curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
-        listener = curr.fetchone()
-        if not listener:
-            return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
-
         log(f"({session['username']}) Starting Listener with ID {id}", "info")
         try:
-            start_listener(id, server)
+            status = start_listener(id, server)
         except Exception as e:
-            return jsonify({"status": "error", "message": f"Failed to start Listener with ID {id}"}), 500 if use_json else abort(500, f"Failed to start Listener with ID {id}")
+            log(str(e), "error")
+            return jsonify({"status": "error", "message": str(e)}), 500 if use_json else abort(500, str(e))
         else:
             log(f"({session['username']}) Started Listener with ID {id}", "success")
-            return jsonify({"status": "success", "message": f"Started Listener with ID {id}"}) if use_json else f"Started Listener with ID {id}"
+            return jsonify({"status": "success", "message": status}) if use_json else f"Started Listener with ID {id}"
 
     @listeners.route("/stop", methods=["POST"])
     @authorized
@@ -191,7 +186,7 @@ def listeners_endpoints(server):
         }
         """
         # Get Request Data
-        use_json = True if request.args.get("json") == "true" else False
+        use_json = request.args.get("json") == "true"
         id = request.form.get("id")
         try:
             id = int(id)

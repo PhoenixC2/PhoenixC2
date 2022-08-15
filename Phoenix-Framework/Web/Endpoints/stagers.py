@@ -27,7 +27,7 @@ def post_add():
     }
     """
     # Get Form Data
-    use_json = True if request.args.get("json") == "true" else False
+    use_json = request.args.get("json") == "true"
     listener_id = request.form.get("listener")
     name = request.form.get("name")
 
@@ -55,7 +55,7 @@ def delete_remove():
     """
 
     # Get Request Data
-    use_json = True if request.args.get("json") == "true" else False
+    use_json = request.args.get("json") == "true"
     id = request.form.get("id")
     try:
         id = int(id)
@@ -83,7 +83,7 @@ def put_edit():
     }"""
 
     # Get Request Data
-    use_json = True if request.args.get("json") == "true" else False
+    use_json = request.args.get("json") == "true"
     change = request.form.get("change")
     id = request.form.get("id")
     value = request.form.get("value")
@@ -117,7 +117,7 @@ def get_download():
     \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10&finished=true
     """
     # Get Request Data
-    use_json = True if request.args.get("json") == "true" else False
+    use_json = request.args.get("json") == "true"
     id = request.args.get("id")
     encoding = request.args.get("encoding")
     random_size = request.args.get("random_size")

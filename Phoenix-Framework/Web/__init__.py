@@ -1,5 +1,5 @@
 """The Web Server Class to interact with the Server using an API and a Web Interface"""
-from Utils import *
+from Utils.libraries import os, Flask
 from Web.Endpoints import *
 import random
 import string
