@@ -1,7 +1,10 @@
 """Create Listeners"""
+from typing import Optional
 from Utils.libraries import json, importlib
-from Database.
+from Database import session, ListenerModel
 from Server.server_class import ServerClass
+from Listeners.base import Base_Listener
+from .options import listeners as available_listeners
 
 
 def create_listener(listener_type: str = None,
@@ -20,65 +23,72 @@ def create_listener(listener_type: str = None,
 
     """
     # Check if Listener exists
-    if session.query(Listener).filter_by(name=name).first:
+    if session.query(ListenerModel).filter_by(name=name).first:
         raise Exception(f"Listener {name} already exists")
+
     # Check if type is valid
     if listener_type[0] == "/":
         listener_type = listener_type[1:]
+
+    if listener_type not in available_listeners:
+        raise Exception(f"Listener {listener_type} is not available.")
     try:
         open("Listeners/" + listener_type + ".py", "r").close()
     except:
         raise Exception(f"Listener {listener_type} does not exist") from None
+
     # Create Config
     config = {
         "address": address,
         "port": port,
         "ssl": ssl
     }
+
     # Save Listener
-    listener = Listener()
+    listener = ListenerModel(name=name,
+                             listener_type=listener_type,
+                             config=config)
+    session.add(listener)
+    session.commit()
     return f"Listener {name} created"
 
 
-def start_listener(listener_id: int, server:ServerClass) -> None:
+def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
     """
     Start a Listener
 
-    :param id: The ID of the Listener
+    :param listener_id: The ID of the Listener
     :return: Status
 
     """
 
     # Check if Listener exists
-    curr.execute("SELECT * FROM Listeners WHERE ID = ?", (listener_id,))
-    listener = curr.fetchone()
-    if not listener:
+    listener_db: ListenerModel = session.query(
+        ListenerModel).filter_by(listener_id=listener_id).first()
+    if not listener_db:
         raise Exception(f"Listener with ID {listener_id} does not exist")
 
     # Check if Listener is already active
-
-    # Load Listener
-    name = listener[1]
-    listener_type = listener[2]
-    listener_type = listener_type.replace("/", ".")
-    listener_type = "Listeners." + listener_type
-    config = json.loads(listener[3])
-
+    try:
+        server.get_active_listener(listener_db.listener_id)
+    except:
+        raise Exception("Listener is already active!") from None
     # Get the Listener from the File
-    listener = importlib.import_module(listener_type).Listener(
-        server, config, listener_id)
+    listener: Base_Listener = importlib.import_module(listener_db.listener_type).Listener(
+        server, listener_db.config, listener_db)
 
     # Start Listener
     try:
         listener.start()
-        server.add_listener(listener)
-    except:
-        raise Exception(f"Failed to start Listener {name}") from None
+        server.add_active_listener(listener)
+    except Exception as e:
+        raise Exception(
+            f"Failed to start Listener {listener_db.name}") from None
     else:
         return f"Started Listener with ID {listener_id}"
 
 
-def stop_listener(listener_id: int, server) -> None:
+def stop_listener(listener_id: int, server: ServerClass) -> None:
     """
     Stop a Listener
 
@@ -86,6 +96,6 @@ def stop_listener(listener_id: int, server) -> None:
     :return: Status
 
     """
-    listener = server.get_listener(listener_id)
+    listener = server.get_active_listener(listener_id)
     listener.stop()
     server.remove_listener(listener_id)
