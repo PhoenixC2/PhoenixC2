@@ -3,20 +3,20 @@ from Web.Endpoints.authorization import authorized, admin
 from Creator.stager import get_stager, create_stager
 import Creator.options
 
-stagers = Blueprint("stagers", __name__, url_prefix="/stagers")
+stagers_bp = Blueprint("stagers", __name__, url_prefix="/stagers")
 
 
-@stagers.route("/", methods=["GET"])
+@stagers_bp.route("/", methods=["GET"])
 @authorized
 def index():
     return render_template("stagers.html")
 
-@stagers.route("/available", methods=["POST"])
+@stagers_bp.route("/available", methods=["POST"])
 @authorized
 def available():
     return jsonify(Creator.options.stagers)
 
-@stagers.route("/add", methods=["POST"])
+@stagers_bp.route("/add", methods=["POST"])
 @authorized
 def post_add():
     """Add a stager
@@ -44,7 +44,7 @@ def post_add():
         log(f"({session['username']}) Created Stager {name}", "success")
         return jsonify({"status": "success", "message": f"Created Stager {name}"}) if use_json else "Created Stager"
 
-@stagers.route("/remove", methods=["DELETE"])
+@stagers_bp.route("/remove", methods=["DELETE"])
 @authorized
 def delete_remove():
     """Remove a stager
@@ -71,7 +71,7 @@ def delete_remove():
     return jsonify({"status": "success", "message": f"Deleted Stager with ID {id}"}) if use_json else f"Deleted Stager with ID {id}"
 
 
-@stagers.route("/edit", methods=["PUT"])
+@stagers_bp.route("/edit", methods=["PUT"])
 @authorized
 def put_edit():
     """Edit a stager
@@ -110,7 +110,7 @@ def put_edit():
     else:
         return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
 
-@stagers.route("/download", methods=["GET"])
+@stagers_bp.route("/download", methods=["GET"])
 def get_download():
     """Download a stager
     \nRequest Args Example:
@@ -161,7 +161,7 @@ def get_download():
             return send_file("/tmp/stager.exe", as_attachment=True, download_name=f"stager.exe")
 
 
-@stagers.route("/list", methods=["GET"])
+@stagers_bp.route("/list", methods=["GET"])
 @authorized
 def get_list():
     """Get a list of stagers"""

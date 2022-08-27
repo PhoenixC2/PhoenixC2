@@ -23,3 +23,13 @@ class UserModel(Base):
     def check_password(self, password:str):
         """Check if the password is right"""
         return md5(password.encode()).hexdigest() == self.password
+    
+    def to_json(self) -> dict:
+        return {
+            "id": self.user_id,
+            "username": self.username,
+            "admin": self.admin,
+            "last_online": self.last_online,
+            "disabled": self.disabled,
+            "profile_picture": self.profile_picture
+        }

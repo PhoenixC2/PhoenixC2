@@ -12,3 +12,12 @@ class DeviceModel(Base):
     address: str = Column(String(100))
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.device_id,
+            "hostname": self.hostname,
+            "address": self.address,
+            "connection_date": self.connection_date,
+            "last_online": self.last_online
+        }

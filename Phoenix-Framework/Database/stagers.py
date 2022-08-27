@@ -15,4 +15,14 @@ class StagerModel(Base):
     payload_format: str = Column(String(10))
     delay: int = Column(Integer)
 
-    
+    def to_json(self) -> dict:
+        return {
+            "id": self.stager_id,
+            "name": self.name,
+            "listener_id": self.listener_id,
+            "encoder": self.encoder,
+            "random_size": self.random_size,
+            "timeout": self.timeout,
+            "payload_format": self.payload_format,
+            "delay": self.delay
+        }

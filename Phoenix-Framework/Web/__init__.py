@@ -18,10 +18,10 @@ def create_web(server):
     Webserver.logger.disabled = True
     Webserver.config["SECRET_KEY"] = "".join(random.choice(string.ascii_letters) for i in range(32))
     Webserver.register_blueprint(devices_enpoints(server), url_prefix="/devices")
-    Webserver.register_blueprint(auth, url_prefix="/auth")
-    Webserver.register_blueprint(routes, url_prefix="/")
-    Webserver.register_blueprint(stagers, url_prefix="/stagers")
+    Webserver.register_blueprint(auth_bp, url_prefix="/auth")
+    Webserver.register_blueprint(routes_bp, url_prefix="/")
+    Webserver.register_blueprint(stagers_bp, url_prefix="/stagers")
     Webserver.register_blueprint(listeners_endpoints(server), url_prefix="/listeners")
-    Webserver.register_blueprint(modules, url_prefix="/modules")
-    Webserver.register_blueprint(loaders, url_prefix="/loaders")
+    Webserver.register_blueprint(modules_bp, url_prefix="/modules")
+    Webserver.register_blueprint(loaders_bp, url_prefix="/loaders")
     return Webserver

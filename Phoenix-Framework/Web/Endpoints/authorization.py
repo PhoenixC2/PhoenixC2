@@ -12,7 +12,7 @@ from Utils.ui import log
 from Database import session as db_session, UserModel
 from functools import wraps
 
-auth = Blueprint("auth", __name__)
+auth_bp = Blueprint("auth", __name__)
 
 
 def get_current_user(user_id: int) -> UserModel:
@@ -45,12 +45,12 @@ def admin(func):
     return wrapper
 
 
-@auth.route("/login", methods=["GET"])
+@auth_bp.route("/login", methods=["GET"])
 def get_login():
     return render_template("auth/login.html")
 
 
-@auth.route("/login", methods=["POST"])
+@auth_bp.route("/login", methods=["POST"])
 def post_login():
     use_json = request.args.get("json") == "true"
     username = request.form.get("username")
@@ -101,7 +101,7 @@ def post_login():
         return jsonify({"status": "error", "message": "Invalid username or password."}), 401
 
 
-@auth.route("/logout")
+@auth_bp.route("/logout")
 @authorized
 def logout():
     use_json = request.args.get("json") == "true"
@@ -114,7 +114,7 @@ def logout():
     return jsonify({"status": "success", "message": "Logged out."})
 
 
-@auth.route("/users", methods=["GET"])
+@auth_bp.route("/users", methods=["GET"])
 @authorized
 def get_users():
     use_json = request.args.get("json") == "true"
@@ -123,7 +123,7 @@ def get_users():
     return jsonify({"status": "success", "users": users}) if use_json else render_template("users.html", user=user, users=users)
 
 
-@auth.route("/users/add", methods=["POST"])
+@auth_bp.route("/users/add", methods=["POST"])
 @admin
 def add_user():
     use_json = request.args.get("json") == "true"
@@ -160,7 +160,7 @@ def add_user():
     return jsonify({"status": "success", "message": f"{'Admin' if admin else 'User'} {username} added."})
 
 
-@auth.route("/users/remove", methods=["DELETE"])
+@auth_bp.route("/users/remove", methods=["DELETE"])
 @admin
 def delete_user():
     use_json = request.args.get("json") == "true"
@@ -173,7 +173,7 @@ def delete_user():
         return jsonify({"status": "error", "message": "Username required."})
     # Check if user exists
     user: UserModel = db_session.query(UserModel).first()
-    if not user:
+    if user is None:
         if not use_json:
             flash("User does not exist.", "error")
             return redirect("/users")
@@ -201,7 +201,7 @@ def delete_user():
     return jsonify({"status": "success", "message": f"Deleted {'Admin' if user.admin else 'User'} {username}."})
 
 
-@auth.route("/users/edit", methods=["POST"])
+@auth_bp.route("/users/edit", methods=["POST"])
 @admin
 def edit_user():
     use_json = request.args.get("json") == "true"

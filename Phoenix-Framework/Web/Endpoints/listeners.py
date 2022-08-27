@@ -1,20 +1,36 @@
-from Utils import *
-from Web.Endpoints.authorization import authorized, admin
+from Utils.libraries import (
+    Blueprint,
+    render_template,
+    jsonify,
+    flash,
+    redirect,
+    session,
+    request)
+from Utils.ui import log
+from Database import session as db_session, ListenerModel
+from Web.Endpoints.authorization import authorized, admin, get_current_user
 from Creator.listener import create_listener, start_listener, stop_listener
-import Creator.options
+from Creator.options import listeners as available_listeners
+
 
 def listeners_endpoints(server):
-    listeners = Blueprint("listeners", __name__, url_prefix="/listeners")
+    listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
 
-    @listeners.route("/", methods=["GET"])
+    @listeners_bp.route("/", methods=["GET"])
     @authorized
     def index():
-        return render_template("listeners.html")
-    @listeners.route("/available", methods=["POST"])
+        use_json = request.args.get("json") == "true"
+        listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
+        if not use_json:
+            return render_template("listeners.html", listeners)
+        return jsonify([listener.to_json() for listener in listeners])
+
+    @listeners_bp.route("/available", methods=["POST"])
     @authorized
     def available():
-        return jsonify(Creator.options.listeners)
-    @listeners.route("/add", methods=["POST"])
+        return jsonify(available_listeners)
+
+    @listeners_bp.route("/add", methods=["POST"])
     @authorized
     def post_add():
         """Add a listener
@@ -33,24 +49,36 @@ def listeners_endpoints(server):
         name = request.form.get("name")
         address = request.form.get("address")
         port = request.form.get("port")
-        ssl = True if request.form.get("ssl").lower() == "true" else False
+        ssl = request.form.get("ssl").lower() == "true"
 
         # Check if Data is Valid
         if not listener_type or not name or not address or not port:
-            return jsonify({"status": "error", "message": "Missing required data"}), 400 if use_json else abort(400, "Missing required data")
+            if not use_json:
+                flash("Missing required data.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Missing required data."}), 400
         try:
             port = int(port)
         except ValueError:
-            return jsonify({"status": "error", "message": "Invalid port"}), 400 if use_json else abort(400, "Invalid port")
+            if not use_json:
+                flash("Invalid port.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Invalid port."}), 400
         # Create Listener
         try:
             create_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
-        log(f"({session['username']}) Created Listener {name} ({listener_type})", "success")
-        return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})"}) if use_json else "Created Listener"
+            if not use_json:
+                flash(str(e), "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": str(e)}), 400
+        log(f"({session['username']}) Created Listener {name} ({listener_type}).", "success")
+        if not use_json:
+            flash("Created Listener.", "success")
+            return redirect("/listeners")
+        return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})."})
 
-    @listeners.route("/remove", methods=["DELETE"])
+    @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized
     def delete_remove():
         """Remove a listener
@@ -65,18 +93,27 @@ def listeners_endpoints(server):
         try:
             id = int(id)
         except ValueError:
-            return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
+            if not use_json:
+                flash("Invalid ID.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Invalid ID"}), 400
 
         # Check if Listener exists
-        curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
-        if not curr.fetchone():
-            return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
-        curr.execute("DELETE FROM Listeners WHERE ID = ?", (id,))
-        conn.commit()
-        log(f"({session['username']}) Deleted Listener with ID {id}", "info")
-        return jsonify({"status": "success", "message": f"Deleted Listener with ID {id}"}) if use_json else f"Deleted Listener with ID {id}"
+        listener = db_session.query(ListenerModel).filter_by(listener_id=id)
+        if listener is None:
+            if not use_json:
+                flash("Listener does not exist.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Listener does not exist"}), 404
+        db_session.delete(listener)
+        db_session.commit()
+        log(f"({session['username']}) Deleted Listener with ID {id}.", "info")
+        if not use_json:
+            flash(f"Deleted Listener with ID {id}.", "success")
+            return redirect("/listeners")
+        return jsonify({"status": "success", "message": f"Deleted Listener with ID {id}"})
 
-    @listeners.route("/edit", methods=["PUT"])
+    @listeners_bp.route("/edit", methods=["PUT"])
     @authorized
     def put_edit():
         """Edit a listener
@@ -95,61 +132,52 @@ def listeners_endpoints(server):
 
         # Check if Data is Valid
         if not change or not value or not id:
-            return jsonify({"status": "error", "message": "Missing required data"}), 400 if use_json else abort(400, "Missing required data")
+            if not use_json:
+                flash("Missing required data.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Missing required data"}), 400
 
         try:
             id = int(id)
         except ValueError:
-            return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
-        # Check if Listener exists
-        curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
-        if not curr.fetchone():
-            return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
+            if not use_json:
+                flash("Invalid ID.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Invalid ID"}), 400
 
-        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}", "sucess")
+        # Check if Listener exists
+        listener: ListenerModel = db_session.query(
+            ListenerModel).filter_by(listener_id=id).first()
+        if listener is None:
+            if not use_json:
+                flash("Listener does not exist.", "error")
+                return redirect("/listeners")
+            return jsonify({"status": "error", "message": "Listener does not exist."}), 404
+
+        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}.", "sucess")
+
         # Change Listener
         if change == "name":
-            curr.execute(
-                "UPDATE Listeners SET Name = ? WHERE ID = ?", (value, id))
-            conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
+            listener.name = value
+
         elif change == "address":
-            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
-                         (json.dumps({"address": value}), id))
-            conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
+            listener.address = value
+
         elif change == "port":
-            curr.execute("UPDATE Listeners SET Config = ? WHERE ID = ?",
-                         (json.dumps({"port": value}), id))
-            conn.commit()
-            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}"}) if use_json else f"Edited Listener with ID {id}"
+            listener.port = value
+
         else:
-            return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
+            if use_json:
+                return jsonify({"status": "error", "message": "Invalid change."}), 400 
+            flash("Invalid change.", "error")
+            return redirect("/listeners")
+        db_session.commit()
+        if use_json:
+            return jsonify({"status": "success", "message": f"Edited {change} to {value} for Listener with ID {id}."})
+        flash(f"Edited Listener with ID {id}.", "success")
+        return redirect("/listeners")
 
-    @listeners.route("/list", methods=["GET"])
-    @authorized
-    def get_list():
-        # improve this
-        curr.execute("SELECT * FROM Listeners")
-        listnrs = curr.fetchall()
-        data = []
-        for index, l in enumerate(listnrs):
-            try:
-                active = server.get_listener(index + 1)
-            except:
-                active = False
-            else:
-                active = True
-            data.append({
-                "id": l[0],
-                "name": l[1],
-                "type": l[2],
-                "config": json.loads(l[3]),
-                "active": active
-            })
-        return jsonify(data)
-
-    @listeners.route("/start", methods=["POST"])
+    @listeners_bp.route("/start", methods=["POST"])
     @authorized
     def post_start():
         """Start a listener
@@ -164,19 +192,29 @@ def listeners_endpoints(server):
         try:
             id = int(id)
         except ValueError:
-            return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
+            if use_json:
+                return jsonify({"status": "error", "message": "Invalid ID"}), 400
+            flash("Invalid ID.", "error")
+            return redirect("/listeners")
 
         log(f"({session['username']}) Starting Listener with ID {id}", "info")
+
         try:
             status = start_listener(id, server)
         except Exception as e:
             log(str(e), "error")
-            return jsonify({"status": "error", "message": str(e)}), 500 if use_json else abort(500, str(e))
+            if use_json:
+                return jsonify({"status": "error", "message": str(e)}), 500
+            flash(str(e), "error")
+            return redirect("/listeners")
         else:
             log(f"({session['username']}) Started Listener with ID {id}", "success")
-            return jsonify({"status": "success", "message": status}) if use_json else f"Started Listener with ID {id}"
+            if use_json:
+                return jsonify({"status": "success", "message": status})
+            flash(f"Started Listener with ID {id}", "success")
+            return redirect("/listeners")
 
-    @listeners.route("/stop", methods=["POST"])
+    @listeners_bp.route("/stop", methods=["POST"])
     @authorized
     def post_stop():
         """Stop a listener
@@ -191,21 +229,34 @@ def listeners_endpoints(server):
         try:
             id = int(id)
         except ValueError:
-            return jsonify({"status": "error", "message": "Invalid ID"}), 400
+            if use_json:
+                return jsonify({"status": "error", "message": "Invalid ID."}), 400
+            flash("Invalid ID.", "error")
+            return redirect("/listeners")
+            
 
         # Check if Listener exists
-        curr.execute("SELECT * FROM Listeners WHERE ID = ?", (id,))
-        listener = curr.fetchone()
-        if not listener:
-            return jsonify({"status": "error", "message": "Listener does not exist"}), 404 if use_json else abort(404, "Listener does not exist")
+        listener: ListenerModel = db_session.query(ListenerModel).filter_by(listener_id=id).first()
+        if listener is None:
+            if not use_json:
+                return jsonify({"status": "error", "message": "Listener does not exist."}), 404
+            flash("Listener does not exist.", "error")
+            return redirect("/listeners")
 
         log(f"({session['username']}) Stopping Listener with ID {id}", "info")
+
         try:
             stop_listener(id, server)
         except Exception as e:
             log(f"({session['username']})" + str(e), "error")
-            return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}"}), 500 if use_json else abort(500, f"Failed to stop Listener with ID {id}")
+            if use_json:    
+                return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}."}), 500
+            flash(f"Failed to stop Listener with ID {id}.", "error")
+            return redirect("/listeners")
         else:
             log(f"({session['username']}) Stopped Listener with ID {id}", "success")
-            return jsonify({"status": "success", "message": f"Stopped Listener with ID {id}"}) if use_json else f"Stopped Listener with ID {id}"
-    return listeners
+            if use_json:
+                return jsonify({"status": "success", "message": f"Stopped Listener with ID {id}"})
+            flash(f"Stopped Listener with ID {id}", "success")
+            return redirect("/listeners")
+    return listeners_bp

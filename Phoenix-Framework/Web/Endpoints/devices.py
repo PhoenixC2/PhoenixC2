@@ -3,14 +3,14 @@ from Web.Endpoints.authorization import authorized, admin
 
 
 def devices_enpoints(Server):
-    devices = Blueprint("devices", __name__, url_prefix="/devices")
+    devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
-    @devices.route("/", methods=["GET"])
+    @devices_bp.route("/", methods=["GET"])
     @authorized
     def devices_index():
         return render_template("devices/index.html")
 
-    @devices.route("/list", methods=["GET"])
+    @devices_bp.route("/list", methods=["GET"])
     @authorized
     def devices_list():
         # Get the list of devices
@@ -33,7 +33,7 @@ def devices_enpoints(Server):
                 "status": active
             })
 
-    @devices.route("/revshell", methods=["POST"])
+    @devices_bp.route("/revshell", methods=["POST"])
     @authorized
     def revshell():
         id = request.form.get("id")
@@ -46,7 +46,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": "Reverse Shell Opened"})
 
-    @devices.route("/rce", methods=["POST"])
+    @devices_bp.route("/rce", methods=["POST"])
     @authorized
     def rce():
         id = request.form.get("id")
@@ -58,7 +58,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": output})
 
-    @devices.route("/infos", methods=["GET"])
+    @devices_bp.route("/infos", methods=["GET"])
     @authorized
     def infos():
         id = request.args.get("id")
@@ -70,7 +70,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": output})
 
-    @devices.route("/dir", methods=["GET"])
+    @devices_bp.route("/dir", methods=["GET"])
     @authorized
     def dir():
         id = request.args.get("id")
@@ -82,7 +82,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": output})
 
-    @devices.route("/file", methods=["GET"])
+    @devices_bp.route("/file", methods=["GET"])
     @authorized
     def file():
         id = request.args.get("id")
@@ -94,7 +94,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": output})
 
-    @devices.route("/upload", methods=["POST"])
+    @devices_bp.route("/upload", methods=["POST"])
     @authorized
     def upload():
         id = request.form.get("id")
@@ -107,7 +107,7 @@ def devices_enpoints(Server):
         else:
             return jsonify({"status": "success", "message": output})
 
-    @devices.route("/download", methods=["POST"])
+    @devices_bp.route("/download", methods=["POST"])
     @authorized
     def download():
         id = request.form.get("id")
@@ -120,4 +120,4 @@ def devices_enpoints(Server):
             return jsonify({"status": "error", "message": str(e)})
         else:
             return jsonify({"status": "success", "message": output})
-    return devices
+    return devices_bp
