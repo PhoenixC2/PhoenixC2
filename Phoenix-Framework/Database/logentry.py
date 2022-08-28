@@ -1,6 +1,6 @@
 """The Log Entries Model"""
+from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, Text
-from Utils.libraries import datetime
 from .base import Base
 
 

@@ -1,6 +1,6 @@
 """The Users Model"""
-
-from Utils.libraries import md5, datetime
+from datetime import datetime
+from hashlib import md5
 from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean
 from .base import Base
 
@@ -13,8 +13,8 @@ class UserModel(Base):
     password: str = Column(Text)
     admin: bool = Column(Boolean)
     last_online: datetime = Column(DateTime)
-    disabled: bool = Column(Boolean)
-    profile_picture: str = Column(String(100))
+    disabled: bool = Column(Boolean, default=False)
+    profile_picture: str = Column(String(100), default="/static/images/icon.png")
 
     def set_password(self, password:str):
         """Hash the Password and save it."""

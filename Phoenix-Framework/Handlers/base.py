@@ -1,11 +1,11 @@
 import importlib
 import io
 from cryptography.fernet import Fernet
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from Modules.base import BaseModule
 
 
-class BaseHandler(metaclass=ABC):
+class BaseHandler():
     """The Base Handler Class for all Devices"""
 
     def __str__(self) -> str:

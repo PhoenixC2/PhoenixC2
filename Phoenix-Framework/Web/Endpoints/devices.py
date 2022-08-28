@@ -7,12 +7,12 @@ from flask import (
     send_file,
     request)
 from Utils.web import generate_response
-from Database import session as db_session, DeviceModel
+from Database import db_session, DeviceModel
 from Web.Endpoints.authorization import authorized, admin
 from Server.server_class import ServerClass
 
 
-def devices_endpoints(server: ServerClass):
+def devices_bp(server: ServerClass):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
     @devices_bp.route("/", methods=["GET"])

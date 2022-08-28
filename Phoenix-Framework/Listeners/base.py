@@ -1,19 +1,20 @@
 import threading
+from typing import TYPE_CHECKING
 from cryptography.fernet import Fernet
-from abc import ABC, abstractmethod
-from Server import ServerClass
+from abc import abstractmethod
 from Handlers.base import BaseHandler
 from Database.listeners import ListenerModel
+if TYPE_CHECKING:
+    from Server.server_class import ServerClass
 
-
-class BaseListener(metaclass=ABC):
+class BaseListener():
     """This is the Base Class for all Listeners"""
 
-    def __init__(self, server: ServerClass, config: dict, db_entry: ListenerModel):
+    def __init__(self, server: "ServerClass", config: dict, db_entry: ListenerModel):
         self.address = config["address"]
         self.port = config["port"]
         self.ssl = True if str(config["ssl"]).lower() == "true" else False
-        self.server: ServerClass = server
+        self.server: "ServerClass" = server
         self.db_entry = db_entry
         self.id = db_entry.listener_id
         self.handlers: dict[str, BaseHandler] = {}

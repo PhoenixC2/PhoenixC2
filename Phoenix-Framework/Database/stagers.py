@@ -8,7 +8,7 @@ class StagerModel(Base):
     __tablename__ = "Stagers"
     stager_id: int = Column(Integer, primary_key=True, nullable=False, name="id")
     name: str = Column(String(100))
-    listener_id: int = Column(Integer, ForeignKey("Listeners.listener_id"))
+    listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
     encoding: str = Column(String(10))
     random_size: bool = Column(Boolean)
     timeout: int = Column(Integer)

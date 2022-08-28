@@ -1,7 +1,8 @@
 """Create Listeners"""
+import json
+import importlib
 from typing import Optional
-from Utils.libraries import json, importlib
-from Database import session, ListenerModel
+from Database import db_session, ListenerModel
 from Server.server_class import ServerClass
 from Listeners.base import BaseListener
 from .options import listeners as available_listeners
@@ -23,8 +24,8 @@ def create_listener(listener_type: str = None,
 
     """
     # Check if Listener exists
-    if session.query(ListenerModel).filter_by(name=name).first:
-        raise Exception(f"Listener {name} already exists")
+    if db_session.query(ListenerModel).filter_by(name=name).first():
+        raise Exception(f"Listener {name} already exists.")
 
     # Check if type is valid
     if listener_type[0] == "/":
@@ -37,19 +38,14 @@ def create_listener(listener_type: str = None,
     except:
         raise Exception(f"Listener {listener_type} does not exist") from None
 
-    # Create Config
-    config = {
-        "address": address,
-        "port": port,
-        "ssl": ssl
-    }
-
     # Save Listener
     listener = ListenerModel(name=name,
                              listener_type=listener_type,
-                             config=config)
-    session.add(listener)
-    session.commit()
+                             address=address,
+                             port=port,
+                             ssl=ssl)
+    db_session.add(listener)
+    db_session.commit()
     return f"Listener {name} created"
 
 
@@ -63,7 +59,7 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
     """
 
     # Check if Listener exists
-    listener_db: ListenerModel = session.query(
+    listener_db: ListenerModel = db_session.query(
         ListenerModel).filter_by(listener_id=listener_id).first()
     if not listener_db:
         raise Exception(f"Listener with ID {listener_id} does not exist")

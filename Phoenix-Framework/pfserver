@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import logging
+import time
 import socket
 import os
 import sys
@@ -37,20 +38,16 @@ if not os.path.isdir(args.location):
 sys.path.insert(0, args.location)
 os.chdir(args.location)
 
-try:
-    from Utils import log, check_db, ph_print, version, logo, time
-    import Server as srv
-except ImportError:
+#try:
+from Utils.ui import log, ph_print, logo
+from Utils.misc import version
+from Server.server_class import ServerClass
+from Server.services import start_listeners, start_web
+"""except ImportError:
     print("[ERROR] Not all required Libraries are installed.")
-    exit()
+    exit()"""
 
 if __name__ == "__main__":
-    # Check Database
-    try:
-        check_db()
-    except Exception as e:
-        print("[ERROR] " + str(e))
-        exit()
 
     # Get Arguments
     if args.version:
@@ -69,22 +66,22 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     
     # Initialize Server
-    server = srv.Server_Class()
+    server = ServerClass()
 
     log("Welcome to Phoenix Framework", "success")
     # Start Listeners
     log("Starting Listeners", "info")
     try:
-        srv.start_listeners(server)
+        start_listeners(server)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
     log("Listeners started", "success")
 
-    # Start the webserver
+    # Start the Web Server
     log("Starting Web Server", "info")
     try:
-        web = srv.start_web(args.address, args.port, args.ssl, server)
+        web = start_web(args.address, args.port, args.ssl, server)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)

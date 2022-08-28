@@ -1,4 +1,6 @@
-from Utils.libraries import Add, Console, os, Box, Colorate, Colors
+import os
+from pystyle import Add, Colorate, Colors, Box
+from rich.console import Console
 # logo
 logo = Add.Add("""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣈⠀⠀⠀⠀⠀⢀⣬⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

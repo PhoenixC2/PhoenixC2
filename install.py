@@ -1,15 +1,17 @@
 import os
 import sys
 import shutil
-from hashlib import md5
-import sqlite3
+import importlib
 import random
 import string
 import subprocess
 if os.getuid() != 0:
     print("[ERROR] Please start with Sudo or Root Rights")
     exit()
-path = sys.argv[1]
+if len(sys.argv) == 1:
+    path = "/usr/share/"
+else:
+    path = sys.argv[1]
 
 print("[INFO] Starting Setup")
 
@@ -24,24 +26,26 @@ print("[INFO] Copying Files")
 shutil.copytree(os.getcwd() + "/Phoenix-Framework", path + "/Phoenix-Framework")
 
 print("[INFO] Creating Database")
-conn = sqlite3.connect(path + "Phoenix-Framework/Data/db.sqlite3")
-curr = conn.cursor()
-curr.execute("CREATE TABLE IF NOT EXISTS Users (id INTEGER NOT NULL PRIMARY KEY, username TEXT, password TEXT, admin INTEGER);")
-curr.execute("CREATE TABLE IF NOT EXISTS Devices (id INTEGER NOT NULL PRIMARY KEY, Hostname TEXT, Address VARCHAR(20), Connection_Date DATE, Last_Online DATE);")
-curr.execute(
-    "CREATE TABLE IF NOT EXISTS Listeners (id INTEGER NOT NULL PRIMARY KEY, Name TEXT, Type TEXT, Config TEXT);")
-curr.execute(
-    "CREATE TABLE IF NOT EXISTS Stagers (Id INTEGER NOT NULL PRIMARY KEY, Name TEXT, ListenerId INTEGER)")
-conn.commit()
-
+# Imports after sqlalchemy is installed
+Database = importlib.import_module("Phoenix-Framework.Database")
+sqlalchemy = importlib.import_module("sqlalchemy")
+sessionmaker = sqlalchemy.orm.sessionmaker
+engine = sqlalchemy.create_engine(f"sqlite:///{path}/Phoenix-Framework/Data/db.sqlite3")
+db_session = sessionmaker(bind=engine)()
+Base = Database.base.Base
+Base.metadata.create_all(engine)
 print("[INFO] Creating Admin User")
 username = "Phoenix"
 password = "".join(random.choice(string.ascii_letters + string.digits)
                    for _ in range(10))
-hashed_password = md5(password.encode()).hexdigest()
-curr.execute(
-    f"INSERT INTO Users (username, password, admin) VALUES ('phoenix', '{hashed_password}', 1);")
-conn.commit()
+
+admin = Database.UserModel(
+    username=username,
+    admin=True,
+)
+admin.set_password(password)
+db_session.add(admin)
+db_session.commit()
 print("[SUCCESS] Admin User Created")
 print(f"Credentials: {username}:{password}")
 

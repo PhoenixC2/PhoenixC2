@@ -1,7 +1,6 @@
 """The DevicesModel"""
+from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, Text
-from Utils.libraries import datetime
-from Server.server_class import ServerClass
 from .base import Base
 
 
@@ -14,7 +13,7 @@ class DeviceModel(Base):
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
 
-    def to_json(self, server:ServerClass=None) -> dict:
+    def to_json(self, server=None) -> dict:
         data = {
             "id": self.device_id,
             "hostname": self.hostname,

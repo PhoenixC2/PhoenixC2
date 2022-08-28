@@ -7,13 +7,13 @@ from flask import (
     session,
     request)
 from Utils.ui import log
-from Database import session as db_session, ListenerModel
-from Web.Endpoints.authorization import authorized
+from Database import db_session, ListenerModel
+from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.listener import create_listener, start_listener, stop_listener
 from Creator.options import listeners as available_listeners
 
 
-def listeners_endpoints(server):
+def listeners_bp(server):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
 
     @listeners_bp.route("/", methods=["GET"])
@@ -21,7 +21,7 @@ def listeners_endpoints(server):
     def index():
         use_json = request.args.get("json") == "true"
         listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
-        if not use_json:
+        if use_json:
             return jsonify([listener.to_json() for listener in listeners])
         return render_template("listeners.html", listeners)
 
@@ -75,7 +75,7 @@ def listeners_endpoints(server):
             flash(str(e), "error")
             return redirect("/listeners")
         
-        log(f"({session['username']}) Created Listener {name} ({listener_type}).", "success")
+        log(f"({get_current_user(session['id']).username}) Created Listener {name} ({listener_type}).", "success")
         
         if use_json:
             return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})."})
@@ -199,7 +199,7 @@ def listeners_endpoints(server):
             flash("Invalid ID.", "error")
             return redirect("/listeners")
         id = int(id)
-        log(f"({session['username']}) Starting Listener with ID {id}", "info")
+        log(f"({get_current_user(session['id']).username}) Starting Listener with ID {id}", "info")
 
         try:
             status = start_listener(id, server)
@@ -210,7 +210,7 @@ def listeners_endpoints(server):
             flash(str(e), "error")
             return redirect("/listeners")
         else:
-            log(f"({session['username']}) Started Listener with ID {id}", "success")
+            log(f"({get_current_user(session['id']).username}) Started Listener with ID {id}", "success")
             if use_json:
                 return jsonify({"status": "success", "message": status})
             flash(f"Started Listener with ID {id}", "success")
