@@ -1,9 +1,11 @@
-from Utils.libraries import importlib, Fernet
-from Modules.base import Base_Module
+import importlib
+import io
+from cryptography.fernet import Fernet
 from abc import ABC, abstractmethod
+from Modules.base import BaseModule
 
 
-class Base_Handler(metaclass=ABC):
+class BaseHandler(metaclass=ABC):
     """The Base Handler Class for all Devices"""
 
     def __str__(self) -> str:
@@ -13,7 +15,7 @@ class Base_Handler(metaclass=ABC):
         self.addr = addr
         self.fernet = Fernet(key)
         self.id = id
-        self.modules: list[Base_Module] = []
+        self.modules: list[BaseModule] = []
 
     def decrypt(self, data: str):
         """Decrypt the data"""
@@ -23,10 +25,10 @@ class Base_Handler(metaclass=ABC):
         """Encrypt the data"""
         return self.fernet.encrypt(data.encode())
 
-    def load_module(self, name: str, load_module: bool = True):
+    def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""
         # Get module
-        module: Base_Module = importlib.import_module(
+        module: BaseModule = importlib.import_module(
             "Modules." + name).Module()
         if load_module:
             module.load()
@@ -46,18 +48,18 @@ class Base_Handler(metaclass=ABC):
         raise Exception("Module not found")
 
     @abstractmethod
-    def execute_module(self, name: str):
+    def execute_module(self, name: str) -> str:
         ...
 
     @abstractmethod
-    def alive(self):
+    def alive(self) -> bool:
         """Checks if device is alive
 
         Returns:
             bool: True if yes, False if not
         """
     @abstractmethod
-    def reverse_shell(self, address: str, port: int):
+    def reverse_shell(self, address: str, port: int) -> str:
         """Open a Reverse Shell to a given Address:Port
         Args:
             address (str): Receiver Address
@@ -67,7 +69,7 @@ class Base_Handler(metaclass=ABC):
             str: Output or Error Message
         """
     @abstractmethod
-    def file_upload(self, local_file: str, remote_path: str):
+    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> str:
         """Upload a File to a Device
         Args:
             local_file (string): Local file to upload
@@ -78,18 +80,17 @@ class Base_Handler(metaclass=ABC):
         ...
 
     @abstractmethod
-    def file_download(self, local_path: str, remote_file: str):
+    def file_download(self, remote_path: str) -> io.TextIOWrapper:
         """Download a file from the device
         Args:
-            local_path (string): Local path to save the file to
-            remote_file (string): Remote File to download the file from
+            remote_path (string): Remote File to download the file from
         Returns:
             str: Output or Error Message
         """
         ...
 
     @abstractmethod
-    def rce(self, cmd: str):
+    def rce(self, cmd: str) -> str:
         """Send a Cmd to a Device and return the Output
         Args:
             cmd (str): Command to execute
@@ -99,7 +100,7 @@ class Base_Handler(metaclass=ABC):
         ...
 
     @abstractmethod
-    def get_directory_contents(self, dir:str):
+    def get_directory_contents(self, dir: str) -> str:
         """Get the contents of a directory
         Args:
             dir (str): Directory to get the contents of
@@ -107,8 +108,9 @@ class Base_Handler(metaclass=ABC):
             output (str): Output or Error Message
         """
         ...
+
     @abstractmethod
-    def get_file_contents(self, path:str):
+    def get_file_contents(self, path: str) -> str:
         """Get the contents of a file
         Args:
             path (str): Path to the file

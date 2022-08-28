@@ -7,5 +7,5 @@ from .users import UserModel
 from .logentry import LogEntryModel
 
 engine = create_engine("sqlite:///Data/db.sqlite3")
-session = sessionmaker(bind=engine)()
+db_session = sessionmaker(bind=engine)()
 

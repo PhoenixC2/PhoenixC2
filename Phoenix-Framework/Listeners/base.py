@@ -1,11 +1,12 @@
+import threading
+from cryptography.fernet import Fernet
 from abc import ABC, abstractmethod
-from Utils.libraries import Fernet, threading
 from Server import ServerClass
-from Handlers.base import Base_Handler
+from Handlers.base import BaseHandler
 from Database.listeners import ListenerModel
 
 
-class Base_Listener(metaclass=ABC):
+class BaseListener(metaclass=ABC):
     """This is the Base Class for all Listeners"""
 
     def __init__(self, server: ServerClass, config: dict, db_entry: ListenerModel):
@@ -15,7 +16,7 @@ class Base_Listener(metaclass=ABC):
         self.server: ServerClass = server
         self.db_entry = db_entry
         self.id = db_entry.listener_id
-        self.handlers: dict[str, Base_Handler] = {}
+        self.handlers: dict[str, BaseHandler] = {}
         self.stopped = False
         self.listener_thread: threading.Thread
         self.refresher_thread: threading.Thread
@@ -37,12 +38,12 @@ class Base_Listener(metaclass=ABC):
         """Encrypt Data"""
         return Fernet(key).encrypt(data.encode())
 
-    def add_handler(self, handler: Base_Handler):
+    def add_handler(self, handler: BaseHandler):
         """Add a Handler to the Listener"""
         self.handlers[str(handler.id)] = handler
         self.server.add_active_handler(handler)
 
-    def remove_handler(self, handler: Base_Handler):
+    def remove_handler(self, handler: BaseHandler):
         """Remove a Handler from the Listener"""
         self.handlers.pop(str(handler.id))
         self.server.remove_handler(handler)

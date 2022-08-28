@@ -2,10 +2,10 @@
 from Utils.libraries import socket, ssl, log, time, Fernet, threading
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
-from Listeners.base import Base_Listener
+from Listeners.base import BaseListener
 
 
-class Listener(Base_Listener):
+class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
 
     def __init__(self, server, config, listener_id):

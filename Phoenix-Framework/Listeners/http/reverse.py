@@ -2,9 +2,9 @@
 from Utils import *
 from Handlers.http.reverse.tcp.linux import Linux
 from Handlers.http.reverse.tcp.windows import Windows
-from Listeners.base import Base_Listener
+from Listeners.base import BaseListener
 
-class Listener(Base_Listener):
+class Listener(BaseListener):
     """The Reverse HTTP Listener Class"""
     def __init__(self, server, config, id):
         super().__init__(server, config, id)

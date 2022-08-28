@@ -1,4 +1,4 @@
-from Utils.libraries import Blueprint, jsonify
+from flask import Blueprint, jsonify
 from Utils.misc import version
 misc_bp = Blueprint("mics", __name__, url_prefix="/misc")
 

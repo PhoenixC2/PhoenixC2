@@ -1,5 +1,5 @@
-from Handlers.base import Base_Handler
-class Windows(Base_Handler):
+from Handlers.base import BaseHandler
+class Windows(BaseHandler):
     """The Windows Device Class to interact with the Device"""
 
     def __init__(self, connection, address, key, id):

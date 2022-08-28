@@ -1,3 +1,3 @@
 """The base module class"""
-class Base_Module:
+class BaseModule:
     pass

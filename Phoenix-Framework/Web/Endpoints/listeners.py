@@ -1,4 +1,4 @@
-from Utils.libraries import (
+from flask import (
     Blueprint,
     render_template,
     jsonify,
@@ -8,7 +8,7 @@ from Utils.libraries import (
     request)
 from Utils.ui import log
 from Database import session as db_session, ListenerModel
-from Web.Endpoints.authorization import authorized, admin, get_current_user
+from Web.Endpoints.authorization import authorized
 from Creator.listener import create_listener, start_listener, stop_listener
 from Creator.options import listeners as available_listeners
 
@@ -58,13 +58,13 @@ def listeners_endpoints(server):
             flash("Missing required data.", "error")
             return redirect("/listeners")
 
-        try:
-            port = int(port)
-        except ValueError:
+        if not port.isdigit():
             if use_json:
                 return jsonify({"status": "error", "message": "Invalid port."}), 400
             flash("Invalid port.", "error")
             return redirect("/listeners")
+        port = int(port)
+        
 
         # Create Listener
         try:
@@ -95,13 +95,13 @@ def listeners_endpoints(server):
         # Get Request Data
         use_json = request.args.get("json") == "true"
         id = request.form.get("id")
-        try:
-            id = int(id)
-        except ValueError:
+
+        if not id.isdigit():
             if use_json:
                 return jsonify({"status": "error", "message": "Invalid ID"}), 400
             flash("Invalid ID.", "error")
             return redirect("/listeners")
+        id = int(id)
             
 
         # Check if Listener exists
@@ -143,14 +143,12 @@ def listeners_endpoints(server):
                 return redirect("/listeners")
             return jsonify({"status": "error", "message": "Missing required data"}), 400
 
-        try:
-            id = int(id)
-        except ValueError:
+        if not id.isdigit():
             if not use_json:
                 flash("Invalid ID.", "error")
                 return redirect("/listeners")
             return jsonify({"status": "error", "message": "Invalid ID"}), 400
-
+        id = int(id)
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(listener_id=id).first()
@@ -160,7 +158,7 @@ def listeners_endpoints(server):
                 return redirect("/listeners")
             return jsonify({"status": "error", "message": "Listener does not exist."}), 404
 
-        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}.", "sucess")
+        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}.", "success")
 
         # Change Listener
         if change == "name":
@@ -194,15 +192,13 @@ def listeners_endpoints(server):
         """
         # Get Request Data
         use_json = request.args.get("json") == "true"
-        id = request.form.get("id")
-        try:
-            id = int(id)
-        except ValueError:
+        id= request.form.get("id")
+        if not id.isdigit():
             if use_json:
                 return jsonify({"status": "error", "message": "Invalid ID"}), 400
             flash("Invalid ID.", "error")
             return redirect("/listeners")
-
+        id = int(id)
         log(f"({session['username']}) Starting Listener with ID {id}", "info")
 
         try:
@@ -232,9 +228,8 @@ def listeners_endpoints(server):
         # Get Request Data
         use_json = request.args.get("json") == "true"
         id = request.form.get("id")
-        try:
-            id = int(id)
-        except ValueError:
+
+        if not id.isdigit():
             if use_json:
                 return jsonify({"status": "error", "message": "Invalid ID."}), 400
             flash("Invalid ID.", "error")

