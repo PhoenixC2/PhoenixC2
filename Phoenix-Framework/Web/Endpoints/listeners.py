@@ -22,8 +22,8 @@ def listeners_endpoints(server):
         use_json = request.args.get("json") == "true"
         listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
         if not use_json:
-            return render_template("listeners.html", listeners)
-        return jsonify([listener.to_json() for listener in listeners])
+            return jsonify([listener.to_json() for listener in listeners])
+        return render_template("listeners.html", listeners)
 
     @listeners_bp.route("/available", methods=["POST"])
     @authorized
@@ -53,30 +53,35 @@ def listeners_endpoints(server):
 
         # Check if Data is Valid
         if not listener_type or not name or not address or not port:
-            if not use_json:
-                flash("Missing required data.", "error")
-                return redirect("/listeners")
-            return jsonify({"status": "error", "message": "Missing required data."}), 400
+            if use_json:
+                return jsonify({"status": "error", "message": "Missing required data."}), 400
+            flash("Missing required data.", "error")
+            return redirect("/listeners")
+
         try:
             port = int(port)
         except ValueError:
-            if not use_json:
-                flash("Invalid port.", "error")
-                return redirect("/listeners")
-            return jsonify({"status": "error", "message": "Invalid port."}), 400
+            if use_json:
+                return jsonify({"status": "error", "message": "Invalid port."}), 400
+            flash("Invalid port.", "error")
+            return redirect("/listeners")
+
         # Create Listener
         try:
             create_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
-            if not use_json:
-                flash(str(e), "error")
-                return redirect("/listeners")
-            return jsonify({"status": "error", "message": str(e)}), 400
-        log(f"({session['username']}) Created Listener {name} ({listener_type}).", "success")
-        if not use_json:
-            flash("Created Listener.", "success")
+            if use_json:
+                return jsonify({"status": "error", "message": str(e)}), 400
+            flash(str(e), "error")
             return redirect("/listeners")
-        return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})."})
+        
+        log(f"({session['username']}) Created Listener {name} ({listener_type}).", "success")
+        
+        if use_json:
+            return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})."})
+        flash("Created Listener.", "success")
+        return redirect("/listeners")
+
 
     @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized
@@ -93,10 +98,11 @@ def listeners_endpoints(server):
         try:
             id = int(id)
         except ValueError:
-            if not use_json:
-                flash("Invalid ID.", "error")
-                return redirect("/listeners")
-            return jsonify({"status": "error", "message": "Invalid ID"}), 400
+            if use_json:
+                return jsonify({"status": "error", "message": "Invalid ID"}), 400
+            flash("Invalid ID.", "error")
+            return redirect("/listeners")
+            
 
         # Check if Listener exists
         listener = db_session.query(ListenerModel).filter_by(listener_id=id)
@@ -168,7 +174,7 @@ def listeners_endpoints(server):
 
         else:
             if use_json:
-                return jsonify({"status": "error", "message": "Invalid change."}), 400 
+                return jsonify({"status": "error", "message": "Invalid change."}), 400
             flash("Invalid change.", "error")
             return redirect("/listeners")
         db_session.commit()
@@ -233,10 +239,10 @@ def listeners_endpoints(server):
                 return jsonify({"status": "error", "message": "Invalid ID."}), 400
             flash("Invalid ID.", "error")
             return redirect("/listeners")
-            
 
         # Check if Listener exists
-        listener: ListenerModel = db_session.query(ListenerModel).filter_by(listener_id=id).first()
+        listener: ListenerModel = db_session.query(
+            ListenerModel).filter_by(listener_id=id).first()
         if listener is None:
             if not use_json:
                 return jsonify({"status": "error", "message": "Listener does not exist."}), 404
@@ -249,7 +255,7 @@ def listeners_endpoints(server):
             stop_listener(id, server)
         except Exception as e:
             log(f"({session['username']})" + str(e), "error")
-            if use_json:    
+            if use_json:
                 return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}."}), 500
             flash(f"Failed to stop Listener with ID {id}.", "error")
             return redirect("/listeners")
