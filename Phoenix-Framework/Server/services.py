@@ -1,6 +1,8 @@
 """Starts the diffrent services"""
-from Utils import curr, log, threading
+import threading
+from Utils.ui import log
 from Web import create_web
+from Database import db_session, ListenerModel
 from Creator.listener import start_listener
 from Server.server_class import ServerClass
 
@@ -8,14 +10,12 @@ from Server.server_class import ServerClass
 def start_listeners(server: ServerClass):
     """Start all listeners in the database"""
     # Get Listeners from Database
-    curr.execute("SELECT * FROM Listeners")
-    listeners = curr.fetchall()
-
+    listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
     # Start Listeners
     for listener in listeners:
         try:
-            start_listener(listener[0], server)
-            log(f"Started Listener {listener[1]} ({listener[0]})", "success")
+            start_listener(listener.listener_id, server)
+            log(f"Started Listener {listener.name} ({listener.listener_id})", "success")
         except Exception as error:
             log(str(error), "error")
 
