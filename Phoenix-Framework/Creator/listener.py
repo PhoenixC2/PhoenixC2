@@ -63,15 +63,16 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
         ListenerModel).filter_by(listener_id=listener_id).first()
     if not listener_db:
         raise Exception(f"Listener with ID {listener_id} does not exist")
-
     # Check if Listener is already active
     try:
         server.get_active_listener(listener_db.listener_id)
     except:
+        pass
+    else:
         raise Exception("Listener is already active!") from None
     # Get the Listener from the File
-    listener: BaseListener = importlib.import_module(listener_db.listener_type).Listener(
-        server, listener_db.config, listener_db)
+    listener: BaseListener = importlib.import_module("Listeners." + listener_db.listener_type.replace("/", ".")).Listener(
+        server, listener_db)
 
     # Start Listener
     try:

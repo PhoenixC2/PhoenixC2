@@ -19,10 +19,10 @@ def listeners_bp(server):
     @listeners_bp.route("/", methods=["GET"])
     @authorized
     def index():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
         if use_json:
-            return jsonify([listener.to_json() for listener in listeners])
+            return jsonify([listener.to_json(server) for listener in listeners])
         return render_template("listeners.html", listeners)
 
     @listeners_bp.route("/available", methods=["POST"])
@@ -44,7 +44,7 @@ def listeners_bp(server):
         }
         """
         # Get Form Data
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         listener_type = request.form.get("type")
         name = request.form.get("name")
         address = request.form.get("address")
@@ -93,7 +93,7 @@ def listeners_bp(server):
         }
         """
         # Get Request Data
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.form.get("id")
 
         if not id.isdigit():
@@ -113,7 +113,7 @@ def listeners_bp(server):
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404
         db_session.delete(listener)
         db_session.commit()
-        log(f"({session['username']}) Deleted Listener with ID {id}.", "info")
+        log(f"({get_current_user(session['id']).username}) Deleted Listener with ID {id}.", "info")
         if not use_json:
             flash(f"Deleted Listener with ID {id}.", "success")
             return redirect("/listeners")
@@ -131,7 +131,7 @@ def listeners_bp(server):
         }
         """
         # Get Request Data
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         change = request.form.get("change")
         value = request.form.get("value")
         id = request.form.get("id")
@@ -158,7 +158,7 @@ def listeners_bp(server):
                 return redirect("/listeners")
             return jsonify({"status": "error", "message": "Listener does not exist."}), 404
 
-        log(f"({session['username']}) Edited {change} to {value} for Listener with ID {id}.", "success")
+        log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Listener with ID {id}.", "success")
 
         # Change Listener
         if change == "name":
@@ -191,7 +191,7 @@ def listeners_bp(server):
         }
         """
         # Get Request Data
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id= request.form.get("id")
         if not id.isdigit():
             if use_json:
@@ -226,7 +226,7 @@ def listeners_bp(server):
         }
         """
         # Get Request Data
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.form.get("id")
 
         if not id.isdigit():
@@ -244,18 +244,18 @@ def listeners_bp(server):
             flash("Listener does not exist.", "error")
             return redirect("/listeners")
 
-        log(f"({session['username']}) Stopping Listener with ID {id}", "info")
+        log(f"({get_current_user(session['id']).username}) Stopping Listener with ID {id}", "info")
 
         try:
             stop_listener(id, server)
         except Exception as e:
-            log(f"({session['username']})" + str(e), "error")
+            log(f"({get_current_user(session['id']).username})" + str(e), "error")
             if use_json:
                 return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}."}), 500
             flash(f"Failed to stop Listener with ID {id}.", "error")
             return redirect("/listeners")
         else:
-            log(f"({session['username']}) Stopped Listener with ID {id}", "success")
+            log(f"({get_current_user(session['id']).username}) Stopped Listener with ID {id}", "success")
             if use_json:
                 return jsonify({"status": "success", "message": f"Stopped Listener with ID {id}"})
             flash(f"Stopped Listener with ID {id}", "success")

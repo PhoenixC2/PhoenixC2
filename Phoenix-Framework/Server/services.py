@@ -1,4 +1,4 @@
-"""Starts the diffrent services"""
+"""Starts the different services"""
 import threading
 from Utils.ui import log
 from Web import create_web

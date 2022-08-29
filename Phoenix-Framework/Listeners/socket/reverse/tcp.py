@@ -1,15 +1,25 @@
 """Reverse Socket TCP Listener"""
-from Utils.libraries import socket, ssl, log, time, Fernet, threading
+import socket
+import threading
+import ssl
+import time
+from cryptography.fernet import Fernet
+from typing import TYPE_CHECKING
+from Utils.ui import log
+from Database import db_session
+from Database import ListenerModel
+from Server import ServerClass
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
 
 
+
 class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
 
-    def __init__(self, server, config, listener_id):
-        super().__init__(server, config, listener_id)
+    def __init__(self, server: ServerClass, db_entry: ListenerModel):
+        super().__init__(server, db_entry)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.settimeout(2)
         if self.ssl:

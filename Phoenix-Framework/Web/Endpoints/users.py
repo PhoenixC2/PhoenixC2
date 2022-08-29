@@ -17,23 +17,23 @@ from .authorization import authorized, admin, get_current_user
 users_bp = Blueprint("users", __name__, url_prefix="/users")
 
 
-@users_bp.route("/users", methods=["GET"])
+@users_bp.route("/", methods=["GET"])
 @authorized
 def get_users():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     curr_user = get_current_user(session["id"])
     users = db_session.query(UserModel).all()
     return jsonify({"status": "success", "users": [user.to_json() for user in users]}) if use_json else render_template("users.html", user=curr_user, users=users)
 
 
-@users_bp.route("/users/add", methods=["POST"])
+@users_bp.route("/add", methods=["POST"])
 @admin
 def add_user():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
     password = request.form.get("password")
-    admin = request.form.get("admin").lower() == "true"
-    disabled = request.form.get("disabled").lower() == "true"
+    admin = request.form.get("admin", "").lower() == "true"
+    disabled = request.form.get("disabled", "").lower() == "true"
 
     if not username or not password:
         if not use_json:
@@ -63,10 +63,10 @@ def add_user():
     return jsonify({"status": "success", "message": f"{'Admin' if admin else 'User'} {username} added."})
 
 
-@users_bp.route("/users/remove", methods=["DELETE"])
+@users_bp.route("/remove", methods=["DELETE"])
 @admin
 def delete_user():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
     current_user = get_current_user(session.get("id"))
     if not username:
@@ -96,7 +96,7 @@ def delete_user():
         return jsonify({"status": "error", "message": "Can't delete your own Account."})
     # Delete user
     db_session.delete(user)
-    log(f"({session['username']}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
+    log(f"({get_current_user(session['id']).username}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
     if not use_json:
         flash(
             f"Deleted {'Admin' if user.admin else 'User'} {username}", "success")
@@ -104,10 +104,10 @@ def delete_user():
     return jsonify({"status": "success", "message": f"Deleted {'Admin' if user.admin else 'User'} {username}."})
 
 
-@users_bp.route("/users/edit", methods=["POST"])
+@users_bp.route("/edit", methods=["POST"])
 @admin
 def edit_user():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username", "")
     change = request.form.get("change", "")
     value = request.form.get("value", "")
@@ -133,10 +133,10 @@ def edit_user():
             return redirect("/users")
         return jsonify({"status": "error", "message": "Cannot edit the Phoenix Account."})
     # Edit user
-    if change == "admin":
+    if change == "admin" and username != "phoenix":
         user.admin = value.lower() == "true"
         db_session.commit()
-        log(f"({session['username']}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
+        log(f"({get_current_user(session['id']).username}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
         if not use_json:
             flash(
                 f"Updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
@@ -145,28 +145,28 @@ def edit_user():
     elif change == "password":
         user.set_password(value)
         db_session.commit()
-        log(f"({session['username']}) Updated {username}'s password.", "success")
+        log(f"({get_current_user(session['id']).username}) Updated {username}'s password.", "success")
         if not use_json:
             flash(f"{username}'s password edited.", "success")
             return redirect("/users")
         return jsonify({"status": "success", "message": f"{username}'s password edited."})
-    elif change == "username":
+    elif change == "username" and username != "phoenix":
         if db_session.query(UserModel).filter_by(username=value).first() or value == "":
             if not use_json:
                 flash("Name is already in use.", "error")
                 return redirect("/users")
-            return jsonify({"status": "errror", "message": "Name is already in use."})
+            return jsonify({"status": "error", "message": "Name is already in use."})
         user.username = str(escape(value))
         db_session.commit()
-        log(f"({session['username']}) updated {username}'s username to {value}.", "success")
+        log(f"({get_current_user(session['id']).username}) updated {username}'s username to {value}.", "success")
         if not use_json:
             flash(f"Updated {username}'s username to {value}.", "success")
             return redirect("/users")
         return jsonify({"status": "success", "message": f"{username}'s username edited."})
-    elif change == "disabled":
+    elif change == "disabled" and username != "phoenix":
         user.disabled = value.lower() == "true"
         db_session.commit()
-        log(f"{current_user.username} disabled {'Admin' if user.admin else 'User'} {user.username}")
+        log(f"{current_user.username} disabled {'Admin' if user.admin else 'User'} {user.username}", "success")
         if not use_json:
             flash(f"Disabled {user.username}.", "success")
             return redirect("/users")

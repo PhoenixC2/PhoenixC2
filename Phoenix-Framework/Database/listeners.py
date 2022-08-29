@@ -18,7 +18,7 @@ class ListenerModel(Base):
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
     def to_json(self, server:ServerClass) -> dict:
-        return {
+        data = {
             "id": self.listener_id,
             "name": self.name,
             "type": self.listener_type,
@@ -27,3 +27,10 @@ class ListenerModel(Base):
             "ssl": self.ssl,
             "stagers": [stager.to_json() for stager in self.stagers]
             }
+        try:
+            server.get_active_listener(self.listener_id)
+        except:
+            data["active"] = False
+        else:
+            data["active"] = True
+        return data

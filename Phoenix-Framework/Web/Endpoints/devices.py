@@ -18,7 +18,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/", methods=["GET"])
     @authorized
     def get_devices_index():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         devices: list[DeviceModel | None] = db_session.query(DeviceModel).all()
         if use_json:
             return jsonify([device.to_json(server) for device in devices])
@@ -27,7 +27,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/reverse_shell", methods=["POST"])
     @authorized
     def post_reverse_shell():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.form.get("id")
         address = request.form.get("address")
         port = request.form.get("port")
@@ -41,7 +41,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/rce", methods=["POST"])
     @authorized
     def post_rce():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.form.get("id")
         cmd = request.form.get("cmd")
 
@@ -59,7 +59,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/infos", methods=["GET"])
     @authorized
     def get_infos():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.args.get("id", "")
 
         if not id.isdigit():
@@ -77,7 +77,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/dir", methods=["GET"])
     @authorized
     def get_dir():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.args.get("id", "")
         dir = request.args.get("dir")
 
@@ -94,7 +94,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/file-contents", methods=["GET"])
     @authorized
     def get_file_contents():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.args.get("id", "")
         path = request.args.get("path")
         if not id.isdigit():
@@ -112,7 +112,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/upload", methods=["POST"])
     @authorized
     def post_upload():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.form.get("id")
         remote_path = request.form.get("remote_path")
         if not id.isdigit():
@@ -134,7 +134,7 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/download", methods=["GET"])
     @authorized
     def get_download():
-        use_json = request.args.get("json") == "true"
+        use_json = request.args.get("json", "").lower() == "true"
         id = request.args.get("id", "")
         remote_path = request.args.get("path")
         if not id.isdigit():

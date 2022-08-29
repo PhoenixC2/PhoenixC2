@@ -35,7 +35,7 @@ def admin(func):
     """Check if a user is admin and redirect to login page if not"""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not session.get("id"):
+        if session.get("id"):
             if not get_current_user(session.get("id")).admin:
                 abort(403)
             else:
@@ -52,7 +52,7 @@ def get_login():
 
 @auth_bp.route("/login", methods=["POST"])
 def post_login():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
     password = request.form.get("password")
 
@@ -104,7 +104,7 @@ def post_login():
 @auth_bp.route("/logout")
 @authorized
 def logout():
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     user = get_current_user(session["id"])
     log(f"{'Admin' if user.admin else 'User'} {user.username} logged out.", "success")
     session.clear()

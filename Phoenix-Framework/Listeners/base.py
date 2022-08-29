@@ -3,20 +3,23 @@ from typing import TYPE_CHECKING
 from cryptography.fernet import Fernet
 from abc import abstractmethod
 from Handlers.base import BaseHandler
-from Database.listeners import ListenerModel
+
+
+# to enable type hinting without circular imports
 if TYPE_CHECKING:
+    from Database.listeners import ListenerModel
     from Server.server_class import ServerClass
 
 class BaseListener():
     """This is the Base Class for all Listeners"""
 
-    def __init__(self, server: "ServerClass", config: dict, db_entry: ListenerModel):
-        self.address = config["address"]
-        self.port = config["port"]
-        self.ssl = True if str(config["ssl"]).lower() == "true" else False
+    def __init__(self, server: "ServerClass", db_entry: "ListenerModel"):
+        self.address = db_entry.address
+        self.port = db_entry.port
+        self.ssl = db_entry.ssl
         self.server: "ServerClass" = server
-        self.db_entry = db_entry
-        self.id = db_entry.listener_id
+        self.db_entry: "ListenerModel" = db_entry
+        self.id: int = db_entry.listener_id
         self.handlers: dict[str, BaseHandler] = {}
         self.stopped = False
         self.listener_thread: threading.Thread

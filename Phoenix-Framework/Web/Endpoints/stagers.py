@@ -10,7 +10,7 @@ from flask import (
 from Utils.web import generate_response
 from Utils.ui import log
 from Database import db_session, StagerModel
-from Web.Endpoints.authorization import authorized
+from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.stager import get_stager, add_stager
 import Creator.options
 
@@ -40,7 +40,7 @@ def post_add():
     }
     """
     # Get Form Data
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     name = request.form.get("name")
     listener_id = request.form.get("listener_id", "")
     encoding = request.form.get("encoding", "base64")
@@ -69,7 +69,7 @@ def post_add():
     except Exception as e:
         return generate_response(use_json, "error", str(e), "stagers", 500)
     else:
-        log(f"({session['username']}) Created Stager {name}", "success")
+        log(f"({get_current_user(session['id']).username}) Created Stager {name}", "success")
         return generate_response(use_json, "success", f"Added Stager {name}.", "stagers")
 
 
@@ -83,21 +83,21 @@ def delete_remove():
     }
     """
     # Get Request Data
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     id = request.form.get("id", "")
 
     if not id.isdigit():
         return generate_response(use_json, "error", "Invalid ID.", "stagers", 400)
     
     # Check if Stager exists
-    stager = db_session.query(StagerModel).filter_by(stager_id=id)
+    stager = db_session.query(StagerModel).filter_by(stager_id=id).first()
     if not stager:
         return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
 
     db_session.delete(stager)
     db_session.commit()
     
-    log(f"({session['username']}) Deleted Stager with ID {id}", "info")
+    log(f"({get_current_user(session['id']).username}) Deleted Stager with ID {id}", "info")
     return generate_response(use_json, "success", f"Deleted Stager with ID {id}.", "stagers")
 
 
@@ -113,7 +113,7 @@ def put_edit():
     }"""
 
     # Get Request Data
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     change = request.form.get("change")
     id = request.form.get("id")
     value = request.form.get("value")
@@ -131,7 +131,7 @@ def put_edit():
     if not curr.fetchone():
         return jsonify({"status": "error", "message": "Stager does not exist"}), 404 if use_json else abort(404, "Stager does not exist")
 
-    log(f"({session['username']}) Edited {change} to {value} for Stager with ID {id}", "sucess")
+    log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Stager with ID {id}", "sucess")
     # Change Stager
     if change == "name":
         curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (value, id))
@@ -148,7 +148,7 @@ def get_download():
     \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10&finished=true
     """
     # Get Request Data
-    use_json = request.args.get("json") == "true"
+    use_json = request.args.get("json", "").lower() == "true"
     id = request.args.get("id")
     finished = True if request.args.get("finished") == "true" else False
 
