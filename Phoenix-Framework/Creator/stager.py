@@ -6,7 +6,7 @@ import json
 from binascii import hexlify
 import urllib.parse
 from Database import db_session, StagerModel, ListenerModel
-
+from .options import AVAILABLE_STAGERS
 
 def add_stager(name: str, listener_id: int,
                encoding: str = "base64",
@@ -46,7 +46,7 @@ def add_stager(name: str, listener_id: int,
     return "Created Stager successfully!"
 
 
-def get_stager(stager_id: str, one_liner: bool = True) -> any:
+def get_stager(stager_id: str, one_liner: bool = True) -> str:
     """
     Get Content of a Stager to download or copy
 
@@ -66,7 +66,8 @@ def get_stager(stager_id: str, one_liner: bool = True) -> any:
         ListenerModel).filter_by(listener_id=stager.listener_id).first()
     if listener is None:
         raise Exception("Could not find the listener")
-
+    if listener.listener_type not in AVAILABLE_STAGERS: # also works as the stager type
+        raise Exception(f"Stager {listener.listener_type} is not available.")
     # Get the Payload from the File
     try:
         with open("Payloads/" + stager.stager_format + ".py", "r") as f:

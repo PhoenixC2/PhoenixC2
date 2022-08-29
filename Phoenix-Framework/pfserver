@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # Start the Web Server
     log("Starting Web Server", "info")
     try:
-        web = start_web(args.address, args.port, args.ssl, server)
+        web = start_web(args.address, args.port, args.ssl, server, args.debug)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)

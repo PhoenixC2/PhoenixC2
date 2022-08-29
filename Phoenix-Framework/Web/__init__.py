@@ -8,13 +8,14 @@ from Web.Endpoints.authorization import get_current_user
 from Server.server_class import ServerClass
 
 # disable flask logging
-cli.show_server_banner = lambda *args: None
-logging.getLogger("werkzeug").disabled = True
 
 
-def create_web(server: ServerClass):
+
+def create_web(server: ServerClass, debug:bool):
     web_server = Flask(__name__)
-
+    if not debug:
+        cli.show_server_banner = lambda *args: None
+        logging.getLogger("werkzeug").disabled = True
     @web_server.before_request
     def before_request():
         if session.get("id"):

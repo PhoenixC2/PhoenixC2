@@ -10,8 +10,7 @@ from Utils.ui import log
 from Database import db_session, ListenerModel
 from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.listener import create_listener, start_listener, stop_listener
-from Creator.options import listeners as available_listeners
-
+from Creator.options import AVAILABLE_LISTENERS
 
 def listeners_bp(server):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
@@ -28,7 +27,7 @@ def listeners_bp(server):
     @listeners_bp.route("/available", methods=["POST"])
     @authorized
     def available():
-        return jsonify(available_listeners)
+        return jsonify(AVAILABLE_LISTENERS)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized

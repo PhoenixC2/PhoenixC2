@@ -5,7 +5,7 @@ from typing import Optional
 from Database import db_session, ListenerModel
 from Server.server_class import ServerClass
 from Listeners.base import BaseListener
-from .options import listeners as available_listeners
+from .options import AVAILABLE_LISTENERS
 
 
 def create_listener(listener_type: str = None,
@@ -31,7 +31,7 @@ def create_listener(listener_type: str = None,
     if listener_type[0] == "/":
         listener_type = listener_type[1:]
 
-    if listener_type not in available_listeners:
+    if listener_type not in AVAILABLE_LISTENERS:
         raise Exception(f"Listener {listener_type} is not available.")
     try:
         open("Listeners/" + listener_type + ".py", "r").close()

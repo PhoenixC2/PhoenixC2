@@ -20,9 +20,9 @@ def start_listeners(server: ServerClass):
             log(str(error), "error")
 
 
-def start_web(web_address: str, web_port: int, ssl:bool, server: ServerClass):
+def start_web(web_address: str, web_port: int, ssl:bool, server: ServerClass, debug:bool):
     """Start the web server"""
-    web_server = create_web(server)
+    web_server = create_web(server, debug)
     if ssl:
         threading.Thread(
             target=web_server.run,

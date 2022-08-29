@@ -7,12 +7,13 @@ from flask import (
     redirect,
     session,
     request)
+
 from Utils.web import generate_response
 from Utils.ui import log
 from Database import db_session, StagerModel
 from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.stager import get_stager, add_stager
-import Creator.options
+from Creator.options import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS, AVAILABLE_STAGERS
 
 stagers_bp = Blueprint("stagers", __name__, url_prefix="/stagers")
 
@@ -26,7 +27,7 @@ def index():
 @stagers_bp.route("/available", methods=["POST"])
 @authorized
 def available():
-    return jsonify(Creator.options.stagers)
+    return jsonify(AVAILABLE_STAGERS)
 
 
 @stagers_bp.route("/add", methods=["POST"])
@@ -88,15 +89,16 @@ def delete_remove():
 
     if not id.isdigit():
         return generate_response(use_json, "error", "Invalid ID.", "stagers", 400)
-    
+
     # Check if Stager exists
-    stager = db_session.query(StagerModel).filter_by(stager_id=id).first()
-    if not stager:
+    stager: StagerModel = db_session.query(
+        StagerModel).filter_by(stager_id=id).first()
+    if stager is None:
         return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
 
     db_session.delete(stager)
     db_session.commit()
-    
+
     log(f"({get_current_user(session['id']).username}) Deleted Stager with ID {id}", "info")
     return generate_response(use_json, "success", f"Deleted Stager with ID {id}.", "stagers")
 
@@ -114,31 +116,41 @@ def put_edit():
 
     # Get Request Data
     use_json = request.args.get("json", "").lower() == "true"
-    change = request.form.get("change")
-    id = request.form.get("id")
-    value = request.form.get("value")
+    id = request.form.get("id", "")
+    change = request.form.get("change", "").lower()
+    value = request.form.get("value", "").lower(
+    ) if change != "name" else request.form.get("value", "")
 
     # Check if Data is Valid
     if not change or not value or not id:
-        return jsonify({"status": "error", "message": "Missing required data"}), 400 if use_json else abort(400, "Missing required data")
-    try:
-        id = int(id)
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
+        return generate_response(use_json, "error", "Missing required data.", "stagers", 400)
+    if not id.isdigit():
+        return generate_response(use_json, "error", "Invalid ID.", "stagers", 400)
 
     # Check if Stager exists
-    curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
-    if not curr.fetchone():
-        return jsonify({"status": "error", "message": "Stager does not exist"}), 404 if use_json else abort(404, "Stager does not exist")
+    stager: StagerModel = db_session.query(
+        StagerModel).filter_by(stager_id=id).first()
+    if stager is None:
+        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
 
-    log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Stager with ID {id}", "sucess")
+    log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Stager with ID {id}.", "success")
     # Change Stager
-    if change == "name":
-        curr.execute("UPDATE Stagers SET Name = ? WHERE ID = ?", (value, id))
-        conn.commit()
-        return jsonify({"status": "success", "message": f"Edited {change} to {value} for Stager with ID {id}"}) if use_json else f"Edited Stager with ID {id}"
+    if change == "encoding" and value in AVAILABLE_ENCODINGS:
+        stager.encoding = value
+    elif change == "name" and len(value) >= 1:
+        stager.name = value
+    elif change == "random_size":
+        stager.random_size = value == "true"
+    elif change == "timeout" and value.isdigit():
+        stager.timeout = int(value)
+    elif change == "stager_format" or change == "format" and value in AVAILABLE_FORMATS:
+        stager.stager_format = value
+    elif change == "delay" and value.isdigit():
+        stager.delay = int(value)
     else:
-        return jsonify({"status": "error", "message": "Invalid change"}), 400 if use_json else abort(400, "Invalid change")
+        return generate_response(use_json, "error", "Invalid Change.", "stagers", 400)
+    db_session.commit()
+    return generate_response(use_json, "success", f"Edited {change} to {value} for Stager with ID {id}.", "stagers")
 
 
 @stagers_bp.route("/download", methods=["GET"])
@@ -149,52 +161,27 @@ def get_download():
     """
     # Get Request Data
     use_json = request.args.get("json", "").lower() == "true"
-    id = request.args.get("id")
-    finished = True if request.args.get("finished") == "true" else False
+    id = request.args.get("id", "")
+    one_liner = request.args.get("one_liner", "") == "true"
 
-    # Check if Data is Valid
-    if not id or not encoding or not random_size or not timeout or not format or not delay:
-        abort(400, "Missing required data")
-    try:
-        id = int(id)
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid ID"}), 400 if use_json else abort(400, "Invalid ID")
-    try:
-        timeout = int(timeout)
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid timeout"}), 400 if use_json else abort(400, "Invalid timeout")
-    try:
-        delay = int(delay)
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid delay"}), 400 if use_json else abort(400, "Invalid delay")
+    if not id.isdigit():
+        return generate_response(use_json, "error", "Invalid ID.", "stagers", 400)
+
     # Check if Stager exists
-    curr.execute("SELECT * FROM Stagers WHERE ID = ?", (id,))
-    if not curr.fetchone():
-        return jsonify({"status": "error", "message": "Stager does not exist"}), 400 if use_json else abort(400, "Stager does not exist")
+    stager: StagerModel = db_session.query(
+        StagerModel).filter_by(stager_id=id).first()
+    if stager is None:
+        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
 
     # Get Stager
     try:
-        stager = get_stager(id, encoding, True if random_size.lower(
-        ) == "true" else False, timeout, format, delay, finished)
+        stager = get_stager(id, one_liner)
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400 if use_json else abort(400, str(e))
+        return generate_response(use_json, "error", str(e), "stagers", 500)
     else:
         if format == "py":
             return jsonify({"status": "success", "data": stager}) if use_json else stager
         elif format == "exe":
-            with open("stager.exe", "wb") as f:
+            with open("/tmp/stager.exe", "wb") as f:
                 f.write(stager)
             return send_file("/tmp/stager.exe", as_attachment=True, download_name=f"stager.exe")
-
-
-@stagers_bp.route("/list", methods=["GET"])
-@authorized
-def get_list():
-    """Get a list of stagers"""
-    curr.execute("SELECT * FROM Stagers")
-    stgers = curr.fetchall()
-    data = []
-    for stger in stgers:
-        data.append(
-            {"id": stger[0], "name": stger[1], "listener": stger[2]})
-    return jsonify(data)
