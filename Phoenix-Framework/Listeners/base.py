@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from Database.listeners import ListenerModel
     from Server.server_class import ServerClass
 
+
 class BaseListener():
     """This is the Base Class for all Listeners"""
 
@@ -34,11 +35,11 @@ class BaseListener():
             bool: True if refresher is running, False if not"""
         return self.stopped, self.listener_thread.is_alive(), self.refresher_thread.is_alive()
 
-    def decrypt(self, data, key) -> str:
+    def decrypt(self, data: str, key: bytes) -> str:
         """Decrypt Data"""
         return Fernet(key).decrypt(data).decode()
 
-    def encrypt(self, data: str, key: str) -> bytes:
+    def encrypt(self, data: str, key: bytes) -> bytes:
         """Encrypt Data"""
         return Fernet(key).encrypt(data.encode())
 
@@ -51,18 +52,22 @@ class BaseListener():
         """Remove a Handler from the Listener"""
         self.handlers.pop(str(handler.id))
         self.server.remove_handler(handler)
+
     @abstractmethod
     def refresh_connections(self):
         """Check if the connections are still alive"""
         ...
+
     @abstractmethod
     def listen(self):
         """Listen for Connections"""
         ...
+
     @abstractmethod
     def start(self):
         """Start the Listener"""
         ...
+
     @abstractmethod
     def stop(self):
         """Stop the Listener"""
