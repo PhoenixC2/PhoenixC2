@@ -20,7 +20,11 @@ stagers_bp = Blueprint("stagers", __name__, url_prefix="/stagers")
 @stagers_bp.route("/", methods=["GET"])
 @authorized
 def index():
-    return render_template("stagers.html")
+    use_json = request.args.get("json", "") == "true"
+    stagers: list[StagerModel] = db_session.query(StagerModel).all()
+    if use_json:
+        return jsonify([stager.to_json() for stager in stagers])
+    return render_template("stagers.html", stagers=stagers)
 
 
 @stagers_bp.route("/available", methods=["POST"])
@@ -44,7 +48,7 @@ def post_add():
     name = request.form.get("name")
     listener_id = request.form.get("listener_id", "")
     encoding = request.form.get("encoding", "base64")
-    random_size = request.form.get("random_size", False)
+    random_size = request.form.get("random_size", "") == "true"
     timeout = request.form.get("timeout", 5000)
     stager_format = request.form.get("format", "py")
     delay = request.form.get("delay", 1)
@@ -64,7 +68,7 @@ def post_add():
             random_size,
             timeout,
             stager_format,
-
+            delay
         )
     except Exception as e:
         return generate_response(use_json, "error", str(e), "stagers", 500)
@@ -93,7 +97,7 @@ def delete_remove():
     stager: StagerModel = db_session.query(
         StagerModel).filter_by(stager_id=id).first()
     if stager is None:
-        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
+        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 400)
 
     db_session.delete(stager)
     db_session.commit()
@@ -130,7 +134,7 @@ def put_edit():
     stager: StagerModel = db_session.query(
         StagerModel).filter_by(stager_id=id).first()
     if stager is None:
-        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
+        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 400)
 
     log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {id}.", "success")
     # Change Stager
@@ -165,22 +169,22 @@ def get_download():
 
     if not id.isdigit():
         return generate_response(use_json, "error", "Invalid ID.", "stagers", 400)
-
+    id = int(id)
     # Check if Stager exists
     stager: StagerModel = db_session.query(
         StagerModel).filter_by(stager_id=id).first()
     if stager is None:
-        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
+        return generate_response(use_json, "error", "Stager does not exist.", "stagers", 400)
 
     # Get Stager
     try:
-        stager = get_stager(id, one_liner)
+        stager_content = get_stager(id, one_liner)
     except Exception as e:
         return generate_response(use_json, "error", str(e), "stagers", 500)
     else:
-        if format == "py":
-            return jsonify({"status": "success", "data": stager}) if use_json else stager
-        elif format == "exe":
+        if stager.stager_format == "py":
+            return jsonify({"status": "success", "data": stager_content}) if use_json else stager_content
+        elif stager.stager_format == "exe":
             with open("/tmp/stager.exe", "wb") as f:
-                f.write(stager)
+                f.write(stager_content)
             return send_file("/tmp/stager.exe", as_attachment=True, download_name=f"stager.exe")

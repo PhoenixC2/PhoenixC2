@@ -30,10 +30,14 @@ def devices_bp(server: ServerClass):
         id = request.form.get("id")
         address = request.form.get("address")
         port = request.form.get("port")
+    
+        if not id.isdigit():
+            return generate_response(use_json, "error", "Invalid ID.", "devices", 400)
+        id = int(id)
         try:
             server.get_active_handler(id).reverse_shell(address, port)
         except Exception as e:
-            return generate_response(use_json, "error", "Couldn't open a Reverse Shell.", "listeners", 500)
+            return generate_response(use_json, "error", str(e), "listeners", 500)
         else:
             return generate_response(use_json, "success", "Reverse Shell opened.", "listeners")
 

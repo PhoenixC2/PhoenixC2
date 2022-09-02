@@ -22,7 +22,7 @@ except:
         for i in imports:
             globals()[i] = importlib.import_module(i)
     except:
-        print("Couldnt execute the Stager.")
+        print("Couldn't execute the Stager.")
         print("Please install the required modules manually.")
         exit(1)
 # Manually

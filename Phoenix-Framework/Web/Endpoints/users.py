@@ -27,7 +27,7 @@ def get_users():
     data = [user.to_json() for user in users]
     if curr_user.admin:
         for index, user in enumerate(users):
-            if user.admin and not curr_user.username == user:
+            if not user.admin and not curr_user.username == user:
                 continue
             data[index]["api_key"] = user.api_key
 
@@ -80,7 +80,7 @@ def delete_user():
     # Check if user exists
     user: UserModel = db_session.query(UserModel).first()
     if user is None:
-        return generate_response(use_json, "error", "User doesn't exist.", "users", 404)
+        return generate_response(use_json, "error", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix":
@@ -113,7 +113,7 @@ def edit_user():
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
-        return generate_response(use_json, "error", "User doesn't exist.", "users", 404)
+        return generate_response(use_json, "error", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix" and current_user != "phoenix":

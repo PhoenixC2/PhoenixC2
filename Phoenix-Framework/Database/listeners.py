@@ -22,20 +22,23 @@ class ListenerModel(Base):
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
 
+    def is_active(self, server):
+        """Returns True if listeners is active, else False"""
+        try:
+            server.get_active_listener(self.listener_id)
+        except:
+            return False
+        else:
+            return True
+
     def to_json(self, server: "ServerClass") -> dict:
-        data = {
+        return {
             "id": self.listener_id,
             "name": self.name,
             "type": self.listener_type,
             "address": self.address,
             "port": self.port,
             "ssl": self.ssl,
+            "active": self.is_active(server),
             "stagers": [stager.to_json() for stager in self.stagers]
         }
-        try:
-            server.get_active_listener(self.listener_id)
-        except:
-            data["active"] = False
-        else:
-            data["active"] = True
-        return data

