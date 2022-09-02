@@ -1,7 +1,9 @@
-"""The DevicesModel"""
+"""The Devices Model"""
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Text
+from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy.orm import relationship
 from .base import Base
+from .credentials import CredentialModel
 
 
 class DeviceModel(Base):
@@ -12,6 +14,7 @@ class DeviceModel(Base):
     address: str = Column(String(100))
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
+    stagers: list[CredentialModel] = relationship("CredentialModel")
 
     def to_json(self, server=None) -> dict:
         data = {

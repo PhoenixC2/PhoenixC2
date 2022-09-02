@@ -6,9 +6,8 @@ from flask import (
     redirect,
     send_file,
     request)
-from Utils.web import generate_response
+from Utils.web import generate_response, authorized
 from Database import db_session, DeviceModel
-from Web.Endpoints.authorization import authorized, admin
 from Server.server_class import ServerClass
 
 

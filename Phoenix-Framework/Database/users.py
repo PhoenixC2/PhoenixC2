@@ -11,6 +11,7 @@ class UserModel(Base):
     user_id: int = Column(Integer, primary_key=True, nullable=False, name="id")
     username: str = Column(String(50))
     password: str = Column(Text)
+    api_key: str = Column(String(30), nullable=False)
     admin: bool = Column(Boolean)
     last_online: datetime = Column(DateTime)
     disabled: bool = Column(Boolean, default=False)

@@ -7,8 +7,8 @@ from flask import (
     session,
     request)
 from Utils.ui import log
+from Utils.web import generate_response, authorized, get_current_user
 from Database import db_session, ListenerModel
-from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.listener import create_listener, start_listener, stop_listener
 from Creator.options import AVAILABLE_LISTENERS
 
@@ -52,35 +52,19 @@ def listeners_bp(server):
 
         # Check if Data is Valid
         if not listener_type or not name or not address or not port:
-            if use_json:
-                return jsonify({"status": "error", "message": "Missing required data."}), 400
-            flash("Missing required data.", "error")
-            return redirect("/listeners")
-
+            return generate_response(use_json, "error", "Missing required data.", "listeners", 400)
         if not port.isdigit():
-            if use_json:
-                return jsonify({"status": "error", "message": "Invalid port."}), 400
-            flash("Invalid port.", "error")
-            return redirect("/listeners")
+            return generate_response(use_json, "error", "Invalid Port.", "listeners", 400)
         port = int(port)
         
-
         # Create Listener
         try:
             create_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
-            if use_json:
-                return jsonify({"status": "error", "message": str(e)}), 400
-            flash(str(e), "error")
-            return redirect("/listeners")
+            return generate_response(use_json, "error", str(e), "listeners", 500)
         
-        log(f"({get_current_user(session['id']).username}) Created Listener {name} ({listener_type}).", "success")
-        
-        if use_json:
-            return jsonify({"status": "success", "message": f"Created Listener {name} ({listener_type})."})
-        flash("Created Listener.", "success")
-        return redirect("/listeners")
-
+        log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
+        return generate_response(use_json, "success", f"Created Listener {name} ({listener_type}).", "listeners")
 
     @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized
@@ -112,7 +96,7 @@ def listeners_bp(server):
             return jsonify({"status": "error", "message": "Listener does not exist"}), 404
         db_session.delete(listener)
         db_session.commit()
-        log(f"({get_current_user(session['id']).username}) Deleted Listener with ID {id}.", "info")
+        log(f"({get_current_user().username}) Deleted Listener with ID {id}.", "info")
         if not use_json:
             flash(f"Deleted Listener with ID {id}.", "success")
             return redirect("/listeners")
@@ -157,7 +141,7 @@ def listeners_bp(server):
                 return redirect("/listeners")
             return jsonify({"status": "error", "message": "Listener does not exist."}), 404
 
-        log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Listener with ID {id}.", "success")
+        log(f"({get_current_user().username}) Edited {change} to {value} for Listener with ID {id}.", "success")
 
         # Change Listener
         if change == "name":
@@ -198,7 +182,7 @@ def listeners_bp(server):
             flash("Invalid ID.", "error")
             return redirect("/listeners")
         id = int(id)
-        log(f"({get_current_user(session['id']).username}) Starting Listener with ID {id}", "info")
+        log(f"({get_current_user().username}) Starting Listener with ID {id}", "info")
 
         try:
             status = start_listener(id, server)
@@ -209,7 +193,7 @@ def listeners_bp(server):
             flash(str(e), "error")
             return redirect("/listeners")
         else:
-            log(f"({get_current_user(session['id']).username}) Started Listener with ID {id}", "success")
+            log(f"({get_current_user().username}) Started Listener with ID {id}", "success")
             if use_json:
                 return jsonify({"status": "success", "message": status})
             flash(f"Started Listener with ID {id}", "success")
@@ -243,18 +227,18 @@ def listeners_bp(server):
             flash("Listener does not exist.", "error")
             return redirect("/listeners")
 
-        log(f"({get_current_user(session['id']).username}) Stopping Listener with ID {id}", "info")
+        log(f"({get_current_user().username}) Stopping Listener with ID {id}", "info")
 
         try:
             stop_listener(id, server)
         except Exception as e:
-            log(f"({get_current_user(session['id']).username})" + str(e), "error")
+            log(f"({get_current_user().username})" + str(e), "error")
             if use_json:
                 return jsonify({"status": "error", "message": f"Failed to stop Listener with ID {id}."}), 500
             flash(f"Failed to stop Listener with ID {id}.", "error")
             return redirect("/listeners")
         else:
-            log(f"({get_current_user(session['id']).username}) Stopped Listener with ID {id}", "success")
+            log(f"({get_current_user().username}) Stopped Listener with ID {id}", "success")
             if use_json:
                 return jsonify({"status": "success", "message": f"Stopped Listener with ID {id}"})
             flash(f"Stopped Listener with ID {id}", "success")

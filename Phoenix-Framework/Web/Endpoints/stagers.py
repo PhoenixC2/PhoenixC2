@@ -8,10 +8,9 @@ from flask import (
     session,
     request)
 
-from Utils.web import generate_response
 from Utils.ui import log
+from Utils.web import generate_response, authorized, get_current_user
 from Database import db_session, StagerModel
-from Web.Endpoints.authorization import authorized, get_current_user
 from Creator.stager import get_stager, add_stager
 from Creator.options import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS, AVAILABLE_STAGERS
 
@@ -70,7 +69,7 @@ def post_add():
     except Exception as e:
         return generate_response(use_json, "error", str(e), "stagers", 500)
     else:
-        log(f"({get_current_user(session['id']).username}) Created Stager {name}", "success")
+        log(f"({get_current_user().username}) Created Stager {name}", "success")
         return generate_response(use_json, "success", f"Added Stager {name}.", "stagers")
 
 
@@ -99,7 +98,7 @@ def delete_remove():
     db_session.delete(stager)
     db_session.commit()
 
-    log(f"({get_current_user(session['id']).username}) Deleted Stager with ID {id}", "info")
+    log(f"({get_current_user().username}) Deleted Stager with ID {id}", "info")
     return generate_response(use_json, "success", f"Deleted Stager with ID {id}.", "stagers")
 
 
@@ -133,7 +132,7 @@ def put_edit():
     if stager is None:
         return generate_response(use_json, "error", "Stager does not exist.", "stagers", 404)
 
-    log(f"({get_current_user(session['id']).username}) Edited {change} to {value} for Stager with ID {id}.", "success")
+    log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {id}.", "success")
     # Change Stager
     if change == "encoding" and value in AVAILABLE_ENCODINGS:
         stager.encoding = value

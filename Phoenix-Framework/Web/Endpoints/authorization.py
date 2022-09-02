@@ -9,40 +9,10 @@ from flask import (
     flash,
     escape)
 from Utils.ui import log
+from Utils.web import get_current_user, authorized, generate_response
 from Database import db_session, UserModel
-from functools import wraps
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/users")
-
-
-def get_current_user(user_id: int) -> UserModel:
-    """Get the user object using the user id"""
-    return db_session.query(UserModel).filter_by(user_id=user_id).first()
-
-
-def authorized(func):
-    """Check if a user is logged in and redirect to login page if not"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if not session.get("id"):
-            abort(401)
-        else:
-            return func(*args, **kwargs)
-    return wrapper
-
-
-def admin(func):
-    """Check if a user is admin and redirect to login page if not"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if session.get("id"):
-            if not get_current_user(session.get("id")).admin:
-                abort(403)
-            else:
-                return func(*args, **kwargs)
-        else:
-            abort(401)
-    return wrapper
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @auth_bp.route("login", methods=["GET"])
@@ -53,37 +23,36 @@ def get_login():
 @auth_bp.route("/login", methods=["POST"])
 def post_login():
     use_json = request.args.get("json", "").lower() == "true"
+    api_key = request.headers.get("Api-Key")
     username = request.form.get("username")
     password = request.form.get("password")
-
-    if not username or not password:
-        if not use_json:
-            flash("Missing username or password.", "error")
-            render_template("auth/login.html")
-        return jsonify({"status": "error", "message": "Missing username or passwor.d"})
+    if api_key is not None:
+        user = get_current_user()
+        if user is not None:
+            log(f"Logged in as {user.username} ({'Admin' if user.admin else 'User'}).", "success")
+            session["id"] = user.user_id
+            return generate_response(use_json, "success", f"Successfully logged in as {user.username} using Api-Key")
+        return generate_response(use_json, "error", "Invalid Api-Key.", "login", 400)
+    if username is None or password is None:
+        return generate_response(use_json, "error", "Missing username or password.", "auth", 400)
 
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
 
     if user.disabled:
         log(f"{username} failed to log in because the account is disabled.", "warning")
-
-        if not use_json:
-            flash("Account is disabled.", "error")
-            redirect("/auth/login")
-        return jsonify({"status": "error", "message": "Account is disabled."}), 401
+        return generate_response(use_json, "error", "Account is disabled.", "login", 401)
 
     if user.check_password(password):
-        old_user = session.get("username")
+        old_user = get_current_user()
 
-        if old_user and old_user != username:
+        if old_user is not None and old_user.username != username:
             session["id"] = user.user_id
-            log(f"{old_user} changed to {username}.", "success")
-
+            log(f"{old_user.username} changed to {username}.", "success")
             if not use_json:
                 flash(f"Changed to {username}.", "success")
                 redirect("/")
-            return jsonify({"status": "success", "message": f"Changed to {username}."})
+            return jsonify({"status": "success", "message": f"Changed to {username}.", "api_key": user.api_key})
         else:
             session["id"] = user.user_id
             log(f"{'Admin' if user.admin else 'User'} {username} logged in.", "success")
@@ -91,7 +60,7 @@ def post_login():
                 flash(
                     f"Logged in as {username} ({'Admin' if user.admin else 'User'}).", "success")
                 redirect("/")
-            return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if user.admin else 'User'})."})
+            return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if user.admin else 'User'}).", "api_key": user.api_key})
     else:
         log(f"{username} failed to log in", "warning")
 
@@ -105,10 +74,7 @@ def post_login():
 @authorized
 def logout():
     use_json = request.args.get("json", "").lower() == "true"
-    user = get_current_user(session["id"])
+    user = get_current_user()
     log(f"{'Admin' if user.admin else 'User'} {user.username} logged out.", "success")
     session.clear()
-    if not use_json:
-        flash("Logged out", "success")
-        redirect("/login")
-    return jsonify({"status": "success", "message": "Logged out."})
+    return generate_response(use_json, "success", "Logged out.")

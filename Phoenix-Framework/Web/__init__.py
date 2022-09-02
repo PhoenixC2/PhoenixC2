@@ -19,7 +19,7 @@ def create_web(server: ServerClass, debug:bool):
     @web_server.before_request
     def before_request():
         if session.get("id"):
-            user = get_current_user(session.get("id"))
+            user = get_current_user()
             if user.disabled:
                 flash("Your account got disabled!", "error")
                 session.clear()

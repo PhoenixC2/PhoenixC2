@@ -1,3 +1,4 @@
+import uuid
 from flask import (
     Blueprint,
     render_template,
@@ -10,8 +11,8 @@ from flask import (
     abort
 )
 from Utils.ui import log
+from Utils.web import authorized, admin, get_current_user, generate_response
 from Database import db_session, UserModel
-from .authorization import authorized, admin, get_current_user
 
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
@@ -21,9 +22,16 @@ users_bp = Blueprint("users", __name__, url_prefix="/users")
 @authorized
 def get_users():
     use_json = request.args.get("json", "").lower() == "true"
-    curr_user = get_current_user(session["id"])
-    users = db_session.query(UserModel).all()
-    return jsonify({"status": "success", "users": [user.to_json() for user in users]}) if use_json else render_template("users.html", user=curr_user, users=users)
+    curr_user = get_current_user()
+    users: list[UserModel] = db_session.query(UserModel).all()
+    data = [user.to_json() for user in users]
+    if curr_user.admin:
+        for index, user in enumerate(users):
+            if user.admin and not curr_user.username == user.username:
+                continue
+            data[index]["api_key"] = user.api_key
+
+    return jsonify({"status": "success", "users": data}) if use_json else render_template("users.html", user=curr_user, users=users)
 
 
 @users_bp.route("/add", methods=["POST"])
@@ -51,16 +59,14 @@ def add_user():
     user = UserModel(
         username=username,
         admin=admin,
-        disabled=disabled)
+        disabled=disabled,
+        api_key=str(uuid.uuid1()))
     user.set_password(password)
 
     db_session.add(user)
     db_session.commit()
-    log(f"({get_current_user(session.get('id')).username}) added {'Admin' if admin else 'User'} {username}.", "success")
-    if not use_json:
-        flash(f"{'Admin' if admin else 'User'} {username} added.", "success")
-        return redirect("/users")
-    return jsonify({"status": "success", "message": f"{'Admin' if admin else 'User'} {username} added."})
+    log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} {username}.", "success")
+    return generate_response(use_json, "success", f"{'Admin' if admin else 'User'} {username} added.", "users")
 
 
 @users_bp.route("/remove", methods=["DELETE"])
@@ -68,7 +74,7 @@ def add_user():
 def delete_user():
     use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
-    current_user = get_current_user(session.get("id"))
+    current_user = get_current_user()
     if not username:
         if not use_json:
             flash("Username required.")
@@ -96,7 +102,7 @@ def delete_user():
         return jsonify({"status": "error", "message": "Can't delete your own Account."})
     # Delete user
     db_session.delete(user)
-    log(f"({get_current_user(session['id']).username}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
+    log(f"({get_current_user().username}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
     if not use_json:
         flash(
             f"Deleted {'Admin' if user.admin else 'User'} {username}", "success")
@@ -117,7 +123,7 @@ def edit_user():
             return redirect("/users")
         return jsonify({"status": "error", "message": "Username, change and value required."})
     # Check if user exists
-    current_user = get_current_user(session.get("id"))
+    current_user = get_current_user()
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
     if not user:
@@ -136,7 +142,7 @@ def edit_user():
     if change == "admin" and username != "phoenix":
         user.admin = value.lower() == "true"
         db_session.commit()
-        log(f"({get_current_user(session['id']).username}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
+        log(f"({get_current_user().username}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
         if not use_json:
             flash(
                 f"Updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
@@ -145,7 +151,7 @@ def edit_user():
     elif change == "password":
         user.set_password(value)
         db_session.commit()
-        log(f"({get_current_user(session['id']).username}) Updated {username}'s password.", "success")
+        log(f"({get_current_user().username}) Updated {username}'s password.", "success")
         if not use_json:
             flash(f"{username}'s password edited.", "success")
             return redirect("/users")
@@ -158,7 +164,7 @@ def edit_user():
             return jsonify({"status": "error", "message": "Name is already in use."})
         user.username = str(escape(value))
         db_session.commit()
-        log(f"({get_current_user(session['id']).username}) updated {username}'s username to {value}.", "success")
+        log(f"({get_current_user().username}) updated {username}'s username to {value}.", "success")
         if not use_json:
             flash(f"Updated {username}'s username to {value}.", "success")
             return redirect("/users")
