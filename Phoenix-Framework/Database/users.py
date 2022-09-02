@@ -34,3 +34,5 @@ class UserModel(Base):
             "disabled": self.disabled,
             "profile_picture": self.profile_picture
         }
+    def __str__(self) -> str:
+        return self.username

@@ -29,9 +29,9 @@ def post_login():
     if api_key is not None:
         user = get_current_user()
         if user is not None:
-            log(f"Logged in as {user.username} ({'Admin' if user.admin else 'User'}).", "success")
+            log(f"Logged in as {user} ({'Admin' if user.admin else 'User'}).", "success")
             session["id"] = user.user_id
-            return generate_response(use_json, "success", f"Successfully logged in as {user.username} using Api-Key")
+            return generate_response(use_json, "success", f"Successfully logged in as {user} using Api-Key")
         return generate_response(use_json, "error", "Invalid Api-Key.", "login", 400)
     if username is None or password is None:
         return generate_response(use_json, "error", "Missing username or password.", "auth", 400)
@@ -63,7 +63,6 @@ def post_login():
             return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if user.admin else 'User'}).", "api_key": user.api_key})
     else:
         log(f"{username} failed to log in", "warning")
-
         if not use_json:
             flash("Invalid username or password.", "error")
             return render_template("auth/login.html", username=username)
@@ -75,6 +74,6 @@ def post_login():
 def logout():
     use_json = request.args.get("json", "").lower() == "true"
     user = get_current_user()
-    log(f"{'Admin' if user.admin else 'User'} {user.username} logged out.", "success")
+    log(f"{'Admin' if user.admin else 'User'} {user} logged out.", "success")
     session.clear()
     return generate_response(use_json, "success", "Logged out.")
