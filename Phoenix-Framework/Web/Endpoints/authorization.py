@@ -31,17 +31,17 @@ def post_login():
         if user is not None:
             log(f"Logged in as {user} ({'Admin' if user.admin else 'User'}).", "success")
             session["id"] = user.user_id
-            return generate_response(use_json, "success", f"Successfully logged in as {user} using Api-Key")
-        return generate_response(use_json, "error", "Invalid Api-Key.", "login", 400)
+            return generate_response("success", f"Successfully logged in as {user} using Api-Key")
+        return generate_response("error", "Invalid Api-Key.", "login", 400)
     if username is None or password is None:
-        return generate_response(use_json, "error", "Missing username or password.", "auth", 400)
+        return generate_response("error", "Missing username or password.", "auth", 400)
 
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
 
     if user.disabled:
         log(f"{username} failed to log in because the account is disabled.", "warning")
-        return generate_response(use_json, "error", "Account is disabled.", "login", 401)
+        return generate_response("error", "Account is disabled.", "login", 401)
 
     if user.check_password(password):
         old_user = get_current_user()
@@ -76,4 +76,4 @@ def logout():
     user = get_current_user()
     log(f"{'Admin' if user.admin else 'User'} {user} logged out.", "success")
     session.clear()
-    return generate_response(use_json, "success", "Logged out.")
+    return generate_response("success", "Logged out.")

@@ -41,7 +41,7 @@ class Listener(BaseListener):
                 break
             for device in self.handlers.values():
                 if not device.alive():
-                    self.remove_handler(device)
+                    self.remove_handler(device.id)
                     log(f"Connection to {device.addr}  has been lost. [ID : {device.id}]",
                         alert="critical")
                     break

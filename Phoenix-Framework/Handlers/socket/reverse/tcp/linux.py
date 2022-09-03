@@ -5,13 +5,15 @@ from Handlers.base import BaseHandler
 
 class Linux(BaseHandler):
     """The Linux Handler Class to interact with the Device"""
+
+    def __init__(self, conn: socket.socket, addr: str, key: bytes, id: int):
+        super().__init__(addr, key, id)
+        self.conn: socket.socket = conn
+
     def save_infos(self):
         """Save Infos to the Device Database"""
         infos = self.infos()
 
-    def __init__(self, conn, addr, key, id):
-        super().__init__(addr, key, id)
-        self.conn = conn
     def alive(self):
         try:
             self.conn.send(self.encrypt("alive:"))

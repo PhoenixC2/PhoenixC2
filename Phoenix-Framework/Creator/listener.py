@@ -80,7 +80,7 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
         server.add_active_listener(listener)
     except Exception as e:
         raise Exception(
-            f"Failed to start Listener {listener_db.name}") from None
+            str(e)) from None
     else:
         return f"Started Listener with ID {listener_id}"
 

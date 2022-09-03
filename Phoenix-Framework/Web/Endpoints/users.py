@@ -51,7 +51,7 @@ def add_user():
 
     # Check if user exists
     if db_session.query(UserModel).filter_by(username=username).first():
-        return generate_response(use_json, "error", "User already exists.", "users", 403)
+        return generate_response("error", "User already exists.", "users", 403)
 
     user = UserModel(
         username=username,
@@ -63,7 +63,7 @@ def add_user():
     db_session.add(user)
     db_session.commit()
     log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} {username}.", "success")
-    return generate_response(use_json, "success", f"{'Admin' if admin else 'User'} {username} added.", "users")
+    return generate_response("success", f"{'Admin' if admin else 'User'} {username} added.", "users")
 
 
 @users_bp.route("/remove", methods=["DELETE"])
@@ -80,20 +80,20 @@ def delete_user():
     # Check if user exists
     user: UserModel = db_session.query(UserModel).first()
     if user is None:
-        return generate_response(use_json, "error", "User doesn't exist.", "users", 400)
+        return generate_response("error", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix":
-        return generate_response(use_json, "error", "Can't delete the Phoenix Account.", "users", 403)
+        return generate_response("error", "Can't delete the Phoenix Account.", "users", 403)
 
     # Check if user is the operator
     if username == current_user:
-        return generate_response(use_json, "error", "Can't delete your own Account.", "users")
+        return generate_response("error", "Can't delete your own Account.", "users")
 
     # Delete user
     db_session.delete(user)
     log(f"({get_current_user().username}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
-    return generate_response(use_json, "success", f"Deleted {'Admin' if user.admin else 'User'} {username}", "users")
+    return generate_response("success", f"Deleted {'Admin' if user.admin else 'User'} {username}", "users")
 
 
 @users_bp.route("/edit", methods=["POST"])
@@ -113,37 +113,37 @@ def edit_user():
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
-        return generate_response(use_json, "error", "User doesn't exist.", "users", 400)
+        return generate_response("error", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix" and current_user != "phoenix":
-        return generate_response(use_json, "error", "Can't edit the Phoenix Account.", "users", 403)
+        return generate_response("error", "Can't edit the Phoenix Account.", "users", 403)
     # Edit user
     if change == "admin" and username != "phoenix":
         user.admin = value.lower() == "true"
         db_session.commit()
         log(f"({current_user}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
-        return generate_response(use_json, "success", f"Updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "users")
+        return generate_response("success", f"Updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "users")
 
     elif change == "password" and len(value) >= 1:
         user.set_password(value)
         db_session.commit()
         log(f"({current_user}) updated {username}'s password.", "success")
-        return generate_response(use_json, "success", f"Updated {username}'s username to {value}.", "users")
+        return generate_response("success", f"Updated {username}'s username to {value}.", "users")
 
     elif change == "username" and username != "phoenix":
         if db_session.query(UserModel).filter_by(username=value).first() or value == "":
-            return generate_response(use_json, "error", "Name is already in use.", "users", 400)
+            return generate_response("error", "Name is already in use.", "users", 400)
         user = str(escape(value))
         db_session.commit()
         log(f"({current_user}) updated {user}'s username to {value}.", "success")
-        return generate_response(use_json, "success", f"Updated {username}'s username to {value}.", "users")
+        return generate_response("success", f"Updated {username}'s username to {value}.", "users")
 
     elif change == "disabled" and username != "phoenix":
         user.disabled = value.lower() == "true"
         db_session.commit()
         log(f"({current_user}) disabled {'Admin' if user.admin else 'User'} {user}", "success")
-        return generate_response(use_json, "success", f"Disabled {user}.", "users")
+        return generate_response("success", f"Disabled {user}.", "users")
 
     elif change == "api-key":
         user.api_key = str(uuid.uuid1())
@@ -155,4 +155,4 @@ def edit_user():
         return jsonify({"status": "success", "message": f"Updated {username}'s api-key", "api-key": user.api_key})
 
     else:
-        return generate_response(use_json, "error", "Invalid change.", "users", 400)
+        return generate_response("error", "Invalid change.", "users", 400)
