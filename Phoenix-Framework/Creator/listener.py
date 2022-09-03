@@ -8,7 +8,7 @@ from Listeners.base import BaseListener
 from .options import AVAILABLE_LISTENERS
 
 
-def create_listener(listener_type: str = None,
+def add_listener(listener_type: str = None,
                     name: str = None,
                     address: str = None,
                     port: int = None,
@@ -49,7 +49,7 @@ def create_listener(listener_type: str = None,
     return f"Listener {name} created"
 
 
-def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
+def start_listener(listener_db: ListenerModel, server: ServerClass) -> Optional[str]:
     """
     Start a listener
 
@@ -59,11 +59,6 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
 
     """
 
-    # Check if Listener exists
-    listener_db: ListenerModel = db_session.query(
-        ListenerModel).filter_by(listener_id=listener_id).first()
-    if not listener_db:
-        raise Exception(f"Listener with ID {listener_id} does not exist")
     # Check if Listener is already active
     try:
         server.get_active_listener(listener_db.listener_id)
@@ -83,10 +78,10 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
         raise Exception(
             str(e)) from None
     else:
-        return f"Started Listener with ID {listener_id}"
+        return f"Started Listener with ID {listener_db.listener_id}"
 
 
-def stop_listener(listener_id: int, server: ServerClass) -> None:
+def stop_listener(listener_db: ListenerModel, server: ServerClass) -> None:
     """
     Stop a listener
 
@@ -94,17 +89,17 @@ def stop_listener(listener_id: int, server: ServerClass) -> None:
     :param server: The main server
 
     """
-    listener = server.get_active_listener(listener_id)
+    listener = server.get_active_listener(listener_db.listener_id)
     listener.stop()
-    server.remove_listener(listener_id)
+    server.remove_listener(listener_db.listener_id)
 
-def restart_listener(listener_id: int, server: ServerClass) -> None:
+def restart_listener(listener_db: ListenerModel, server: ServerClass) -> None:
     """
     Restart a listener
     
     :param listener_id: The ID of the listener
     :param server: The main server
     """
-    stop_listener(listener_id, server)
+    stop_listener(listener_db, server)
     time.sleep(5)
-    start_listener(listener_id, server)
+    start_listener(listener_db, server)

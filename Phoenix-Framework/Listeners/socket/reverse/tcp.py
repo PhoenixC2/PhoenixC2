@@ -94,7 +94,6 @@ class Listener(BaseListener):
                     continue
 
     def start(self):
-        se
         try:
             self.listener.bind((self.address, self.port))
             self.listener.listen()

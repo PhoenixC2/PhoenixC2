@@ -6,3 +6,4 @@ from .listeners import listeners_bp
 from .modules import modules_bp
 from .loaders import loaders_bp
 from .users import users_bp
+from .misc import misc_bp

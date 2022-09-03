@@ -27,12 +27,6 @@ def index():
     return render_template("stagers.html", stagers=stagers)
 
 
-@stagers_bp.route("/available", methods=["POST"])
-@authorized
-def available():
-    return jsonify(AVAILABLE_STAGERS)
-
-
 @stagers_bp.route("/add", methods=["POST"])
 @authorized
 def post_add():
@@ -151,7 +145,7 @@ def get_download():
 
     # Get Stager
     try:
-        stager_content = get_stager(stager_id, one_liner)
+        stager_content = get_stager(stager, one_liner)
     except Exception as e:
         return generate_response("error", str(e), "stagers", 500)
     else:

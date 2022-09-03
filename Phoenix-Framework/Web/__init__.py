@@ -10,12 +10,12 @@ from Server.server_class import ServerClass
 # disable flask logging
 
 
-
-def create_web(server: ServerClass, debug:bool):
+def create_web(server: ServerClass, debug: bool):
     web_server = Flask(__name__)
     if not debug:
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
+
     @web_server.before_request
     def before_request():
         if session.get("id"):
@@ -36,4 +36,5 @@ def create_web(server: ServerClass, debug:bool):
     web_server.register_blueprint(devices_bp(server), url_prefix="/devices")
     web_server.register_blueprint(modules_bp, url_prefix="/modules")
     web_server.register_blueprint(loaders_bp, url_prefix="/loaders")
+    web_server.register_blueprint(misc_bp, url_prefix="/misc")
     return web_server

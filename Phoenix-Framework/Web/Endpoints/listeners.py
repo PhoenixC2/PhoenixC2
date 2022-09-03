@@ -9,7 +9,7 @@ from flask import (
 from Utils.ui import log
 from Utils.web import generate_response, authorized, get_current_user
 from Database import db_session, ListenerModel
-from Creator.listener import create_listener, start_listener, stop_listener, restart_listener
+from Creator.listener import add_listener, start_listener, stop_listener, restart_listener
 from Creator.options import AVAILABLE_LISTENERS
 from Server.server_class import ServerClass
 
@@ -25,11 +25,6 @@ def listeners_bp(server: ServerClass):
         if use_json:
             return jsonify([listener.to_json(server) for listener in listeners])
         return render_template("listeners.html", listeners)
-
-    @listeners_bp.route("/available", methods=["POST"])
-    @authorized
-    def available():
-        return jsonify(AVAILABLE_LISTENERS)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized
@@ -50,7 +45,7 @@ def listeners_bp(server: ServerClass):
 
         # Create Listener
         try:
-            create_listener(listener_type, name, address, int(port), ssl)
+            add_listener(listener_type, name, address, int(port), ssl)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
 
@@ -76,14 +71,13 @@ def listeners_bp(server: ServerClass):
 
         for stager in listener.stagers:
             db_session.delete(stager)
-        db_session.delete(listener)
-        db_session.commit()
         if stop:
             if listener.is_active(server):
-                stop_listener(listener_id, server)
+                stop_listener(listener, server)
                 log(f"({get_current_user().username}) Deleted and stopped listener with ID {listener_id}.", "info")
                 return generate_response("success", f"Deleted and stopped listener with ID {listener_id}.", "listeners")
-
+        db_session.delete(listener)
+        db_session.commit()
         log(f"({get_current_user().username}) Deleted listener with ID {listener_id}.", "info")
         return generate_response("success", f"Deleted listener with ID {listener_id}.", "listeners")
 
@@ -137,12 +131,18 @@ def listeners_bp(server: ServerClass):
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
+        # Check if Listener exists
+        listener: ListenerModel = db_session.query(
+            ListenerModel).filter_by(listener_id=listener_id).first()
+
+        if listener is None:
+            return generate_response("error", "Listener does not exist.", "listeners", 400)
         log(f"({get_current_user().username}) Starting Listener with ID {listener_id}", "info")
 
         try:
-            status = start_listener(listener_id, server)
+            status = start_listener(listener, server)
         except Exception as e:
-            log(str(e), "error")
+            log(f"({get_current_user().username}) {e}", "info")
             return generate_response("error", str(e), "listeners", 500)
         else:
             log(f"({get_current_user().username}) Started Listener with ID {listener_id}", "success")
@@ -168,9 +168,8 @@ def listeners_bp(server: ServerClass):
         log(f"({get_current_user().username}) Stopping Listener with ID {listener_id}", "info")
 
         try:
-            stop_listener(listener_id, server)
+            stop_listener(listener, server)
         except Exception as e:
-            log(f"({get_current_user().username})" + str(e), "error")
             return generate_response("error", str(e), "listeners", 500)
         else:
             log(f"({get_current_user().username}) Stopped Listener with ID {listener_id}", "success")
@@ -191,9 +190,12 @@ def listeners_bp(server: ServerClass):
             ListenerModel).filter_by(listener_id=listener_id).first()
 
         try:
-            restart_listener(listener_id, server)
+            log(f"({get_current_user().username}) restarting listener with ID {listener_id}.", "success")
+            restart_listener(listener, server)
         except Exception as e:
+            log(f"({get_current_user().username}) failed to restart listener with ID {listener_id}.", "success")
             return generate_response("error", str(e), "listeners", 500)
         else:
+            log(f"({get_current_user().username}) restarted listener with ID {listener_id}.", "success")
             return generate_response("success", f"Restarted listener with ID {listener_id}", "listeners")
     return listeners_bp
