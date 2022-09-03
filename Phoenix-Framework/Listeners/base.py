@@ -51,7 +51,7 @@ class BaseListener():
     def remove_handler(self, handler: BaseHandler):
         """Remove a Handler from the Listener"""
         self.handlers.pop(str(handler.id))
-        self.server.remove_handler(handler)
+        self.server.remove_handler(handler.id)
 
     @abstractmethod
     def refresh_connections(self):

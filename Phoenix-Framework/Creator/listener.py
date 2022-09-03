@@ -1,5 +1,5 @@
 """Create Listeners"""
-import json
+import time
 import importlib
 from typing import Optional
 from Database import db_session, ListenerModel
@@ -14,13 +14,13 @@ def create_listener(listener_type: str = None,
                     port: int = None,
                     ssl: bool = False) -> str:
     """
-    Create a Listener
+    Create a listener
 
-    :param type: The Type of Listener
-    :param name: The Name of the Listener
-    :param address: The Address of the Listener
-    :param port: The Port of the Listener
-    :return: The Listener as a string
+    :param type: The type of listener
+    :param name: The name of the listener
+    :param address: The address of the listener
+    :param port: The port of the listener
+    :return: status
 
     """
     # Check if Listener exists
@@ -51,9 +51,10 @@ def create_listener(listener_type: str = None,
 
 def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
     """
-    Start a Listener
+    Start a listener
 
-    :param listener_id: The ID of the Listener
+    :param listener_id: The ID of the listener
+    :param server: The main server
     :return: Status
 
     """
@@ -87,12 +88,23 @@ def start_listener(listener_id: int, server: ServerClass) -> Optional[str]:
 
 def stop_listener(listener_id: int, server: ServerClass) -> None:
     """
-    Stop a Listener
+    Stop a listener
 
-    :param id: The ID of the Listener
-    :return: Status
+    :param listener_id: The ID of the listener
+    :param server: The main server
 
     """
     listener = server.get_active_listener(listener_id)
     listener.stop()
     server.remove_listener(listener_id)
+
+def restart_listener(listener_id: int, server: ServerClass) -> None:
+    """
+    Restart a listener
+    
+    :param listener_id: The ID of the listener
+    :param server: The main server
+    """
+    stop_listener(listener_id, server)
+    time.sleep(5)
+    start_listener(listener_id, server)

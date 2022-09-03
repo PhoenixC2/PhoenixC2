@@ -41,7 +41,7 @@ class Listener(BaseListener):
                 break
             for device in self.handlers.values():
                 if not device.alive():
-                    self.remove_handler(device.id)
+                    self.remove_handler(device)
                     log(f"Connection to {device.addr}  has been lost. [ID : {device.id}]",
                         alert="critical")
                     break
@@ -94,12 +94,14 @@ class Listener(BaseListener):
                     continue
 
     def start(self):
+        se
         try:
             self.listener.bind((self.address, self.port))
             self.listener.listen()
-        except socket.error:
-            raise Exception("Port is already in use.") from None
+        except socket.error as e:
+            raise Exception(str(e).split("]")[1][1:]) from None
         # Start the Listener and Refresher
+        self.stopped = False
         self.listener_thread.start()
         self.refresher_thread.start()
 

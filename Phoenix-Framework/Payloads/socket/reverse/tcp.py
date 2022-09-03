@@ -86,6 +86,7 @@ for i in range(1, TIMEOUT):
         elif option == "file-d":
             try:
                 with open(args, "rb") as f:
+                    s.send(len(f.read()))
                     s.sendfile(f)
             except Exception as e:
                 s.send(encrypt("!" + str(e)))

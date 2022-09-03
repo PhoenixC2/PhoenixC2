@@ -36,13 +36,6 @@ def available():
 @stagers_bp.route("/add", methods=["POST"])
 @authorized
 def post_add():
-    """Add a stager
-    Request Body Example:
-    {
-        "listener_id": "1",
-        "name": "Test Stager1"
-    }
-    """
     # Get Form Data
     use_json = request.args.get("json", "").lower() == "true"
     name = request.form.get("name")
@@ -80,63 +73,47 @@ def post_add():
 @stagers_bp.route("/remove", methods=["DELETE"])
 @authorized
 def delete_remove():
-    """Remove a stager
-    Request Body Example:
-    {
-        "id": 1,
-    }
-    """
     # Get Request Data
-    use_json = request.args.get("json", "").lower() == "true"
-    id = request.form.get("id", "")
+    stager_id = request.args.get("id", "")
 
-    if not id.isdigit():
+    if not stager_id.isdigit():
         return generate_response("error", "Invalid ID.", "stagers", 400)
 
     # Check if Stager exists
     stager: StagerModel = db_session.query(
-        StagerModel).filter_by(stager_id=id).first()
+        StagerModel).filter_by(stager_id=stager_id).first()
     if stager is None:
         return generate_response("error", "Stager does not exist.", "stagers", 400)
 
     db_session.delete(stager)
     db_session.commit()
 
-    log(f"({get_current_user().username}) Deleted Stager with ID {id}", "info")
-    return generate_response("success", f"Deleted Stager with ID {id}.", "stagers")
+    log(f"({get_current_user().username}) Deleted Stager with ID {stager_id}", "info")
+    return generate_response("success", f"Deleted Stager with ID {stager_id}.", "stagers")
 
 
 @stagers_bp.route("/edit", methods=["PUT"])
 @authorized
 def put_edit():
-    """Edit a stager
-    Request Body Example:
-    {
-        "id": "1",
-        "change": "name",
-        "value": "Test Stager1"
-    }"""
-
     # Get Request Data
-    use_json = request.args.get("json", "").lower() == "true"
-    id = request.form.get("id", "")
+    stager_id = request.args.get("id", "")
     change = request.form.get("change", "").lower()
     value = request.form.get("value", "").lower(
     ) if change != "name" else request.form.get("value", "")
 
     # Check if Data is Valid
-    if not change or not value or not id:
+    if not change or not value or not stager_id:
         return generate_response("error", "Missing required data.", "stagers", 400)
-    if not id.isdigit():
+    if not stager_id.isdigit():
         return generate_response("error", "Invalid ID.", "stagers", 400)
 
     # Check if Stager exists
     stager: StagerModel = db_session.query(
-        StagerModel).filter_by(stager_id=id).first()
+        StagerModel).filter_by(stager_id=stager_id).first()
     if stager is None:
         return generate_response("error", "Stager does not exist.", "stagers", 400)
 
-    log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {id}.", "success")
+    log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {stager_id}.", "success")
     # Change Stager
     if change == "encoding" and value in AVAILABLE_ENCODINGS:
         stager.encoding = value
@@ -153,32 +130,28 @@ def put_edit():
     else:
         return generate_response("error", "Invalid Change.", "stagers", 400)
     db_session.commit()
-    return generate_response("success", f"Edited {change} to {value} for Stager with ID {id}.", "stagers")
+    return generate_response("success", f"Edited {change} to {value} for Stager with ID {stager_id}.", "stagers")
 
 
 @stagers_bp.route("/download", methods=["GET"])
 def get_download():
-    """Download a stager
-    \nRequest Args Example:
-    \nhttp://localhost:8080/stagers/download?id=1&encoding=base64&random_size=True&timeout=5000&format=py&delay=10&finished=true
-    """
     # Get Request Data
     use_json = request.args.get("json", "").lower() == "true"
-    id = request.args.get("id", "")
+    stager_id = request.args.get("id", "")
     one_liner = request.args.get("one_liner", "") == "true"
 
-    if not id.isdigit():
+    if not stager_id.isdigit():
         return generate_response("error", "Invalid ID.", "stagers", 400)
-    id = int(id)
+    stager_id = int(stager_id)
     # Check if Stager exists
     stager: StagerModel = db_session.query(
-        StagerModel).filter_by(stager_id=id).first()
+        StagerModel).filter_by(stager_id=stager_id).first()
     if stager is None:
         return generate_response("error", "Stager does not exist.", "stagers", 400)
 
     # Get Stager
     try:
-        stager_content = get_stager(id, one_liner)
+        stager_content = get_stager(stager_id, one_liner)
     except Exception as e:
         return generate_response("error", str(e), "stagers", 500)
     else:

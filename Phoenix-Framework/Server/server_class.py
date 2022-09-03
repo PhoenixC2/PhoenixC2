@@ -27,9 +27,9 @@ class ServerClass():
         try:
             return self.active_listeners[str(listener_id)]
         except ValueError:
-            raise Exception("Invalid ID") from None
+            raise Exception("Invalid ID.") from None
         except IndexError:
-            raise Exception("Listener does not exist") from None
+            raise Exception("Listener is not active.") from None
 
     def add_active_listener(self, listener: BaseListener):
         """Add a listener to the server"""

@@ -10,29 +10,28 @@ from argparse import ArgumentParser
 """if not os.getuid() == 0:
     print("Please start with Sudo or Root Rights")
     exit()"""
-
-parser = ArgumentParser("pfserver", usage="sudo pfserver [options]", description="Start the Phoenix Framework Server.")
+parser = ArgumentParser("pfserver", usage="sudo pfserver [options]", description="Start the Phoenix-Framework C2 server.")
 
 web = parser.add_argument_group("Web Server")
-web.add_argument("-a", "--address", help=f"The Address [{socket.gethostbyname(socket.gethostname())}]",
+web.add_argument("-a", "--address", help=f"The address [{socket.gethostbyname(socket.gethostname())}]",
                     default=socket.gethostbyname(socket.gethostname()))
 web.add_argument(
     "-p", "--port", help="The Port [8080]", type=int, default=8080)
 web.add_argument("-s", "--ssl", help="Use SSL [false]", action="store_true")
 
 cli = parser.add_argument_group("CLI")
-cli.add_argument("-d", "--debug", help="Enable Debugging [false]", action="store_true")
-cli.add_argument("-b", "--banner", help="Disable Banner [false]", action="store_true")
+cli.add_argument("-d", "--debug", help="Enable debugging [false]", action="store_true")
+cli.add_argument("-b", "--banner", help="Disable banner [false]", action="store_true")
 cli.add_argument("-q", "--quiet", help="Disable all output [false]", action="store_true")
 
 misc = parser.add_argument_group("Misc")
-misc.add_argument("-v", "--version", help="Print the Version", action="store_true")
-misc.add_argument("-l", "--location", help="The Location of the Framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/")
+misc.add_argument("-v", "--version", help="Print the version and exit", action="store_true")
+misc.add_argument("-l", "--location", help="The Location of the framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/")
 args = parser.parse_args()
 
 # Check if location is valid
 if not os.path.isdir(args.location):
-    print("[ERROR] Invalid Location.")
+    print("[ERROR] Invalid location.")
     exit()
 
 sys.path.insert(0, args.location)
@@ -44,54 +43,54 @@ from Utils.misc import version
 from Server.server_class import ServerClass
 from Server.services import start_listeners, start_web
 """except ImportError:
-    print("[ERROR] Not all required Libraries are installed.")
+    print("[ERROR] Not all required libraries are installed.")
     exit()"""
 
 if __name__ == "__main__":
 
-    # Get Arguments
+    # Get arguments
     if args.version:
-        ph_print("Phoenix Framework Server v" + version)
+        ph_print("Phoenix Framework server v" + version)
         exit()
     if args.quiet and args.debug:
-        print("[ERROR] -q and -d are mutually exclusive")
+        print("[ERROR] -q and -d are mutually exclusive.")
         exit()
     if args.quiet:
         os.environ["PHOENIX_LOG"] = "false"
-        print("Starting Phoenix Framework Server in Quiet Mode")
+        print("Starting Phoenix Framework in quiet mode.")
     if not args.banner:
         ph_print(logo)
     # Set Debugging
     if args.debug:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     
-    # Initialize Server
+    # Initialize server
     server = ServerClass()
 
-    log("Welcome to Phoenix Framework", "success")
-    # Start Listeners
-    log("Starting Listeners", "info")
+    log("Welcome to Phoenix Framework.", "success")
+    # Start listeners
+    log("Starting listeners.", "info")
     try:
         start_listeners(server)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
-    log("Listeners started", "success")
+    log("Listeners started.", "success")
 
-    # Start the Web Server
-    log("Starting Web Server", "info")
+    # Start the web server
+    log("Starting web server.", "info")
     try:
         web = start_web(args.address, args.port, args.ssl, server, args.debug)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
     else:
-        log("Web Server started", "success")
+        log("Web server started.", "success")
 
-    log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port}", "info")
+    log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port} .", "info")
     log(f"Press CTRL+C to exit.", "info")
     if args.quiet:
-        print("Finished Startup")
+        print("Finished startup.")
     while True:
         try:
             time.sleep(1)
