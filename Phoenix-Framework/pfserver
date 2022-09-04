@@ -26,7 +26,7 @@ cli.add_argument("-q", "--quiet", help="Disable all output [false]", action="sto
 
 misc = parser.add_argument_group("Misc")
 misc.add_argument("-v", "--version", help="Print the version and exit", action="store_true")
-misc.add_argument("-l", "--location", help="The Location of the framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/")
+misc.add_argument("-l", "--location", help="The Location of the framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/Server")
 args = parser.parse_args()
 
 # Check if location is valid
