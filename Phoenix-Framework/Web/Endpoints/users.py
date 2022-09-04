@@ -27,7 +27,8 @@ def get_users():
     data = [user.to_json() for user in users]
     if curr_user.admin:
         for index, user in enumerate(users):
-            if not user.admin and not curr_user.username == user:
+            if user.admin and not curr_user.username == "phoenix" \
+                and not curr_user.username == user.username:
                 continue
             data[index]["api_key"] = user.api_key
 
