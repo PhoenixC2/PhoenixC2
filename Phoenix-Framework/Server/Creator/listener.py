@@ -12,7 +12,8 @@ def add_listener(listener_type: str = None,
                     name: str = None,
                     address: str = None,
                     port: int = None,
-                    ssl: bool = False) -> str:
+                    ssl: bool = False,
+                    connection_limit: int = 5) -> str:
     """
     Create a listener
 
@@ -43,7 +44,8 @@ def add_listener(listener_type: str = None,
                              listener_type=listener_type,
                              address=address,
                              port=port,
-                             ssl=ssl)
+                             ssl=ssl,
+                             connection_limit=connection_limit)
     db_session.add(listener)
     db_session.commit()
     return f"Listener {name} created"

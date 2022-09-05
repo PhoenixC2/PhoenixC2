@@ -35,17 +35,21 @@ def listeners_bp(server: ServerClass):
         address = request.form.get("address")
         port = request.form.get("port")
         ssl = request.form.get("ssl").lower() == "true"
+        connection_limit = request.form.get("connection_limit", "")
 
         # Check if Data is Valid
         if not listener_type or not name or not address or not port:
             return generate_response("error", "Missing required data.", "listeners", 400)
         if not port.isdigit():
-            return generate_response("error", "Invalid Port.", "listeners", 400)
+            return generate_response("error", "Invalid port.", "listeners", 400)
         port = int(port)
+        if not connection_limit.isdigit():
+            return generate_response("error", "Invalid connection limit.", "listeners", 400)
+        connection_limit = int(connection_limit)
 
         # Create Listener
         try:
-            add_listener(listener_type, name, address, int(port), ssl)
+            add_listener(listener_type, name, address, port, ssl, connection_limit)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
 

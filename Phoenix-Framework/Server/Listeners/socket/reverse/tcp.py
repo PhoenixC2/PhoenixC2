@@ -96,7 +96,7 @@ class Listener(BaseListener):
     def start(self):
         try:
             self.listener.bind((self.address, self.port))
-            self.listener.listen()
+            self.listener.listen(self.db_entry.connection_limit)
         except socket.error as e:
             raise Exception(str(e).split("]")[1][1:]) from None
         # Start the Listener and Refresher
