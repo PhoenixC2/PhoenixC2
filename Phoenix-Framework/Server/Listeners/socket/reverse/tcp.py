@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from Utils.ui import log
 from Database import db_session
 from Database import ListenerModel
-from Server import ServerClass
+from Commander import Commander
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
@@ -18,7 +18,7 @@ from Listeners.base import BaseListener
 class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
 
-    def __init__(self, server: ServerClass, db_entry: ListenerModel):
+    def __init__(self, server: Commander, db_entry: ListenerModel):
         super().__init__(server, db_entry)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.settimeout(2)

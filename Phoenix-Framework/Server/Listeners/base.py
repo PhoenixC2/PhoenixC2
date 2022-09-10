@@ -8,17 +8,17 @@ from Handlers.base import BaseHandler
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
     from Database.listeners import ListenerModel
-    from Server.server_class import ServerClass
+    from Commander.commander import Commander
 
 
 class BaseListener():
     """This is the Base Class for all Listeners"""
 
-    def __init__(self, server: "ServerClass", db_entry: "ListenerModel"):
+    def __init__(self, server: "Commander", db_entry: "ListenerModel"):
         self.address = db_entry.address
         self.port = db_entry.port
         self.ssl = db_entry.ssl
-        self.server: "ServerClass" = server
+        self.server: "Commander" = server
         self.db_entry: "ListenerModel" = db_entry
         self.id: int = db_entry.listener_id
         self.handlers: dict[str, BaseHandler] = {}

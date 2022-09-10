@@ -1,41 +1,47 @@
 import string
+import os
 import random
 import subprocess
+import uuid
+from Utils.ui import log
 from Database import *
 from Database.base import Base
 
 
-def create_super_user():
+def recreate_super_user():
     """Create the head admin."""
-    print("[INFO] Creating admin.")
-
     existing_admin = db_session.query(UserModel).first()
     if existing_admin is not None:
-        print("[INFO] Deleting old admin.")
+        log("Deleting current admin.", "info")
         db_session.delete(existing_admin)
-
+        db_session.commit()
+        log("Deleted current admin.", "success")
+    log("Creating new admin", "info")
     password = "".join(random.choice(string.ascii_letters + string.digits)
                        for _ in range(10))
     admin = UserModel(
+        user_id=1,
         username="phoenix",
         admin=True,
+        api_key=str(uuid.uuid1())
     )
     admin.set_password(password)
     db_session.add(admin)
     db_session.commit()
-    print("[SUCCESS] Admin user created.")
-    print(f"Credentials: phoenix:{password}")
+    log("Admin user created.", "success")
+    log(f"Credentials: phoenix:{password}", "success")
 
 
 def generate_database():
     """Create the database."""
-    print("[INFO] Creating Database")
+    log("Creating database", "info")
     Base.metadata.create_all(engine)
+    log("Created the database.")
 
 
-def generate_ssl(path: str):
+def generate_ssl(location: str):
     """Generate the ssl certificates."""
-    print("[INFO] Generating SSL certificates.")
+    log("Generating SSL certificates.", "info")
     country = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=2))
     state = "".join(random.choices(
@@ -47,9 +53,9 @@ def generate_ssl(path: str):
         string.ascii_uppercase + string.digits, k=10))
     common_name = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=10))
-    subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", path + "Data/ssl.key",
-                    "-out", path + "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
-    print("[SUCCESS] Generated SSL certificates.")
+    subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", location + "Data/ssl.key",
+                    "-out", location + "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
+    log("Generated SSL certificates.", "success")
 
 
 def backup_database():
@@ -67,14 +73,16 @@ def degrade_to_sub():
     ...
 
 
-def reset_database():
+def reset_database(location: str):
     """Reset the database."""
+    
     ...
 
 
 def reset_table(table: str):
     """Reset a table."""
-    model = {
+    
+    models = {
         "users": UserModel,
         "listeners": ListenerModel,
         "stagers": StagerModel,
@@ -83,7 +91,15 @@ def reset_table(table: str):
         "devices": DeviceModel,
         "logs": LogEntryModel
 
-    }[table]
+    }
+    if table not in models:
+        log(f"{table} doesn't exist.", "error")
+        exit(1)
+    log(f"Resetting {table}")
+    model = models[table]
+    count = 0
     for entry in db_session.query(model).all():
         db_session.delete(entry)
+        count += 1
     db_session.commit()
+    log(f"Deleted {count} columns from {table}.", "success")

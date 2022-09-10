@@ -7,7 +7,7 @@ from .base import Base
 from .stagers import StagerModel
 
 if TYPE_CHECKING:
-    from Server.server_class import ServerClass
+    from Commander.commander import Commander
 
 
 class ListenerModel(Base):
@@ -32,7 +32,7 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_json(self, server: "ServerClass") -> dict:
+    def to_json(self, server: "Commander") -> dict:
         return {
             "id": self.listener_id,
             "name": self.name,

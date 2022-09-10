@@ -4,8 +4,8 @@ from Handlers.base import BaseHandler
 from Listeners.base import BaseListener
 
 
-class ServerClass():
-    """This is the C2 Server Class which handles the devices & listeners"""
+class Commander():
+    """This is the Commander which handles the devices & listeners"""
 
     def __init__(self):
         self.active_handlers_count = 0

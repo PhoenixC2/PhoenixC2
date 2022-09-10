@@ -3,7 +3,7 @@ import time
 import importlib
 from typing import Optional
 from Database import db_session, ListenerModel
-from Server.server_class import ServerClass
+from Commander.commander import Commander
 from Listeners.base import BaseListener
 from .options import AVAILABLE_LISTENERS
 
@@ -51,7 +51,7 @@ def add_listener(listener_type: str = None,
     return f"Listener {name} created"
 
 
-def start_listener(listener_db: ListenerModel, server: ServerClass) -> Optional[str]:
+def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[str]:
     """
     Start a listener
 
@@ -83,7 +83,7 @@ def start_listener(listener_db: ListenerModel, server: ServerClass) -> Optional[
         return f"Started Listener with ID {listener_db.listener_id}"
 
 
-def stop_listener(listener_db: ListenerModel, server: ServerClass) -> None:
+def stop_listener(listener_db: ListenerModel, server: Commander) -> None:
     """
     Stop a listener
 
@@ -95,7 +95,7 @@ def stop_listener(listener_db: ListenerModel, server: ServerClass) -> None:
     listener.stop()
     server.remove_listener(listener_db.listener_id)
 
-def restart_listener(listener_db: ListenerModel, server: ServerClass) -> None:
+def restart_listener(listener_db: ListenerModel, server: Commander) -> None:
     """
     Restart a listener
     

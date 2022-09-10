@@ -117,7 +117,7 @@ def edit_user():
         return generate_response("error", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
-    if username == "phoenix" and current_user != "phoenix":
+    if username == "phoenix" and current_user.username != "phoenix":
         return generate_response("error", "Can't edit the Phoenix Account.", "users", 403)
     # Edit user
     if change == "admin" and username != "phoenix":
@@ -130,7 +130,7 @@ def edit_user():
         user.set_password(value)
         db_session.commit()
         log(f"({current_user}) updated {username}'s password.", "success")
-        return generate_response("success", f"Updated {username}'s username to {value}.", "users")
+        return generate_response("success", f"Updated {username}'s password to {value}.", "users")
 
     elif change == "username" and username != "phoenix":
         if db_session.query(UserModel).filter_by(username=value).first() or value == "":

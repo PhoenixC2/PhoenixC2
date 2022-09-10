@@ -8,10 +8,10 @@ from flask import (
     request)
 from Utils.web import generate_response, authorized
 from Database import db_session, DeviceModel
-from Server.server_class import ServerClass
+from Commander.commander import Commander
 
 
-def devices_bp(server: ServerClass):
+def devices_bp(server: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
     @devices_bp.route("/", methods=["GET"])

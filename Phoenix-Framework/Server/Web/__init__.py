@@ -5,12 +5,12 @@ import logging
 from flask import Flask, cli, session, flash, redirect
 from Web.Endpoints import *
 from Web.Endpoints.authorization import get_current_user
-from Server.server_class import ServerClass
+from Commander.commander import Commander
 
 # disable flask logging
 
 
-def create_web(server: ServerClass, debug: bool):
+def create_web(server: Commander, debug: bool):
     web_server = Flask(__name__)
     if not debug:
         cli.show_server_banner = lambda *args: None

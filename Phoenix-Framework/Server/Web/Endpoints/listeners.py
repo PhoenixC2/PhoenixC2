@@ -11,10 +11,10 @@ from Utils.web import generate_response, authorized, get_current_user
 from Database import db_session, ListenerModel
 from Creator.listener import add_listener, start_listener, stop_listener, restart_listener
 from Creator.options import AVAILABLE_LISTENERS
-from Server.server_class import ServerClass
+from Commander.commander import Commander
 
 
-def listeners_bp(server: ServerClass):
+def listeners_bp(server: Commander):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
 
     @listeners_bp.route("/", methods=["GET"])

@@ -4,10 +4,10 @@ from Utils.ui import log
 from Web import create_web
 from Database import db_session, ListenerModel
 from Creator.listener import start_listener
-from Server.server_class import ServerClass
+from Commander.commander import Commander
 
 
-def start_listeners(server: ServerClass):
+def start_listeners(server: Commander):
     """Start all listeners in the database"""
     # Get Listeners from Database
     listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
@@ -20,7 +20,7 @@ def start_listeners(server: ServerClass):
             log(str(error), "error")
 
 
-def start_web(web_address: str, web_port: int, ssl:bool, server: ServerClass, debug:bool):
+def start_web(web_address: str, web_port: int, ssl:bool, server: Commander, debug:bool):
     """Start the web server"""
     web_server = create_web(server, debug)
     if ssl:

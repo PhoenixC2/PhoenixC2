@@ -71,9 +71,9 @@ if __name__ == "__main__":
     os.chdir(args.location)
 
     # try:
-    from Server.services import start_listeners, start_web
-    from Server.server_class import ServerClass
-    from Server.admin import reset_database, reset_table, create_super_user
+    from Commander.services import start_listeners, start_web
+    from Commander.commander import Commander
+    from Commander.admin import reset_database, reset_table, recreate_super_user
     from Utils.misc import version
     from Utils.ui import log, ph_print, logo
     """except ImportError:
@@ -91,7 +91,12 @@ if __name__ == "__main__":
         os.environ["PHOENIX_LOG"] = "false"
         print("Starting Phoenix Framework in quiet mode.")
     if not args.banner:
-        ph_print(logo)
+        ph_print(logo, True)
+    
+    # Check for admin actions
+    print(args)
+    if args.recreate_super_user:
+        recreate_super_user()
 
     # Set Debugging
     if args.debug:
@@ -99,7 +104,7 @@ if __name__ == "__main__":
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Initialize server
-    server = ServerClass()
+    server = Commander()
 
     log("Welcome to Phoenix Framework.", "success")
     # Start listeners
@@ -127,12 +132,9 @@ if __name__ == "__main__":
         print("Finished startup.")
     while True:
         try:
-            time.sleep(1)
+            print(input("Server > "))
         except KeyboardInterrupt:
             log("Exiting", alert="info")
-            os._exit(1)
-        except Exception as error:
-            log("Unknown Error", alert="critical")
-            log(str(error), "error")
-            os._exit(1)
+            os._exit(0)
+
 
