@@ -23,12 +23,12 @@ web.add_argument(
     "-p", "--port", help="The port [8080]", type=int, default=8080)
 web.add_argument("-s", "--ssl", help="Use SSL [false]", action="store_true")
 
-cli = parser.add_argument_group("CLI")
-cli.add_argument(
+output = parser.add_argument_group("Output")
+output.add_argument(
     "-d", "--debug", help="Enable debugging [false]", action="store_true")
-cli.add_argument("-b", "--banner",
+output.add_argument("-b", "--banner",
                  help="Disable banner [false]", action="store_true")
-cli.add_argument(
+output.add_argument(
     "-q", "--quiet", help="Disable all output [false]", action="store_true")
 
 misc = parser.add_argument_group("Misc")
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # try:
     from Server.services import start_listeners, start_web
     from Server.server_class import ServerClass
-    from Server.admin import 
+    from Server.admin import reset_database, reset_table, create_super_user
     from Utils.misc import version
     from Utils.ui import log, ph_print, logo
     """except ImportError:
