@@ -21,7 +21,7 @@ class ListenerModel(Base):
     address: str = Column(String(15))
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
-    connection_limit = Column(Integer)
+    connection_limit = Column(Integer, name="limit")
 
     def is_active(self, server):
         """Returns True if listeners is active, else False"""
