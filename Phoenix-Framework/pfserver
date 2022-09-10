@@ -80,10 +80,9 @@ if __name__ == "__main__":
         print("[ERROR] Not all required libraries are installed.")
         exit()"""
 
-    #rint(args)
     # Get arguments
     if args.version:
-        ph_print("Phoenix Framework server v" + version)
+        ph_print("Phoenix Framework C2 Server v" + version)
         exit()
     if args.quiet and args.debug:
         print("[ERROR] -q and -d are mutually exclusive.")

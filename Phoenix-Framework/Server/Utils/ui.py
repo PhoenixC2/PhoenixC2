@@ -35,7 +35,7 @@ logo = Add.Add("""
 console = Console()
 
 
-def log(text, alert=""):
+def log(text: str, alert: str=""):
     """Log important information to the console"""
     if os.getenv("PHOENIX_LOG") == "false":
         return
@@ -53,8 +53,8 @@ def log(text, alert=""):
     console.print("[" + alert.upper() + "] " + text, style=style)
 
 
-def ph_print(text):
+def ph_print(text: str, force: bool = False):
     """Print phoenix-styled text to the console"""
-    if os.getenv("PHOENIX_LOG") == "false":
+    if os.getenv("PHOENIX_LOG") == "false" and not force:
         return
     print(Colorate.Horizontal(Colors.yellow_to_red, text))
