@@ -95,6 +95,9 @@ if __name__ == "__main__":
     
     # Check for admin actions
     print(args)
+    if args.reset_database:
+        if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
+            reset_database(args.location)
     if args.recreate_super_user:
         recreate_super_user()
 

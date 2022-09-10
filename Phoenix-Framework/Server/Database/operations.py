@@ -4,10 +4,10 @@ from sqlalchemy import Column, String, Integer, DateTime, Text
 from .base import Base
 
 
-class LogEntryModel(Base):
-    """The Log Entries Model"""
-    __tablename__ = "Logs"
-    id: int = Column(Integer, primary_key=True,
+class OperationModel(Base):
+    """The Operation Model"""
+    __tablename__ = "Operations"
+    log_id: int = Column(Integer, primary_key=True,
                     nullable=False)
     log_type: str = Column(String(10), name="type") # info|alert|error|critical|success
     time: datetime = Column(DateTime)
@@ -15,7 +15,7 @@ class LogEntryModel(Base):
 
     def to_json(self) -> dict:
         return {
-            "id": self.id,
+            "id": self.log_id,
             "type": self.log_type,
             "time": self.time,
             "description": self.description

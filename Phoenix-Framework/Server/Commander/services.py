@@ -15,7 +15,7 @@ def start_listeners(server: Commander):
     for listener in listeners:
         try:
             start_listener(listener, server)
-            log(f"Started listener {listener.name} ({listener.listener_id})", "success")
+            log(f"Started listener {listener.name} ({listener.id})", "success")
         except Exception as error:
             log(str(error), "error")
 

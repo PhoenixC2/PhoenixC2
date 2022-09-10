@@ -20,7 +20,7 @@ class BaseListener():
         self.ssl = db_entry.ssl
         self.server: "Commander" = server
         self.db_entry: "ListenerModel" = db_entry
-        self.id: int = db_entry.listener_id
+        self.id: int = db_entry.id
         self.handlers: dict[str, BaseHandler] = {}
         self.stopped = False
         self.listener_thread: threading.Thread

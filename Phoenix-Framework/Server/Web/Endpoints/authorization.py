@@ -30,7 +30,7 @@ def post_login():
         user = get_current_user()
         if user is not None:
             log(f"Logged in as {user} ({'Admin' if user.admin else 'User'}).", "success")
-            session["id"] = user.user_id
+            session["id"] = user.id
             return generate_response("success", f"Successfully logged in as {user} using Api-Key")
         return generate_response("error", "Invalid Api-Key.", "login", 400)
     if username is None or password is None:
@@ -47,14 +47,14 @@ def post_login():
         old_user = get_current_user()
 
         if old_user is not None and old_user.username != username:
-            session["id"] = user.user_id
+            session["id"] = user.id
             log(f"{old_user.username} changed to {username}.", "success")
             if not use_json:
                 flash(f"Changed to {username}.", "success")
                 redirect("/")
             return jsonify({"status": "success", "message": f"Changed to {username}.", "api_key": user.api_key})
         else:
-            session["id"] = user.user_id
+            session["id"] = user.id
             log(f"{'Admin' if user.admin else 'User'} {username} logged in.", "success")
             if not use_json:
                 flash(

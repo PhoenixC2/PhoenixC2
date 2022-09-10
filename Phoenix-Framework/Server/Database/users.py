@@ -8,7 +8,7 @@ from .base import Base
 class UserModel(Base):
     """The Users Model"""
     __tablename__ = "Users"
-    user_id: int = Column(Integer, primary_key=True, nullable=False, name="id")
+    id: int = Column(Integer, primary_key=True, nullable=False)
     username: str = Column(String(50))
     password: str = Column(Text)
     api_key: str = Column(String(30), nullable=False)
@@ -27,7 +27,7 @@ class UserModel(Base):
     
     def to_json(self) -> dict:
         return {
-            "id": self.user_id,
+            "id": self.id,
             "username": self.username,
             "admin": self.admin,
             "last_online": self.last_online,
