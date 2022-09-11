@@ -42,8 +42,12 @@ def generate_database():
 def recreate_ssl(location: str):
     """Generate the ssl certificates."""
     log("Generating SSL certificates.", "info")
-    os.remove(location + "/Data/ssl.key")
-    os.remove(location + "/Data/ssl.pem")
+
+    if os.path.exists(location + "/Data/ssl.key"):
+        os.remove(location + "/Data/ssl.key")
+    if os.path.exists(location + "/Data/ssl.pem"):
+        os.remove(location + "/Data/ssl.pem")
+    
     country = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=2))
     state = "".join(random.choices(
@@ -55,8 +59,10 @@ def recreate_ssl(location: str):
         string.ascii_uppercase + string.digits, k=10))
     common_name = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=10))
+
     subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", location + "Data/ssl.key",
                     "-out", location + "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
+        
     log("Generated SSL certificates.", "success")
 
 
@@ -77,14 +83,15 @@ def degrade_to_sub():
 
 def reset_database(location: str):
     """Reset the database."""
-    os.remove(location + "/Data/db.sqlite3")
+    if os.path.exists(location + "/Data/db.sqlite3"):
+        os.remove(location + "/Data/db.sqlite3")
     generate_database()
     ...
 
 
 def reset_table(table: str):
     """Reset a table."""
-    
+
     models = {
         "users": UserModel,
         "listeners": ListenerModel,

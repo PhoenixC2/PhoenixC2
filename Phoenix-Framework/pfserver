@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # try:
     from Commander.services import start_listeners, start_web
     from Commander.commander import Commander
-    from Commander.admin import reset_database, reset_table, recreate_super_user, recreate_ssl
+    from Utils.admin import reset_database, reset_table, recreate_super_user, recreate_ssl
     from Utils.misc import version
     from Utils.ui import log, ph_print, logo
     """except ImportError:

@@ -3,3 +3,5 @@ flask
 rich
 pystyle
 cryptography
+inetfaces
+requests
