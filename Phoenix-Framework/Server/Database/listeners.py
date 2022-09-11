@@ -1,13 +1,18 @@
 """The Listeners Model"""
+import importlib
 import json
 from typing import TYPE_CHECKING
-from sqlalchemy import Column, String, Integer, Boolean, JSON
-from sqlalchemy.orm import relationship, Session
+
+from sqlalchemy import JSON, Boolean, Column, Integer, String
+from sqlalchemy.orm import Session, relationship
+
 from .base import Base
 
 if TYPE_CHECKING:
-    from .stagers import StagerModel
     from Commander.commander import Commander
+    from Listeners.base import BaseListener
+
+    from .stagers import StagerModel
 
 
 class ListenerModel(Base):
@@ -54,3 +59,8 @@ class ListenerModel(Base):
         """Delete all stagers if listener is getting removed"""
         for stager in self.stagers:
             db_session.delete(stager)
+
+    def create_listener(self, commander: "Commander") -> "BaseListener":
+        """Create the Listener Object"""
+        return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
+        commander, self)

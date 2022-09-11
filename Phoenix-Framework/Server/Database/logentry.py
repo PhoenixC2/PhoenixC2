@@ -1,6 +1,8 @@
 """The Log Entries Model"""
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, DateTime, Text
+
+from sqlalchemy import Column, DateTime, Integer, String, Text
+
 from .base import Base
 
 

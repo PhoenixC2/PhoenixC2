@@ -1,25 +1,24 @@
 """Reverse Socket TCP Listener"""
 import socket
-import threading
 import ssl
+import threading
 import time
-from cryptography.fernet import Fernet
 from typing import TYPE_CHECKING
-from Utils.ui import log
-from Database import db_session
-from Database import ListenerModel
+
 from Commander import Commander
+from cryptography.fernet import Fernet
+from Database import ListenerModel, db_session
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
-
+from Utils.ui import log
 
 
 class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
 
-    def __init__(self, server: Commander, db_entry: ListenerModel):
-        super().__init__(server, db_entry)
+    def __init__(self, commander: Commander, db_entry: ListenerModel):
+        super().__init__(commander, db_entry)
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.settimeout(2)
         if self.ssl:
@@ -79,14 +78,14 @@ class Listener(BaseListener):
                             connection,
                             addr[0],
                             key,
-                            self.server.active_handlers_count + 1))
+                            self.commander.active_handlers_count + 1))
                 elif operating_system == "linux":
                     # Create a Linux Object to store the connection
                     self.add_handler(
                         Linux(
                             connection, addr[0],
                             key,
-                            self.server.active_handlers_count + 1))
+                            self.commander.active_handlers_count + 1))
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")

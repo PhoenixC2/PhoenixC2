@@ -1,6 +1,7 @@
 from functools import wraps
-from flask import Response, jsonify, redirect, flash, session, abort, request
-from Database import db_session, UserModel
+
+from Database import UserModel, db_session
+from flask import Response, abort, flash, jsonify, redirect, request, session
 
 
 def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:

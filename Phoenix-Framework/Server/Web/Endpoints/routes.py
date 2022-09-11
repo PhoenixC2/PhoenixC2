@@ -1,6 +1,7 @@
+from Database import DeviceModel, ListenerModel, StagerModel, db_session
 from flask import Blueprint, render_template
 from Utils.web import get_current_user
-from Database import db_session, DeviceModel, ListenerModel, StagerModel
+
 routes_bp = Blueprint("routes", __name__, url_prefix="/auth")
 
 

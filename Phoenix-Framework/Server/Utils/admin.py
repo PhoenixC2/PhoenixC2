@@ -1,11 +1,12 @@
-import string
 import os
 import random
+import string
 import subprocess
 import uuid
-from Utils.ui import log
+
 from Database import *
 from Database.base import Base
+from Utils.ui import log
 
 
 def recreate_super_user():

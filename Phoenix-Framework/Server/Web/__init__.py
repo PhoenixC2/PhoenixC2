@@ -1,13 +1,14 @@
 """The Web Server Class to interact with the Server using an API and a Web Interface"""
+import datetime
+import logging
 import random
 import string
-import logging
-import datetime
-from flask import Flask, cli, session, flash, redirect
+
+from Commander.commander import Commander
 from Database import db_session
+from flask import Flask, cli, flash, redirect, session
 from Web.Endpoints import *
 from Web.Endpoints.authorization import get_current_user
-from Commander.commander import Commander
 
 # disable flask logging
 

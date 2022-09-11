@@ -1,7 +1,9 @@
+import io
 import socket
 import time
-import io
+
 from Handlers.base import BaseHandler
+
 
 class Linux(BaseHandler):
     """The Linux Handler Class to interact with the Device"""

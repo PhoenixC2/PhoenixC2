@@ -1,7 +1,9 @@
 """The Users Model"""
 from datetime import datetime
 from hashlib import md5
-from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean
+
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+
 from .base import Base
 
 

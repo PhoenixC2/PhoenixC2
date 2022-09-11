@@ -1,18 +1,12 @@
-from flask import (
-    Blueprint,
-    send_file,
-    render_template,
-    jsonify,
-    flash,
-    redirect,
-    session,
-    request)
 from Commander.commander import Commander
+from Creator.options import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
+                             AVAILABLE_STAGERS)
+from Creator.stager import add_stager, get_stager
+from Database import StagerModel, db_session
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, send_file, session)
 from Utils.ui import log
-from Utils.web import generate_response, authorized, get_current_user
-from Database import db_session, StagerModel
-from Creator.stager import get_stager, add_stager
-from Creator.options import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS, AVAILABLE_STAGERS
+from Utils.web import authorized, generate_response, get_current_user
 
 
 def stagers_bp(commander: Commander):

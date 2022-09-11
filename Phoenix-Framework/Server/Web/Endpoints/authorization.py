@@ -1,16 +1,8 @@
-from flask import (
-    Blueprint,
-    abort,
-    session,
-    request,
-    render_template,
-    jsonify,
-    redirect,
-    flash,
-    escape)
+from Database import UserModel, db_session
+from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
+                   render_template, request, session)
 from Utils.ui import log
-from Utils.web import get_current_user, authorized, generate_response
-from Database import db_session, UserModel
+from Utils.web import authorized, generate_response, get_current_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -22,6 +14,7 @@ def get_login():
 
 @auth_bp.route("/login", methods=["POST"])
 def post_login():
+    print(dict(request.form))
     use_json = request.args.get("json", "").lower() == "true"
     api_key = request.headers.get("Api-Key")
     username = request.form.get("username")

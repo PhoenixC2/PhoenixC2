@@ -1,19 +1,10 @@
 import uuid
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    session,
-    jsonify,
-    redirect,
-    flash,
-    escape,
-    abort
-)
-from Utils.ui import log
-from Utils.web import authorized, admin, get_current_user, generate_response
-from Database import db_session, UserModel
 
+from Database import UserModel, db_session
+from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
+                   render_template, request, session)
+from Utils.ui import log
+from Utils.web import admin, authorized, generate_response, get_current_user
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
 

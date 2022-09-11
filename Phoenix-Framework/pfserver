@@ -108,22 +108,18 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # Initialize server
-    server = Commander()
+    # Initialize commander
+    commander = Commander()
 
     # Start listeners
     log("Starting listeners.", "info")
-    try:
-        start_listeners(server)
-    except Exception as e:
-        log(str(e), "error")
-        os._exit(1)
+    start_listeners(commander)
     log("Listeners started.", "success")
 
     # Start the web server
     log("Starting web server.", "info")
     try:
-        web = start_web(args.address, args.port, args.ssl, server, args.debug)
+        web = start_web(args.address, args.port, args.ssl, commander, args.debug)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)

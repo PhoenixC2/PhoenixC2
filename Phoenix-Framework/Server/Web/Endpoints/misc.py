@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request
-from Utils.misc import version, get_network_interfaces
-from Utils.web import authorized
 from Creator.options import *
+from flask import Blueprint, jsonify, request
+from Utils.misc import get_network_interfaces, version
+from Utils.web import authorized
+
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
 @misc_bp.route("/version", methods=["GET"])

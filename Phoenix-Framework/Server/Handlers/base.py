@@ -1,7 +1,8 @@
 import importlib
 import io
-from cryptography.fernet import Fernet
 from abc import abstractmethod
+
+from cryptography.fernet import Fernet
 from Modules.base import BaseModule
 
 

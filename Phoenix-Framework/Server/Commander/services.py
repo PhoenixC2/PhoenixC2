@@ -1,28 +1,29 @@
 """Starts the different services"""
 import threading
+
+from Commander.commander import Commander
+from Creator.listener import start_listener
+from Database import ListenerModel, db_session
 from Utils.ui import log
 from Web import create_web
-from Database import db_session, ListenerModel
-from Creator.listener import start_listener
-from Commander.commander import Commander
 
 
-def start_listeners(server: Commander):
+def start_listeners(commander: Commander):
     """Start all listeners in the database"""
     # Get Listeners from Database
     listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
     # Start Listeners
     for listener in listeners:
         try:
-            start_listener(listener, server)
+            start_listener(listener, commander)
             log(f"Started listener {listener.name} ({listener.id})", "success")
         except Exception as error:
             log(str(error), "error")
 
 
-def start_web(web_address: str, web_port: int, ssl:bool, server: Commander, debug:bool):
+def start_web(web_address: str, web_port: int, ssl:bool, commander: Commander, debug:bool):
     """Start the web server"""
-    web_server = create_web(server, debug)
+    web_server = create_web(commander, debug)
     if ssl:
         threading.Thread(
             target=web_server.run,

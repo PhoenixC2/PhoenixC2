@@ -1,17 +1,12 @@
-from flask import (
-    Blueprint,
-    render_template,
-    jsonify,
-    flash,
-    redirect,
-    session,
-    request)
-from Utils.ui import log
-from Utils.web import generate_response, authorized, get_current_user
-from Database import db_session, ListenerModel
-from Creator.listener import add_listener, start_listener, stop_listener, restart_listener
-from Creator.options import AVAILABLE_LISTENERS
 from Commander.commander import Commander
+from Creator.listener import (add_listener, restart_listener, start_listener,
+                              stop_listener)
+from Creator.options import AVAILABLE_LISTENERS
+from Database import ListenerModel, db_session
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, session)
+from Utils.ui import log
+from Utils.web import authorized, generate_response, get_current_user
 
 
 def listeners_bp(commander: Commander):

@@ -1,10 +1,12 @@
 """Create Listeners"""
-import time
 import importlib
+import time
 from typing import Optional
-from Database import db_session, ListenerModel
+
 from Commander.commander import Commander
+from Database import ListenerModel, db_session
 from Listeners.base import BaseListener
+
 from .options import AVAILABLE_LISTENERS
 
 
@@ -51,31 +53,31 @@ def add_listener(listener_type: str = None,
     return f"Listener {name} created"
 
 
-def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[str]:
+def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional[str]:
     """
     Start a listener
 
     :param listener_id: The ID of the listener
-    :param server: The main server
+    :param commander: The main commander
     :return: Status
 
     """
 
     # Check if Listener is already active
     try:
-        server.get_active_listener(listener_db.id)
+        commander.get_active_listener(listener_db.id)
     except:
         pass
     else:
         raise Exception("Listener is already active!") from None
+
     # Get the Listener from the File
-    listener: BaseListener = importlib.import_module("Listeners." + listener_db.type.replace("/", ".")).Listener(
-        server, listener_db)
+    listener =  listener_db.create_listener(commander)
 
     # Start Listener
     try:
         listener.start()
-        server.add_active_listener(listener)
+        commander.add_active_listener(listener)
     except Exception as e:
         raise Exception(
             str(e)) from None
@@ -83,25 +85,25 @@ def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[st
         return f"Started Listener with ID {listener_db.id}"
 
 
-def stop_listener(listener_db: ListenerModel, server: Commander) -> None:
+def stop_listener(listener_db: ListenerModel, commander: Commander) -> None:
     """
     Stop a listener
 
     :param listener_id: The ID of the listener
-    :param server: The main server
+    :param commander: The main commander
 
     """
-    listener = server.get_active_listener(listener_db.id)
+    listener = commander.get_active_listener(listener_db.id)
     listener.stop()
-    server.remove_listener(listener_db.id)
+    commander.remove_listener(listener_db.id)
 
-def restart_listener(listener_db: ListenerModel, server: Commander) -> None:
+def restart_listener(listener_db: ListenerModel, commander: Commander) -> None:
     """
     Restart a listener
     
     :param listener_id: The ID of the listener
-    :param server: The main server
+    :param commander: The main commander
     """
-    stop_listener(listener_db, server)
+    stop_listener(listener_db, commander)
     time.sleep(5)
-    start_listener(listener_db, server)
+    start_listener(listener_db, commander)

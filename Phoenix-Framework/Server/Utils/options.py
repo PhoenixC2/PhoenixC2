@@ -1,8 +1,12 @@
+"""Options for creating listeners and stagers"""
+# Inspired by https://github.com/BC-SECURITY/Empire
 import socket
-import requests
-from dataclasses import dataclass, field
 from abc import abstractmethod
-from misc import get_network_interfaces
+from dataclasses import dataclass, field
+
+import requests
+
+from .misc import get_network_interfaces
 
 
 @dataclass
@@ -146,52 +150,3 @@ class OptionPool():
 
     def to_json(self) -> list:
         return [option.to_json() for option in self.options]
-
-
-option_pool = OptionPool()
-options = [
-    Option(
-        name="Webhook",
-        type=UrlType,
-        required=False,
-        default="https://discord.com"
-    ),
-    Option(
-        name="SSL",
-        type=BooleanType,
-        default=False
-    ),
-    Option(
-        name="Name",
-        type=StringType,
-        required=True
-    ),
-    Option(
-        name="Limit",
-        type=IntegerType,
-        default=5,
-
-    ),
-    Option(
-        name="Address",
-        type=AddressType,
-        required=True
-    )]
-option_pool.options = options
-print("[Option Pool]")
-print(option_pool.to_json())
-
-data = {
-    "webhook": "https://discord.com",
-    "ssl": True,
-    "name": "Listener",
-    "limit": "33",
-    "address": "localhost"
-}
-print("[Data Before]")
-print(data)
-
-option_pool.validate_options(data)
-
-print("[Data After]")
-print(data)

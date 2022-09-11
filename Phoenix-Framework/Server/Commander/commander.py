@@ -1,5 +1,6 @@
-"""This is the C2 Server Class which handles the devices & listeners"""
+"""This is the C2 commander Class which handles the devices & listeners"""
 from typing import Optional
+
 from Handlers.base import BaseHandler
 from Listeners.base import BaseListener
 
@@ -32,17 +33,17 @@ class Commander():
             raise Exception("Listener is not active.") from None
 
     def add_active_listener(self, listener: BaseListener):
-        """Add a listener to the server"""
+        """Add a listener to the commander"""
         self.active_listeners_count += 1
         self.active_listeners[str(listener.id)] = listener
 
     def add_active_handler(self, handler: BaseHandler):
-        """Add a handler to the server"""
+        """Add a handler to the commander"""
         self.active_handlers_count += 1
         self.active_handlers[str(handler.id)] = handler
 
     def remove_listener(self, listener_id: int):
-        """Remove a listener from the server"""
+        """Remove a listener from the commander"""
         try:
             self.active_listeners.pop(str(listener_id))
             self.active_listeners_count -= 1
@@ -52,7 +53,7 @@ class Commander():
             raise Exception("Listener does not exist") from None
 
     def remove_handler(self, handler_id: int):
-        """Remove a device from the server by id"""
+        """Remove a device from the commander by id"""
         try:
             self.active_handlers.pop(str(handler_id))
             self.active_handlers_count -= 1

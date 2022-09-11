@@ -1,5 +1,5 @@
 """Create Loaders to download the stager and execute it."""
-from Database import db_session, StagerModel
+from Database import StagerModel, db_session
 
 
 def create_loader(stager_id: int, format: str, encoding:str):

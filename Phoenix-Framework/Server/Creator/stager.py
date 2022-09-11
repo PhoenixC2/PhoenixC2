@@ -1,12 +1,15 @@
 """Create Stagers to download or copy"""
-import random
 import base64
-import string
 import json
-from binascii import hexlify
+import random
+import string
 import urllib.parse
-from Database import db_session, StagerModel, ListenerModel
+from binascii import hexlify
+
+from Database import ListenerModel, StagerModel, db_session
+
 from .options import AVAILABLE_STAGERS
+
 
 def add_stager(name: str, listener_id: int,
                encoding: str = "base64",

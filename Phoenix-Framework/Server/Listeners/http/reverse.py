@@ -1,13 +1,14 @@
 # Reverse HTTP Listener
-from Utils import *
 from Handlers.http.reverse.tcp.linux import Linux
 from Handlers.http.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
+from Utils import *
+
 
 class Listener(BaseListener):
     """The Reverse HTTP Listener Class"""
-    def __init__(self, server, config, id):
-        super().__init__(server, config, id)
+    def __init__(self, commander, config, id):
+        super().__init__(commander, config, id)
     
     def refresh_connections(self):
         # Check if the connections are still alive
@@ -51,10 +52,10 @@ class Listener(BaseListener):
                     continue
                 if operating_system == "windows":
                     self.add_handler(
-                        Windows(connection, addr[0], key, self.server.active_handlers_count + 1))  # Create a Windows Object to store the connection
+                        Windows(connection, addr[0], key, self.commander.active_handlers_count + 1))  # Create a Windows Object to store the connection
                 elif operating_system == "linux":
                     self.add_handler(
-                        Linux(connection, addr[0], key, self.server.active_handlers_count + 1))  # Create a Linux Object to store the connection
+                        Linux(connection, addr[0], key, self.commander.active_handlers_count + 1))  # Create a Linux Object to store the connection
                 else:
                     log(f"Unknown Operating System: {operating_system}",
                         alert="error")

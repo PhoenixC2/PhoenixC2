@@ -1,24 +1,26 @@
 import threading
-from typing import TYPE_CHECKING
-from cryptography.fernet import Fernet
 from abc import abstractmethod
-from Handlers.base import BaseHandler
+from typing import TYPE_CHECKING
 
+from cryptography.fernet import Fernet
+from Handlers.base import BaseHandler
+from Utils.options import OptionPool
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
-    from Database.listeners import ListenerModel
     from Commander.commander import Commander
+    from Database.listeners import ListenerModel
 
 
 class BaseListener():
     """This is the Base Class for all Listeners"""
+    option_pool = OptionPool()
 
-    def __init__(self, server: "Commander", db_entry: "ListenerModel"):
+    def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
         self.address = db_entry.address
         self.port = db_entry.port
         self.ssl = db_entry.ssl
-        self.server: "Commander" = server
+        self.commander: "Commander" = commander
         self.db_entry: "ListenerModel" = db_entry
         self.id: int = db_entry.id
         self.handlers: dict[str, BaseHandler] = {}
@@ -46,12 +48,12 @@ class BaseListener():
     def add_handler(self, handler: BaseHandler):
         """Add a Handler to the Listener"""
         self.handlers[str(handler.id)] = handler
-        self.server.add_active_handler(handler)
+        self.commander.add_active_handler(handler)
 
     def remove_handler(self, handler: BaseHandler):
         """Remove a Handler from the Listener"""
         self.handlers.pop(str(handler.id))
-        self.server.remove_handler(handler.id)
+        self.commander.remove_handler(handler.id)
 
     @abstractmethod
     def refresh_connections(self):
