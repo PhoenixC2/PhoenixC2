@@ -20,7 +20,7 @@ def recreate_super_user():
     password = "".join(random.choice(string.ascii_letters + string.digits)
                        for _ in range(10))
     admin = UserModel(
-        user_id=1,
+        id=1,
         username="phoenix",
         admin=True,
         api_key=str(uuid.uuid1())
@@ -36,7 +36,7 @@ def generate_database():
     """Create the database."""
     log("Creating database", "info")
     Base.metadata.create_all(engine)
-    log("Created the database.")
+    log("Created the database.", "success")
 
 
 def generate_ssl(location: str):

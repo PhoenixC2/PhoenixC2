@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, Text
 from .base import Base
 
-
+#TODO Add Association Table for many to many relationship between operations and users|devices|credentials
 class OperationModel(Base):
     """The Operation Model"""
     __tablename__ = "Operations"

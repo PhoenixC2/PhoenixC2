@@ -5,6 +5,9 @@ Phoenix-Framework | Home
 {% block head %}
 <link rel="stylesheet" href="static/css/index.css">
 {% endblock %}
+
 {% block body %}
-<h1>Hello</h1>
+<p>Listeners: {{listeners|length}}</p>
+<p>Stagers: {{stagers|length}}</p>
+<p>Devices: {{devices | length}}</p>
 {% endblock %}

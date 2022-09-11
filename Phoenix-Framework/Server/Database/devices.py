@@ -19,7 +19,7 @@ class DeviceModel(Base):
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
 
-    def to_json(self, commander: Commander) -> dict:
+    def to_json(self, commander: "Commander") -> dict:
         data = {
             "id": self.id,
             "hostname": self.hostname,

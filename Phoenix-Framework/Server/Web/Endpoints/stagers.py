@@ -13,11 +13,11 @@ from Utils.web import generate_response, authorized, get_current_user
 from Database import db_session, StagerModel
 from Creator.stager import get_stager, add_stager
 from Creator.options import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS, AVAILABLE_STAGERS
-def stager_bp(commander: Commander):
 
+
+def stagers_bp(commander: Commander):
 
     stagers_bp = Blueprint("stagers", __name__, url_prefix="/stagers")
-
 
     @stagers_bp.route("/", methods=["GET"])
     @authorized
@@ -27,7 +27,6 @@ def stager_bp(commander: Commander):
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
         return render_template("stagers.html", stagers=stagers)
-
 
     @stagers_bp.route("/add", methods=["POST"])
     @authorized
@@ -65,7 +64,6 @@ def stager_bp(commander: Commander):
             log(f"({get_current_user().username}) Created Stager {name}", "success")
             return generate_response("success", f"Added Stager {name}.", "stagers")
 
-
     @stagers_bp.route("/remove", methods=["DELETE"])
     @authorized
     def delete_remove():
@@ -77,7 +75,7 @@ def stager_bp(commander: Commander):
 
         # Check if Stager exists
         stager: StagerModel = db_session.query(
-            StagerModel).filter_by(stager_id=stager_id).first()
+            StagerModel).filter_by(id=stager_id).first()
         if stager is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)
 
@@ -86,7 +84,6 @@ def stager_bp(commander: Commander):
 
         log(f"({get_current_user().username}) Deleted Stager with ID {stager_id}", "info")
         return generate_response("success", f"Deleted Stager with ID {stager_id}.", "stagers")
-
 
     @stagers_bp.route("/edit", methods=["PUT"])
     @authorized
@@ -105,7 +102,7 @@ def stager_bp(commander: Commander):
 
         # Check if Stager exists
         stager: StagerModel = db_session.query(
-            StagerModel).filter_by(stager_id=stager_id).first()
+            StagerModel).filter_by(id=stager_id).first()
         if stager is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)
 
@@ -120,14 +117,13 @@ def stager_bp(commander: Commander):
         elif change == "timeout" and value.isdigit():
             stager.timeout = int(value)
         elif change == "stager_format" or change == "format" and value in AVAILABLE_FORMATS:
-            stager.stager_format = value
+            stager.format = value
         elif change == "delay" and value.isdigit():
             stager.delay = int(value)
         else:
             return generate_response("error", "Invalid Change.", "stagers", 400)
         db_session.commit()
         return generate_response("success", f"Edited {change} to {value} for Stager with ID {stager_id}.", "stagers")
-
 
     @stagers_bp.route("/download", methods=["GET"])
     def get_download():
@@ -140,21 +136,21 @@ def stager_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "stagers", 400)
         stager_id = int(stager_id)
         # Check if Stager exists
-        stager: StagerModel = db_session.query(
-            StagerModel).filter_by(stager_id=stager_id).first()
-        if stager is None:
+        stager_db: StagerModel = db_session.query(
+            StagerModel).filter_by(id=stager_id).first()
+        if stager_db is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)
 
         # Get Stager
         try:
-            stager_content = get_stager(stager, one_liner)
+            stager_content = get_stager(stager_db, one_liner)
         except Exception as e:
             return generate_response("error", str(e), "stagers", 500)
         else:
-            if stager.stager_format == "py":
+            if stager_db.format == "py":
                 return jsonify({"status": "success", "data": stager_content}) if use_json else stager_content
-            elif stager.stager_format == "exe":
+            elif stager_db.format == "exe":
                 with open("/tmp/stager.exe", "wb") as f:
                     f.write(stager_content)
                 return send_file("/tmp/stager.exe", as_attachment=True, download_name=f"stager.exe")
-    return stager_bp
+    return stagers_bp

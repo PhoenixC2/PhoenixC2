@@ -33,20 +33,20 @@ def add_stager(name: str, listener_id: int,
 
     # Check if listener exists
     listener: ListenerModel = db_session.query(
-        ListenerModel).filter_by(listener_id=listener_id).first()
-    if listener is not None:
+        ListenerModel).filter_by(id=listener_id).first()
+    if listener is None:
         raise Exception(f"Listener with ID {listener.id} doesn't exist.")
     
     # Save the Stager to the Database
     stager = StagerModel(
         name=name,
-        listener_id=listener_id,
         encoding=encoding,
         random_size=random_size,
         timeout=timeout,
-        stager_format=stager_format,
+        format=stager_format,
         delay=delay
     )
+    listener.stagers.append(stager)
     db_session.add(stager)
     db_session.commit()
     return "Created Stager successfully!"
@@ -62,13 +62,11 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
 
     """
 
-    if stager_db.listener is None:
-        raise Exception("Couldn't find the listener.")
-    if stager_db.listener.listener_type not in AVAILABLE_STAGERS: # also works as the stager type
-        raise Exception(f"Stager {stager_db.listener.listener_type} is not available.")
+    if stager_db.listener.type not in AVAILABLE_STAGERS: # also works as the stager type
+        raise Exception(f"Stager {stager_db.listener.type} is not available.")
     # Get the Payload from the File
     try:
-        with open("Payloads/" + stager_db.listener.listener_type + ".py", "r") as f:
+        with open("Payloads/" + stager_db.listener.type + ".py", "r") as f:
             payload = f.read()
     except:
         raise Exception("Couldn't find the payload.")
@@ -95,7 +93,7 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
-    if not one_liner and not stager_db.stager_format == "exe":
+    if not one_liner and not stager_db.format == "exe":
         if stager_db.encoding == "base64":
             finished_payload = base64.b64encode(
                 finished_payload.encode()).decode()
@@ -124,9 +122,9 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
         else:
             raise Exception("encoding not supported")
 
-    if stager_db.stager_format == "py":
+    if stager_db.format == "py":
         return finished_payload
-    elif stager_db.stager_format == "exe":
+    elif stager_db.format == "exe":
         # Create the EXE
         pass
     else:

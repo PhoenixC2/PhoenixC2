@@ -92,7 +92,8 @@ if __name__ == "__main__":
         print("Starting Phoenix Framework in quiet mode.")
     if not args.banner:
         ph_print(logo, True)
-    
+
+    log("Welcome to Phoenix Framework.", "success")
     # Check for admin actions
     print(args)
     if args.reset_database:
@@ -109,7 +110,6 @@ if __name__ == "__main__":
     # Initialize server
     server = Commander()
 
-    log("Welcome to Phoenix Framework.", "success")
     # Start listeners
     log("Starting listeners.", "info")
     try:

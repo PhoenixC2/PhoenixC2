@@ -41,7 +41,7 @@ def add_listener(listener_type: str = None,
 
     # Save Listener
     listener = ListenerModel(name=name,
-                             listener_type=listener_type,
+                             type=listener_type,
                              address=address,
                              port=port,
                              ssl=ssl,
@@ -69,7 +69,7 @@ def start_listener(listener_db: ListenerModel, server: Commander) -> Optional[st
     else:
         raise Exception("Listener is already active!") from None
     # Get the Listener from the File
-    listener: BaseListener = importlib.import_module("Listeners." + listener_db.listener_type.replace("/", ".")).Listener(
+    listener: BaseListener = importlib.import_module("Listeners." + listener_db.type.replace("/", ".")).Listener(
         server, listener_db)
 
     # Start Listener

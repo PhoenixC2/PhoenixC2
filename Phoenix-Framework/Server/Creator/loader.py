@@ -13,7 +13,7 @@ def create_loader(stager_id: int, format: str, encoding:str):
         :string: the loader
     """
     # Check if stager exists
-    stager = db_session.query(StagerModel).filter_by(stager_id=stager_id)
+    stager = db_session.query(StagerModel).filter_by(id=stager_id)
     if stager is None:
         raise Exception(f"Stager with ID {stager_id} does not exist")
 

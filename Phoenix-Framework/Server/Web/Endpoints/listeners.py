@@ -35,7 +35,7 @@ def listeners_bp(commander: Commander):
         address = request.form.get("address")
         port = request.form.get("port")
         ssl = request.form.get("ssl").lower() == "true"
-        connection_limit = request.form.get("connection_limit", "")
+        connection_limit = request.form.get("limit", "")
 
         # Check if Data is Valid
         if not listener_type or not name or not address or not port:
@@ -69,7 +69,7 @@ def listeners_bp(commander: Commander):
 
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
-            ListenerModel).filter_by(listener_id=listener_id).first()
+            ListenerModel).filter_by(id=listener_id).first()
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
 
@@ -78,6 +78,7 @@ def listeners_bp(commander: Commander):
                 stop_listener(listener, commander)
                 log(f"({get_current_user().username}) Deleted and stopped listener with ID {listener_id}.", "info")
                 return generate_response("success", f"Deleted and stopped listener with ID {listener_id}.", "listeners")
+        listener.delete_stagers(db_session)
         db_session.delete(listener)
         db_session.commit()
         log(f"({get_current_user().username}) Deleted listener with ID {listener_id}.", "info")
@@ -100,7 +101,7 @@ def listeners_bp(commander: Commander):
 
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
-            ListenerModel).filter_by(listener_id=listener_id).first()
+            ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
@@ -135,7 +136,7 @@ def listeners_bp(commander: Commander):
 
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
-            ListenerModel).filter_by(listener_id=listener_id).first()
+            ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
@@ -162,7 +163,7 @@ def listeners_bp(commander: Commander):
 
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
-            ListenerModel).filter_by(listener_id=listener_id).first()
+            ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
@@ -189,7 +190,7 @@ def listeners_bp(commander: Commander):
 
         # Check if Listener exists
         listener: ListenerModel = db_session.query(
-            ListenerModel).filter_by(listener_id=listener_id).first()
+            ListenerModel).filter_by(id=listener_id).first()
 
         try:
             log(f"({get_current_user().username}) restarting listener with ID {listener_id}.", "success")

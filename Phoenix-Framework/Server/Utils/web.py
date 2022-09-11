@@ -18,7 +18,7 @@ def get_current_user() -> UserModel | None:
         user = db_session.query(UserModel).filter_by(api_key=request.headers.get("Api-Key")).first()
         if user is not None:
             return user
-    return db_session.query(UserModel).filter_by(user_id=session.get("id")).first()
+    return db_session.query(UserModel).filter_by(id=session.get("id")).first()
 
 def authorized(func):
     """Check if a user is logged in and redirect to login page if not"""

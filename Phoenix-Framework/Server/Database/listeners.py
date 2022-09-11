@@ -2,7 +2,7 @@
 import json
 from typing import TYPE_CHECKING
 from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from .base import Base
 
 if TYPE_CHECKING:
@@ -16,12 +16,10 @@ class ListenerModel(Base):
     id: int = Column(
         Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
-    listener_type: str = Column(String(100), name="type")
-    stagers: list[StagerModel] = relationship(
+    type: str = Column(String(100))
+    stagers: list["StagerModel"] = relationship(
         "StagerModel",
-        back_populates="Listeners",
-        cascade="all, delete",
-        passive_deletes=True)
+        back_populates="listener")
     address: str = Column(String(15))
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
@@ -36,14 +34,21 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_json(self, commander: "Commander") -> dict:
-        return {
+    def to_json(self, commander: "Commander", show_stagers: bool = True) -> dict:
+        data = {
             "id": self.id,
             "name": self.name,
-            "type": self.listener_type,
+            "type": self.type,
             "address": self.address,
             "port": self.port,
             "ssl": self.ssl,
             "active": self.is_active(commander),
-            "stagers": [stager.to_json() for stager in self.stagers]
         }
+        if show_stagers:
+            data["stagers"] = [stager.to_json(commander, False) for stager in self.stagers]
+        return data
+    
+    def delete_stagers(self, db_session: Session):
+        """Delete all stagers if listener is getting removed"""
+        for stager in self.stagers:
+            db_session.delete(stager)

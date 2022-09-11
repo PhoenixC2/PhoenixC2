@@ -13,7 +13,7 @@ class UserModel(Base):
     password: str = Column(Text)
     api_key: str = Column(String(30), nullable=False)
     admin: bool = Column(Boolean)
-    last_online: datetime = Column(DateTime)
+    last_activity: datetime = Column(DateTime)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(String(100), default="/static/images/icon.png")
 
@@ -30,9 +30,20 @@ class UserModel(Base):
             "id": self.id,
             "username": self.username,
             "admin": self.admin,
-            "last_online": self.last_online,
+            "last_activity": self.last_activity,
+            "status": self.activity_status(),
             "disabled": self.disabled,
             "profile_picture": self.profile_picture
         }
     def __str__(self) -> str:
         return self.username
+    
+    def activity_status(self) -> str:
+        """Returns the activity based on the last request timestamp"""
+        delta = (datetime.now() - self.last_activity).seconds * 60
+        if delta <= 5:
+            return "active"
+        elif delta <= 20:
+            return "inactive"
+        else:
+            "offline"

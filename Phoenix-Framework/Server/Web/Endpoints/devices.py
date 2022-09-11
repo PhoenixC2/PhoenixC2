@@ -21,7 +21,7 @@ def devices_bp(server: Commander):
         devices: list[DeviceModel | None] = db_session.query(DeviceModel).all()
         if use_json:
             return jsonify([device.to_json(server) for device in devices])
-        return render_template("devices/index.html", devices=devices)
+        return render_template("devices.html", devices=devices)
 
     @devices_bp.route("/reverse_shell", methods=["POST"])
     @authorized
