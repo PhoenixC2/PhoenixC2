@@ -38,7 +38,8 @@ def post_login():
 
     user: UserModel = db_session.query(
         UserModel).filter_by(username=username).first()
-
+    if user is None:
+        return generate_response("error", f"User {username} doesn't exist.", "login", 400)
     if user.disabled:
         log(f"{username} failed to log in because the account is disabled.", "warning")
         return generate_response("error", "Account is disabled.", "login", 401)

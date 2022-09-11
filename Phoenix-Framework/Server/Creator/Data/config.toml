@@ -1,0 +1,26 @@
+[web]
+address = "localhost"
+port = 8080
+ssl = false
+# Only show pages when special cookie is set
+hide = false
+
+[commander]
+type = "main" 
+main_server_address = "" # If this is a subserver
+main_server_port = 8080
+main_server_auth = "Authentication-Key"
+
+
+[database]
+type = "sqlite"
+sqlite_location = "/Data/db.sqlite3"
+mysql_user = "root"
+mysql_pass = "YourS3cuReP@ss"
+mysql_host = "localhost"
+mysql_port = 3306
+mysql_table = "Phoenix-Framework"
+
+[logging]
+location = "/Data/phoenix.log"
+enabled = false

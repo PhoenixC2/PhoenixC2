@@ -1,7 +1,7 @@
 """The Listeners Model"""
 import json
 from typing import TYPE_CHECKING
-from sqlalchemy import Column, String, Integer, Boolean
+from sqlalchemy import Column, String, Integer, Boolean, JSON
 from sqlalchemy.orm import relationship, Session
 from .base import Base
 
@@ -24,6 +24,7 @@ class ListenerModel(Base):
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
     connection_limit = Column(Integer, name="limit")
+    options: dict = Column(JSON, default=[])
 
     def is_active(self, commander: "Commander"):
         """Returns True if listeners is active, else False"""
@@ -43,6 +44,7 @@ class ListenerModel(Base):
             "port": self.port,
             "ssl": self.ssl,
             "active": self.is_active(commander),
+            "options": self.options
         }
         if show_stagers:
             data["stagers"] = [stager.to_json(commander, False) for stager in self.stagers]

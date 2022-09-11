@@ -39,9 +39,11 @@ def generate_database():
     log("Created the database.", "success")
 
 
-def generate_ssl(location: str):
+def recreate_ssl(location: str):
     """Generate the ssl certificates."""
     log("Generating SSL certificates.", "info")
+    os.remove(location + "/Data/ssl.key")
+    os.remove(location + "/Data/ssl.pem")
     country = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=2))
     state = "".join(random.choices(
