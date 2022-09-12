@@ -1,12 +1,12 @@
 """Options for creating listeners and stagers"""
 # Inspired by https://github.com/BC-SECURITY/Empire
 import socket
-from abc import abstractmethod
-from dataclasses import dataclass, field
-
 import requests
-
+import importlib
+from dataclasses import dataclass, field
+from abc import abstractmethod
 from .misc import get_network_interfaces
+from Creator.available import AVAILABLE_LISTENERS
 
 
 @dataclass
@@ -96,16 +96,37 @@ class AddressType(StringType):
 
 
 @dataclass
+class ChoiceType(OptionType):
+    choices: field(default_factory=list)
+    data_type: any
+
+    def validate(self, name: str, choice: str) -> bool:
+        if choice not in self.choices:
+            raise ValueError(
+                f"{choice} isn't in the available choices {self.choices} for '{name}'.)")
+
+    def __str__(self) -> str:
+        return f"Choice {self.choices}"
+
+
+@dataclass
 class Option():
     """"""
     name: str
     type: OptionType
+    _real_name: str = None
+    description: str = ""
     required: bool = False
     default: any = None
 
+    @property
+    def real_name(self) -> str:
+        if self._real_name is None:
+            return self.name.lower()
+        return self._real_name
+
     def validate_data(self, data: any) -> OptionType.data_type:
-        """Raises an exception if data isn't equivalent to the requirements"""
-        print(data)
+        """Raises an exception if data isn't fitting to the requirements"""
         if not data:
             if self.required and self.default is None:
                 raise ValueError(f"{self.name} is required.")
@@ -117,7 +138,7 @@ class Option():
             except ValueError:
                 raise TypeError(
                     f"{self.name} has to be a type of '{self.type.data_type.__name__}'.")
-            
+
         try:
             self.type.validate(self.name, data)
         except AttributeError:
@@ -127,8 +148,10 @@ class Option():
     def to_json(self) -> dict:
         return {
             "name": self.name,
+            "real-name": self.real_name,
             "type": self.type.__str__(),
             "required": self.required,
+            "description": self.description,
             "default": self.default
         }
 
@@ -142,11 +165,29 @@ class OptionPool():
         """Register a new option"""
         self.options.append(option)
 
-    def validate_options(self, data: dict) -> bool:
-        """Validate all options"""
+    def validate_data(self, data: dict) -> bool:
+        """Validate the data"""
+        cleaned_data = {}
         for option in self.options:
-            value = data.get(option.name.lower(), "")
-            data[option.name.lower()] = option.validate_data(value)
+            value = data.get(option.real_name, "")
+            cleaned_data[option.real_name] = option.validate_data(value)
+        return cleaned_data
 
     def to_json(self) -> list:
         return [option.to_json() for option in self.options]
+
+
+def get_options(listener_type: str) -> OptionPool:
+    """Get the options based on the listener type."""
+    
+    if listener_type not in AVAILABLE_LISTENERS:
+        raise ValueError(f"'{listener_type}' isn't available.")
+
+    try:
+        open("Listeners/" + listener_type + ".py", "r").close()
+    except:
+        raise Exception(f"Listener {listener_type} does not exist") from None
+    
+    listener = importlib.import_module(
+        "Listeners." + listener_type.replace("/", ".")).Listener
+    return listener.option_pool

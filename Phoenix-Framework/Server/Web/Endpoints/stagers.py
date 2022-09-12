@@ -1,5 +1,5 @@
 from Commander.commander import Commander
-from Creator.options import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
+from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
                              AVAILABLE_STAGERS)
 from Creator.stager import add_stager, get_stager
 from Database import StagerModel, db_session

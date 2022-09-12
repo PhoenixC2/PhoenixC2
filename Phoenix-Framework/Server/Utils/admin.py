@@ -40,14 +40,14 @@ def generate_database():
     log("Created the database.", "success")
 
 
-def recreate_ssl(location: str):
+def recreate_ssl():
     """Generate the ssl certificates."""
     log("Generating SSL certificates.", "info")
 
-    if os.path.exists(location + "/Data/ssl.key"):
-        os.remove(location + "/Data/ssl.key")
-    if os.path.exists(location + "/Data/ssl.pem"):
-        os.remove(location + "/Data/ssl.pem")
+    if os.path.exists("Data/ssl.key"):
+        os.remove("Data/ssl.key")
+    if os.path.exists("Data/ssl.pem"):
+        os.remove("Data/ssl.pem")
     
     country = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=2))
@@ -61,8 +61,8 @@ def recreate_ssl(location: str):
     common_name = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=10))
 
-    subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", location + "Data/ssl.key",
-                    "-out", location + "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
+    subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", "Data/ssl.key",
+                    "-out", "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
         
     log("Generated SSL certificates.", "success")
 
@@ -82,10 +82,10 @@ def degrade_to_sub():
     ...
 
 
-def reset_database(location: str):
+def reset_database():
     """Reset the database."""
-    if os.path.exists(location + "/Data/db.sqlite3"):
-        os.remove(location + "/Data/db.sqlite3")
+    if os.path.exists("Data/db.sqlite3"):
+        os.remove("Data/db.sqlite3")
     generate_database()
     ...
 

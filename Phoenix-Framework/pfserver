@@ -7,7 +7,7 @@ import os
 import sys
 from argparse import ArgumentParser
 
-config = {}  # not finished
+CONFIG = {}  # not finished
 
 # Check if the user is root
 """if not os.getuid() == 0:
@@ -27,7 +27,7 @@ output = parser.add_argument_group("Output")
 output.add_argument(
     "-d", "--debug", help="Enable debugging [false]", action="store_true")
 output.add_argument("-b", "--banner",
-                 help="Disable banner [false]", action="store_true")
+                    help="Disable banner [false]", action="store_true")
 output.add_argument(
     "-q", "--quiet", help="Disable all output [false]", action="store_true")
 
@@ -53,10 +53,9 @@ admin.add_argument("--reset-database-table",
                                                                       "devices",
                                                                       "logs"])
 
-argument_help = "Degrade to a sub server" \
-    if config.get('server-type', "") == "main" \
-    else "Promote the to a main server"
-admin.add_argument("--change", help=argument_help, action="store_true")
+admin.add_argument("--change", help="Degrade to a sub server"
+                   if CONFIG.get('server-type', "") == "main"
+                   else "Promote the to a main server", action="store_true")
 admin.add_argument("--recreate-ssl-certificates",
                    help="Recreate the ssl certificates", action="store_true")
 
@@ -98,11 +97,11 @@ if __name__ == "__main__":
     print(args)
     if args.reset_database:
         if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
-            reset_database(args.location)
+            reset_database()
     if args.recreate_super_user:
         recreate_super_user()
     if args.recreate_ssl_certificates:
-        recreate_ssl(args.location)
+        recreate_ssl()
     # Set Debugging
     if args.debug:
         logging.basicConfig(level=logging.DEBUG,
@@ -119,7 +118,8 @@ if __name__ == "__main__":
     # Start the web server
     log("Starting web server.", "info")
     try:
-        web = start_web(args.address, args.port, args.ssl, commander, args.debug)
+        web = start_web(args.address, args.port,
+                        args.ssl, commander, args.debug)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
@@ -136,5 +136,3 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             log("Exiting", alert="info")
             os._exit(0)
-
-

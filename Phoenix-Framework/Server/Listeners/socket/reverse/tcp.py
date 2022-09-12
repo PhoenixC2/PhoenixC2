@@ -5,20 +5,68 @@ import threading
 import time
 from typing import TYPE_CHECKING
 
-from Commander import Commander
 from cryptography.fernet import Fernet
+
 from Database import ListenerModel, db_session
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
+from Creator.available import AVAILABLE_LISTENERS
+from Utils.options import (AddressType, BooleanType, IntegerType, Option,
+                           OptionPool, OptionType, StringType, ChoiceType)
 from Utils.ui import log
+
+if TYPE_CHECKING:
+    from Commander import Commander
 
 
 class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
+    option_pool = OptionPool([
+        Option(
+            name="Name",
+            description="The name of the listener.",
+            type=StringType,
+            required=True,
+        ),
+        Option(
+            name="Type",
+            description="The Type of the listener.",
+            type=ChoiceType(AVAILABLE_LISTENERS, str),
+            required=True
+        ),
+        Option(
+            name="Address",
+            description="The address the listener should listen on.",
+            type=AddressType,
+            required=True,
+            default="0.0.0.0"
+        ),
+        Option(
+            name="Port",
+            description="The port the listener should listen on.",
+            type=IntegerType,
+            required=True,
+            default=9999
+        ),
+        Option(
+            name="SSL",
+            description="True if the listener should use ssl.",
+            type=BooleanType,
+            default=True
+        ),
+        Option(
+            name="Connection-Limit",
+            _real_name="limit",
+            description="How many devices can be connected to one listener at once.",
+            type=IntegerType,
+            default=5
+        )
+    ])
 
-    def __init__(self, commander: Commander, db_entry: ListenerModel):
+    def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)
+
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.settimeout(2)
         if self.ssl:
@@ -30,7 +78,7 @@ class Listener(BaseListener):
         self.listener_thread = threading.Thread(
             target=self.listen, name="Listener " + str(self.id))
         self.refresher_thread = threading.Thread(
-            target=self.refresh_connections, name="Refresher")
+            target=self.refresh_connections, name="Refresher " + str(self.id))
 
     def refresh_connections(self):
         while True:

@@ -1,4 +1,4 @@
-from Creator.options import *
+from Creator.available import *
 from flask import Blueprint, jsonify, request
 from Utils.misc import get_network_interfaces, version
 from Utils.web import authorized

@@ -8,7 +8,7 @@ from binascii import hexlify
 
 from Database import ListenerModel, StagerModel, db_session
 
-from .options import AVAILABLE_STAGERS
+from .available import AVAILABLE_STAGERS
 
 
 def add_stager(name: str, listener_id: int,

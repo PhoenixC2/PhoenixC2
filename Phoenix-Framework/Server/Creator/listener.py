@@ -7,15 +7,10 @@ from Commander.commander import Commander
 from Database import ListenerModel, db_session
 from Listeners.base import BaseListener
 
-from .options import AVAILABLE_LISTENERS
+from .available import AVAILABLE_LISTENERS
 
 
-def add_listener(listener_type: str = None,
-                    name: str = None,
-                    address: str = None,
-                    port: int = None,
-                    ssl: bool = False,
-                    connection_limit: int = 5) -> str:
+def add_listener(data: dict) -> str:
     """
     Create a listener
 
@@ -27,27 +22,11 @@ def add_listener(listener_type: str = None,
 
     """
     # Check if Listener exists
+    name = data["name"]
     if db_session.query(ListenerModel).filter_by(name=name).first():
         raise Exception(f"Listener {name} already exists.")
 
-    # Check if type is valid
-    if listener_type[0] == "/":
-        listener_type = listener_type[1:]
-
-    if listener_type not in AVAILABLE_LISTENERS:
-        raise Exception(f"Listener {listener_type} is not available.")
-    try:
-        open("Listeners/" + listener_type + ".py", "r").close()
-    except:
-        raise Exception(f"Listener {listener_type} does not exist") from None
-
-    # Save Listener
-    listener = ListenerModel(name=name,
-                             type=listener_type,
-                             address=address,
-                             port=port,
-                             ssl=ssl,
-                             connection_limit=connection_limit)
+    listener = ListenerModel.create_listener_from_data(data)
     db_session.add(listener)
     db_session.commit()
     return f"Listener {name} created"
@@ -72,7 +51,7 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
         raise Exception("Listener is already active!") from None
 
     # Get the Listener from the File
-    listener =  listener_db.create_listener(commander)
+    listener =  listener_db.get_listener_object(commander)
 
     # Start Listener
     try:

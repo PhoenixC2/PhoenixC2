@@ -1,11 +1,12 @@
 from Commander.commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
-from Creator.options import AVAILABLE_LISTENERS
+from Creator.available import AVAILABLE_LISTENERS
 from Database import ListenerModel, db_session
 from flask import (Blueprint, flash, jsonify, redirect, render_template,
                    request, session)
 from Utils.ui import log
+from Utils.options import get_options
 from Utils.web import authorized, generate_response, get_current_user
 
 
@@ -21,35 +22,28 @@ def listeners_bp(commander: Commander):
             return jsonify([listener.to_json(commander) for listener in listeners])
         return render_template("listeners.html", listeners)
 
+
     @listeners_bp.route("/add", methods=["POST"])
     @authorized
     def post_add():
         # Get Form Data
         listener_type = request.form.get("type")
         name = request.form.get("name")
-        address = request.form.get("address")
-        port = request.form.get("port")
-        ssl = request.form.get("ssl").lower() == "true"
-        connection_limit = request.form.get("limit", "")
-
-        # Check if Data is Valid
-        if not listener_type or not name or not address or not port:
-            return generate_response("error", "Missing required data.", "listeners", 400)
-        if not port.isdigit():
-            return generate_response("error", "Invalid port.", "listeners", 400)
-        port = int(port)
-        if not connection_limit.isdigit():
-            return generate_response("error", "Invalid connection limit.", "listeners", 400)
-        connection_limit = int(connection_limit)
-
-        # Create Listener
         try:
-            add_listener(listener_type, name, address, port, ssl, connection_limit)
+            # Check if data is valid and clean it
+            options = get_options(listener_type)
+            data = options.validate_data(dict(request.form))
+        except Exception as e:
+           return generate_response("error", str(e), "listeners", 400)
+        
+        # Add Listener
+        try:
+            add_listener(data)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
-        return generate_response("success", f"Created Listener {name} ({listener_type}).", "listeners")
+        return generate_response("success", f"Created Listener {name}' ({listener_type}).", "listeners")
 
     @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized
