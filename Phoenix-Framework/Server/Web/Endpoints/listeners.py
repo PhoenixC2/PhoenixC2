@@ -22,11 +22,20 @@ def listeners_bp(commander: Commander):
             return jsonify([listener.to_json(commander) for listener in listeners])
         return render_template("listeners.html", listeners)
 
+    @listeners_bp.route("/options", methods=["GET"])
+    @authorized
+    def get_options_():
+        # Get
+        listener_type = request.args.get("type")
+        try:
+            return jsonify(get_options(listener_type).to_json())
+        except Exception as e:
+            return generate_response("error", str(e), "listeners", 400)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized
     def post_add():
-        # Get Form Data
+        # Get request data
         listener_type = request.form.get("type")
         name = request.form.get("name")
         try:
@@ -34,9 +43,9 @@ def listeners_bp(commander: Commander):
             options = get_options(listener_type)
             data = options.validate_data(dict(request.form))
         except Exception as e:
-           return generate_response("error", str(e), "listeners", 400)
-        
-        # Add Listener
+            return generate_response("error", str(e), "listeners", 400)
+
+        # Add listener
         try:
             add_listener(data)
         except Exception as e:
@@ -48,7 +57,7 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized
     def delete_remove():
-        # Get Request Data
+        # Get request data
         listener_id = request.args.get("id", "")
         stop = request.form.get("stop", "").lower() == "true"
 
@@ -56,7 +65,7 @@ def listeners_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
-        # Check if Listener exists
+        # Check if listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(id=listener_id).first()
         if listener is None:
@@ -76,11 +85,11 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/edit", methods=["PUT"])
     @authorized
     def put_edit():
-        # Get Request Data
+        # Get request data
         change = request.form.get("change", "").lower()
         value = request.form.get("value", "")
         listener_id = request.args.get("id", "")
-        # Check if Data is Valid
+        # Check if data is valid
         if not change or not value or not listener_id:
             return generate_response("error", "Missing required data.", "listeners", 400)
 
@@ -88,7 +97,7 @@ def listeners_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
-        # Check if Listener exists
+        # Check if listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
@@ -116,14 +125,14 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/start", methods=["POST"])
     @authorized
     def post_start():
-        # Get Request Data
+        # Get request data
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
-        # Check if Listener exists
+        # Check if listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
@@ -143,14 +152,14 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/stop", methods=["POST"])
     @authorized
     def post_stop():
-        # Get Request Data
+        # Get request data
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
-        # Check if Listener exists
+        # Check if listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
@@ -170,14 +179,14 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/restart", methods=["POST"])
     @authorized
     def post_restart():
-        # Get Request Data
+        # Get request data
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
             return generate_response("error", "Invalid ID.", "listeners", 400)
         listener_id = int(listener_id)
 
-        # Check if Listener exists
+        # Check if listener exists
         listener: ListenerModel = db_session.query(
             ListenerModel).filter_by(id=listener_id).first()
 

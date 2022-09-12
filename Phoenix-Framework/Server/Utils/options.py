@@ -106,7 +106,7 @@ class ChoiceType(OptionType):
                 f"{choice} isn't in the available choices {self.choices} for '{name}'.)")
 
     def __str__(self) -> str:
-        return f"Choice {self.choices}"
+        return "Choice"
 
 
 @dataclass
@@ -146,14 +146,17 @@ class Option():
         return data
 
     def to_json(self) -> dict:
-        return {
+        data = {
             "name": self.name,
             "real-name": self.real_name,
-            "type": self.type.__str__(),
+            "type": self.type.__str__().lower(),
             "required": self.required,
             "description": self.description,
             "default": self.default
         }
+        if type(self.type) == ChoiceType:
+            data["choices"] = self.type.choices
+        return data
 
 
 @dataclass
