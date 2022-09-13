@@ -1,10 +1,8 @@
 from Commander.commander import Commander
-from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
-                             AVAILABLE_STAGERS)
+from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
 from Database import StagerModel, db_session
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, send_file, session)
+from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
 
@@ -21,6 +19,16 @@ def stagers_bp(commander: Commander):
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
         return render_template("stagers.html", stagers=stagers)
+
+    @stagers_bp.route("/options", methods=["GET"])
+    @authorized
+    def get_options():
+        # Get
+        listener_type = request.args.get("type")
+        try:
+            return jsonify(StagerModel.get_options_from_type(listener_type).to_json(commander))
+        except Exception as e:
+            return generate_response("error", str(e), "listeners", 400)
 
     @stagers_bp.route("/add", methods=["POST"])
     @authorized

@@ -1,5 +1,5 @@
 from Creator.available import *
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from Utils.misc import get_network_interfaces, version
 from Utils.web import authorized
 

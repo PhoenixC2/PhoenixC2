@@ -3,6 +3,7 @@ import importlib
 import json
 from typing import TYPE_CHECKING
 
+from Creator.available import AVAILABLE_LISTENERS
 from sqlalchemy import JSON, Boolean, Column, Integer, String
 from sqlalchemy.orm import Session, relationship
 
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from Commander.commander import Commander
     from Listeners.base import BaseListener
     from Utils.options import OptionPool
+
     from .stagers import StagerModel
 
 
@@ -67,13 +69,40 @@ class ListenerModel(Base):
         return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
             commander, self)
 
-    def get_options(self, commander: "Commander") -> "OptionPool":
-        """Return Options based on own listener type"""
-        return self.get_listener_object(commander).option_pool
+    def get_options_from_type(self) -> "OptionPool":
+        """Get the options based on the listener type."""
+
+        if self.type not in AVAILABLE_LISTENERS:
+            raise ValueError(f"'{self.type}' isn't available.")
+
+        try:
+            open("Listeners/" + self.type + ".py", "r").close()
+        except:
+            raise Exception(f"Listener {self.type} does not exist") from None
+
+        listener: "BaseListener" = importlib.import_module(
+            "Listeners." + self.type.replace("/", ".")).Listener
+        return listener.listener_pool
+
+    @staticmethod
+    def get_options_from_type(type: str) -> "OptionPool":
+        """Get the options based on the listener type."""
+
+        if type not in AVAILABLE_LISTENERS:
+            raise ValueError(f"'{type}' isn't available.")
+
+        try:
+            open("Listeners/" + type + ".py", "r").close()
+        except:
+            raise Exception(f"Listener {type} does not exist") from None
+
+        listener: "BaseListener" = importlib.import_module(
+            "Listeners." + type.replace("/", ".")).Listener
+        return listener.listener_pool
 
     @staticmethod
     def create_listener_from_data(data: dict):
-        standard = []  
+        standard = []
         # gets standard values present in every listener and remove them to only leave options
         for st_value in ["name", "type", "address", "port", "ssl", "limit"]:
             standard.append(data.pop(st_value))

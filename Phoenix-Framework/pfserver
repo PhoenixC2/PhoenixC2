@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 import logging
-import time
-import socket
 import os
+import socket
 import sys
+import time
 from argparse import ArgumentParser
 
 CONFIG = {}  # not finished
@@ -70,11 +70,12 @@ if __name__ == "__main__":
     os.chdir(args.location)
 
     # try:
-    from Commander.services import start_listeners, start_web
     from Commander.commander import Commander
-    from Utils.admin import reset_database, reset_table, recreate_super_user, recreate_ssl
+    from Commander.services import start_listeners, start_web
+    from Utils.admin import (recreate_ssl, recreate_super_user, reset_database,
+                             reset_table)
     from Utils.misc import version
-    from Utils.ui import log, ph_print, logo
+    from Utils.ui import log, logo, ph_print
     """except ImportError:
         print("[ERROR] Not all required libraries are installed.")
         exit()"""
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     # Start listeners
     log("Starting listeners.", "info")
     start_listeners(commander)
-    log("Listeners started.", "success")
+    log("All listeners started.", "success")
 
     # Start the web server
     log("Starting web server.", "info")

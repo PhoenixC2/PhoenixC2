@@ -5,15 +5,15 @@ import threading
 import time
 from typing import TYPE_CHECKING
 
+from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
+                               AVAILABLE_LISTENERS)
 from cryptography.fernet import Fernet
-
 from Database import ListenerModel, db_session
 from Handlers.socket.reverse.tcp.linux import Linux
 from Handlers.socket.reverse.tcp.windows import Windows
 from Listeners.base import BaseListener
-from Creator.available import AVAILABLE_LISTENERS
-from Utils.options import (AddressType, BooleanType, IntegerType, Option,
-                           OptionPool, OptionType, StringType, ChoiceType)
+from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
+                           Option, OptionPool, StringType, TableType)
 from Utils.ui import log
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class Listener(BaseListener):
     """The Reverse Tcp Listener Class"""
-    option_pool = OptionPool([
+    listener_pool = OptionPool([
         Option(
             name="Name",
             description="The name of the listener.",
@@ -56,11 +56,78 @@ class Listener(BaseListener):
             default=True
         ),
         Option(
-            name="Connection-Limit",
+            name="Connection limit",
             _real_name="limit",
             description="How many devices can be connected to one listener at once.",
             type=IntegerType,
             default=5
+        )
+    ])
+    stager_pool = OptionPool([
+        Option(
+            name="Name",
+            description="The name of the stager.",
+            type=StringType,
+            required=True,
+        ),
+        Option(
+            name="Listener",
+            description="The listener, the stager should connect to.",
+            type=TableType(db_session.query(ListenerModel).all(), ListenerModel),
+            required=True,
+            default=1
+        ),
+        Option(
+            name="Encoding",
+            description="The encoding to use.",
+            type=ChoiceType(AVAILABLE_ENCODINGS, "str"),
+            default=AVAILABLE_ENCODINGS[0]
+        ),
+        Option(
+            name="Random size",
+            _real_name="random_size",
+            description="Add random sized strings to the payload to bypass the AV.",
+            type=BooleanType,
+            default=False
+        ),
+        Option(
+            name="Timeout",
+            description="How often the stager should try to connect, before it will exit.",
+            type=IntegerType,
+            default=200
+        ),
+        Option(
+            name="Format",
+            description="The format of the stager.",
+            type=ChoiceType(AVAILABLE_FORMATS, str),
+            default=AVAILABLE_FORMATS[0]
+        ),
+        Option(
+            name="Proxy address",
+            _real_name="proxy_address",
+            description="The address of a proxy to use.",
+            type=AddressType,
+        ),
+        Option(
+            name="Proxy port",
+            _real_name="proxy_port",
+            description="The port of a proxy to use.",
+            type=IntegerType,
+            default=8080
+        ),
+        Option(
+            name="Proxy authentication",
+            _real_name="proxy_auth",
+            description="The Authentication to use (format=username:password).",
+            type=StringType,
+            default="username:password"
+        ),
+        Option(
+            name="Different address/domain",
+            _real_name="different-address",
+            description="Use a different address/domain then specified by the listener to connect to.",
+            type=AddressType,
+            required=False
         )
     ])
 
@@ -103,7 +170,7 @@ class Listener(BaseListener):
             try:
                 # Accept the Connection
                 connection, addr = self.listener.accept()
-            except socket.timeout:
+            except Exception:
                 pass
             else:
                 key = Fernet.generate_key()
@@ -114,7 +181,7 @@ class Listener(BaseListener):
                 try:
                     operating_system = self.decrypt(
                         connection.recv(1024), key).lower()
-                except socket.error:
+                except:
                     connection.close()
                     continue
                 log(

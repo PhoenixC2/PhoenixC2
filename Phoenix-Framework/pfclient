@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, '/usr/share/Phoenix-Framework/')
 os.chdir('/usr/share/Phoenix-Framework/')

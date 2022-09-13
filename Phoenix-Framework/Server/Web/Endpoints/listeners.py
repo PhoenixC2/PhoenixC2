@@ -1,12 +1,11 @@
 from Commander.commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
-from Creator.available import AVAILABLE_LISTENERS
 from Database import ListenerModel, db_session
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, session)
-from Utils.ui import log
+from flask import Blueprint, jsonify, render_template, request
+from Utils.misc import get_network_interfaces
 from Utils.options import get_options
+from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
 
 
@@ -28,7 +27,7 @@ def listeners_bp(commander: Commander):
         # Get
         listener_type = request.args.get("type")
         try:
-            return jsonify(get_options(listener_type).to_json())
+            return jsonify(ListenerModel.get_options_from_type(listener_type).to_json(commander))
         except Exception as e:
             return generate_response("error", str(e), "listeners", 400)
 
@@ -38,10 +37,18 @@ def listeners_bp(commander: Commander):
         # Get request data
         listener_type = request.form.get("type")
         name = request.form.get("name")
+        is_interface = request.args.get("is_interface", "").lower() == "true"
+        data = dict(request.form)
+        if is_interface:
+            interfaces = get_network_interfaces()
+            if data.get("address", "") in interfaces:
+                data["address"] = interfaces[data["address"]]
+            else:
+                return generate_response("error", "Invalid network interface.", "listeners", 400)
         try:
             # Check if data is valid and clean it
-            options = get_options(listener_type)
-            data = options.validate_data(dict(request.form))
+            options = ListenerModel.get_options_from_type(listener_type)
+            data = options.validate_data(data)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 400)
 

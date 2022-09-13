@@ -1,4 +1,6 @@
-import tomli, tomli_w
+import tomli
+import tomli_w
+
 
 def load_config(config_path: str) -> dict:
     """Load the config.toml file"""

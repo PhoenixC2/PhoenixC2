@@ -1,6 +1,6 @@
 from Database import UserModel, db_session
-from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
-                   render_template, request, session)
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, session)
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
 

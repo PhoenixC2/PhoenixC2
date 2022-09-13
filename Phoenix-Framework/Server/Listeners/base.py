@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 
 class BaseListener():
     """This is the Base Class for all Listeners"""
-    option_pool = OptionPool()
-
+    listener_pool = OptionPool()
+    stager_pool = OptionPool()
     def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
         self.address = db_entry.address
         self.port = db_entry.port

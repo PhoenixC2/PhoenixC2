@@ -1,18 +1,25 @@
 """Options for creating listeners and stagers"""
 # Inspired by https://github.com/BC-SECURITY/Empire
-import socket
-import requests
 import importlib
-from dataclasses import dataclass, field
+import socket
 from abc import abstractmethod
-from .misc import get_network_interfaces
-from Creator.available import AVAILABLE_LISTENERS
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, MutableSequence
 
+import requests
+from Creator.available import AVAILABLE_LISTENERS, AVAILABLE_STAGERS
+from Database import db_session
+from Database.base import Base
+
+from .misc import get_network_interfaces
+
+if TYPE_CHECKING:
+    from Commander.commander import Commander
 
 @dataclass
 class OptionType():
     """The base option-type"""
-    data_type = any
+    data_type = any = None
 
     def validate(name: str, data: any) -> bool:
         return True
@@ -97,16 +104,36 @@ class AddressType(StringType):
 
 @dataclass
 class ChoiceType(OptionType):
-    choices: field(default_factory=list)
+    choices: MutableSequence
     data_type: any
 
     def validate(self, name: str, choice: str) -> bool:
         if choice not in self.choices:
             raise ValueError(
-                f"{choice} isn't in the available choices {self.choices} for '{name}'.)")
+                f"{choice} isn't in the available choices for '{name}'.)")
 
     def __str__(self) -> str:
         return "Choice"
+
+
+@dataclass
+class TableType(OptionType):
+    choices: MutableSequence
+    model: any
+
+    def validate(self, name: str, id_or_name: int | str) -> bool:
+        print(id_or_name)
+        if type(id_or_name) == int:
+            if db_session.query(self.model).filter_by(id=id_or_name).first() not in self.choices:
+                raise ValueError(
+                    f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
+        else:
+            if db_session.query(self.model).filter_by(name=id_or_name).first() not in self.choices:
+                raise ValueError(
+                    f"There's no element with the name '{id_or_name}' the available choices for '{name}'.)")
+
+    def __str__(self) -> str:
+        return "Table"
 
 
 @dataclass
@@ -138,14 +165,13 @@ class Option():
             except ValueError:
                 raise TypeError(
                     f"{self.name} has to be a type of '{self.type.data_type.__name__}'.")
+            except:
+                pass
 
-        try:
-            self.type.validate(self.name, data)
-        except AttributeError:
-            pass
+        self.type.validate(self.name, data)
         return data
 
-    def to_json(self) -> dict:
+    def to_json(self, commander: "Commander") -> dict:
         data = {
             "name": self.name,
             "real-name": self.real_name,
@@ -156,6 +182,13 @@ class Option():
         }
         if type(self.type) == ChoiceType:
             data["choices"] = self.type.choices
+        elif type(self.type) == TableType:
+            try:
+                data["choices"] = [choice.to_json()
+                               for choice in self.type.choices]
+            except TypeError:
+                data["choices"] = [choice.to_json(commander)
+                               for choice in self.type.choices]        
         return data
 
 
@@ -176,21 +209,21 @@ class OptionPool():
             cleaned_data[option.real_name] = option.validate_data(value)
         return cleaned_data
 
-    def to_json(self) -> list:
-        return [option.to_json() for option in self.options]
+    def to_json(self, commander: "Commander") -> list:
+        return [option.to_json(commander) for option in self.options]
 
 
-def get_options(listener_type: str) -> OptionPool:
+def get_options(type: str) -> OptionPool:
     """Get the options based on the listener type."""
-    
-    if listener_type not in AVAILABLE_LISTENERS:
-        raise ValueError(f"'{listener_type}' isn't available.")
+
+    if type not in AVAILABLE_LISTENERS:
+        raise ValueError(f"'{type}' isn't available.")
 
     try:
-        open("Listeners/" + listener_type + ".py", "r").close()
+        open("Listeners/" + type + ".py", "r").close()
     except:
-        raise Exception(f"Listener {listener_type} does not exist") from None
-    
+        raise Exception(f"Listener {type} does not exist") from None
+
     listener = importlib.import_module(
-        "Listeners." + listener_type.replace("/", ".")).Listener
+        "Listeners." + type.replace("/", ".")).Listener
     return listener.option_pool
