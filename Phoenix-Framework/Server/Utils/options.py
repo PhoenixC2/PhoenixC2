@@ -14,7 +14,7 @@ from Database.base import Base
 from .misc import get_network_interfaces
 
 if TYPE_CHECKING:
-    from Commander.commander import Commander
+    from Commander import Commander
 
 @dataclass
 class OptionType():

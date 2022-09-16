@@ -1,4 +1,4 @@
-from Commander.commander import Commander
+from Commander import Commander
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
 from Database import StagerModel, db_session

@@ -1,4 +1,4 @@
-from Commander.commander import Commander
+from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
 from Database import ListenerModel, db_session

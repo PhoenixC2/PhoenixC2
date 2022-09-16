@@ -70,7 +70,7 @@ if __name__ == "__main__":
     os.chdir(args.location)
 
     # try:
-    from Commander.commander import Commander
+    from Commander import Commander
     from Commander.services import start_listeners, start_web
     from Utils.admin import (recreate_ssl, recreate_super_user, reset_database,
                              reset_table)

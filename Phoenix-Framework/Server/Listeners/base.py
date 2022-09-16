@@ -8,7 +8,7 @@ from Utils.options import OptionPool
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
-    from Commander.commander import Commander
+    from Commander import Commander
     from Database.listeners import ListenerModel
 
 

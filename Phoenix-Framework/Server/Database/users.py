@@ -33,20 +33,21 @@ class UserModel(Base):
             "username": self.username,
             "admin": self.admin,
             "last_activity": self.last_activity,
-            "status": self.activity_status(),
+            "status": self.activity_status,
             "disabled": self.disabled,
             "profile_picture": self.profile_picture
         }
     def __str__(self) -> str:
         return self.username
     
+    @property
     def activity_status(self) -> str:
         """Returns the activity based on the last request timestamp"""
         if self.last_activity is None:
             return "offline"
         delta = (datetime.now() - self.last_activity).seconds
         if delta <= 5 * 60:
-            return "active"
+            return "online"
         elif delta <= 20 * 60:
             return "inactive"
         else:

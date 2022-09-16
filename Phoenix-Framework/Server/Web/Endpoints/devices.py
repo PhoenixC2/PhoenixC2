@@ -1,4 +1,4 @@
-from Commander.commander import Commander
+from Commander import Commander
 from Database import DeviceModel, db_session
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.web import authorized, generate_response

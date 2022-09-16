@@ -3,7 +3,7 @@ import importlib
 import time
 from typing import Optional
 
-from Commander.commander import Commander
+from Commander import Commander
 from Database import ListenerModel, db_session
 from Listeners.base import BaseListener
 

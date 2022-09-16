@@ -4,9 +4,9 @@ import logging
 import random
 import string
 
-from Commander.commander import Commander
+from Commander import Commander
 from Database import db_session
-from flask import Flask, cli, flash, redirect, session
+from flask import Flask, cli
 from Web.Endpoints import *
 from Web.Endpoints.authorization import get_current_user
 
@@ -18,21 +18,12 @@ def create_web(commander: Commander, debug: bool):
     if not debug:
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
-
-    @web_server.before_request
-    def before_request():
-        user = get_current_user()
-        if user is not None:
-            if user.disabled:
-                flash("Your account got disabled!", "error")
-                session.clear()
-                return redirect("/")
-            user.last_activity = datetime.datetime.now()
-            db_session.commit()
-
+    
     web_server.config["SECRET_KEY"] = "".join(
         random.choice(string.ascii_letters) for i in range(32))
-    web_server.register_blueprint(routes_bp, url_prefix="/")
+    web_server.config["SECRET_KEY"] = "lol"
+    print("Using session key lol")
+    web_server.register_blueprint(routes_bp(commander), url_prefix="/")
     web_server.register_blueprint(auth_bp, url_prefix="/auth")
     web_server.register_blueprint(users_bp, url_prefix="/users")
     web_server.register_blueprint(stagers_bp(commander), url_prefix="/stagers")

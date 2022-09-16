@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from Commander.commander import Commander
+    from Commander import Commander
     from Listeners.base import BaseListener
     from Utils.options import OptionPool
 

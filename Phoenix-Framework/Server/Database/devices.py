@@ -9,7 +9,7 @@ from .base import Base
 from .credentials import CredentialModel
 
 if TYPE_CHECKING:
-    from Commander.commander import Commander
+    from Commander import Commander
 
 class DeviceModel(Base):
     """The Devices Model"""

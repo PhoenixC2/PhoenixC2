@@ -1,7 +1,7 @@
 """Starts the different services"""
 import threading
 
-from Commander.commander import Commander
+from Commander import Commander
 from Creator.listener import start_listener
 from Database import ListenerModel, db_session
 from Utils.ui import log
