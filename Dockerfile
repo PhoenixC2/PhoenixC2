@@ -1,9 +1,12 @@
-FROM python:3.10
+FROM python
 
-COPY . .
+EXPOSE 8080
+WORKDIR /tmp
 
-RUN python3 -m pip install -r requirements.txt
+COPY . . 
 
-RUN python3 install.py /usr/share/
+RUN python3 install.py -l "/Phoenix-Framework/" -p docker
 
-CMD [ "pfserver", "-a", "0.0.0.0" ]
+RUN rm -rf /tmp/*
+
+CMD ["python3", "/usr/bin/pfserver", "-a", "0.0.0.0", "-l", "/Phoenix-Framework/Server"]

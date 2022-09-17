@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import importlib
 import random
@@ -38,8 +39,12 @@ def install_requirements():
     print("[INFO] Installing python modules.")
     os.system("pip3 install -r requirements.txt -q")
     print("[SUCCESS] Installed python modules.")
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker
+    try:
+        import sqlalchemy
+        from sqlalchemy.orm import sessionmaker
+    except:
+        print("[ERROR] Couldn't import sqlalchemy.")
+        exit(1)
 
 
 def copy_binaries():
@@ -75,6 +80,8 @@ def generate_ssl(path: str):
 def create_connection(path: str):
     global Database, engine, db_session
     """Create the database connection"""
+    sys.path.insert(0, path + "/Server")
+    os.chdir(path + "/Server")
     Database = importlib.import_module("Phoenix-Framework.Server.Database")
     engine = sqlalchemy.create_engine(
         f"sqlite:///{path}/Server/Data/db.sqlite3")
@@ -96,9 +103,11 @@ def create_super_user():
     if existing_admin is not None:
         print("[INFO] Deleting old admin.")
         db_session.delete(existing_admin)
-
-    password = "".join(random.choice(string.ascii_letters + string.digits)
-                       for _ in range(10))
+    if args.password == "":
+        password = "".join(random.choice(string.ascii_letters + string.digits)
+                        for _ in range(10))
+    else:
+        password = args.password
     admin = Database.UserModel(
         username="phoenix",
         admin=True,
@@ -117,6 +126,8 @@ parser.add_argument("-l", "--location", help="The install location.",
                     default="/usr/share/Phoenix-Framework/")
 parser.add_argument(
     "-r", "--remove", help="Remove the framework :(", action="store_true")
+parser.add_argument(
+    "-p", "--password", help="The password to use for the super user account instead of a random one.", default="")
 if __name__ == "__main__":
     args = parser.parse_args()
     check_uid()
