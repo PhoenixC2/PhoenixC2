@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
-from Database import StagerModel, db_session
+from Database import StagerModel, db_session, ListenerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
@@ -15,7 +15,9 @@ def stagers_bp(commander: Commander):
     @authorized
     def index():
         use_json = request.args.get("json", "") == "true"
-        stagers: list[StagerModel] = db_session.query(StagerModel).all()
+        stager_query = db_session.query(StagerModel)
+        stagers: list[StagerModel] = stager_query.all()
+        opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
         return render_template("stagers.html", stagers=stagers)
@@ -33,44 +35,34 @@ def stagers_bp(commander: Commander):
     @stagers_bp.route("/add", methods=["POST"])
     @authorized
     def post_add():
-        # Get Form Data
-        use_json = request.args.get("json", "").lower() == "true"
+        # Get request data
         name = request.form.get("name")
-        listener_id = request.form.get("listener_id", "")
-        encoding = request.form.get("encoding", "base64")
-        random_size = request.form.get("random_size", "") == "true"
-        timeout = request.form.get("timeout", 5000)
-        stager_format = request.form.get("format", "py")
-        delay = request.form.get("delay", 1)
-
-        # Check if Data is Valid
-        if not listener_id or not name:
-            return generate_response("error", "Missing required data.", "stagers", 400)
-
-        if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "stagers", 400)
-        # Create Stager
+        listener = request.form.get("listener", "")
+        data = dict(request.form)
         try:
-            add_stager(
-                name,
-                listener_id,
-                encoding,
-                random_size,
-                timeout,
-                stager_format,
-                delay
-            )
+            # Check if data is valid and clean it
+            listener: ListenerModel = db_session.query(ListenerModel).filter_by(id=listener).first()
+            if listener is None:
+                return generate_response("error", f"Listener with ID ({listener}) doesn't exist.", "listeners", 400)
+            options = StagerModel.get_options_from_type(listener.type)
+            data = options.validate_data(data)
         except Exception as e:
-            return generate_response("error", str(e), "stagers", 500)
-        else:
-            log(f"({get_current_user().username}) Created Stager {name}", "success")
-            return generate_response("success", f"Added Stager {name}.", "stagers")
+            return generate_response("error", str(e), "listeners", 400)
+
+        # Add listener
+        #try:
+        add_stager(data)
+        #except Exception as e:
+        #    return generate_response("error", str(e), "listeners", 500)
+
+        log(f"({get_current_user().username}) Created Stager '{name}' ({listener.type}).", "success")
+        return generate_response("success", f"Created Stager '{name}' ({listener.type}).", "listeners")
 
     @stagers_bp.route("/remove", methods=["DELETE"])
     @authorized
     def delete_remove():
         # Get Request Data
-        stager_id = request.args.get("id", "")
+        stager_id = request.form.get("id", "")
 
         if not stager_id.isdigit():
             return generate_response("error", "Invalid ID.", "stagers", 400)

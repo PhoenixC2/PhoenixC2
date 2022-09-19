@@ -11,12 +11,7 @@ from Database import ListenerModel, StagerModel, db_session
 from .available import AVAILABLE_STAGERS
 
 
-def add_stager(name: str, listener_id: int,
-               encoding: str = "base64",
-               random_size: bool = False,
-               timeout: int = 5000,
-               stager_format: str = "py",
-               delay: int = 1) -> any:
+def add_stager(data: dict) -> any:
     """
     Add a stager to the database
     :name: The Name of the stager
@@ -29,30 +24,15 @@ def add_stager(name: str, listener_id: int,
     """
 
     # Check if name is already in use
-    stager: StagerModel = db_session.query(
-        StagerModel).filter_by(name=name).first()
-    if stager is not None:
+    name = data["name"]
+    if db_session.query(
+            StagerModel).filter_by(name=name).first() is not None:
         raise Exception(f"Stager {name} already exists")
-
-    # Check if listener exists
-    listener: ListenerModel = db_session.query(
-        ListenerModel).filter_by(id=listener_id).first()
-    if listener is None:
-        raise Exception(f"Listener with ID {listener.id} doesn't exist.")
     
-    # Save the Stager to the Database
-    stager = StagerModel(
-        name=name,
-        encoding=encoding,
-        random_size=random_size,
-        timeout=timeout,
-        format=stager_format,
-        delay=delay
-    )
-    listener.stagers.append(stager)
+    stager = StagerModel.create_stager_from_data(data)
     db_session.add(stager)
     db_session.commit()
-    return "Created Stager successfully!"
+    return f"Created '{name}' successfully!"
 
 
 def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
@@ -65,7 +45,7 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
 
     """
 
-    if stager_db.listener.type not in AVAILABLE_STAGERS: # also works as the stager type
+    if stager_db.listener.type not in AVAILABLE_STAGERS:  # also works as the stager type
         raise Exception(f"Stager {stager_db.listener.type} is not available.")
     # Get the Payload from the File
     try:
@@ -112,14 +92,14 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
         if stager_db.encoding == "base64":
             finished_payload = "import base64;" \
                 "exec(base64.b64decode(b'%s'))" % base64.b64encode(
-                finished_payload.encode()).decode()
+                    finished_payload.encode()).decode()
         elif stager_db.encoding == "hex":
             finished_payload = "from binascii import unhexlify;exec(unhexlify('%s'))" % hexlify(
                 finished_payload.encode()).decode()
         elif stager_db.encoding == "url":
             finished_payload = "import urllib.parse;" \
-            "exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
-                finished_payload)
+                "exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
+                    finished_payload)
         elif stager_db.encoding == "raw":
             pass
         else:

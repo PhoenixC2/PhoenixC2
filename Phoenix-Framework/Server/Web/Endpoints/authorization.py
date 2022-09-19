@@ -66,7 +66,6 @@ def post_login():
 @auth_bp.route("/logout")
 @authorized
 def logout():
-    use_json = request.args.get("json", "").lower() == "true"
     user = get_current_user()
     log(f"{'Admin' if user.admin else 'User'} {user} logged out.", "success")
     session.clear()

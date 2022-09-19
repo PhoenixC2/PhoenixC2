@@ -27,7 +27,7 @@
                   <div class="card-icon">
                     <i class="material-icons">earbuds</i>
                   </div>
-                  <p class="card-category">Actice Listeners</p>
+                  <p class="card-category">Active Listeners</p>
                   <h3 class="card-title">{{active_listeners}}</h3>
                 </div>
                 <div class="card-footer">
@@ -59,14 +59,14 @@
               <div class="card card-stats">
                 <div class="card-header card-header-info card-header-icon">
                   <div class="card-icon">
-                    <i class="fa fa-twitter"></i>
+                    <i class="material-icons">done</i>
                   </div>
-                  <p class="card-category">Followers</p>
-                  <h3 class="card-title"></h3>
+                  <p class="card-category">Connections Last Hour</p>
+                  <h3 class="card-title">{{connections_last_hour}}</h3>
                 </div>
                 <div class="card-footer">
                   <div class="stats">
-                    <a class="text-warning" href="#"></a>
+                    <p>{{connections_today}} connections today.</p>
                   </div>
                 </div>
               </div>
@@ -82,35 +82,27 @@
                   <table class="table table-hover">
                     <thead class="text-warning">
                       <th>ID</th>
-                      <th>Name</th>
-                      <th>Salary</th>
-                      <th>Country</th>
+                      <th>Hostname</th>
+                      <th>Address</th>
+                      <th>Last Online</th>
+                      <th>Manage</th>
                     </thead>
                     <tbody>
+                    {% if not devices|length %}
+                    <tr>
+                      <td>Nothing to see here.</td>
+                    </tr>
+                    {% endif %}
+                      {% for device in devices %}
                       <tr>
-                        <td>1</td>
-                        <td>Dakota Rice</td>
-                        <td>$36,738</td>
-                        <td>Niger</td>
+                        <td>{{device.id}}</td>
+                        <td>{{device.hostname}}</td>
+                        <td>{{device.address}}</td>
+                        <td>{{device.last_online}}</td>
+                        <td><a href="devices?open={{device.id}}"><button class="btn btn-warning">Manage</button></a></td>
                       </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>Minerva Hooper</td>
-                        <td>$23,789</td>
-                        <td>Curaçao</td>
-                      </tr>
-                      <tr>
-                        <td>3</td>
-                        <td>Sage Rodriguez</td>
-                        <td>$56,142</td>
-                        <td>Netherlands</td>
-                      </tr>
-                      <tr>
-                        <td>4</td>
-                        <td>Philip Chaney</td>
-                        <td>$38,735</td>
-                        <td>Korea, South</td>
-                      </tr>
+                      
+                      {% endfor %}
                     </tbody>
                   </table>
                 </div>

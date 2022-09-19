@@ -16,10 +16,12 @@ def listeners_bp(commander: Commander):
     @authorized
     def index():
         use_json = request.args.get("json", "").lower() == "true"
-        listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
+        listener_query = db_session.query(ListenerModel)
+        listeners: list[ListenerModel] = listener_query.all()
+        opened_listener = listener_query.filter_by(id=request.args.get("open")).first()
         if use_json:
             return jsonify([listener.to_json(commander) for listener in listeners])
-        return render_template("listeners.html", listeners)
+        return render_template("listeners.html", listeners, opened_listener=opened_listener)
 
     @listeners_bp.route("/options", methods=["GET"])
     @authorized

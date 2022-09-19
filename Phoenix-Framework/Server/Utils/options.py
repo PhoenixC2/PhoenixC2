@@ -16,13 +16,14 @@ from .misc import get_network_interfaces
 if TYPE_CHECKING:
     from Commander import Commander
 
+
 @dataclass
 class OptionType():
     """The base option-type"""
     data_type = any = None
 
     def validate(name: str, data: any) -> bool:
-        return True
+        return data
 
 
 @dataclass
@@ -70,7 +71,7 @@ class UrlType(StringType):
             raise requests.exceptions.MissingSchema(
                 f"The url for the option '{name}' is invalid.") from e
         else:
-            return True
+            return url
 
     def __str__() -> str:
         return "Url"
@@ -96,7 +97,7 @@ class AddressType(StringType):
             raise socket.gaierror(
                 f"{address} for the option '{name}' is invalid.") from e
         else:
-            return True
+            return address
 
     def __str__() -> str:
         return "Address"
@@ -111,6 +112,7 @@ class ChoiceType(OptionType):
         if choice not in self.choices:
             raise ValueError(
                 f"{choice} isn't in the available choices for '{name}'.)")
+        return choice
 
     def __str__(self) -> str:
         return "Choice"
@@ -122,15 +124,20 @@ class TableType(OptionType):
     model: any
 
     def validate(self, name: str, id_or_name: int | str) -> bool:
-        print(id_or_name)
-        if type(id_or_name) == int:
-            if db_session.query(self.model).filter_by(id=id_or_name).first() not in self.choices:
+        if str(id_or_name).isdigit():
+            object = db_session.query(
+                self.model).filter_by(id=id_or_name).first()
+            if object not in self.choices:
                 raise ValueError(
                     f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
+            return object
         else:
-            if db_session.query(self.model).filter_by(name=id_or_name).first() not in self.choices:
+            object = db_session.query(self.model).filter_by(
+                name=id_or_name).first()
+            if object not in self.choices:
                 raise ValueError(
-                    f"There's no element with the name '{id_or_name}' the available choices for '{name}'.)")
+                    f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
+            return object
 
     def __str__(self) -> str:
         return "Table"
@@ -168,7 +175,7 @@ class Option():
             except:
                 pass
 
-        self.type.validate(self.name, data)
+        data = self.type.validate(self.name, data)
         return data
 
     def to_json(self, commander: "Commander") -> dict:
@@ -185,10 +192,10 @@ class Option():
         elif type(self.type) == TableType:
             try:
                 data["choices"] = [choice.to_json()
-                               for choice in self.type.choices]
+                                   for choice in self.type.choices]
             except TypeError:
                 data["choices"] = [choice.to_json(commander)
-                               for choice in self.type.choices]        
+                                   for choice in self.type.choices]
         return data
 
 

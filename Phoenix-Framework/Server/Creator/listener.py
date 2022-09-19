@@ -21,15 +21,15 @@ def add_listener(data: dict) -> str:
     :return: status
 
     """
-    # Check if Listener exists
+    # Check if name is already in use
     name = data["name"]
-    if db_session.query(ListenerModel).filter_by(name=name).first():
+    if db_session.query(ListenerModel).filter_by(name=name).first() is not None:
         raise Exception(f"Listener {name} already exists.")
 
     listener = ListenerModel.create_listener_from_data(data)
     db_session.add(listener)
     db_session.commit()
-    return f"Listener {name} created"
+    return f"Created '{name}' successfully!"
 
 
 def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional[str]:

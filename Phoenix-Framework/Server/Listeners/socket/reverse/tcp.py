@@ -103,6 +103,12 @@ class Listener(BaseListener):
             default=AVAILABLE_FORMATS[0]
         ),
         Option(
+            name="Delay",
+            description="The delay before the stager should connect to the server.",
+            type=IntegerType,
+            default=1
+        ),
+        Option(
             name="Proxy address",
             _real_name="proxy_address",
             description="The address of a proxy to use.",

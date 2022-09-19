@@ -11,10 +11,13 @@ def devices_bp(commander: Commander):
     @authorized
     def get_devices_index():
         use_json = request.args.get("json", "").lower() == "true"
-        devices: list[DeviceModel | None] = db_session.query(DeviceModel).all()
+        device_query = db_session.query(DeviceModel)
+        devices: list[DeviceModel] = device_query.all()
         if use_json:
             return jsonify([device.to_json(commander) for device in devices])
-        return render_template("devices.html", devices=devices)
+        opened_device = device_query.filter_by(
+            id=request.args.get("open")).first()
+        return render_template("devices.html", devices=devices, opened_device=opened_device)
 
     @devices_bp.route("/reverse_shell", methods=["POST"])
     @authorized
@@ -28,7 +31,8 @@ def devices_bp(commander: Commander):
         device_id = int(device_id)
 
         try:
-            commander.get_active_handler(device_id).reverse_shell(address, port)
+            commander.get_active_handler(
+                device_id).reverse_shell(address, port)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
         else:

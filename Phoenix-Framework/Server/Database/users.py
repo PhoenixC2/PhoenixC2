@@ -45,10 +45,10 @@ class UserModel(Base):
         """Returns the activity based on the last request timestamp"""
         if self.last_activity is None:
             return "offline"
-        delta = (datetime.now() - self.last_activity).seconds
-        if delta <= 5 * 60:
+        delta = (datetime.now() - self.last_activity).seconds / 60
+        if delta <= 5:
             return "online"
-        elif delta <= 20 * 60:
+        elif delta <= 20:
             return "inactive"
         else:
             return "offline"

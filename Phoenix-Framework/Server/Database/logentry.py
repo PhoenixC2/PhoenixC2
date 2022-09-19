@@ -11,14 +11,15 @@ class LogEntryModel(Base):
     __tablename__ = "Logs"
     id: int = Column(Integer, primary_key=True,
                     nullable=False)
-    log_type: str = Column(String(10), name="type") # info|alert|error|critical|success
+    type: str = Column(String(10), name="type") # info|alert|error|critical|success
     time: datetime = Column(DateTime)
-    description: str = Column(Text)
+    description: str = Column(Text(100))
+    
 
     def to_json(self) -> dict:
         return {
             "id": self.id,
-            "type": self.log_type,
+            "type": self.type,
             "time": self.time,
             "description": self.description
         }

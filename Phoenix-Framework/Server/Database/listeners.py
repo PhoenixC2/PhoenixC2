@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from Utils.options import OptionPool
 
     from .stagers import StagerModel
+    from .devices import DeviceModel
 
 
 class ListenerModel(Base):
@@ -24,14 +25,18 @@ class ListenerModel(Base):
         Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
     type: str = Column(String(100))
-    stagers: list["StagerModel"] = relationship(
-        "StagerModel",
-        back_populates="listener")
     address: str = Column(String(15))
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
     connection_limit = Column(Integer, name="limit")
     options: dict = Column(JSON, default=[])
+    stagers: list["StagerModel"] = relationship(
+        "StagerModel",
+        back_populates="listener")
+    devices: list["DeviceModel"] = relationship(
+        "DeviceModel",
+        back_populates="listener"
+    )
 
     def is_active(self, commander: "Commander"):
         """Returns True if listeners is active, else False"""
@@ -42,8 +47,8 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_json(self, commander: "Commander", show_stagers: bool = True) -> dict:
-        data = {
+    def to_json(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> dict:
+        return {
             "id": self.id,
             "name": self.name,
             "type": self.type,
@@ -52,12 +57,14 @@ class ListenerModel(Base):
             "ssl": self.ssl,
             "limit": self.connection_limit,
             "active": self.is_active(commander),
-            "options": self.options
+            "options": self.options,
+            "stagers": [stager.to_json(commander, show_listener=False)
+                        for stager in self.stagers] if show_stagers
+            else [stager.id for stager in self.stagers],
+            "devices": [device.to_json(commander, show_listener=False)
+                        for device in self.devices] if show_devices
+            else [device.id for device in self.devices]
         }
-        if show_stagers:
-            data["stagers"] = [stager.to_json(
-                commander, False) for stager in self.stagers]
-        return data
 
     def delete_stagers(self, db_session: Session):
         """Delete all stagers if listener is getting removed"""
@@ -102,6 +109,7 @@ class ListenerModel(Base):
 
     @staticmethod
     def create_listener_from_data(data: dict):
+        """Create the stager using listener validated data"""
         standard = []
         # gets standard values present in every listener and remove them to only leave options
         for st_value in ["name", "type", "address", "port", "ssl", "limit"]:

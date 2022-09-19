@@ -15,7 +15,7 @@ class CredentialModel(Base):
     credential: str = Column(String(100))
     hash: bool = Column(Boolean, default=False)
     found_at: datetime = Column(DateTime)
-    notes : str = Column(Text)
+    notes : str = Column(Text(500))
 
     def to_json(self) -> dict:
         return {

@@ -1,4 +1,5 @@
 sqlalchemy
+sqlalchemy-utils
 flask
 rich
 pystyle
