@@ -120,21 +120,24 @@ class ChoiceType(OptionType):
 
 @dataclass
 class TableType(OptionType):
-    choices: MutableSequence
+    choices: callable 
+    # allows a updated version of the choices.
+    # if choices is all listeners and a new one is added it's not in the choices.
     model: any
 
     def validate(self, name: str, id_or_name: int | str) -> bool:
+        choices = self.choices()
         if str(id_or_name).isdigit():
             object = db_session.query(
                 self.model).filter_by(id=id_or_name).first()
-            if object not in self.choices:
+            if object not in choices:
                 raise ValueError(
                     f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
             return object
         else:
             object = db_session.query(self.model).filter_by(
                 name=id_or_name).first()
-            if object not in self.choices:
+            if object not in choices:
                 raise ValueError(
                     f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
             return object
@@ -192,10 +195,10 @@ class Option():
         elif type(self.type) == TableType:
             try:
                 data["choices"] = [choice.to_json()
-                                   for choice in self.type.choices]
+                                   for choice in self.type.choices()]
             except TypeError:
                 data["choices"] = [choice.to_json(commander)
-                                   for choice in self.type.choices]
+                                   for choice in self.type.choices()]
         return data
 
 

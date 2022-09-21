@@ -55,7 +55,7 @@ def add_user():
     db_session.add(user)
     db_session.commit()
     log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} {username}.", "success")
-    return generate_response("success", f"{'Admin' if admin else 'User'} {username} added.", "users")
+    return generate_response("success", f"{'Admin' if admin else 'User'} {username} added.", "users", 201)
 
 
 @users_bp.route("/remove", methods=["DELETE"])

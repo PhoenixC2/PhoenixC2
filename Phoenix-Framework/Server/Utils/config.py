@@ -1,12 +1,18 @@
+import os
 import tomli
 import tomli_w
 
 
-def load_config(config_path: str) -> dict:
+def load_config() -> dict:
     """Load the config.toml file"""
-    with open(config_path, "rb") as f:
-        return tomli.load(f)
-def dump_config(config_path : str, config: dict):
+    try:
+        with open(os.getenv("PHOENIX_CONFIG_PATH"), "rb") as f:
+            return tomli.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"The config file ({os.getenv('PHOENIX_CONFIG_PATH')}) doesn't exist.") from e
+    except tomli.TOMLDecodeError:
+        raise tomli.TOMLDecodeError(f"The config file ({os.getenv('PHOENIX_CONFIG_PATH')}) is an invalid format.")
+def dump_config(config: dict):
     """Dump the updated config"""
-    with open(config_path, "wb") as f:
+    with open(os.getenv("PHOENIX_CONFIG_PATH"), "wb") as f:
         tomli_w.dump(config, f)

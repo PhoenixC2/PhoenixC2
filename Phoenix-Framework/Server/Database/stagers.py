@@ -79,7 +79,6 @@ class StagerModel(Base):
     def create_stager_from_data(data: dict):
         """Create the stager using custom validated data"""
         standard = []
-        print(data)
         # gets standard values present in every stager and remove them to only leave options
         for st_value in ["name", "listener", "encoding", "random_size", "timeout", "format", "delay"]:
             standard.append(data.pop(st_value))

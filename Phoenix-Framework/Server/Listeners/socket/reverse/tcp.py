@@ -73,7 +73,7 @@ class Listener(BaseListener):
         Option(
             name="Listener",
             description="The listener, the stager should connect to.",
-            type=TableType(db_session.query(ListenerModel).all(), ListenerModel),
+            type=TableType(lambda : db_session.query(ListenerModel).all(), ListenerModel),
             required=True,
             default=1
         ),
@@ -126,7 +126,7 @@ class Listener(BaseListener):
             _real_name="proxy_auth",
             description="The Authentication to use (format=username:password).",
             type=StringType,
-            default="username:password"
+            default=""
         ),
         Option(
             name="Different address/domain",

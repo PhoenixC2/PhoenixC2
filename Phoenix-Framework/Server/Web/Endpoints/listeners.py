@@ -61,7 +61,7 @@ def listeners_bp(commander: Commander):
             return generate_response("error", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
-        return generate_response("success", f"Created Listener {name}' ({listener_type}).", "listeners")
+        return generate_response("success", f"Created Listener {name}' ({listener_type}).", "listeners", 201)
 
     @listeners_bp.route("/remove", methods=["DELETE"])
     @authorized

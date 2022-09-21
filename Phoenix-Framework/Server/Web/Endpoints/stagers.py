@@ -56,7 +56,7 @@ def stagers_bp(commander: Commander):
         #    return generate_response("error", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Stager '{name}' ({listener.type}).", "success")
-        return generate_response("success", f"Created Stager '{name}' ({listener.type}).", "listeners")
+        return generate_response("success", f"Created Stager '{name}' ({listener.type}).", "listeners", 201)
 
     @stagers_bp.route("/remove", methods=["DELETE"])
     @authorized

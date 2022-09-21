@@ -14,7 +14,6 @@ def get_login():
 
 @auth_bp.route("/login", methods=["POST"])
 def post_login():
-    print(dict(request.form))
     use_json = request.args.get("json", "").lower() == "true"
     api_key = request.headers.get("Api-Key")
     username = request.form.get("username")

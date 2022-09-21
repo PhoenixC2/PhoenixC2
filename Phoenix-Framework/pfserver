@@ -7,7 +7,6 @@ import sys
 import time
 from argparse import ArgumentParser
 
-CONFIG = {}  # not finished
 
 # Check if the user is root
 """if not os.getuid() == 0:
@@ -17,26 +16,27 @@ parser = ArgumentParser(
     "pfserver", usage="sudo pfserver [options]", description="Start the Phoenix-Framework C2 server.")
 
 web = parser.add_argument_group("Web Server")
-web.add_argument("-a", "--address", help=f"The address [{socket.gethostbyname(socket.gethostname())}]",
-                 default=socket.gethostbyname(socket.gethostname()))
+web.add_argument("-a", "--address", help=f"The address")
 web.add_argument(
-    "-p", "--port", help="The port [8080]", type=int, default=8080)
-web.add_argument("-s", "--ssl", help="Use SSL [false]", action="store_true")
+    "-p", "--port", help="The port", type=int)
+web.add_argument("-s", "--ssl", help="Use SSL", action="store_true")
 
 output = parser.add_argument_group("Output")
 output.add_argument(
-    "-d", "--debug", help="Enable debugging [false]", action="store_true")
+    "-d", "--debug", help="Enable debugging", action="store_true")
 output.add_argument("-b", "--banner",
-                    help="Disable banner [false]", action="store_true")
+                    help="Disable banner", action="store_true")
 output.add_argument(
-    "-q", "--quiet", help="Disable all output [false]", action="store_true")
+    "-q", "--quiet", help="Disable all output", action="store_true")
 
 misc = parser.add_argument_group("Misc")
 misc.add_argument("-v", "--version",
                   help="Print the version and exit", action="store_true")
 misc.add_argument("-l", "--location",
                   help="The location of the framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/Server")
-
+misc.add_argument("-c", "--config",
+                  help="Location of the config file. [/usr/share/Phoenix-Framework/Server/Data/config.toml]",
+                  default="/usr/share/Phoenix-Framework/Server/Data/config.toml")
 admin = parser.add_argument_group("Admin")
 admin.add_argument("--recreate-super-user",
                    help="Recreate the super user.", action="store_true")
@@ -53,34 +53,37 @@ admin.add_argument("--reset-database-table",
                                                                       "devices",
                                                                       "logs"])
 
-admin.add_argument("--change", help="Degrade to a sub server"
-                   if CONFIG.get('server-type', "") == "main"
-                   else "Promote the to a main server", action="store_true")
+admin.add_argument(
+    "--degrade", help="Degrade to a sub server", action="store_true")
+admin.add_argument(
+    "--promote", help="Promote the to a main server", action="store_true")
 admin.add_argument("--recreate-ssl-certificates",
                    help="Recreate the ssl certificates", action="store_true")
 
 if __name__ == "__main__":
     args = parser.parse_args()
     # Check if location is valid
+    os.environ["PHOENIX_CONFIG_PATH"] = args.config # set config path
     if not os.path.isdir(args.location):
         print("[ERROR] Invalid location.")
         exit()
 
     sys.path.insert(0, args.location)
     os.chdir(args.location)
-
     # try:
     from Commander import Commander
     from Commander.services import start_listeners, start_web
     from Utils.admin import (recreate_ssl, recreate_super_user, reset_database,
                              reset_table)
     from Utils.misc import version
+    from Utils.config import load_config
     from Utils.ui import log, logo, ph_print
     """except ImportError:
         print("[ERROR] Not all required libraries are installed.")
         exit()"""
+    config = load_config()
 
-    # Get arguments
+    # Output args
     if args.version:
         ph_print("Phoenix Framework C2 Server v" + version)
         exit()
@@ -93,9 +96,13 @@ if __name__ == "__main__":
     if not args.banner:
         ph_print(logo, True)
 
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
+
     log("Welcome to Phoenix Framework.", "success")
-    # Check for admin actions
-    print(args)
+
+    # admin args
     if args.reset_database:
         if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
             reset_database()
@@ -103,10 +110,15 @@ if __name__ == "__main__":
         recreate_super_user()
     if args.recreate_ssl_certificates:
         recreate_ssl()
-    # Set Debugging
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
+
+    # web-server args
+    # replace config data with args if they are specified
+    if args.address:
+        config["web"]["address"] = args.address
+    if args.port:
+        config["web"]["port"] = args.port
+    if args.ssl:
+        config["web"]["ssl"] = args.ssl
 
     # Initialize commander
     commander = Commander()
@@ -119,15 +131,16 @@ if __name__ == "__main__":
     # Start the web server
     log("Starting web server.", "info")
     try:
-        web = start_web(args.address, args.port,
-                        args.ssl, commander, args.debug)
+        web_config = config["web"] # shorten code
+        web = start_web(web_config["address"], web_config["port"],
+                        web_config["ssl"], commander, args.debug)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
     else:
         log("Web server started.", "success")
 
-    log(f"Accessible at http{'s' if args.ssl else ''}://{args.address}:{args.port} .", "info")
+    log(f"Accessible at http{'s' if web_config['ssl'] else ''}://{web_config['address']}:{web_config['port']} .", "info")
     log(f"Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")
