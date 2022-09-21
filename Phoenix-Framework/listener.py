@@ -1,37 +1,23 @@
+import threading
+import time
 from multiprocessing import Process
-from threading import Thread
 
 from flask import Flask, request
 
 
-class Listener():
+class Listener(Flask):
     """The Reverse Http Listener Class"""
-    api = Flask(__name__)
-
+    api = Flask()
     def __init__(self):
         super().__init__()
         self.address = "0.0.0.0"
         self.port = 9999
         self.handlers: list = []
-        self.listener_process: Process
-        self.create_api()
+        self.listener_thread: threading.Thread
+        self.refresher_thread: threading.Thread
 
-    def create_api(self):
-        self.api = Flask(__name__)
+    @api.route("/connect")
+    def _connect(self):
+        request.re
 
-        @self.api.route("/connect", methods=["POST"])
-        def connect():
-            data = request.get_json()
-
-    def start(self):
-        self.listener_process = Process(target=self.api.run)
-        Thread(target=self.listener_process.start).start()
-
-    def stop(self):
-        self.listener_process.kill()
-
-
-listener = Listener()
-listener.start()
-input()
-listener.stop()
+    def listen()
