@@ -17,11 +17,11 @@ main_server_auth = "Authentication-Key"
 [database]
 type = "sqlite"
 sqlite_location = "/usr/share/Phoenix-Framework/Server/Data/db.sqlite3"
-user = "root"
-pass = "YourS3cuReP@ss"
+user = "phoenix"
+pass = "YourS3cuReP4ss"
 host = "localhost"
 port = 3306
-database = "Phoenix-Framework"
+database = "PhoenixFramework"
 
 [logging]
 location = "/Data/phoenix.log"
