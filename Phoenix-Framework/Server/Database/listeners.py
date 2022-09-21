@@ -76,7 +76,7 @@ class ListenerModel(Base):
         return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
             commander, self)
 
-    def get_options_from_type(self) -> "OptionPool":
+    def get_optionse(self) -> "OptionPool":
         """Get the options based on the listener type."""
 
         if self.type not in AVAILABLE_LISTENERS:

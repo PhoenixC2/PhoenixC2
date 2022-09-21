@@ -4,7 +4,6 @@ from Creator.listener import (add_listener, restart_listener, start_listener,
 from Database import ListenerModel, db_session
 from flask import Blueprint, jsonify, render_template, request
 from Utils.misc import get_network_interfaces
-from Utils.options import get_options
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
 
@@ -14,18 +13,18 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/", methods=["GET"])
     @authorized
-    def index():
+    def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = db_session.query(ListenerModel)
         listeners: list[ListenerModel] = listener_query.all()
-        opened_listener = listener_query.filter_by(id=request.args.get("open")).first()
         if use_json:
             return jsonify([listener.to_json(commander) for listener in listeners])
+        opened_listener = listener_query.filter_by(id=request.args.get("open")).first()
         return render_template("listeners.html", listeners, opened_listener=opened_listener)
 
     @listeners_bp.route("/options", methods=["GET"])
     @authorized
-    def get_options_():
+    def get_options():
         # Get
         listener_type = request.args.get("type")
         try:

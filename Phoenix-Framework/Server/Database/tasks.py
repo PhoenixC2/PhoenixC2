@@ -1,5 +1,5 @@
 """The Tasks Model"""
-from datetime import datetime 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Text
@@ -10,13 +10,14 @@ if TYPE_CHECKING:
     from Commander import Commander
     from .devices import DeviceModel
 
+
 class TasksModel(Base):
     """The Tasks Model"""
     __tablename__ = "Tasks"
     id: int = Column(Integer, primary_key=True,
                      nullable=False)
     name: str = Column(String(10), unique=True)
-    device_id : int = Column(Integer, ForeignKey("Devices.id"))
+    device_id: int = Column(Integer, ForeignKey("Devices.id"))
     device: "DeviceModel" = relationship(
         "DeviceModel", back_populates="tasks"
     )
@@ -36,3 +37,9 @@ class TasksModel(Base):
             "created_at": self.created_at,
             "finished_at": self.finished_at
         }
+
+    def finish(self, output: str):
+        """Update the Task to be finished"""
+        self.output = output
+        self.finished_at = datetime.now()
+        

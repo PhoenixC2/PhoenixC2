@@ -221,19 +221,3 @@ class OptionPool():
 
     def to_json(self, commander: "Commander") -> list:
         return [option.to_json(commander) for option in self.options]
-
-
-def get_options(type: str) -> OptionPool:
-    """Get the options based on the listener type."""
-
-    if type not in AVAILABLE_LISTENERS:
-        raise ValueError(f"'{type}' isn't available.")
-
-    try:
-        open("Listeners/" + type + ".py", "r").close()
-    except:
-        raise Exception(f"Listener {type} does not exist") from None
-
-    listener = importlib.import_module(
-        "Listeners." + type.replace("/", ".")).Listener
-    return listener.option_pool

@@ -9,7 +9,7 @@ def devices_bp(commander: Commander):
 
     @devices_bp.route("/", methods=["GET"])
     @authorized
-    def get_devices_index():
+    def get_devices():
         use_json = request.args.get("json", "").lower() == "true"
         device_query = db_session.query(DeviceModel)
         devices: list[DeviceModel] = device_query.all()

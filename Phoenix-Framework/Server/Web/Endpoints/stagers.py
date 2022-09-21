@@ -13,14 +13,14 @@ def stagers_bp(commander: Commander):
 
     @stagers_bp.route("/", methods=["GET"])
     @authorized
-    def index():
+    def get_stagers():
         use_json = request.args.get("json", "") == "true"
         stager_query = db_session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
-        opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
-        return render_template("stagers.html", stagers=stagers)
+        opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
+        return render_template("stagers.html", stagers=stagers, opened_stager=opened_stager)
 
     @stagers_bp.route("/options", methods=["GET"])
     @authorized

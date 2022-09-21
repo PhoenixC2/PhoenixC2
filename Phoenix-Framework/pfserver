@@ -146,7 +146,8 @@ if __name__ == "__main__":
         print("Finished startup.")
     while True:
         try:
-            print(input("Server > "))
+            #print(input("Server > "))
+            time.sleep(1)
         except KeyboardInterrupt:
             log("Exiting", alert="info")
             os._exit(0)

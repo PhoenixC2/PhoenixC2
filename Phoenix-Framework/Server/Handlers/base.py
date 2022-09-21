@@ -4,18 +4,21 @@ from abc import abstractmethod
 
 from cryptography.fernet import Fernet
 from Modules.base import BaseModule
+from Database import db_session, TasksModel, DeviceModel
 
 
 class BaseHandler():
     """The Base Handler Class for all Devices"""
 
-    def __str__(self) -> str:
+    def __str__(self) -> TasksModel:
         return str(self.addr)
 
     def __init__(self, addr: str, key: bytes, id: int):
         self.addr = addr
         self.fernet = Fernet(key)
         self.id = id
+        self.device_db: DeviceModel
+        self.tasks: list[TasksModel] = []
         self.modules: list[BaseModule] = []
 
     def decrypt(self, data: str):
@@ -49,7 +52,7 @@ class BaseHandler():
         raise Exception("Module not found")
 
     @abstractmethod
-    def execute_module(self, name: str) -> str:
+    def execute_module(self, name: str) -> TasksModel:
         ...
 
     @abstractmethod
@@ -60,53 +63,43 @@ class BaseHandler():
             bool: True if yes, False if not
         """
     @abstractmethod
-    def reverse_shell(self, address: str, port: int) -> str:
+    def reverse_shell(self, address: str, port: int) -> TasksModel:
         """Open a Reverse Shell to a given Address:Port
         Args:
             address (str): Receiver Address
             port (int): Receiver Port
 
-        Returns:
-            str: Output or Error Message
         """
     @abstractmethod
-    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> str:
+    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> TasksModel:
         """Upload a File to a Device
         Args:
             local_file (string): Local file to upload
             remote_path (string): Remote path to upload the file to
-        Returns:
-            str: Output or Error Message
         """
         ...
 
     @abstractmethod
-    def file_download(self, remote_path: str) -> io.TextIOWrapper:
+    def file_download(self, remote_path: str) -> TasksModel:
         """Download a file from the device
         Args:
             remote_path (string): Remote File to download the file from
-        Returns:
-            str: Output or Error Message
         """
         ...
 
     @abstractmethod
-    def rce(self, cmd: str) -> str:
+    def rce(self, cmd: str) -> TasksModel:
         """Send a Cmd to a Device and return the Output
         Args:
             cmd (str): Command to execute
-        Returns:
-            str: Output of the command or Error Message
         """
         ...
 
     @abstractmethod
-    def get_directory_contents(self, dir: str) -> str:
+    def get_directory_contents(self, dir: str) -> TasksModel:
         """Get the contents of a directory
         Args:
             dir (str): Directory to get the contents of
-        Returns:
-            output (str): Output or Error Message
         """
         ...
 

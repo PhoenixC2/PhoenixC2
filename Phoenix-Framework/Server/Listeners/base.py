@@ -24,18 +24,14 @@ class BaseListener():
         self.db_entry: "ListenerModel" = db_entry
         self.id: int = db_entry.id
         self.handlers: dict[str, BaseHandler] = {}
-        self.stopped = False
-        self.listener_thread: threading.Thread
-        self.refresher_thread: threading.Thread
+        self.listener: threading.Thread
 
-    def status(self) -> tuple[bool, bool, bool]:
-        """Get Status of the Server
+    def status(self) -> True:
+        """Get status of the listener
 
         Returns:
-            bool: True if socket is running, False if not
-            bool: True if listener is running, False if not
-            bool: True if refresher is running, False if not"""
-        return self.stopped, self.listener_thread.is_alive(), self.refresher_thread.is_alive()
+            bool: True if listener is running, False if not"""
+        ...
 
     def decrypt(self, data: str, key: bytes) -> str:
         """Decrypt Data"""
