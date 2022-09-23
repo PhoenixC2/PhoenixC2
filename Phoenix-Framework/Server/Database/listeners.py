@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from Listeners.base import BaseListener
     from Utils.options import OptionPool
 
-    from .stagers import StagerModel
     from .devices import DeviceModel
+    from .stagers import StagerModel
 
 
 class ListenerModel(Base):

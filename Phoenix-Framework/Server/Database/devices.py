@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -10,6 +10,7 @@ from .credentials import CredentialModel
 
 if TYPE_CHECKING:
     from Commander import Commander
+
     from .listeners import ListenerModel
     from .tasks import TasksModel
 
@@ -18,8 +19,9 @@ class DeviceModel(Base):
     """The Devices Model"""
     __tablename__ = "Devices"
     id: int = Column(Integer, primary_key=True, nullable=False)
+    name: str = Column(String, unique=True, nullable=False)
     hostname: str = Column(String(100))
-    address: str = Column(String(100))
+    address: str = Column(String(100), nullable=False)
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))

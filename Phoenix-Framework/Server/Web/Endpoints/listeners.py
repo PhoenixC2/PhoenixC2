@@ -55,6 +55,7 @@ def listeners_bp(commander: Commander):
 
         # Add listener
         try:
+            data["type"] = listener_type # has to be added again bc it got filtered out by options.validate_data(data)
             add_listener(data)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)

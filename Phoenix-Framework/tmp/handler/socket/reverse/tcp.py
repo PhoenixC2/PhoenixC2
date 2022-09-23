@@ -1,13 +1,13 @@
 import io
 import socket
-import time
 import threading
+import time
 
-from Database import db_session, TasksModel
+from Database import TasksModel, db_session
 from Handlers.base import BaseHandler
 
 
-class Linux(BaseHandler):
+class Handler(BaseHandler):
     """The Linux Handler Class to interact with the Device"""
 
     def __init__(self, conn: socket.socket, addr: str, key: bytes, id: int):

@@ -3,7 +3,7 @@ import importlib
 from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_STAGERS
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base

@@ -1,16 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from Utils.config import load_config
 from Utils.ui import log
+
 from .credentials import CredentialModel
 from .devices import DeviceModel
 from .listeners import ListenerModel
 from .logentry import LogEntryModel
 from .operations import OperationModel
 from .stagers import StagerModel
-from .users import UserModel
 from .tasks import TasksModel
+from .users import UserModel
 
 c = load_config()["database"]
 if c["type"] == "sqlite":

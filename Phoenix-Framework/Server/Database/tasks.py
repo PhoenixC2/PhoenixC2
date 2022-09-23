@@ -2,12 +2,15 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String,
+                        Text)
 from sqlalchemy.orm import relationship
+
 from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
+
     from .devices import DeviceModel
 
 

@@ -1,5 +1,5 @@
 from Commander import Commander
-from Database import db_session, TasksModel
+from Database import TasksModel, db_session
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.web import authorized, generate_response
 

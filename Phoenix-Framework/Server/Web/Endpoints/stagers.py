@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
-from Database import StagerModel, db_session, ListenerModel
+from Database import ListenerModel, StagerModel, db_session
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user

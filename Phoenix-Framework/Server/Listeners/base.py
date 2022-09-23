@@ -24,7 +24,6 @@ class BaseListener():
         self.db_entry: "ListenerModel" = db_entry
         self.id: int = db_entry.id
         self.handlers: dict[str, BaseHandler] = {}
-        self.listener: threading.Thread
 
     def status(self) -> True:
         """Get status of the listener
@@ -32,14 +31,6 @@ class BaseListener():
         Returns:
             bool: True if listener is running, False if not"""
         ...
-
-    def decrypt(self, data: str, key: bytes) -> str:
-        """Decrypt Data"""
-        return Fernet(key).decrypt(data).decode()
-
-    def encrypt(self, data: str, key: bytes) -> bytes:
-        """Encrypt Data"""
-        return Fernet(key).encrypt(data.encode())
 
     def add_handler(self, handler: BaseHandler):
         """Add a Handler to the Listener"""
@@ -54,11 +45,6 @@ class BaseListener():
     @abstractmethod
     def refresh_connections(self):
         """Check if the connections are still alive"""
-        ...
-
-    @abstractmethod
-    def listen(self):
-        """Listen for Connections"""
         ...
 
     @abstractmethod

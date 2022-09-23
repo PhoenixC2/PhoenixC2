@@ -1,9 +1,8 @@
 """All available and creatable options for the creator."""
 AVAILABLE_LISTENERS = [
-    "socket/reverse/tcp"
+    "http/reverse"
 ]
 AVAILABLE_STAGERS = [
-    "socket/reverse/tcp"
 ]
 AVAILABLE_LOADERS = []
 AVAILABLE_ENCODINGS = [

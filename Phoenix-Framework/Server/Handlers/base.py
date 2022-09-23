@@ -3,8 +3,8 @@ import io
 from abc import abstractmethod
 
 from cryptography.fernet import Fernet
+from Database import DeviceModel, TasksModel, db_session
 from Modules.base import BaseModule
-from Database import db_session, TasksModel, DeviceModel
 
 
 class BaseHandler():
@@ -13,9 +13,8 @@ class BaseHandler():
     def __str__(self) -> TasksModel:
         return str(self.addr)
 
-    def __init__(self, addr: str, key: bytes, id: int):
+    def __init__(self, addr: str, id: int):
         self.addr = addr
-        self.fernet = Fernet(key)
         self.id = id
         self.device_db: DeviceModel
         self.tasks: list[TasksModel] = []

@@ -1,13 +1,13 @@
 # Reverse Socket TCP Payload
 # Author: @screamz2k
 
+import base64
 import importlib
 import json
 import os
 import platform
 import socket
 import ssl
-import base64
 import subprocess as sp
 import time
 
