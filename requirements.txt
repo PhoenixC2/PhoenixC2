@@ -2,7 +2,6 @@ sqlalchemy
 flask
 rich
 pystyle
-cryptography
 netifaces
 requests
 tomli
