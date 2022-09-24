@@ -4,7 +4,6 @@ from datetime import datetime
 from abc import abstractmethod
 
 from Utils.ui import log
-from cryptography.fernet import Fernet
 from Database import DeviceModel, TasksModel, db_session
 from Modules.base import BaseModule
 
@@ -22,13 +21,13 @@ class BaseHandler():
         self.name = db_entry.name
         self.modules: list[BaseModule] = []
 
-    def decrypt(self, data: str):
-        """Decrypt the data"""
-        return self.fernet.decrypt(data).decode()
+    '''    def decrypt(self, data: str):
+            """Decrypt the data"""
+            return self.fernet.decrypt(data).decode()
 
-    def encrypt(self, data: str):
-        """Encrypt the data"""
-        return self.fernet.encrypt(data.encode())
+        def encrypt(self, data: str):
+            """Encrypt the data"""
+            return self.fernet.encrypt(data.encode())'''
 
     def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""

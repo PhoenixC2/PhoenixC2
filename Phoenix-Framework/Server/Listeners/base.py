@@ -2,7 +2,7 @@ import threading
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from cryptography.fernet import Fernet
+
 from Handlers.base import BaseHandler
 from Utils.options import OptionPool
 
