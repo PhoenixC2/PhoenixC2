@@ -79,6 +79,7 @@ def generate_ssl(path: str):
 
 def create_connection(path: str):
     global Database, engine, db_session
+    os.environ["PHOENIX_CONFIG_PATH"] = path + "/Server/Data/config.toml"
     """Create the database connection"""
     sys.path.insert(0, path + "/Server")
     os.chdir(path + "/Server")
