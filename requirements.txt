@@ -1,8 +1,9 @@
 sqlalchemy
-sqlalchemy-utils
 flask
 rich
 pystyle
 cryptography
 netifaces
 requests
+tomli
+tomli_w
