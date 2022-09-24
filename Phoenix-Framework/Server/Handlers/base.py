@@ -1,7 +1,9 @@
 import importlib
 import io
+from datetime import datetime
 from abc import abstractmethod
 
+from Utils.ui import log
 from cryptography.fernet import Fernet
 from Database import DeviceModel, TasksModel, db_session
 from Modules.base import BaseModule
@@ -13,11 +15,11 @@ class BaseHandler():
     def __str__(self) -> TasksModel:
         return str(self.addr)
 
-    def __init__(self, addr: str, id: int):
+    def __init__(self, addr: str, db_entry: DeviceModel):
+        self.db_entry = db_entry
         self.addr = addr
-        self.id = id
-        self.device_db: DeviceModel
-        self.tasks: list[TasksModel] = []
+        self.id = db_entry.id
+        self.name = db_entry.name
         self.modules: list[BaseModule] = []
 
     def decrypt(self, data: str):
@@ -50,6 +52,28 @@ class BaseHandler():
                 return module
         raise Exception("Module not found")
 
+    def add_task(self, task: TasksModel):
+        self.tasks.append(task)
+    
+    def finish_task(self, task: TasksModel, output: str):
+        task.output = output
+        task.finished_at = datetime.now()
+        db_session.commit()
+        log(f"Finished Task '{task.name}' of type '{task.type}'", "success")
+        
+    
+    def get_task(self, id_or_name: int|str) -> TasksModel:
+        """Return a task based on its id or name."""
+        if type(id_or_name) == int:
+            for task in self.db_entry.tasks:
+                if task.id == id_or_name:
+                    return task
+        else:
+            for task in self.db_entry.tasks:
+                if task.name == id_or_name:
+                    return task
+    @abstractmethod
+    
     @abstractmethod
     def execute_module(self, name: str) -> TasksModel:
         ...

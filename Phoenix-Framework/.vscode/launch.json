@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "/home/screamz/Code/Phoenix-Framework/Phoenix-Framework/pfserver",
-            "args": ["-l", "/home/screamz/Code/Phoenix-Framework/Phoenix-Framework/Server/"],
+            "args": ["-l", "/home/screamz/Code/Phoenix-Framework/Phoenix-Framework/Server/", "-c", "/home/screamz/Code/Phoenix-Framework/Phoenix-Framework/Server/Data/config.toml"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

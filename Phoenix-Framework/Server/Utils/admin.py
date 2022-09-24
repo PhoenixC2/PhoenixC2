@@ -84,8 +84,7 @@ def degrade_to_sub():
 
 def reset_database():
     """Reset the database."""
-    if os.path.exists("Data/db.sqlite3"):
-        os.remove("Data/db.sqlite3")
+    Base.metadata.drop_all(engine)
     generate_database()
     ...
 

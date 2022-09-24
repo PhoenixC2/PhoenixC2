@@ -1,20 +1,25 @@
 import uuid
-from typing import TYPE_CHECKING
+import time
+import os
+import logging
 from datetime import datetime
 from multiprocessing import Process
 from threading import Thread
+from typing import TYPE_CHECKING
 
-from Database import DeviceModel, db_session, ListenerModel
-from flask import Flask, request, Response
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
+from Database import DeviceModel, ListenerModel, db_session
+from flask import Flask, Response, request, jsonify, cli
 from Handlers.http.reverse import Handler
 from Listeners.base import BaseListener
-from Utils.options import (AddressType, BooleanType, IntegerType, Option, TableType, ChoiceType,
-                           OptionPool, StringType)
-from Utils.ui import ph_print
+from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
+                           Option, OptionPool, StringType, TableType)
+from Utils.ui import ph_print, log
 
 if TYPE_CHECKING:
     from Commander import Commander
+
+
 class Listener(BaseListener):
     """The Reverse Http Listener Class"""
     api = Flask(__name__)
@@ -70,7 +75,8 @@ class Listener(BaseListener):
         Option(
             name="Listener",
             description="The listener, the stager should connect to.",
-            type=TableType(lambda : db_session.query(ListenerModel).all(), ListenerModel),
+            type=TableType(lambda: db_session.query(
+                ListenerModel).all(), ListenerModel),
             required=True,
             default=1
         ),
@@ -140,6 +146,7 @@ class Listener(BaseListener):
             required=False
         )
     ])
+
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)
         self.listener_process: Process
@@ -151,27 +158,66 @@ class Listener(BaseListener):
         @self.api.route("/connect", methods=["POST"])
         def connect():
             data = request.get_json()
+            if len(self.handlers) >= self.db_entry.connection_limit:
+                return "", 404
             try:
+                address = data.get("address")
+                hostname = data.get("hostname", "")
                 device = DeviceModel(
                     name=str(uuid.uuid1()),
-                    hostname=data.get("hostname", ""),
-                    address=data.get("address"),
+                    hostname=hostname,
+                    address=address,
                     connection_date=datetime.now(),
                     last_online=datetime.now(),
                     listener=self.db_entry
                 )
-            except: 
-                return 400
+            except:
+                return "", 404
             db_session.add(device)
             db_session.commit()
-            ph_print(f"New Device ({device.hostname}) connected to the server. [{device.name}]")
+            ph_print(
+                f"New Device ({device.hostname}) connected to the server. [{device.name}]")
+            handler = Handler(address, device)
+            self.add_handler(handler)
             return device.name
+
+        @self.api.route("/tasks/<string:name>")
+        def get_tasks(name: str = None):
+            if name is None:
+                return "", 400
+            handler = self.get_handler(name)
+            if handler is None:
+                return "", 404
+            db_session.commit()
+            return jsonify([task.to_json(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
+
+        @self.api.route("/finish/<string:name>", methods=["POST"])
+        def finish_task(name: str = None):
+            if name is None:
+                return "", 404
+
+            handler = self.get_handler(name)
+            if handler is None:
+                return "", 404
+
+            data = request.get_json()
+            id = data.get("id", "")
+            output = data.get("output", "")
+            task = handler.get_task(id)
+            if task is None:
+                return "", 404
+
+            handler.finish_task(task, output)
+            return "", 200
 
         @self.api.after_request
         def change_headers(r: Response):
             return r
 
     def start(self):
+        if not os.getenv("PHOENIX_DEBUG", "") == "true":
+            cli.show_server_banner = lambda *args: None
+            logging.getLogger("werkzeug").disabled = True
         if self.ssl:
             self.listener_process = Process(target=self.api.run,
                                             kwargs={
@@ -187,7 +233,17 @@ class Listener(BaseListener):
                                                 "port": self.port,
                                                 "threaded": True},
                                             name=self.db_entry.name)
-        Thread(target=self.listener_process.start).start()
+        self.listener_process.start()
+        Thread(target=self.refresh_connections,
+               name=self.db_entry.name+"-Refresher").start()
+
+    def refresh_connections(self):
+        while True:
+            time.sleep(5)
+            for handler in self.handlers:
+                if not handler.alive():
+                    log(f"Device '{handler.name}' disconnected.", "critical")
+                    self.remove_handler(handler)
 
     def stop(self):
         self.listener_process.kill()

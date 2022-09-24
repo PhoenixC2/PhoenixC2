@@ -19,11 +19,11 @@ def start_listeners(commander: Commander):
             log(f"Started listener {listener.name} ({listener.id})", "success")
         except Exception as error:
             log(str(error), "error")
+            exit()
 
-
-def start_web(web_address: str, web_port: int, ssl:bool, commander: Commander, debug:bool):
+def start_web(web_address: str, web_port: int, ssl:bool, commander: Commander):
     """Start the web server"""
-    web_server = create_web(commander, debug)
+    web_server = create_web(commander)
     if ssl:
         threading.Thread(
             target=web_server.run,

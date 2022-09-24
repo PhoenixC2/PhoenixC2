@@ -28,7 +28,7 @@ class TasksModel(Base):
     args: list[str] = Column(JSON, default=[])
     created_at: datetime = Column(DateTime)
     finished_at: datetime = Column(DateTime)
-    output: str = Text()
+    output: str = Column(Text)
 
     def to_json(self, commander: "Commander", show_device: bool = True) -> dict:
         return {
@@ -38,7 +38,8 @@ class TasksModel(Base):
             "type": self.type,
             "args": self.args,
             "created_at": self.created_at,
-            "finished_at": self.finished_at
+            "finished_at": self.finished_at,
+            "output": self.output
         }
 
     def finish(self, output: str):

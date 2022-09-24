@@ -1,5 +1,5 @@
 """The Web Server Class to interact with the Server using an API and a Web Interface"""
-import datetime
+import os
 import logging
 import random
 import string
@@ -13,9 +13,9 @@ from Web.Endpoints.authorization import get_current_user
 # disable flask logging
 
 
-def create_web(commander: Commander, debug: bool):
+def create_web(commander: Commander):
     web_server = Flask(__name__)
-    if not debug:
+    if not os.getenv("PHOENIX_DEBUG", "") == "true":
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
     

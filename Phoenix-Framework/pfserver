@@ -7,7 +7,6 @@ import sys
 import time
 from argparse import ArgumentParser
 
-
 # Check if the user is root
 """if not os.getuid() == 0:
     print("Please start with Sudo or Root Rights")
@@ -75,8 +74,8 @@ if __name__ == "__main__":
     from Commander.services import start_listeners, start_web
     from Utils.admin import (recreate_ssl, recreate_super_user, reset_database,
                              reset_table)
-    from Utils.misc import version
     from Utils.config import load_config
+    from Utils.misc import version
     from Utils.ui import log, logo, ph_print
     """except ImportError:
         print("[ERROR] Not all required libraries are installed.")
@@ -97,6 +96,7 @@ if __name__ == "__main__":
         ph_print(logo, True)
 
     if args.debug:
+        os.environ["PHOENIX_DEBUG"] = "true"
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     try:
         web_config = config["web"] # shorten code
         web = start_web(web_config["address"], web_config["port"],
-                        web_config["ssl"], commander, args.debug)
+                        web_config["ssl"], commander)
     except Exception as e:
         log(str(e), "error")
         os._exit(1)
