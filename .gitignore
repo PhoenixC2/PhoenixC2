@@ -2,4 +2,3 @@ __pycache__
 *.pyc
 db.sqlite3
 ssl.*
-config.toml
