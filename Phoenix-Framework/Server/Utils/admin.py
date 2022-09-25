@@ -11,11 +11,11 @@ from Utils.ui import log
 
 def recreate_super_user():
     """Create the head admin."""
-    existing_admin = db_session.query(UserModel).first()
+    existing_admin = Session.query(UserModel).first()
     if existing_admin is not None:
         log("Deleting current admin.", "info")
-        db_session.delete(existing_admin)
-        db_session.commit()
+        Session.delete(existing_admin)
+        Session.commit()
         log("Deleted current admin.", "success")
     log("Creating new admin", "info")
     password = "".join(random.choice(string.ascii_letters + string.digits)
@@ -27,10 +27,11 @@ def recreate_super_user():
         api_key=str(uuid1())
     )
     admin.set_password(password)
-    db_session.add(admin)
-    db_session.commit()
+    Session.add(admin)
+    Session.commit()
     log("Admin user created.", "success")
     log(f"Credentials: phoenix:{password}", "success")
+    Session.remove()
 
 
 def generate_database():
@@ -108,8 +109,9 @@ def reset_table(table: str):
     log(f"Resetting {table}")
     model = models[table]
     count = 0
-    for entry in db_session.query(model).all():
-        db_session.delete(entry)
+    for entry in Session.query(model).all():
+        Session.delete(entry)
         count += 1
-    db_session.commit()
+    Session.commit()
     log(f"Deleted {count} columns from {table}.", "success")
+    Session.remove()

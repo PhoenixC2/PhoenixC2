@@ -3,12 +3,14 @@ from typing import Optional
 
 from Handlers.base import BaseHandler
 from Listeners.base import BaseListener
+from Utils.web import FlaskThread
 
 
 class Commander():
     """This is the Commander which handles the devices & listeners"""
 
     def __init__(self):
+        self.web_server: FlaskThread
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
 
@@ -18,7 +20,7 @@ class Commander():
             return self.active_handlers[int(handler_id)]
         except ValueError:
             raise Exception("Invalid ID") from None
-        except IndexError:
+        except KeyError:
             raise Exception("Handler does not exist") from None
 
     def get_active_listener(self, listener_id: int) -> Optional[BaseListener]:
@@ -27,7 +29,7 @@ class Commander():
             return self.active_listeners[int(listener_id)]
         except ValueError:
             raise Exception("Invalid ID.") from None
-        except IndexError:
+        except KeyError:
             raise Exception("Listener is not active.") from None
 
     def add_active_listener(self, listener: BaseListener):

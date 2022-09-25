@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, MutableSequence
 
 import requests
 from Creator.available import AVAILABLE_LISTENERS, AVAILABLE_STAGERS
-from Database import db_session
+from Database import Session
 from Database.base import Base
 
 from .misc import get_network_interfaces
@@ -128,14 +128,14 @@ class TableType(OptionType):
     def validate(self, name: str, id_or_name: int | str) -> bool:
         choices = self.choices()
         if str(id_or_name).isdigit():
-            object = db_session.query(
+            object = Session.query(
                 self.model).filter_by(id=id_or_name).first()
             if object not in choices:
                 raise ValueError(
                     f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
             return object
         else:
-            object = db_session.query(self.model).filter_by(
+            object = Session.query(self.model).filter_by(
                 name=id_or_name).first()
             if object not in choices:
                 raise ValueError(

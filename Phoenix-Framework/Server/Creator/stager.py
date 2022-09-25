@@ -6,7 +6,7 @@ import string
 import urllib.parse
 from binascii import hexlify
 
-from Database import ListenerModel, StagerModel, db_session
+from Database import ListenerModel, Session, StagerModel
 
 from .available import AVAILABLE_STAGERS
 
@@ -25,13 +25,13 @@ def add_stager(data: dict) -> any:
 
     # Check if name is already in use
     name = data["name"]
-    if db_session.query(
+    if Session.query(
             StagerModel).filter_by(name=name).first() is not None:
         raise Exception(f"Stager {name} already exists")
     
     stager = StagerModel.create_stager_from_data(data)
-    db_session.add(stager)
-    db_session.commit()
+    Session.add(stager)
+    Session.commit()
     return f"Created '{name}' successfully!"
 
 

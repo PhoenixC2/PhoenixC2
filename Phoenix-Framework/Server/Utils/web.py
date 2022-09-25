@@ -1,11 +1,11 @@
 import datetime
 import threading
-
 from functools import wraps
 
-from Database import UserModel, db_session
+from Database import Session, UserModel
+from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
+                   session)
 from werkzeug.serving import make_server
-from flask import Flask, Response, abort, flash, jsonify, redirect, request, session
 
 
 def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:
@@ -20,11 +20,11 @@ def generate_response(alert: str, text: str, redirect_location: str = "", respon
 def get_current_user() -> UserModel | None:
     """Get the user object or None"""
     if request.headers.get("Api-Key") is not None:
-        user = db_session.query(UserModel).filter_by(
+        user = Session.query(UserModel).filter_by(
             api_key=request.headers.get("Api-Key")).first()
         if user is not None:
             return user
-    return db_session.query(UserModel).filter_by(id=session.get("id")).first()
+    return Session.query(UserModel).filter_by(id=session.get("id")).first()
 
 
 def authorized(func):
@@ -40,7 +40,7 @@ def authorized(func):
                 session.clear()
                 return redirect("/auth/login")
             user.last_activity = datetime.datetime.now()
-            db_session.commit()
+            Session.commit()
             return func(*args, **kwargs)
     return wrapper
 
@@ -62,6 +62,9 @@ def admin(func):
 class FlaskThread(threading.Thread):
     """Stoppable Flask server"""
     def __init__(self, app: Flask, address: str, port: int, ssl: bool, name:str):
+        @app.teardown_request
+        def remove(*args, **kwargs):
+            Session.remove()
         threading.Thread.__init__(self)
         self.name = name
         if ssl:

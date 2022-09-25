@@ -5,7 +5,6 @@ import random
 import string
 
 from Commander import Commander
-from Database import db_session
 from flask import Flask, cli
 from Web.Endpoints import *
 from Web.Endpoints.authorization import get_current_user

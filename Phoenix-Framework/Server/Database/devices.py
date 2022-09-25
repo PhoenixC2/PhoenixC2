@@ -46,7 +46,7 @@ class DeviceModel(Base):
         try:
             commander.get_active_handler(self.id)
         except:
-            data["online"] = False
+            data["connected"] = False
         else:
-            data["online"] = True
+            data["connected"] = True
         return data

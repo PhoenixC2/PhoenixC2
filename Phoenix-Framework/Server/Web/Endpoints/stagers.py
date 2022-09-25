@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
-from Database import ListenerModel, StagerModel, db_session
+from Database import ListenerModel, Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import authorized, generate_response, get_current_user
@@ -15,7 +15,7 @@ def stagers_bp(commander: Commander):
     @authorized
     def get_stagers():
         use_json = request.args.get("json", "") == "true"
-        stager_query = db_session.query(StagerModel)
+        stager_query = Session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
@@ -41,7 +41,7 @@ def stagers_bp(commander: Commander):
         data = dict(request.form)
         try:
             # Check if data is valid and clean it
-            listener: ListenerModel = db_session.query(ListenerModel).filter_by(id=listener).first()
+            listener: ListenerModel = Session.query(ListenerModel).filter_by(id=listener).first()
             if listener is None:
                 return generate_response("error", f"Listener with ID ({listener}) doesn't exist.", "listeners", 400)
             options = StagerModel.get_options_from_type(listener.type)
@@ -68,13 +68,13 @@ def stagers_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "stagers", 400)
 
         # Check if Stager exists
-        stager: StagerModel = db_session.query(
+        stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)
 
-        db_session.delete(stager)
-        db_session.commit()
+        Session.delete(stager)
+        Session.commit()
 
         log(f"({get_current_user().username}) Deleted Stager with ID {stager_id}", "info")
         return generate_response("success", f"Deleted Stager with ID {stager_id}.", "stagers")
@@ -95,7 +95,7 @@ def stagers_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "stagers", 400)
 
         # Check if Stager exists
-        stager: StagerModel = db_session.query(
+        stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)
@@ -116,7 +116,7 @@ def stagers_bp(commander: Commander):
             stager.delay = int(value)
         else:
             return generate_response("error", "Invalid Change.", "stagers", 400)
-        db_session.commit()
+        Session.commit()
         return generate_response("success", f"Edited {change} to {value} for Stager with ID {stager_id}.", "stagers")
 
     @stagers_bp.route("/download", methods=["GET"])
@@ -130,7 +130,7 @@ def stagers_bp(commander: Commander):
             return generate_response("error", "Invalid ID.", "stagers", 400)
         stager_id = int(stager_id)
         # Check if Stager exists
-        stager_db: StagerModel = db_session.query(
+        stager_db: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager_db is None:
             return generate_response("error", "Stager does not exist.", "stagers", 400)

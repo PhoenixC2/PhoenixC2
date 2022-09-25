@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from Database import DeviceModel, UserModel, db_session
+from Database import DeviceModel, Session, UserModel
 from flask import Blueprint, render_template
 from Utils.web import authorized, get_current_user
 
@@ -17,7 +17,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @routes_bp.route("/")
     @authorized
     def index():
-        devices: list[DeviceModel] = db_session.query(DeviceModel).all()
+        devices: list[DeviceModel] = Session.query(DeviceModel).all()
         connections_last_hour = 0
         connections_today = 0
         for device in devices:
@@ -29,10 +29,10 @@ def routes_bp(commander: "Commander") -> Blueprint:
                 connections_today += 1
             
 
-        active_devices = len(commander.active_handler)
+        active_devices = len(commander.active_handlers)
         active_listeners = len(commander.active_listeners)
         active_users = 0
-        for user in db_session.query(UserModel).all():
+        for user in Session.query(UserModel).all():
             if user.activity_status == "online":
                 active_users += 1
         

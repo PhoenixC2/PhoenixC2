@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
                                AVAILABLE_LISTENERS)
 from cryptography.fernet import Fernet
-from Database import ListenerModel, db_session
+from Database import ListenerModel, Session
 from Handlers.socket.reverse.tcp import Handler
 from Listeners.base import BaseListener
 from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
@@ -79,7 +79,7 @@ class Listener(BaseListener):
         Option(
             name="Listener",
             description="The listener, the stager should connect to.",
-            type=TableType(lambda : db_session.query(ListenerModel).all(), ListenerModel),
+            type=TableType(lambda : Session.query(ListenerModel).all(), ListenerModel),
             required=True,
             default=1
         ),
@@ -202,7 +202,7 @@ class Listener(BaseListener):
 
                     if self.db_entry.options["fernet"]:
                         handler.key = key
-                db_session.commit()
+                Session.commit()
 
     def start(self):
         try:

@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING
 from uuid import uuid1
 
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
-from Database import DeviceModel, ListenerModel, db_session
+from Database import DeviceModel, ListenerModel, Session
 from flask import Flask, Response, cli, jsonify, request
 from Handlers.http.reverse import Handler
 from Listeners.base import BaseListener
 from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
                            Option, OptionPool, StringType, TableType)
-from Utils.ui import log, ph_print
+from Utils.ui import log, log_connection
 from Utils.web import FlaskThread
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ class Listener(BaseListener):
         Option(
             name="Listener",
             description="The listener, the stager should connect to.",
-            type=TableType(lambda: db_session.query(
+            type=TableType(lambda: Session.query(
                 ListenerModel).all(), ListenerModel),
             required=True,
             default=1
@@ -177,12 +177,10 @@ class Listener(BaseListener):
                 )
             except:
                 return "", 404
-            db_session.add(device)
-            db_session.commit()
-            ph_print(
-                f"New Device ({device.hostname}) connected to the server. [{device.name}]")
-            handler = Handler(address, device)
-            self.add_handler(handler)
+            Session.add(device)
+            Session.commit()
+            log_connection(device)
+            self.add_handler(Handler(device))
             return device.name
 
         @self.api.route("/tasks/<string:name>")
@@ -191,9 +189,16 @@ class Listener(BaseListener):
                 return "", 400
             handler = self.get_handler(name)
             if handler is None:
-                return "", 404
-            handler.db_entry.last_online = datetime.now() # update last online
-            db_session.commit()
+                device: DeviceModel = Session.query(
+                    DeviceModel).filter_by(name=name).first()
+                if device is not None:
+                    handler = Handler(device)
+                    self.add_handler(handler)
+                    log_connection(device, reconnect=True)
+                else:
+                    return "", 404
+            handler.db_entry.last_online = datetime.now()  # update last online
+            Session.commit()
             return jsonify([task.to_json(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
 
         @self.api.route("/finish/<string:name>", methods=["POST"])
@@ -223,20 +228,25 @@ class Listener(BaseListener):
         if not os.getenv("PHOENIX_DEBUG", "") == "true":
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
-        self.listener_thread = FlaskThread(self.api, self.address, self.port, self.ssl, self.db_entry.name)
+        self.listener_thread = FlaskThread(
+            self.api, self.address, self.port, self.ssl, self.db_entry.name)
         self.refresher_thread = Thread(target=self.refresh_connections,
-                   name=self.db_entry.name+"-Refresher-Thread")
+                                       name=self.db_entry.name+"-Refresher-Thread")
         self.listener_thread.start()
         self.refresher_thread.start()
+
     def refresh_connections(self):
         while True:
             if self.stopped:
                 break
             time.sleep(5)
-            for handler in self.handlers:
-                if not handler.alive():
-                    log(f"Device '{handler.name}' disconnected.", "critical")
-                    self.remove_handler(handler)
+            try:
+                for handler in self.handlers:
+                    if not handler.alive():
+                        log(f"Device '{handler.name}' disconnected.", "critical")
+                        self.remove_handler(handler)
+            except Exception as e:
+                log(str(e), "error")
 
     def stop(self):
         self.stopped = True

@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
-from Database import ListenerModel, db_session
+from Database import ListenerModel, Session
 from flask import Blueprint, jsonify, render_template, request
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
@@ -15,7 +15,7 @@ def listeners_bp(commander: Commander):
     @authorized
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
-        listener_query = db_session.query(ListenerModel)
+        listener_query = Session.query(ListenerModel)
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
             return jsonify([listener.to_json(commander) for listener in listeners])
@@ -75,7 +75,7 @@ def listeners_bp(commander: Commander):
         listener_id = int(listener_id)
 
         # Check if listener exists
-        listener: ListenerModel = db_session.query(
+        listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
@@ -85,9 +85,9 @@ def listeners_bp(commander: Commander):
                 stop_listener(listener, commander)
                 log(f"({get_current_user().username}) Deleted and stopped listener with ID {listener_id}.", "info")
                 return generate_response("success", f"Deleted and stopped listener with ID {listener_id}.", "listeners")
-        listener.delete_stagers(db_session)
-        db_session.delete(listener)
-        db_session.commit()
+        listener.delete_stagers(Session)
+        Session.delete(listener)
+        Session.commit()
         log(f"({get_current_user().username}) Deleted listener with ID {listener_id}.", "info")
         return generate_response("success", f"Deleted listener with ID {listener_id}.", "listeners")
 
@@ -107,7 +107,7 @@ def listeners_bp(commander: Commander):
         listener_id = int(listener_id)
 
         # Check if listener exists
-        listener: ListenerModel = db_session.query(
+        listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
@@ -128,7 +128,7 @@ def listeners_bp(commander: Commander):
         else:
             return generate_response("error", "Invalid Change.", "listeners", 400)
 
-        db_session.commit()
+        Session.commit()
         return generate_response("success", f"Edited {change} to {value} for Listener with ID {listener_id}.", "listeners")
 
     @listeners_bp.route("/start", methods=["POST"])
@@ -142,7 +142,7 @@ def listeners_bp(commander: Commander):
         listener_id = int(listener_id)
 
         # Check if listener exists
-        listener: ListenerModel = db_session.query(
+        listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
@@ -169,7 +169,7 @@ def listeners_bp(commander: Commander):
         listener_id = int(listener_id)
 
         # Check if listener exists
-        listener: ListenerModel = db_session.query(
+        listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
@@ -196,7 +196,7 @@ def listeners_bp(commander: Commander):
         listener_id = int(listener_id)
 
         # Check if listener exists
-        listener: ListenerModel = db_session.query(
+        listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
         try:

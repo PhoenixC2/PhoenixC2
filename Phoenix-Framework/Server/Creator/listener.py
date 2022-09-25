@@ -4,7 +4,7 @@ import time
 from typing import Optional
 
 from Commander import Commander
-from Database import ListenerModel, db_session
+from Database import ListenerModel, Session
 from Listeners.base import BaseListener
 
 from .available import AVAILABLE_LISTENERS
@@ -23,12 +23,12 @@ def add_listener(data: dict) -> str:
     """
     # Check if name is already in use
     name = data["name"]
-    if db_session.query(ListenerModel).filter_by(name=name).first() is not None:
+    if Session.query(ListenerModel).filter_by(name=name).first() is not None:
         raise Exception(f"Listener {name} already exists.")
 
     listener = ListenerModel.create_listener_from_data(data)
-    db_session.add(listener)
-    db_session.commit()
+    Session.add(listener)
+    Session.commit()
     return f"Created '{name}' successfully!"
 
 

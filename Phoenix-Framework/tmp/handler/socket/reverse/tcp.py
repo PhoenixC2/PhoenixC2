@@ -3,7 +3,7 @@ import socket
 import threading
 import time
 
-from Database import TasksModel, db_session
+from Database import Session, TasksModel
 from Handlers.base import BaseHandler
 
 

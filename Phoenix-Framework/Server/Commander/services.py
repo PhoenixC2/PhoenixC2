@@ -3,7 +3,7 @@ import threading
 
 from Commander import Commander
 from Creator.listener import start_listener
-from Database import ListenerModel, db_session
+from Database import ListenerModel, Session
 from Utils.ui import log
 from Utils.web import FlaskThread
 from Web import create_web
@@ -12,7 +12,7 @@ from Web import create_web
 def start_listeners(commander: Commander):
     """Start all listeners in the database"""
     # Get Listeners from Database
-    listeners: list[ListenerModel] = db_session.query(ListenerModel).all()
+    listeners: list[ListenerModel] = Session.query(ListenerModel).all()
     # Start Listeners
     for listener in listeners:
         try:
@@ -21,28 +21,12 @@ def start_listeners(commander: Commander):
         except Exception as error:
             log(str(error), "error")
             exit()
+    Session.remove()
 
-def start_web(web_address: str, web_port: int, ssl:bool, commander: Commander):
+def start_web(address: str, port: int, ssl:bool, commander: Commander):
     """Start the web server"""
     web_server = create_web(commander)
-    web_server.tr
-    if ssl:
-        threading.Thread(
-            target=web_server.run,
-            kwargs={
-                "host": web_address,
-                "port": web_port,
-                "ssl_context": ("Data/ssl.pem", "Data/ssl.key"),
-                "threaded": True},
-            name="WebServer"
-        ).start()
-    else:
-        threading.Thread(
-            target=web_server.run,
-            kwargs={
-                "host": web_address,
-                "port": web_port,
-                "threaded": True},
-            name="WebServer"
-        ).start()
+    thread = FlaskThread(web_server, address, port, ssl, "WebServer")
+    commander.web_server = thread
+    commander.web_server.start()
     return web_server

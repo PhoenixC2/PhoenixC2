@@ -1,6 +1,6 @@
 from uuid import uuid1
 
-from Database import UserModel, db_session
+from Database import Session, UserModel
 from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
                    render_template, request, session)
 from Utils.ui import log
@@ -14,7 +14,7 @@ users_bp = Blueprint("users", __name__, url_prefix="/users")
 def get_users():
     use_json = request.args.get("json", "").lower() == "true"
     curr_user = get_current_user()
-    users: list[UserModel] = db_session.query(UserModel).all()
+    users: list[UserModel] = Session.query(UserModel).all()
     data = [user.to_json() for user in users]
     if curr_user.admin:
         for index, user in enumerate(users):
@@ -42,7 +42,7 @@ def add_user():
         return jsonify({"status": "error", "message": "Username and password required."})
 
     # Check if user exists
-    if db_session.query(UserModel).filter_by(username=username).first():
+    if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("error", "User already exists.", "users", 403)
 
     user = UserModel(
@@ -52,8 +52,8 @@ def add_user():
         api_key=str(uuid1()))
     user.set_password(password)
 
-    db_session.add(user)
-    db_session.commit()
+    Session.add(user)
+    Session.commit()
     log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} {username}.", "success")
     return generate_response("success", f"{'Admin' if admin else 'User'} {username} added.", "users", 201)
 
@@ -70,7 +70,7 @@ def delete_user():
             abort
         return jsonify({"status": "error", "message": "Username required."})
     # Check if user exists
-    user: UserModel = db_session.query(UserModel).first()
+    user: UserModel = Session.query(UserModel).first()
     if user is None:
         return generate_response("error", "User doesn't exist.", "users", 400)
 
@@ -83,7 +83,7 @@ def delete_user():
         return generate_response("error", "Can't delete your own Account.", "users")
 
     # Delete user
-    db_session.delete(user)
+    Session.delete(user)
     log(f"({get_current_user().username}) deleted {'Admin' if user.admin else 'User'} {username}.", "success")
     return generate_response("success", f"Deleted {'Admin' if user.admin else 'User'} {username}", "users")
 
@@ -102,7 +102,7 @@ def edit_user():
         return jsonify({"status": "error", "message": "Username, change and value required."})
     # Check if user exists
     current_user = get_current_user()
-    user: UserModel = db_session.query(
+    user: UserModel = Session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
         return generate_response("error", "User doesn't exist.", "users", 400)
@@ -113,27 +113,27 @@ def edit_user():
     # Edit user
     if change == "admin" and username != "phoenix":
         user.admin = value.lower() == "true"
-        db_session.commit()
+        Session.commit()
         log(f"({current_user}) updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "success")
         return generate_response("success", f"Updated {username}'s permissions to {'Admin' if user.admin else 'User'}.", "users")
 
     elif change == "password" and len(value) >= 1:
         user.set_password(value)
-        db_session.commit()
+        Session.commit()
         log(f"({current_user}) updated {username}'s password.", "success")
         return generate_response("success", f"Updated {username}'s password to {value}.", "users")
 
     elif change == "username" and username != "phoenix":
-        if db_session.query(UserModel).filter_by(username=value).first() or value == "":
+        if Session.query(UserModel).filter_by(username=value).first() or value == "":
             return generate_response("error", "Name is already in use.", "users", 400)
         user = str(escape(value))
-        db_session.commit()
+        Session.commit()
         log(f"({current_user}) updated {user}'s username to {value}.", "success")
         return generate_response("success", f"Updated {username}'s username to {value}.", "users")
 
     elif change == "disabled" and username != "phoenix":
         user.disabled = value.lower() == "true"
-        db_session.commit()
+        Session.commit()
         log(f"({current_user}) disabled {'Admin' if user.admin else 'User'} {user}", "success")
         return generate_response("success", f"Disabled {user}.", "users")
 

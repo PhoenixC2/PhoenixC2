@@ -23,7 +23,10 @@ name = r.post(f"{URL}/connect", json=data, verify=False).text
 
 while True:
     time.sleep(5)
-    tasks = r.get(URL + "/tasks/" + name, verify=False)
+    try:
+        tasks = r.get(URL + "/tasks/" + name, verify=False)
+    except:
+        continue
     print(tasks.status_code)
     tasks = tasks.json()
     for task in tasks:

@@ -4,7 +4,7 @@ from abc import abstractmethod
 from datetime import datetime
 from uuid import uuid1
 
-from Database import DeviceModel, TasksModel, db_session
+from Database import DeviceModel, Session, TasksModel
 from Modules.base import BaseModule
 from Utils.ui import log
 
@@ -15,9 +15,8 @@ class BaseHandler():
     def __str__(self) -> TasksModel:
         return str(self.addr)
 
-    def __init__(self, addr: str, db_entry: DeviceModel):
-        self.db_entry = db_entry
-        self.addr = addr
+    def __init__(self, db_entry: DeviceModel):
+        self.addr = db_entry.address
         self.id = db_entry.id
         self.name = db_entry.name
         self.modules: list[BaseModule] = []
@@ -28,8 +27,10 @@ class BaseHandler():
 
         def encrypt(self, data: str):
             """Encrypt the data"""
-            return self.fernet.encrypt(data.encode())'''
-
+         return self.fernet.encrypt(data.encode())'''
+    @property
+    def db_entry(self):
+        return Session().query(DeviceModel).filter_by(id=self.id).first()
     def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""
         # Get module
@@ -64,7 +65,7 @@ class BaseHandler():
     def finish_task(self, task: TasksModel, output: str):
         task.output = output
         task.finished_at = datetime.now()
-        db_session.commit()
+        Session.commit()
         log(f"Finished Task '{task.name}' of type '{task.type}'", "success")
 
     def get_task(self, id_or_name: int | str) -> TasksModel:

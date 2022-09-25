@@ -65,10 +65,10 @@ class ListenerModel(Base):
             else [device.id for device in self.devices]
         }
 
-    def delete_stagers(self, db_session: Session):
+    def delete_stagers(self, session: Session):
         """Delete all stagers if listener is getting removed"""
         for stager in self.stagers:
-            db_session.delete(stager)
+            session.delete(stager)
 
     def get_listener_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""

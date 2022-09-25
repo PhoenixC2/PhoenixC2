@@ -8,10 +8,10 @@ from Database import *
 
 task = TasksModel(
     name=str(uuid1()),
-    device=db_session.query(DeviceModel).first(),
+    device=Session.query(DeviceModel).first(),
     type="rce",
     args=["whoami"],
     created_at=datetime.now()
 )
-db_session.add(task)
-db_session.commit()
+Session.add(task)
+Session.commit()

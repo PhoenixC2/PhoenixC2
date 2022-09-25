@@ -1,4 +1,4 @@
-from Database import UserModel, db_session
+from Database import Session, UserModel
 from flask import (Blueprint, flash, jsonify, redirect, render_template,
                    request, session)
 from Utils.ui import log
@@ -28,7 +28,7 @@ def post_login():
     if username is None or password is None:
         return generate_response("error", "Missing username or password.", "auth", 400)
 
-    user: UserModel = db_session.query(
+    user: UserModel = Session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
         return generate_response("error", f"User {username} doesn't exist.", "login", 400)
