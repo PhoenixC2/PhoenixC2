@@ -6,7 +6,7 @@ from uuid import uuid1
 
 from Database import *
 
-task = TasksModel(
+task = TaskModel(
     name=str(uuid1()),
     device=Session.query(DeviceModel).first(),
     type="rce",

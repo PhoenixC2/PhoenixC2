@@ -10,7 +10,7 @@ from .listeners import ListenerModel
 from .logentry import LogEntryModel
 from .operations import OperationModel
 from .stagers import StagerModel
-from .tasks import TasksModel
+from .tasks import TaskModel
 from .users import UserModel
 
 c = load_config()["database"]

@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid1
 
-from Database import DeviceModel, Session, TasksModel
+from Database import DeviceModel, Session, TaskModel
 from Handlers.base import BaseHandler
 
 
@@ -18,7 +18,7 @@ class Handler(BaseHandler):
         return False 
     
     
-    def reverse_shell(self, address: str, port: int, shell: str) -> TasksModel:
+    def reverse_shell(self, address: str, port: int, shell: str) -> TaskModel:
         task = self.generate_task()
         task.type = "reverse-shell"
         task.args = [address, port, shell]
@@ -26,7 +26,7 @@ class Handler(BaseHandler):
         Session.commit()
         return task
     
-    def rce(self, cmd: str) -> TasksModel:
+    def rce(self, cmd: str) -> TaskModel:
         task = self.generate_task()
         task.type = "rce"
         task.args = [cmd]
@@ -34,7 +34,7 @@ class Handler(BaseHandler):
         Session.commit()
         return task
     
-    def get_directory_contents(self, dir: str) -> TasksModel:
+    def get_directory_contents(self, dir: str) -> TaskModel:
         task = self.generate_task()
         task.type = "dir"
         task.args = [dir]

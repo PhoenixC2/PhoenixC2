@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .devices import DeviceModel
 
 
-class TasksModel(Base):
+class TaskModel(Base):
     """The Tasks Model"""
     __tablename__ = "Tasks"
     id: int = Column(Integer, primary_key=True,

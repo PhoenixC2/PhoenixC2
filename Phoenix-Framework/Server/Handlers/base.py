@@ -4,7 +4,7 @@ from abc import abstractmethod
 from datetime import datetime
 from uuid import uuid1
 
-from Database import DeviceModel, Session, TasksModel
+from Database import DeviceModel, Session, TaskModel
 from Modules.base import BaseModule
 from Utils.ui import log
 
@@ -12,7 +12,7 @@ from Utils.ui import log
 class BaseHandler():
     """The Base Handler Class for all Devices"""
 
-    def __str__(self) -> TasksModel:
+    def __str__(self) -> TaskModel:
         return str(self.addr)
 
     def __init__(self, db_entry: DeviceModel):
@@ -53,22 +53,22 @@ class BaseHandler():
                 return module
         raise Exception("Module not found")
 
-    def generate_task(self) -> TasksModel:
-        return TasksModel(
+    def generate_task(self) -> TaskModel:
+        return TaskModel(
             name=str(uuid1()),
             device=self.db_entry,
             created_at=datetime.now()
         )
-    def add_task(self, task: TasksModel):
+    def add_task(self, task: TaskModel):
         self.tasks.append(task)
 
-    def finish_task(self, task: TasksModel, output: str):
+    def finish_task(self, task: TaskModel, output: str):
         task.output = output
         task.finished_at = datetime.now()
         Session.commit()
         log(f"Finished Task '{task.name}' of type '{task.type}'", "success")
 
-    def get_task(self, id_or_name: int | str) -> TasksModel:
+    def get_task(self, id_or_name: int | str) -> TaskModel:
         """Return a task based on its id or name."""
         if type(id_or_name) == int:
             for task in self.db_entry.tasks:
@@ -80,7 +80,7 @@ class BaseHandler():
                     return task
 
     @abstractmethod
-    def execute_module(self, name: str) -> TasksModel:
+    def execute_module(self, name: str) -> TaskModel:
         ...
 
     @abstractmethod
@@ -91,15 +91,16 @@ class BaseHandler():
             bool: True if yes, False if not
         """
     @abstractmethod
-    def reverse_shell(self, address: str, port: int) -> TasksModel:
+    def reverse_shell(self, address: str, port: int, binary: str) -> TaskModel:
         """Open a Reverse Shell to a given Address:Port
         Args:
             address (str): Receiver Address
             port (int): Receiver Port
+            binary (str): Executed binary
 
         """
     @abstractmethod
-    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> TasksModel:
+    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> TaskModel:
         """Upload a File to a Device
         Args:
             local_file (string): Local file to upload
@@ -108,7 +109,7 @@ class BaseHandler():
         ...
 
     @abstractmethod
-    def file_download(self, remote_path: str) -> TasksModel:
+    def file_download(self, remote_path: str) -> TaskModel:
         """Download a file from the device
         Args:
             remote_path (string): Remote File to download the file from
@@ -116,7 +117,7 @@ class BaseHandler():
         ...
 
     @abstractmethod
-    def rce(self, cmd: str) -> TasksModel:
+    def rce(self, cmd: str) -> TaskModel:
         """Send a Cmd to a Device and return the Output
         Args:
             cmd (str): Command to execute
@@ -124,7 +125,7 @@ class BaseHandler():
         ...
 
     @abstractmethod
-    def get_directory_contents(self, dir: str) -> TasksModel:
+    def get_directory_contents(self, dir: str) -> TaskModel:
         """Get the contents of a directory
         Args:
             dir (str): Directory to get the contents of

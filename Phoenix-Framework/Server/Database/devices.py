@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from Commander import Commander
 
     from .listeners import ListenerModel
-    from .tasks import TasksModel
+    from .tasks import TaskModel
 
 
 class DeviceModel(Base):
@@ -27,8 +27,8 @@ class DeviceModel(Base):
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
     listener: "ListenerModel" = relationship(
         "ListenerModel", back_populates="devices")
-    tasks: list["TasksModel"] = relationship(
-        "TasksModel",
+    tasks: list["TaskModel"] = relationship(
+        "TaskModel",
         back_populates="device")
 
     def to_json(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:

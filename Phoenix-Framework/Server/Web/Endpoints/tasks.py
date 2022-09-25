@@ -1,5 +1,5 @@
 from Commander import Commander
-from Database import Session, TasksModel
+from Database import Session, TaskModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.web import authorized, generate_response
 
@@ -11,11 +11,29 @@ def tasks_bp(commander: Commander):
     @authorized
     def get_tasks():
         use_json = request.args.get("json", "") == "true"
-        task_query = Session.query(TasksModel)
-        tasks: list[TasksModel] = task_query.all()
+        task_query = Session.query(TaskModel)
+        tasks: list[TaskModel] = task_query.all()
         if use_json:
             return jsonify([task.to_json(commander) for task in tasks])
         opened_task = task_query.filter_by(id=request.args.get("open")).first()
         return render_template("tasks.html", tasks=tasks, opened_task=opened_task)
     
+    @tasks_bp.route("/clear", methods=["POST"])
+    @authorized
+    def post_clear_tasks():
+        id = request.args.get("id", "")
+        count = 0
+        if id == "all":
+            for task in Session.query(TaskModel).all():
+                if task.finished_at is not None:
+                    count += 1
+                    Session.delete(task)
+        else:
+            for task in Session.query(TaskModel).filter_by(device_id=id).all():
+                if task.finished_at is not None:
+                    count += 1
+                    Session.delete()
+        Session.commit()
+        return generate_response("success", f"Cleared {count} tasks.", "tasks")
+
     return tasks_bp
