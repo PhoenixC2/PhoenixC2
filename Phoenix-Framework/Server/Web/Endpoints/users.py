@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid1
 
 from Database import UserModel, db_session
 from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
@@ -49,7 +49,7 @@ def add_user():
         username=username,
         admin=admin,
         disabled=disabled,
-        api_key=str(uuid.uuid1()))
+        api_key=str(uuid1()))
     user.set_password(password)
 
     db_session.add(user)
@@ -138,7 +138,7 @@ def edit_user():
         return generate_response("success", f"Disabled {user}.", "users")
 
     elif change == "api-key":
-        user.api_key = str(uuid.uuid1())
+        user.api_key = str(uuid1())
         log(f"({current_user}) changed {user}'s api-key.")
         if not use_json:
             flash(

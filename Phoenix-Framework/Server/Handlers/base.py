@@ -1,5 +1,6 @@
 import importlib
 import io
+from uuid import uuid1
 from datetime import datetime
 from abc import abstractmethod
 
@@ -51,17 +52,22 @@ class BaseHandler():
                 return module
         raise Exception("Module not found")
 
+    def generate_task(self) -> TasksModel:
+        return TasksModel(
+            name=str(uuid1()),
+            device=self.db_entry,
+            created_at=datetime.now()
+        )
     def add_task(self, task: TasksModel):
         self.tasks.append(task)
-    
+
     def finish_task(self, task: TasksModel, output: str):
         task.output = output
         task.finished_at = datetime.now()
         db_session.commit()
         log(f"Finished Task '{task.name}' of type '{task.type}'", "success")
-        
-    
-    def get_task(self, id_or_name: int|str) -> TasksModel:
+
+    def get_task(self, id_or_name: int | str) -> TasksModel:
         """Return a task based on its id or name."""
         if type(id_or_name) == int:
             for task in self.db_entry.tasks:
@@ -71,8 +77,7 @@ class BaseHandler():
             for task in self.db_entry.tasks:
                 if task.name == id_or_name:
                     return task
-    @abstractmethod
-    
+
     @abstractmethod
     def execute_module(self, name: str) -> TasksModel:
         ...
@@ -124,5 +129,3 @@ class BaseHandler():
             dir (str): Directory to get the contents of
         """
         ...
-
-

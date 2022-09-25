@@ -1,4 +1,5 @@
 """The Tasks Model"""
+from uuid import uuid1
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -46,4 +47,4 @@ class TasksModel(Base):
         """Update the Task to be finished"""
         self.output = output
         self.finished_at = datetime.now()
-        
+    

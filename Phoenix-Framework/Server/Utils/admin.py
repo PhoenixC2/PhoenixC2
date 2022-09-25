@@ -2,7 +2,7 @@ import os
 import random
 import string
 import subprocess
-import uuid
+from uuid import uuid1
 
 from Database import *
 from Database.base import Base
@@ -24,7 +24,7 @@ def recreate_super_user():
         id=1,
         username="phoenix",
         admin=True,
-        api_key=str(uuid.uuid1())
+        api_key=str(uuid1())
     )
     admin.set_password(password)
     db_session.add(admin)
