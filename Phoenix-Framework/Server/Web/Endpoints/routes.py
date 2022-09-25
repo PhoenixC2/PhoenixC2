@@ -29,8 +29,8 @@ def routes_bp(commander: "Commander") -> Blueprint:
                 connections_today += 1
             
 
-        active_devices = commander.active_handlers_count
-        active_listeners = commander.active_listeners_count
+        active_devices = len(commander.active_handler)
+        active_listeners = len(commander.active_listeners)
         active_users = 0
         for user in db_session.query(UserModel).all():
             if user.activity_status == "online":

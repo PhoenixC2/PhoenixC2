@@ -1,7 +1,7 @@
 """The Tasks Model"""
-from uuid import uuid1
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import uuid1
 
 from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String,
                         Text)

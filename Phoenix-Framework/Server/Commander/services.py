@@ -5,6 +5,7 @@ from Commander import Commander
 from Creator.listener import start_listener
 from Database import ListenerModel, db_session
 from Utils.ui import log
+from Utils.web import FlaskThread
 from Web import create_web
 
 
@@ -24,6 +25,7 @@ def start_listeners(commander: Commander):
 def start_web(web_address: str, web_port: int, ssl:bool, commander: Commander):
     """Start the web server"""
     web_server = create_web(commander)
+    web_server.tr
     if ssl:
         threading.Thread(
             target=web_server.run,

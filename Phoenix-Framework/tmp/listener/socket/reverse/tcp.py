@@ -192,7 +192,7 @@ class Listener(BaseListener):
                                 connection,
                                 addr[0],
                                 key,
-                                self.commander.active_handlers_count + 1)
+                                len(self.commander.active_handlers)+ 1)
                 if self.db_entry.options["fernet"]:
                     key = Fernet.generate_key()
                     try:

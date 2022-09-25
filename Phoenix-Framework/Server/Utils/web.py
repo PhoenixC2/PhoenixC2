@@ -1,8 +1,11 @@
 import datetime
+import threading
+
 from functools import wraps
 
 from Database import UserModel, db_session
-from flask import Response, abort, flash, jsonify, redirect, request, session
+from werkzeug.serving import make_server
+from flask import Flask, Response, abort, flash, jsonify, redirect, request, session
 
 
 def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:
@@ -55,3 +58,21 @@ def admin(func):
         else:
             abort(401)
     return wrapper
+
+class FlaskThread(threading.Thread):
+    """Stoppable Flask server"""
+    def __init__(self, app: Flask, address: str, port: int, ssl: bool, name:str):
+        threading.Thread.__init__(self)
+        self.name = name
+        if ssl:
+            self.server = make_server(address, port, app, threaded=True, ssl_context=("Data/ssl.pem", "Data/ssl.key"))
+        else:
+            self.server = make_server(address, port, app, threaded=True)
+        self.ctx = app.app_context()
+        self.ctx.push()
+
+    def run(self):
+        self.server.serve_forever()
+
+    def shutdown(self):
+        self.server.shutdown()

@@ -2,7 +2,6 @@ import threading
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-
 from Handlers.base import BaseHandler
 from Utils.options import OptionPool
 
@@ -23,8 +22,14 @@ class BaseListener():
         self.commander: "Commander" = commander
         self.db_entry: "ListenerModel" = db_entry
         self.id: int = db_entry.id
-        self.handlers: list[BaseHandler] = []
-        
+    
+    @property
+    def handlers(self):
+        handlers = []
+        for handler in self.commander.active_handlers.values():
+            if handler.db_entry.listener == self.db_entry:
+                handlers.append(handler)
+        return handlers
     def status(self) -> True:
         """Get status of the listener.
 
@@ -34,12 +39,10 @@ class BaseListener():
 
     def add_handler(self, handler: BaseHandler):
         """Add a Handler to the Listener"""
-        self.handlers.append(handler)
         self.commander.add_active_handler(handler)
 
     def remove_handler(self, handler: BaseHandler):
         """Remove a Handler from the Listener"""
-        self.handlers.remove(handler)
         self.commander.remove_handler(handler.id)
 
     def get_handler(self, id_or_name:int|str) -> BaseHandler:

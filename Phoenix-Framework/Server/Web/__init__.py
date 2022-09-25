@@ -1,6 +1,6 @@
 """The Web Server Class to interact with the Server using an API and a Web Interface"""
-import os
 import logging
+import os
 import random
 import string
 

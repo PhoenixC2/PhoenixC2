@@ -1,12 +1,12 @@
 import importlib
 import io
-from uuid import uuid1
-from datetime import datetime
 from abc import abstractmethod
+from datetime import datetime
+from uuid import uuid1
 
-from Utils.ui import log
 from Database import DeviceModel, TasksModel, db_session
 from Modules.base import BaseModule
+from Utils.ui import log
 
 
 class BaseHandler():

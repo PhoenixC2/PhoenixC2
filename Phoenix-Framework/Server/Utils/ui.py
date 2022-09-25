@@ -51,7 +51,7 @@ def log(text: str, alert: str=""):
     elif alert == "error":
         style = "red"
     elif alert == "critical":
-        style = "#9e0909"
+        style = "#ff0000"
     console.print("[" + alert.upper() + "] " + text, style=style)
 
 

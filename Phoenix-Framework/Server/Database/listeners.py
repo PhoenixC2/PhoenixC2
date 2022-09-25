@@ -1,6 +1,5 @@
 """The Listeners Model"""
 import importlib
-import json
 from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_LISTENERS

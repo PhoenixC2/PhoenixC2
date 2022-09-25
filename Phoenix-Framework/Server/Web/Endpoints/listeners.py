@@ -153,7 +153,7 @@ def listeners_bp(commander: Commander):
             status = start_listener(listener, commander)
         except Exception as e:
             log(f"({get_current_user().username}) {e}", "info")
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("error", str(e), "listeners", 400)
         else:
             log(f"({get_current_user().username}) Started Listener with ID {listener_id}", "success")
             return generate_response("success", status, "listeners")

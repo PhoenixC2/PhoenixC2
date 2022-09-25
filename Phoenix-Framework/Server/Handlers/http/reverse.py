@@ -1,7 +1,9 @@
 from datetime import datetime
 from uuid import uuid1
+
+from Database import DeviceModel, TasksModel, db_session
 from Handlers.base import BaseHandler
-from Database import db_session, DeviceModel, TasksModel
+
 
 class Handler(BaseHandler):
     """The Reverse Http(s) Handler Class to interact with the Device"""

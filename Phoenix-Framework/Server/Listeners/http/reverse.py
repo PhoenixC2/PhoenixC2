@@ -1,20 +1,20 @@
-from uuid import uuid1
-import time
-import os
 import logging
+import os
+import time
 from datetime import datetime
-from multiprocessing import Process
 from threading import Thread
 from typing import TYPE_CHECKING
+from uuid import uuid1
 
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Database import DeviceModel, ListenerModel, db_session
-from flask import Flask, Response, request, jsonify, cli
+from flask import Flask, Response, cli, jsonify, request
 from Handlers.http.reverse import Handler
 from Listeners.base import BaseListener
 from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
                            Option, OptionPool, StringType, TableType)
-from Utils.ui import ph_print, log
+from Utils.ui import log, ph_print
+from Utils.web import FlaskThread
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -149,7 +149,9 @@ class Listener(BaseListener):
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)
-        self.listener_process: Process
+        self.stopped = False
+        self.listener_thread: FlaskThread
+        self.refresher_thread: Thread
         self.create_api()
 
     def create_api(self):
@@ -159,6 +161,8 @@ class Listener(BaseListener):
         def connect():
             data = request.get_json()
             if len(self.handlers) >= self.db_entry.connection_limit:
+                log(
+                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", "info")
                 return "", 404
             try:
                 address = data.get("address")
@@ -188,6 +192,7 @@ class Listener(BaseListener):
             handler = self.get_handler(name)
             if handler is None:
                 return "", 404
+            handler.db_entry.last_online = datetime.now() # update last online
             db_session.commit()
             return jsonify([task.to_json(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
 
@@ -218,27 +223,15 @@ class Listener(BaseListener):
         if not os.getenv("PHOENIX_DEBUG", "") == "true":
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
-        if self.ssl:
-            self.listener_process = Process(target=self.api.run,
-                                            kwargs={
-                                                "host": self.address,
-                                                "port": self.port,
-                                                "ssl_context": ("Data/ssl.pem", "Data/ssl.key"),
-                                                "threaded": True},
-                                            name=self.db_entry.name)
-        else:
-            self.listener_process = Process(target=self.api.run,
-                                            kwargs={
-                                                "host": self.address,
-                                                "port": self.port,
-                                                "threaded": True},
-                                            name=self.db_entry.name)
-        self.listener_process.start()
-        Thread(target=self.refresh_connections,
-               name=self.db_entry.name+"-Refresher").start()
-
+        self.listener_thread = FlaskThread(self.api, self.address, self.port, self.ssl, self.db_entry.name)
+        self.refresher_thread = Thread(target=self.refresh_connections,
+                   name=self.db_entry.name+"-Refresher-Thread")
+        self.listener_thread.start()
+        self.refresher_thread.start()
     def refresh_connections(self):
         while True:
+            if self.stopped:
+                break
             time.sleep(5)
             for handler in self.handlers:
                 if not handler.alive():
@@ -246,7 +239,8 @@ class Listener(BaseListener):
                     self.remove_handler(handler)
 
     def stop(self):
-        self.listener_process.kill()
+        self.stopped = True
+        self.listener_thread.shutdown()
 
     def status(self) -> True:
-        return self.listener_process.is_alive()
+        return self.process.is_alive()
