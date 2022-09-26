@@ -54,13 +54,9 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
     listener =  listener_db.get_listener_object(commander)
 
     # Start Listener
-    try:
-        listener.start()
-        commander.add_active_listener(listener)
-    except Exception as e:
-        raise e
-    else:
-        return f"Started Listener with ID {listener_db.id}"
+    listener.start()
+    commander.add_active_listener(listener)
+    return f"Started Listener with ID {listener_db.id}"
 
 
 def stop_listener(listener_db: ListenerModel, commander: Commander) -> None:

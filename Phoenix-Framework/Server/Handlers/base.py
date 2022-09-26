@@ -29,7 +29,7 @@ class BaseHandler():
             """Encrypt the data"""
          return self.fernet.encrypt(data.encode())'''
     @property
-    def db_entry(self):
+    def db_entry(self) -> DeviceModel:
         return Session().query(DeviceModel).filter_by(id=self.id).first()
     def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""

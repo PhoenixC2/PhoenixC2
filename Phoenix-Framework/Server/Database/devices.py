@@ -30,7 +30,13 @@ class DeviceModel(Base):
     tasks: list["TaskModel"] = relationship(
         "TaskModel",
         back_populates="device")
-
+    @property
+    def connected(self):
+        delta = (datetime.now() - self.last_online).seconds
+        if delta < 10:
+            return True
+        return False
+    
     def to_json(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:
         data = {
             "id": self.id,
@@ -50,3 +56,4 @@ class DeviceModel(Base):
         else:
             data["connected"] = True
         return data
+

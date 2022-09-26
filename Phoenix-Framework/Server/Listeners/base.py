@@ -27,7 +27,7 @@ class BaseListener():
     def db_entry(self):
         return Session().query(ListenerModel).filter_by(id=self.id).first()
     @property
-    def handlers(self):
+    def handlers(self) -> list[BaseHandler]:
         Session 
         handlers = []
         for handler in self.commander.active_handlers.values():

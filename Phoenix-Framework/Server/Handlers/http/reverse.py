@@ -12,8 +12,4 @@ class Handler(BaseHandler):
         super().__init__(db_entry)
     
     def alive(self) -> bool:
-        delta = (datetime.now() - self.db_entry.last_online).seconds
-        if delta < 10:
-            return True
-        return False 
-    
+        return self.db_entry.connected

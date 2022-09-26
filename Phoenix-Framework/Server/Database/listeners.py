@@ -66,7 +66,7 @@ class ListenerModel(Base):
         }
 
     def delete_stagers(self, session: Session):
-        """Delete all stagers if listener is getting removed"""
+        """Delete all stagers"""
         for stager in self.stagers:
             session.delete(stager)
 
@@ -75,7 +75,7 @@ class ListenerModel(Base):
         return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
             commander, self)
 
-    def get_optionse(self) -> "OptionPool":
+    def get_options(self) -> "OptionPool":
         """Get the options based on the listener type."""
 
         if self.type not in AVAILABLE_LISTENERS:

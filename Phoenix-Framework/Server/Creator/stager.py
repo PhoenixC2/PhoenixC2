@@ -14,13 +14,6 @@ from .available import AVAILABLE_STAGERS
 def add_stager(data: dict) -> any:
     """
     Add a stager to the database
-    :name: The Name of the stager
-    :listener_id: The Listener to use
-    :encoding: The encoding to use
-    :random_size: Randomize the size of the payload
-    :timeout: How often the stager should try to connect before exiting
-    :stager_format: The format of the payload
-    :delay: How long to wait before starting the stager
     """
 
     # Check if name is already in use
@@ -32,7 +25,7 @@ def add_stager(data: dict) -> any:
     stager = StagerModel.create_stager_from_data(data)
     Session.add(stager)
     Session.commit()
-    return f"Created '{name}' successfully!"
+    return stager
 
 
 def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
@@ -44,7 +37,6 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
     :return: The Stager as a string
 
     """
-
     if stager_db.listener.type not in AVAILABLE_STAGERS:  # also works as the stager type
         raise Exception(f"Stager {stager_db.listener.type} is not available.")
     # Get the Payload from the File

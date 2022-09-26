@@ -33,4 +33,5 @@ def create_web(commander: Commander):
     web_server.register_blueprint(loaders_bp, url_prefix="/loaders")
     web_server.register_blueprint(misc_bp, url_prefix="/misc")
     web_server.register_blueprint(tasks_bp(commander), url_prefix="/tasks")
+    web_server.register_blueprint(logs_bp, url_prefix="/logs")
     return web_server

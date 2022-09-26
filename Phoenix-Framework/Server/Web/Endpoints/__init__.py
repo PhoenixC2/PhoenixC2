@@ -8,3 +8,4 @@ from .routes import routes_bp
 from .stagers import stagers_bp
 from .tasks import tasks_bp
 from .users import users_bp
+from .logs import logs_bp
