@@ -213,11 +213,14 @@ class Listener(BaseListener):
             data = request.get_json()
             id = data.get("id", "")
             output = data.get("output", "")
+            success = data.get("success", "").lower() == "true"
+            
             task = handler.get_task(id)
             if task is None:
                 return "", 404
 
-            handler.finish_task(task, output)
+            task.finish(output, success)
+            Session.commit()
             return "", 200
 
         @self.api.after_request

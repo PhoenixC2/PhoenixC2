@@ -62,12 +62,6 @@ class BaseHandler():
     def add_task(self, task: TaskModel):
         self.tasks.append(task)
 
-    def finish_task(self, task: TaskModel, output: str):
-        task.output = output
-        task.finished_at = datetime.now()
-        Session.commit()
-        log(f"Finished Task '{task.name}' of type '{task.type}'", "success")
-
     def get_task(self, id_or_name: int | str) -> TaskModel:
         """Return a task based on its id or name."""
         if type(id_or_name) == int:
@@ -80,54 +74,9 @@ class BaseHandler():
                     return task
 
     @abstractmethod
-    def execute_module(self, name: str) -> TaskModel:
-        ...
-
-    @abstractmethod
     def alive(self) -> bool:
         """Checks if device is alive
 
         Returns:
             bool: True if yes, False if not
         """
-    @abstractmethod
-    def reverse_shell(self, address: str, port: int, binary: str) -> TaskModel:
-        """Open a Reverse Shell to a given Address:Port
-        Args:
-            address (str): Receiver Address
-            port (int): Receiver Port
-            binary (str): Executed binary
-
-        """
-    @abstractmethod
-    def file_upload(self, local_file: io.TextIOWrapper, remote_path: str) -> TaskModel:
-        """Upload a File to a Device
-        Args:
-            local_file (string): Local file to upload
-            remote_path (string): Remote path to upload the file to
-        """
-        ...
-
-    @abstractmethod
-    def file_download(self, remote_path: str) -> TaskModel:
-        """Download a file from the device
-        Args:
-            remote_path (string): Remote File to download the file from
-        """
-        ...
-
-    @abstractmethod
-    def rce(self, cmd: str) -> TaskModel:
-        """Send a Cmd to a Device and return the Output
-        Args:
-            cmd (str): Command to execute
-        """
-        ...
-
-    @abstractmethod
-    def get_directory_contents(self, dir: str) -> TaskModel:
-        """Get the contents of a directory
-        Args:
-            dir (str): Directory to get the contents of
-        """
-        ...

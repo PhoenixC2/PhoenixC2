@@ -2,12 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as Session_Type
 from sqlalchemy.orm import scoped_session, sessionmaker
 from Utils.config import load_config
-from Utils.ui import log
 
 from .credentials import CredentialModel
 from .devices import DeviceModel
 from .listeners import ListenerModel
-from .logentry import LogEntryModel
+from .logentries import LogEntryModel
 from .operations import OperationModel
 from .stagers import StagerModel
 from .tasks import TaskModel

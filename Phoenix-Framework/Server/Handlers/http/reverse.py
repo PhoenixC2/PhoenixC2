@@ -17,28 +17,3 @@ class Handler(BaseHandler):
             return True
         return False 
     
-    
-    def reverse_shell(self, address: str, port: int, shell: str) -> TaskModel:
-        task = self.generate_task()
-        task.type = "reverse-shell"
-        task.args = [address, port, shell]
-        Session.add(task)
-        Session.commit()
-        return task
-    
-    def rce(self, cmd: str) -> TaskModel:
-        task = self.generate_task()
-        task.type = "rce"
-        task.args = [cmd]
-        Session.add(task)
-        Session.commit()
-        return task
-    
-    def get_directory_contents(self, dir: str) -> TaskModel:
-        task = self.generate_task()
-        task.type = "dir"
-        task.args = [dir]
-        Session.add(task)
-        Session.commit()
-        return task
-    #TODO: add the other methods upload/download

