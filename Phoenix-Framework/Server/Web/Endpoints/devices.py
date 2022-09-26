@@ -2,7 +2,7 @@ import os
 from Commander import Commander
 from Database import DeviceModel, TaskModel, Session
 from flask import Blueprint, jsonify, render_template, request, send_from_directory
-from Utils.web import authorized, generate_response
+from Utils.web import authorized, generate_response, get_messages
 
 
 def devices_bp(commander: Commander):
@@ -18,7 +18,7 @@ def devices_bp(commander: Commander):
             return jsonify([device.to_json(commander) for device in devices])
         opened_device = device_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("devices.html", devices=devices, opened_device=opened_device)
+        return render_template("devices.html", devices=devices, opened_device=opened_device, messages=get_messages())
 
     @devices_bp.route("/downloads/<string:file>", methods=["GET"])
     @authorized

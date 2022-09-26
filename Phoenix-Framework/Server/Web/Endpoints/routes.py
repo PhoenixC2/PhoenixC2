@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from Database import DeviceModel, Session, UserModel
 from flask import Blueprint, render_template
-from Utils.web import authorized, get_current_user
+from Utils.web import authorized, get_current_user, get_messages
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -44,6 +44,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
             active_listeners=active_listeners,
             active_users=active_users,
             connections_last_hour=connections_last_hour,
-            connections_today=connections_today)
+            connections_today=connections_today,
+            messages=get_messages())
 
     return routes_bp

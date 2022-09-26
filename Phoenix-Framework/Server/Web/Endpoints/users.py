@@ -4,7 +4,7 @@ from Database import Session, UserModel
 from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
                    render_template, request, session)
 from Utils.ui import log
-from Utils.web import admin, authorized, generate_response, get_current_user
+from Utils.web import admin, authorized, generate_response, get_current_user, get_messages
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -27,7 +27,7 @@ def get_users():
                 data[index]["api_key"] = user.api_key
 
         return jsonify({"status": "success", "users": data})
-    return render_template("users.html", user=curr_user, users=users, opened_user=opened_user)
+    return render_template("users.html", user=curr_user, users=users, opened_user=opened_user, messages=get_messages())
 
 
 @users_bp.route("/add", methods=["POST"])

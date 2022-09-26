@@ -130,33 +130,33 @@
                 <a class="nav-link" href="javscript:void(0)" id="navbarDropdownMenuLink" data-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
                   <i class="material-icons">notifications</i>
-                  <span class="notification">1</span>
+                  <span class="notification">{{messages | count}}</span>
                   <p class="d-lg-none d-md-block">
                     Notifications
                   </p>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                  <a class="dropdown-item" href="javascript:void(0)">Mike John responded to your email</a>
-                  <a class="dropdown-item" href="javascript:void(0)">You have 5 new tasks</a>
-                  <a class="dropdown-item" href="javascript:void(0)">You're now friend with Andrew</a>
-                  <a class="dropdown-item" href="javascript:void(0)">Another Notification</a>
-                  <a class="dropdown-item" href="javascript:void(0)">Another One</a>
+                  {% for message in messages %}
+                  <a class="dropdown-item text-{{message.alert}}" href="/logs?open={{message.id}}">{{message.description}}</a>
+                  {% endfor %}
                 </div>
               </li>
               <li class="nav-item dropdown">
-                <a class="nav-link" href="javascript:;" id="navbarDropdownProfile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <img style="border-radius: 50px; height: 40px; width: 40px" src=" {{ user.profile_picture }}" alt="/static/images/icon.png">
+                <a class="nav-link" href="javascript:;" id="navbarDropdownProfile" data-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+                  <img style="border-radius: 50px; height: 40px; width: 40px" src=" {{ user.profile_picture }}"
+                    alt="/static/images/icon.png">
                   <p class="d-lg-none d-md-block">
-                  Account
+                    Account
                   </p>
-                  </a>
-                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownProfile">
                   <a class="dropdown-item" href="#">Profile</a>
                   <a class="dropdown-item" href="#">Settings</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="/auth/logout">Log out</a>
-                  </div>
-                  
+                </div>
+
               </li>
             </ul>
           </div>

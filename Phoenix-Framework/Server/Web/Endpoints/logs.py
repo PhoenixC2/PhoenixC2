@@ -4,7 +4,7 @@ from Database import Session, LogEntryModel
 from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
                    render_template, request, session)
 from Utils.ui import log
-from Utils.web import admin, authorized, generate_response, get_current_user
+from Utils.web import admin, authorized, generate_response, get_current_user, get_messages
 
 logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 
@@ -13,12 +13,16 @@ logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 @authorized
 def get_logs():
     use_json = request.args.get("json", "").lower() == "true"
+    current_user = get_current_user()
     logentry_query = Session.query(LogEntryModel)
     logs: list[LogEntryModel] = logentry_query.all()
+    for log in logs:
+        log.seen_by_user(current_user)
+    Session.commit()
     opened_log = logentry_query.filter_by(id=request.args.get("open")).first()
     if use_json:
         return jsonify({"status": "success", "logs": [log.to_json() for log in logs]}) 
-    return render_template("logs.html", user=get_current_user(), logs=logs, opened_log=opened_log)
+    return render_template("logs.html", user=current_user, logs=logs, opened_log=opened_log, messages=get_messages())
 
 
 @logs_bp.route("/remove", methods=["DELETE"])

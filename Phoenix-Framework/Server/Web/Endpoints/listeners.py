@@ -5,7 +5,7 @@ from Database import ListenerModel, Session
 from flask import Blueprint, jsonify, render_template, request
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
-from Utils.web import authorized, generate_response, get_current_user
+from Utils.web import authorized, generate_response, get_current_user, get_messages
 
 
 def listeners_bp(commander: Commander):
@@ -19,8 +19,9 @@ def listeners_bp(commander: Commander):
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
             return jsonify([listener.to_json(commander) for listener in listeners])
-        opened_listener = listener_query.filter_by(id=request.args.get("open")).first()
-        return render_template("listeners.html", listeners, opened_listener=opened_listener)
+        opened_listener = listener_query.filter_by(
+            id=request.args.get("open")).first()
+        return render_template("listeners.html", listeners=listeners, opened_listener=opened_listener, messages=get_messages())
 
     @listeners_bp.route("/options", methods=["GET"])
     @authorized
@@ -55,7 +56,8 @@ def listeners_bp(commander: Commander):
 
         # Add listener
         try:
-            data["type"] = listener_type # has to be added again bc it got filtered out by options.validate_data(data)
+            # has to be added again bc it got filtered out by options.validate_data(data)
+            data["type"] = listener_type
             add_listener(data)
         except Exception as e:
             return generate_response("error", str(e), "listeners", 500)
@@ -137,16 +139,13 @@ def listeners_bp(commander: Commander):
         # Get request data
         listener_id = request.args.get("id", "")
 
-        if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "listeners", 400)
-        listener_id = int(listener_id)
-
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
             return generate_response("error", "Listener does not exist.", "listeners", 400)
+
         log(f"({get_current_user().username}) Starting Listener with ID {listener_id}", "info")
 
         try:

@@ -99,7 +99,11 @@
                         <td>{{device.hostname}}</td>
                         <td>{{device.address}}</td>
                         <td>{{device.last_online}}</td>
-                        <td><a href="devices?open={{device.id}}"><button class="btn btn-warning">Manage</button></a></td>
+                        {% if device.connected %}
+                        <td><a href="devices?open={{device.id}}"><button class="btn btn-success">Manage</button></a></td>
+                        {% else %}
+                        <td><a href="devices?open={{device.id}}"><button class="btn btn-danger">Manage</button></a></td>
+                        {% endif %}
                       </tr>
                       
                       {% endfor %}

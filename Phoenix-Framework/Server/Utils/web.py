@@ -2,12 +2,14 @@ import datetime
 import threading
 from functools import wraps
 
-from Database import Session, UserModel
-from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
+from Database import Session, UserModel, LogEntryModel
+from flask import (Flask, Response, abort, flash, jsonify, redirect, request, 
                    session)
 from werkzeug.serving import make_server
 
 
+def get_messages() -> list[LogEntryModel]:
+    return [log for log in Session.query(LogEntryModel).all() if get_current_user() in log.unseen_users]
 def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:
     """Generate the Endpoint Response"""
     use_json = request.args.get("json", "").lower() == "true"

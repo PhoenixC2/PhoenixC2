@@ -4,7 +4,7 @@ from Creator.stager import add_stager, get_stager
 from Database import ListenerModel, Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
-from Utils.web import authorized, generate_response, get_current_user
+from Utils.web import authorized, generate_response, get_current_user, get_messages
 
 
 def stagers_bp(commander: Commander):
@@ -20,7 +20,7 @@ def stagers_bp(commander: Commander):
         if use_json:
             return jsonify([stager.to_json(commander) for stager in stagers])
         opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
-        return render_template("stagers.html", stagers=stagers, opened_stager=opened_stager)
+        return render_template("stagers.html", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
 
     @stagers_bp.route("/options", methods=["GET"])
     @authorized
