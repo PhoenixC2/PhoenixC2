@@ -14,16 +14,20 @@ users_bp = Blueprint("users", __name__, url_prefix="/users")
 def get_users():
     use_json = request.args.get("json", "").lower() == "true"
     curr_user = get_current_user()
-    users: list[UserModel] = Session.query(UserModel).all()
-    data = [user.to_json() for user in users]
-    if curr_user.admin:
-        for index, user in enumerate(users):
-            if user.admin and not curr_user.username == "phoenix" \
-                and not curr_user.username == user.username:
-                continue
-            data[index]["api_key"] = user.api_key
+    listener_query=Session.query(UserModel)
+    users: list[UserModel] = listener_query.all()
+    opened_user = listener_query.filter_by(id=request.args.get("open")).first()
+    if use_json:
+        data = [user.to_json() for user in users]
+        if curr_user.admin:
+            for index, user in enumerate(users):
+                if user.admin and not curr_user.username == "phoenix" \
+                    and not curr_user.username == user.username:
+                    continue
+                data[index]["api_key"] = user.api_key
 
-    return jsonify({"status": "success", "users": data}) if use_json else render_template("users.html", user=curr_user, users=users)
+        return jsonify({"status": "success", "users": data})
+    return render_template("users.html", user=curr_user, users=users, opened_user=opened_user)
 
 
 @users_bp.route("/add", methods=["POST"])

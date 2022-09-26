@@ -1,11 +1,13 @@
 """The Users Model"""
 from datetime import datetime
 from hashlib import md5
-
+from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-
+from sqlalchemy.orm import relationship
 from .base import Base
 
+if TYPE_CHECKING:
+    from .logentries import LogEntryModel
 
 class UserModel(Base):
     """The Users Model"""
@@ -18,7 +20,9 @@ class UserModel(Base):
     last_activity: datetime = Column(DateTime)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(String(100), default="/static/images/icon.png")
-
+    logs: list["LogEntryModel"] = relationship(
+        "LogEntryModel",
+        back_populates="user")
     def set_password(self, password:str):
         """Hash the Password and save it."""
         self.password = md5(password.encode()).hexdigest()
