@@ -41,7 +41,7 @@ class ListenerModel(Base):
         """Returns True if listeners is active, else False"""
         try:
             commander.get_active_listener(self.id)
-        except:
+        except KeyError:
             return False
         else:
             return True
@@ -83,9 +83,9 @@ class ListenerModel(Base):
 
         try:
             open("Listeners/" + self.type + ".py", "r").close()
-        except:
-            raise Exception(f"Listener {self.type} does not exist") from None
-
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"Listener {self.type} does not exist") from e
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + self.type.replace("/", ".")).Listener
         return listener.listener_pool
@@ -99,8 +99,9 @@ class ListenerModel(Base):
 
         try:
             open("Listeners/" + type + ".py", "r").close()
-        except:
-            raise Exception(f"Listener {type} does not exist") from None
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"Listener {type} does not exist") from e
 
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + type.replace("/", ".")).Listener

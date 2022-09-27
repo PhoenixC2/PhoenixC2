@@ -4,7 +4,7 @@ os.environ["PHOENIX_CONFIG_PATH"] = "/home/screamz/Code/Phoenix-Framework/Phoeni
 from datetime import datetime
 from uuid import uuid1
 
-from Database import *
+from Database import DeviceModel, Session, TaskModel
 
 task = TaskModel(
     name=str(uuid1()),

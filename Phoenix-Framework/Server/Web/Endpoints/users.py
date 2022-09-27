@@ -4,7 +4,8 @@ from Database import Session, UserModel
 from flask import (Blueprint, abort, escape, flash, jsonify, redirect,
                    render_template, request, session)
 from Utils.ui import log
-from Utils.web import admin, authorized, generate_response, get_current_user, get_messages
+from Utils.web import (admin, authorized, generate_response, get_current_user,
+                       get_messages)
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
 

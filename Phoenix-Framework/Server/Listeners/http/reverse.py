@@ -175,7 +175,7 @@ class Listener(BaseListener):
                     last_online=datetime.now(),
                     listener=self.db_entry
                 )
-            except:
+            except Exception:
                 return "", 404
             Session.add(device)
             Session.commit()
@@ -211,11 +211,11 @@ class Listener(BaseListener):
                 return "", 404
 
             data = request.get_json()
-            id = data.get("id", "")
+            task_id = data.get("id", "")
             output = data.get("output", "")
             success = data.get("success", "").lower() == "true"
             
-            task = handler.get_task(id)
+            task = handler.get_task(task_id)
             if task is None:
                 return "", 404
 

@@ -2,10 +2,12 @@
 from datetime import datetime
 from hashlib import md5
 from typing import TYPE_CHECKING
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, Table, ForeignKey
-from sqlalchemy.orm import relationship
-from .base import Base
 
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
+                        Table, Text)
+from sqlalchemy.orm import relationship
+
+from .base import Base
 
 if TYPE_CHECKING:
     from .logentries import LogEntryModel

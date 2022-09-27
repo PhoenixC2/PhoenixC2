@@ -22,7 +22,8 @@ class OptionType():
     """The base option-type"""
     data_type = any = None
 
-    def validate(name: str, data: any) -> bool:
+    @staticmethod
+    def validate(self, name: str, data: any) -> bool:
         return data
 
 
@@ -31,7 +32,7 @@ class StringType(OptionType):
     """The option-type of string"""
     data_type = str
 
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "String"
 
 
@@ -40,7 +41,7 @@ class IntegerType(OptionType):
     """The option-type of integer"""
     data_type = int
 
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "Integer"
 
 
@@ -49,7 +50,7 @@ class BooleanType(OptionType):
     """The option-type of boolean"""
     data_type = bool
 
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "Boolean"
 
 
@@ -73,7 +74,7 @@ class UrlType(StringType):
         else:
             return url
 
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "Url"
 
 
@@ -99,7 +100,7 @@ class AddressType(StringType):
         else:
             return address
 
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "Address"
 
 
@@ -151,7 +152,7 @@ class Option():
     """"""
     name: str
     type: OptionType
-    _real_name: str = None
+    _real_name: str = ""
     description: str = ""
     required: bool = False
     default: any = None
@@ -175,8 +176,6 @@ class Option():
             except ValueError:
                 raise TypeError(
                     f"{self.name} has to be a type of '{self.type.data_type.__name__}'.")
-            except:
-                pass
 
         data = self.type.validate(self.name, data)
         return data
@@ -185,7 +184,7 @@ class Option():
         data = {
             "name": self.name,
             "real-name": self.real_name,
-            "type": self.type.__str__().lower(),
+            "type": self.type.__str__(self).lower(),
             "required": self.required,
             "description": self.description,
             "default": self.default
@@ -211,7 +210,7 @@ class OptionPool():
         """Register a new option"""
         self.options.append(option)
 
-    def validate_data(self, data: dict) -> bool:
+    def validate_data(self, data: dict) -> dict:
         """Validate the data"""
         cleaned_data = {}
         for option in self.options:

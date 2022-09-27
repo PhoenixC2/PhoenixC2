@@ -1,16 +1,19 @@
 """The Tasks Model"""
-from .base import Base
 import io
 import os
 from datetime import datetime
 from typing import TYPE_CHECKING
-from werkzeug.utils import secure_filename
-from Utils.ui import log
 from uuid import uuid1
-from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String,
-                        Text, Boolean)
+
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text)
 from sqlalchemy.orm import relationship
+from Utils.ui import log
+from werkzeug.utils import secure_filename
+
+from .base import Base
 from .devices import DeviceModel
+
 if TYPE_CHECKING:
     from Commander import Commander
 

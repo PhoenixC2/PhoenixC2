@@ -1,10 +1,12 @@
 import os
+
 from Commander import Commander
-from Database import DeviceModel, TaskModel, Session
-from flask import Blueprint, jsonify, render_template, request, send_from_directory
+from Database import DeviceModel, Session, TaskModel
+from flask import (Blueprint, jsonify, render_template, request,
+                   send_from_directory)
 from Utils.web import authorized, generate_response, get_messages
 
-
+TASK_CREATED = "Task created."
 def devices_bp(commander: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
@@ -47,7 +49,7 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/rce", methods=["POST"])
     @authorized
@@ -66,7 +68,7 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/info", methods=["GET"])
     @authorized
@@ -84,17 +86,17 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/dir", methods=["GET"])
     @authorized
     def get_dir():
         use_json = request.args.get("json", "").lower() == "true"
         device_id = request.args.get("id", "")
-        dir = request.args.get("dir")
+        directory = request.args.get("dir")
 
         try:
-            task = TaskModel.list_directory_contents(device_id, dir)
+            task = TaskModel.list_directory_contents(device_id, directory)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -103,7 +105,7 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/upload", methods=["POST"])
     @authorized
@@ -113,7 +115,7 @@ def devices_bp(commander: Commander):
         target_path = request.args.get("path")
 
         # check if file is in request
-        if not "file" in request.files:
+        if "file" not in request.files:
             return generate_response("error", "The as_file parameter is true, but no file was given.", "devices", 400)
         if target_path is None:
             return generate_response("error", "Upload path is missing.", "devices", 400)
@@ -127,7 +129,7 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/download", methods=["GET"])
     @authorized
@@ -148,5 +150,5 @@ def devices_bp(commander: Commander):
             if use_json:
                 return task.to_json(commander, False)
             else:
-                return generate_response("success", "Task created.", "devices")
+                return generate_response("success", TASK_CREATED, "devices")
     return devices_bp

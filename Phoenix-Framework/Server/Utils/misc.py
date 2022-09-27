@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
+
 import netifaces
 from Database import LogEntryModel, Session, UserModel
+
 version = "0.1"
 
 

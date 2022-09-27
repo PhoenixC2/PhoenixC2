@@ -5,9 +5,11 @@ from Database import ListenerModel, Session
 from flask import Blueprint, jsonify, render_template, request
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
-from Utils.web import authorized, generate_response, get_current_user, get_messages
+from Utils.web import (authorized, generate_response, get_current_user,
+                       get_messages)
 
-
+INVALID_ID = "Invalid ID."
+LISTENER_DOES_NOT_EXIST = "Listener does not exist."
 def listeners_bp(commander: Commander):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
 
@@ -73,17 +75,16 @@ def listeners_bp(commander: Commander):
         stop = request.form.get("stop", "").lower() == "true"
 
         if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "listeners", 400)
+            return generate_response("error", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
         if listener is None:
-            return generate_response("error", "Listener does not exist.", "listeners", 400)
+            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
-        if stop:
-            if listener.is_active(commander):
+        if stop and listener.is_active(commander):
                 stop_listener(listener, commander)
                 log(f"({get_current_user().username}) Deleted and stopped listener with ID {listener_id}.", "info")
                 return generate_response("success", f"Deleted and stopped listener with ID {listener_id}.", "listeners")
@@ -105,7 +106,7 @@ def listeners_bp(commander: Commander):
             return generate_response("error", "Missing required data.", "listeners", 400)
 
         if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "listeners", 400)
+            return generate_response("error", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
@@ -113,7 +114,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", "Listener does not exist.", "listeners", 400)
+            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Edited {change} to {value} for Listener with ID {listener_id}.", "success")
 
@@ -144,7 +145,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", "Listener does not exist.", "listeners", 400)
+            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Starting Listener with ID {listener_id}", "info")
 
@@ -164,7 +165,7 @@ def listeners_bp(commander: Commander):
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "listeners", 400)
+            return generate_response("error", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
@@ -172,7 +173,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", "Listener does not exist.", "listeners", 400)
+            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Stopping Listener with ID {listener_id}", "info")
 
@@ -191,7 +192,7 @@ def listeners_bp(commander: Commander):
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
-            return generate_response("error", "Invalid ID.", "listeners", 400)
+            return generate_response("error", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists

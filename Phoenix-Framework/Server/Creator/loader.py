@@ -2,7 +2,7 @@
 from Database import Session, StagerModel
 
 
-def create_loader(stager_id: int, format: str, encoding:str):
+def create_loader(stager_id: int, format: str, encoding: str):
     """
     Create a Loader for a specific stager
     Args:
@@ -15,7 +15,7 @@ def create_loader(stager_id: int, format: str, encoding:str):
     # Check if stager exists
     stager = Session.query(StagerModel).filter_by(id=stager_id)
     if stager is None:
-        raise Exception(f"Stager with ID {stager_id} does not exist")
+        raise ValueError(f"Stager with ID {stager_id} does not exist")
 
     # Check if language is valid
     if format not in ["python",
@@ -26,7 +26,7 @@ def create_loader(stager_id: int, format: str, encoding:str):
                       "php",
                       "javascript",
                       "shell"]:
-        raise Exception(f"Format {format} is not supported")
+        raise ValueError(f"Format {format} is not supported")
 
     # Create Loader
     # Encode Loader

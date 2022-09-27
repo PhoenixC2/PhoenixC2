@@ -4,7 +4,9 @@ import string
 import subprocess
 from uuid import uuid1
 
-from Database import *
+from Database import (CredentialModel, DeviceModel, ListenerModel,
+                      LogEntryModel, OperationModel, Session, StagerModel,
+                      TaskModel, UserModel, engine)
 from Database.base import Base
 from Utils.ui import log
 
@@ -49,7 +51,7 @@ def recreate_ssl():
         os.remove("Data/ssl.key")
     if os.path.exists("Data/ssl.pem"):
         os.remove("Data/ssl.pem")
-    
+
     country = "".join(random.choices(
         string.ascii_uppercase + string.digits, k=2))
     state = "".join(random.choices(
@@ -64,7 +66,7 @@ def recreate_ssl():
 
     subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", "Data/ssl.key",
                     "-out", "Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
-        
+
     log("Generated SSL certificates.", "success")
 
 
@@ -100,8 +102,8 @@ def reset_table(table: str):
         "credentials": CredentialModel,
         "operations": OperationModel,
         "devices": DeviceModel,
-        "logs": LogEntryModel
-
+        "logs": LogEntryModel,
+        "tasks": TaskModel,
     }
     if table not in models:
         log(f"{table} doesn't exist.", "error")

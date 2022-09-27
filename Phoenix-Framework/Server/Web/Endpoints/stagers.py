@@ -4,9 +4,11 @@ from Creator.stager import add_stager, get_stager
 from Database import ListenerModel, Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
-from Utils.web import authorized, generate_response, get_current_user, get_messages
+from Utils.web import (authorized, generate_response, get_current_user,
+                       get_messages)
 
-
+INVALID_ID = "Invalid ID."
+STAGER_DOES_NOT_EXIST = "Stager does not exist."
 def stagers_bp(commander: Commander):
 
     stagers_bp = Blueprint("stagers", __name__, url_prefix="/stagers")
@@ -65,13 +67,13 @@ def stagers_bp(commander: Commander):
         stager_id = request.form.get("id", "")
 
         if not stager_id.isdigit():
-            return generate_response("error", "Invalid ID.", "stagers", 400)
+            return generate_response("error", INVALID_ID, "stagers", 400)
 
         # Check if Stager exists
         stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
-            return generate_response("error", "Stager does not exist.", "stagers", 400)
+            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         Session.delete(stager)
         Session.commit()
@@ -92,13 +94,13 @@ def stagers_bp(commander: Commander):
         if not change or not value or not stager_id:
             return generate_response("error", "Missing required data.", "stagers", 400)
         if not stager_id.isdigit():
-            return generate_response("error", "Invalid ID.", "stagers", 400)
+            return generate_response("error", INVALID_ID, "stagers", 400)
 
         # Check if Stager exists
         stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
-            return generate_response("error", "Stager does not exist.", "stagers", 400)
+            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {stager_id}.", "success")
         # Change Stager
@@ -127,13 +129,13 @@ def stagers_bp(commander: Commander):
         one_liner = request.args.get("one_liner", "") == "true"
 
         if not stager_id.isdigit():
-            return generate_response("error", "Invalid ID.", "stagers", 400)
+            return generate_response("error", INVALID_ID, "stagers", 400)
         stager_id = int(stager_id)
         # Check if Stager exists
         stager_db: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager_db is None:
-            return generate_response("error", "Stager does not exist.", "stagers", 400)
+            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         # Get Stager
         try:
@@ -146,5 +148,5 @@ def stagers_bp(commander: Commander):
             elif stager_db.format == "exe":
                 with open("/tmp/stager.exe", "wb") as f:
                     f.write(stager_content)
-                return send_file("/tmp/stager.exe", as_attachment=True, download_name=f"stager.exe")
+                return send_file("/tmp/stager.exe", as_attachment=True, download_name="stager.exe")
     return stagers_bp

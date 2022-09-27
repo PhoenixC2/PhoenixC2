@@ -2,7 +2,6 @@
 
 import logging
 import os
-import socket
 import sys
 import time
 from argparse import ArgumentParser
@@ -32,7 +31,8 @@ misc = parser.add_argument_group("Misc")
 misc.add_argument("-v", "--version",
                   help="Print the version and exit", action="store_true")
 misc.add_argument("-l", "--location",
-                  help="The location of the framework [/usr/share/Phoenix-Framework]", default="/usr/share/Phoenix-Framework/Server")
+                  help="The location of the framework [/usr/share/Phoenix-Framework]",
+                  default="/usr/share/Phoenix-Framework/Server")
 misc.add_argument("-c", "--config",
                   help="Location of the config file. [/usr/share/Phoenix-Framework/Server/Data/config.toml]",
                   default="/usr/share/Phoenix-Framework/Server/Data/config.toml")
@@ -62,7 +62,7 @@ admin.add_argument("--recreate-ssl-certificates",
 if __name__ == "__main__":
     args = parser.parse_args()
     # Check if location is valid
-    os.environ["PHOENIX_CONFIG_PATH"] = args.config # set config path
+    os.environ["PHOENIX_CONFIG_PATH"] = args.config  # set config path
     if not os.path.isdir(args.location):
         print("[ERROR] Invalid location.")
         exit()
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # Start the web server
     log("Starting web server.", "info")
     try:
-        web_config = config["web"] # shorten code
+        web_config = config["web"]  # shorten code
         web = start_web(web_config["address"], web_config["port"],
                         web_config["ssl"], commander)
     except Exception as e:
@@ -140,13 +140,14 @@ if __name__ == "__main__":
     else:
         log("Web server started.", "success")
 
-    log(f"Accessible at http{'s' if web_config['ssl'] else ''}://{web_config['address']}:{web_config['port']} .", "info")
+    log(f"Accessible at http{'s' if web_config['ssl'] else ''}"
+        f"://{web_config['address']}:{web_config['port']} .", "info")
     log(f"Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")
     while True:
         try:
-            #print(input("Server > "))
+            # print(input("Server > "))
             time.sleep(1)
         except KeyboardInterrupt:
             log("Exiting", alert="info")

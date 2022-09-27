@@ -51,9 +51,9 @@ class StagerModel(Base):
 
         try:
             open("Payloads/" + self.listener.type + ".py", "r").close()
-        except:
-            raise Exception(
-                f"Stager {self.listener.type} does not exist") from None
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"Stager {self.listener.type} does not exist") from e
 
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + self.listener.type.replace("/", ".")).Listener
@@ -68,8 +68,8 @@ class StagerModel(Base):
 
         try:
             open("Payloads/" + type + ".py", "r").close()
-        except:
-            raise Exception(f"Stager {type} does not exist") from None
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Stager {type} does not exist") from e
 
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + type.replace("/", ".")).Listener

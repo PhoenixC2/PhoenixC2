@@ -20,7 +20,7 @@ def add_stager(data: dict) -> any:
     name = data["name"]
     if Session.query(
             StagerModel).filter_by(name=name).first() is not None:
-        raise Exception(f"Stager {name} already exists")
+        raise ValueError(f"Stager {name} already exists")
     
     stager = StagerModel.create_stager_from_data(data)
     Session.add(stager)
@@ -38,13 +38,13 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
 
     """
     if stager_db.listener.type not in AVAILABLE_STAGERS:  # also works as the stager type
-        raise Exception(f"Stager {stager_db.listener.type} is not available.")
+        raise ValueError(f"Stager {stager_db.listener.type} is not available.")
     # Get the Payload from the File
     try:
         with open("Payloads/" + stager_db.listener.type + ".py", "r") as f:
             payload = f.read()
-    except:
-        raise Exception("Couldn't find the payload.")
+    except Exception as e:
+        raise FileNotFoundError("Couldn't find the payload.") from e
 
     # Randomize the Payload
     if stager_db.random_size:
@@ -68,7 +68,7 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
     finished_payload += payload + "\n" + end
 
     # Encode the Payload
-    if not one_liner and not stager_db.format == "exe":
+    if not one_liner and stager_db.format != "exe":
         if stager_db.encoding == "base64":
             finished_payload = base64.b64encode(
                 finished_payload.encode()).decode()
@@ -77,9 +77,9 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
         elif stager_db.encoding == "url":
             finished_payload = urllib.parse.quote(finished_payload)
         elif stager_db.encoding == "raw":
-            pass
+            ...
         else:
-            raise Exception("Encoding not supported")
+            raise ValueError("Encoding not supported")
     else:
         if stager_db.encoding == "base64":
             finished_payload = "import base64;" \
@@ -93,9 +93,9 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
                 "exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
                     finished_payload)
         elif stager_db.encoding == "raw":
-            pass
+            ...
         else:
-            raise Exception("encoding not supported")
+            raise ValueError("encoding not supported")
 
     if stager_db.format == "py":
         return finished_payload
@@ -103,4 +103,4 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
         # Create the EXE
         pass
     else:
-        raise Exception("Unknown Format")
+        raise ValueError("Unknown Format")

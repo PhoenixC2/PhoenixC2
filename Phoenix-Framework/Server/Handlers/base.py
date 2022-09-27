@@ -21,16 +21,10 @@ class BaseHandler():
         self.name = db_entry.name
         self.modules: list[BaseModule] = []
 
-    '''    def decrypt(self, data: str):
-            """Decrypt the data"""
-            return self.fernet.decrypt(data).decode()
-
-        def encrypt(self, data: str):
-            """Encrypt the data"""
-         return self.fernet.encrypt(data.encode())'''
     @property
     def db_entry(self) -> DeviceModel:
         return Session().query(DeviceModel).filter_by(id=self.id).first()
+
     def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""
         # Get module
@@ -51,7 +45,7 @@ class BaseHandler():
             if module.name == name:
                 self.modules.remove(module)
                 return module
-        raise Exception("Module not found")
+        raise FileNotFoundError("Module not found")
 
     def generate_task(self) -> TaskModel:
         return TaskModel(
@@ -59,6 +53,7 @@ class BaseHandler():
             device=self.db_entry,
             created_at=datetime.now()
         )
+
     def add_task(self, task: TaskModel):
         self.tasks.append(task)
 

@@ -5,7 +5,9 @@ from Handlers.base import BaseHandler
 from Listeners.base import BaseListener
 from Utils.web import FlaskThread
 
-
+INVALID_ID = "Invalid ID"
+HANDLER_DOES_NOT_EXIST = "Handler doesn't exist"
+LISTENER_DOES_NOT_EXIST = "Listener doesn't exist"
 class Commander():
     """This is the Commander which handles the devices & listeners"""
 
@@ -18,19 +20,19 @@ class Commander():
         """Get a handler by id"""
         try:
             return self.active_handlers[int(handler_id)]
-        except ValueError:
-            raise Exception("Invalid ID") from None
-        except KeyError:
-            raise Exception("Handler does not exist") from None
+        except ValueError as e:
+            raise ValueError(INVALID_ID) from e
+        except KeyError as e:
+            raise KeyError(HANDLER_DOES_NOT_EXIST) from e
 
     def get_active_listener(self, listener_id: int) -> Optional[BaseListener]:
         """Get a listener by id"""
         try:
             return self.active_listeners[int(listener_id)]
-        except ValueError:
-            raise Exception("Invalid ID.") from None
+        except ValueError as e:
+            raise ValueError(INVALID_ID) from e
         except KeyError:
-            raise Exception("Listener is not active.") from None
+            raise KeyError(LISTENER_DOES_NOT_EXIST) from None
 
     def add_active_listener(self, listener: BaseListener):
         """Add a listener to the commander"""
@@ -44,16 +46,16 @@ class Commander():
         """Remove a listener from the commander"""
         try:
             self.active_listeners.pop(int(listener_id))
-        except ValueError:
-            raise Exception("Invalid ID") from None
-        except IndexError:
-            raise Exception("Listener does not exist") from None
+        except ValueError as e:
+            raise ValueError(INVALID_ID) from e
+        except KeyError as e:
+            raise KeyError(LISTENER_DOES_NOT_EXIST) from e
 
     def remove_handler(self, handler_id: int):
         """Remove a device from the commander by id"""
         try:
             self.active_handlers.pop(int(handler_id))
-        except ValueError:
-            raise Exception("Invalid ID") from None
-        except IndexError:
-            raise Exception("Handler does not exist") from None
+        except ValueError as e:
+            raise ValueError(INVALID_ID) from e
+        except KeyError as e:
+            raise KeyError(HANDLER_DOES_NOT_EXIST) from e

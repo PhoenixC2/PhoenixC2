@@ -2,8 +2,8 @@ import datetime
 import threading
 from functools import wraps
 
-from Database import Session, UserModel, LogEntryModel
-from flask import (Flask, Response, abort, flash, jsonify, redirect, request, 
+from Database import LogEntryModel, Session, UserModel
+from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
                    session)
 from werkzeug.serving import make_server
 

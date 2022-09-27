@@ -1,4 +1,4 @@
-from Creator.available import *
+import Creator.available as avl
 from flask import Blueprint, jsonify
 from Utils.misc import get_network_interfaces, version
 from Utils.web import authorized
@@ -14,11 +14,11 @@ def get_phoenix():
 @authorized
 def get_available():
     options = {
-        "listeners": AVAILABLE_LISTENERS,
-        "encodings": AVAILABLE_ENCODINGS,
-        "stagers": AVAILABLE_STAGERS,
-        "loaders": AVAILABLE_LOADERS,
-        "formats": AVAILABLE_FORMATS
+        "listeners": avl.AVAILABLE_LISTENERS,
+        "encodings": avl.AVAILABLE_ENCODINGS,
+        "stagers": avl.AVAILABLE_STAGERS,
+        "loaders": avl.AVAILABLE_LOADERS,
+        "formats": avl.AVAILABLE_FORMATS
     }
     return jsonify(options)
 

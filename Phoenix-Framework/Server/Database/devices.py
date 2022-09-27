@@ -51,7 +51,7 @@ class DeviceModel(Base):
         }
         try:
             commander.get_active_handler(self.id)
-        except:
+        except KeyError:
             data["connected"] = False
         else:
             data["connected"] = True

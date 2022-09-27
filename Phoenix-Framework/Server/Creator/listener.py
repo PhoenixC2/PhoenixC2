@@ -24,7 +24,7 @@ def add_listener(data: dict) -> str:
     # Check if name is already in use
     name = data["name"]
     if Session.query(ListenerModel).filter_by(name=name).first() is not None:
-        raise Exception(f"Listener {name} already exists.")
+        raise ValueError(f"Listener {name} already exists.")
 
     listener = ListenerModel.create_listener_from_data(data)
     Session.add(listener)
@@ -45,10 +45,10 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
     # Check if Listener is already active
     try:
         commander.get_active_listener(listener_db.id)
-    except:
+    except Exception:
         pass
     else:
-        raise Exception("Listener is already active!") from None
+        raise ValueError("Listener is already active!") from None
 
     # Get the Listener from the File
     listener =  listener_db.get_listener_object(commander)
