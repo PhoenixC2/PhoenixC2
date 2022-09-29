@@ -21,7 +21,24 @@ def devices_bp(commander: Commander):
         opened_device = device_query.filter_by(
             id=request.args.get("open")).first()
         return render_template("devices.html", devices=devices, opened_device=opened_device, messages=get_messages())
-
+    
+    @devices_bp.route("/clear", methods=["POST"])
+    @authorized
+    def post_clear_devices():
+        device_id = request.form.get("id", "")
+        count = 0
+        if device_id == "all":
+            for device in Session.query(DeviceModel).all():
+                if not device.connected:
+                    count += 1
+                    Session.delete(device)
+        else:
+            for device in Session.query(DeviceModel).filter_by(device_id=device_id).all():
+                if not device.connected:
+                    count += 1
+                    Session.delete(device)
+        Session.commit()
+        return generate_response("success", f"Cleared {count} devices.", "devices")
     @devices_bp.route("/downloads/<string:file>", methods=["GET"])
     @authorized
     def get_downloads(file: str):

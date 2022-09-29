@@ -1,16 +1,15 @@
 """The Devices Model"""
 from datetime import datetime
 from typing import TYPE_CHECKING
-
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
+from uuid import uuid1
 from .base import Base
 from .credentials import CredentialModel
 
 if TYPE_CHECKING:
     from Commander import Commander
-
+    from Listeners.base import BaseListener
     from .listeners import ListenerModel
     from .tasks import TaskModel
 
@@ -57,3 +56,13 @@ class DeviceModel(Base):
             data["connected"] = True
         return data
 
+    @staticmethod
+    def generate_device(listener: "BaseListener", hostname: str, address: str) -> "ListenerModel":
+        return DeviceModel(
+                    name=str(uuid1()).split("-")[0],
+                    hostname=hostname,
+                    address=address,
+                    connection_date=datetime.now(),
+                    last_online=datetime.now(),
+                    listener=listener.db_entry
+                )

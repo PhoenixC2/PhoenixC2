@@ -1,9 +1,9 @@
 """The Tasks Model"""
 import io
 import os
+from uuid import uuid1
 from datetime import datetime
 from typing import TYPE_CHECKING
-from uuid import uuid1
 
 from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
                         String, Text)
@@ -18,14 +18,13 @@ if TYPE_CHECKING:
     from Commander import Commander
 
 
-
-
 class TaskModel(Base):
     """The Tasks Model."""
     __tablename__ = "Tasks"
-    id: int = Column(Integer, primary_key=True,
+    id: int = Column(Integer, primary_key=True, 
                      nullable=False)
     name: str = Column(String(10), unique=True)
+    description: str = Column(Text)
     device_id: int = Column(Integer, ForeignKey("Devices.id"), nullable=False)
     device: "DeviceModel" = relationship(
         "DeviceModel", back_populates="tasks"
@@ -37,10 +36,15 @@ class TaskModel(Base):
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
 
+    @property
+    def finished(self) -> bool:
+        return self.finished_at is not None
+
     def to_json(self, commander: "Commander", show_device: bool = True) -> dict:
         return {
             "id": self.id,
             "name": self.name,
+            "description": self.description,
             "device": self.device.to_json(commander, show_tasks=False) if show_device else self.device.id,
             "type": self.type,
             "args": self.args,
@@ -65,12 +69,12 @@ class TaskModel(Base):
         self.success = success
         self.finished_at = datetime.now()
         log(f"The Task '{self.name}' of type '{self.type}' finished with an {'success' if self.success else 'error'}.",
-            'success' if self.success else 'error')        
+            'success' if self.success else 'error')
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel(
-            name=str(uuid1()),
+            name=str(uuid1).split("-")[0],
             created_at=datetime.now(),
             args={}
         )

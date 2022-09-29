@@ -8,7 +8,6 @@ from Database import DeviceModel, Session, TaskModel
 from Modules.base import BaseModule
 from Utils.ui import log
 
-
 class BaseHandler():
     """The Base Handler Class for all Devices"""
 
@@ -49,7 +48,7 @@ class BaseHandler():
 
     def generate_task(self) -> TaskModel:
         return TaskModel(
-            name=str(uuid1()),
+            name=str(uuid1).split("-")[0],
             device=self.db_entry,
             created_at=datetime.now()
         )

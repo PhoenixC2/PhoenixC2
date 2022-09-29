@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-
+from uuid import uuid1
 import netifaces
 from Database import LogEntryModel, Session, UserModel
 
@@ -19,3 +19,4 @@ def log_to_database(alert: str, description: str, user: "UserModel"=None) -> Log
     Session.add(log)
     Session.commit()
     return log
+

@@ -21,18 +21,18 @@ def tasks_bp(commander: Commander):
     @tasks_bp.route("/clear", methods=["POST"])
     @authorized
     def post_clear_tasks():
-        id = request.args.get("id", "")
+        task_id = request.form.get("id", "")
         count = 0
-        if id == "all":
+        if task_id == "all":
             for task in Session.query(TaskModel).all():
                 if task.finished_at is not None:
                     count += 1
                     Session.delete(task)
         else:
-            for task in Session.query(TaskModel).filter_by(device_id=id).all():
+            for task in Session.query(TaskModel).filter_by(device_id=task_id).all():
                 if task.finished_at is not None:
                     count += 1
-                    Session.delete()
+                    Session.delete(task)
         Session.commit()
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 

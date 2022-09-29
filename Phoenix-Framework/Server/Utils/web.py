@@ -1,7 +1,7 @@
 import datetime
 import threading
 from functools import wraps
-
+from uuid import uuid1
 from Database import LogEntryModel, Session, UserModel
 from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
                    session)

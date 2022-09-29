@@ -23,7 +23,7 @@ class OptionType():
     data_type = any = None
 
     @staticmethod
-    def validate(self, name: str, data: any) -> bool:
+    def validate(name: str, data: any) -> bool:
         return data
 
 
@@ -159,7 +159,7 @@ class Option():
 
     @property
     def real_name(self) -> str:
-        if self._real_name is None:
+        if not self._real_name:
             return self.name.lower()
         return self._real_name
 

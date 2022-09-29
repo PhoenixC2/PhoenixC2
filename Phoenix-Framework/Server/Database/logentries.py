@@ -58,4 +58,5 @@ class LogEntryModel(Base):
 
     def seen_by_user(self, user : "UserModel"):
         """Remove a user from unseen users"""
-        self.unseen_users.remove(user)
+        if user in self.unseen_users:
+            self.unseen_users.remove(user)

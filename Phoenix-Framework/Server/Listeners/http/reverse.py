@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
-from uuid import uuid1
 
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Database import DeviceModel, ListenerModel, Session
@@ -167,14 +166,7 @@ class Listener(BaseListener):
             try:
                 address = data.get("address")
                 hostname = data.get("hostname", "")
-                device = DeviceModel(
-                    name=str(uuid1()),
-                    hostname=hostname,
-                    address=address,
-                    connection_date=datetime.now(),
-                    last_online=datetime.now(),
-                    listener=self.db_entry
-                )
+                device = DeviceModel.generate_device(self, hostname, address)
             except Exception:
                 return "", 404
             Session.add(device)
@@ -213,7 +205,7 @@ class Listener(BaseListener):
             data = request.get_json()
             task_id = data.get("id", "")
             output = data.get("output", "")
-            success = data.get("success", "").lower() == "true"
+            success = data.get("success", "")
             
             task = handler.get_task(task_id)
             if task is None:

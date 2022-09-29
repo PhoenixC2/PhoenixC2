@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import uuid1
 
 from Database import DeviceModel, Session, TaskModel
 from Handlers.base import BaseHandler
