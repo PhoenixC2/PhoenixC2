@@ -368,4 +368,16 @@
                   </div>
                 </div>
               </div>
+            </div>
+{% if not active_listeners %}
+<div class="card card-nav-tabs">
+  <div class="card-header card-header-warning">
+    Suggestion
+  </div>
+  <div class="card-body">
+    <h4 class="card-title">Create or start your listener.</h4>
+    <a href="/listeners" class="btn btn-primary">Create listener</a>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

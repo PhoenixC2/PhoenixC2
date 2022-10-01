@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from Database import DeviceModel, Session, UserModel, TaskModel
-from flask import Blueprint, render_template
-from Utils.web import authorized, get_current_user, get_messages
+from flask import Blueprint
+from Utils.web import authorized, render_template
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -19,7 +19,6 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @authorized
     def index():
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
-        tasks: list[TaskModel] = Session.query(TaskModel).all()
         connections_last_hour = 0
         connections_today = 0
         for device in devices:
@@ -38,14 +37,11 @@ def routes_bp(commander: "Commander") -> Blueprint:
 
         return render_template(
             "dashboard.j2",
-            user=get_current_user(),
             devices=devices,
-            tasks=tasks,
             active_devices=active_devices,
             active_listeners=active_listeners,
             active_users=active_users,
             connections_last_hour=connections_last_hour,
-            connections_today=connections_today,
-            messages=get_messages())
+            connections_today=connections_today)
 
     return routes_bp

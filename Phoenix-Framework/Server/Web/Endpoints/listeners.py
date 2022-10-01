@@ -2,11 +2,11 @@ from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
 from Database import ListenerModel, Session
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, request
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
-                       get_messages)
+                       render_template)
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
@@ -23,7 +23,7 @@ def listeners_bp(commander: Commander):
             return jsonify([listener.to_json(commander) for listener in listeners])
         opened_listener = listener_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("listeners.html", listeners=listeners, opened_listener=opened_listener, messages=get_messages())
+        return render_template("listeners.j2", listeners=listeners, opened_listener=opened_listener)
 
     @listeners_bp.route("/options", methods=["GET"])
     @authorized

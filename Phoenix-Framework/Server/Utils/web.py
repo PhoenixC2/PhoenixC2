@@ -4,12 +4,14 @@ from functools import wraps
 from uuid import uuid1
 from Database import LogEntryModel, Session, UserModel
 from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
-                   session)
+                   session, render_template as render_template_flask)
 from werkzeug.serving import make_server
 
 
 def get_messages() -> list[LogEntryModel]:
     return [log for log in Session.query(LogEntryModel).all() if get_current_user() in log.unseen_users]
+
+
 def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:
     """Generate the Endpoint Response"""
     use_json = request.args.get("json", "").lower() == "true"
@@ -61,16 +63,19 @@ def admin(func):
             abort(401)
     return wrapper
 
+
 class FlaskThread(threading.Thread):
     """Stoppable Flask server"""
-    def __init__(self, app: Flask, address: str, port: int, ssl: bool, name:str):
+
+    def __init__(self, app: Flask, address: str, port: int, ssl: bool, name: str):
         @app.teardown_request
         def remove(*args, **kwargs):
             Session.remove()
         threading.Thread.__init__(self)
         self.name = name
         if ssl:
-            self.server = make_server(address, port, app, threaded=True, ssl_context=("Data/ssl.pem", "Data/ssl.key"))
+            self.server = make_server(address, port, app, threaded=True, ssl_context=(
+                "Data/ssl.pem", "Data/ssl.key"))
         else:
             self.server = make_server(address, port, app, threaded=True)
         self.ctx = app.app_context()
@@ -81,3 +86,8 @@ class FlaskThread(threading.Thread):
 
     def shutdown(self):
         self.server.shutdown()
+
+
+def render_template(name: str, **kwargs) -> Response:
+    """Updated version of render template to automatically fill user and messages"""
+    return render_template_flask(name, **kwargs, user=get_current_user(), messages=get_messages())

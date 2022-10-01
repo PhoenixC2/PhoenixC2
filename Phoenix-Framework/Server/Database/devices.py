@@ -21,6 +21,7 @@ class DeviceModel(Base):
     name: str = Column(String, unique=True, nullable=False)
     hostname: str = Column(String(100))
     address: str = Column(String(100), nullable=False)
+    os: str = Column(String(10))
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
@@ -57,11 +58,12 @@ class DeviceModel(Base):
         return data
 
     @staticmethod
-    def generate_device(listener: "BaseListener", hostname: str, address: str) -> "ListenerModel":
+    def generate_device(listener: "BaseListener", hostname: str, address: str, os : str) -> "ListenerModel":
         return DeviceModel(
                     name=str(uuid1()).split("-")[0],
                     hostname=hostname,
                     address=address,
+                    os=os,
                     connection_date=datetime.now(),
                     last_online=datetime.now(),
                     listener=listener.db_entry

@@ -166,7 +166,8 @@ class Listener(BaseListener):
             try:
                 address = data.get("address")
                 hostname = data.get("hostname", "")
-                device = DeviceModel.generate_device(self, hostname, address)
+                os = data.get("os", "")
+                device = DeviceModel.generate_device(self, hostname, address, os)
             except Exception:
                 return "", 404
             Session.add(device)
@@ -220,7 +221,7 @@ class Listener(BaseListener):
             return r
 
     def start(self):
-        if not os.getenv("PHOENIX_DEBUG", "") == "true":
+        if os.getenv("PHOENIX_DEBUG", "") != "true":
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
         self.listener_thread = FlaskThread(
