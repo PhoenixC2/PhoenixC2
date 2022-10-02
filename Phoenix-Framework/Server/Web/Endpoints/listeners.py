@@ -2,7 +2,7 @@ from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
 from Database import ListenerModel, Session
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, flash
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
@@ -12,18 +12,18 @@ INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
 def listeners_bp(commander: Commander):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
-
     @listeners_bp.route("/", methods=["GET"])
     @authorized
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
+        listener_options = ListenerModel.get_all_options(commander)
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
             return jsonify([listener.to_json(commander) for listener in listeners])
         opened_listener = listener_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("listeners.j2", listeners=listeners, opened_listener=opened_listener)
+        return render_template("listeners.j2", listeners=listeners, opened_listener=opened_listener, commander=commander, listener_options=listener_options, network_interfaces=get_network_interfaces())
 
     @listeners_bp.route("/options", methods=["GET"])
     @authorized
@@ -33,7 +33,7 @@ def listeners_bp(commander: Commander):
         try:
             return jsonify(ListenerModel.get_options_from_type(listener_type).to_json(commander))
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 400)
+            return generate_response("danger", str(e), "listeners", 400)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized
@@ -48,13 +48,13 @@ def listeners_bp(commander: Commander):
             if data.get("address", "") in interfaces:
                 data["address"] = interfaces[data["address"]]
             else:
-                return generate_response("error", "Invalid network interface.", "listeners", 400)
+                return generate_response("danger", "Invalid network interface.", "listeners", 400)
         try:
             # Check if data is valid and clean it
             options = ListenerModel.get_options_from_type(listener_type)
             data = options.validate_data(data)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 400)
+            return generate_response("danger", str(e), "listeners", 400)
 
         # Add listener
         try:
@@ -62,7 +62,7 @@ def listeners_bp(commander: Commander):
             data["type"] = listener_type
             add_listener(data)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("danger", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
         return generate_response("success", f"Created Listener {name}' ({listener_type}).", "listeners", 201)
@@ -75,14 +75,14 @@ def listeners_bp(commander: Commander):
         stop = request.form.get("stop", "").lower() == "true"
 
         if not listener_id.isdigit():
-            return generate_response("error", INVALID_ID, "listeners", 400)
+            return generate_response("danger", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=listener_id).first()
         if listener is None:
-            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         if stop and listener.is_active(commander):
                 stop_listener(listener, commander)
@@ -103,10 +103,10 @@ def listeners_bp(commander: Commander):
         listener_id = request.args.get("id", "")
         # Check if data is valid
         if not change or not value or not listener_id:
-            return generate_response("error", "Missing required data.", "listeners", 400)
+            return generate_response("danger", "Missing required data.", "listeners", 400)
 
         if not listener_id.isdigit():
-            return generate_response("error", INVALID_ID, "listeners", 400)
+            return generate_response("danger", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
@@ -114,7 +114,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Edited {change} to {value} for Listener with ID {listener_id}.", "success")
 
@@ -129,7 +129,7 @@ def listeners_bp(commander: Commander):
             listener.port = value
 
         else:
-            return generate_response("error", "Invalid Change.", "listeners", 400)
+            return generate_response("danger", "Invalid Change.", "listeners", 400)
 
         Session.commit()
         return generate_response("success", f"Edited {change} to {value} for Listener with ID {listener_id}.", "listeners")
@@ -145,7 +145,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Starting Listener with ID {listener_id}", "info")
 
@@ -153,7 +153,7 @@ def listeners_bp(commander: Commander):
             status = start_listener(listener, commander)
         except Exception as e:
             log(f"({get_current_user().username}) {e}", "info")
-            return generate_response("error", str(e), "listeners", 400)
+            return generate_response("danger", str(e), "listeners", 400)
         else:
             log(f"({get_current_user().username}) Started Listener with ID {listener_id}", "success")
             return generate_response("success", status, "listeners")
@@ -165,7 +165,7 @@ def listeners_bp(commander: Commander):
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
-            return generate_response("error", INVALID_ID, "listeners", 400)
+            return generate_response("danger", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
@@ -173,14 +173,14 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=listener_id).first()
 
         if listener is None:
-            return generate_response("error", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         log(f"({get_current_user().username}) Stopping Listener with ID {listener_id}", "info")
 
         try:
             stop_listener(listener, commander)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("danger", str(e), "listeners", 500)
         else:
             log(f"({get_current_user().username}) Stopped Listener with ID {listener_id}", "success")
             return generate_response("success", f"Stopped Listener with ID {listener_id}", "listeners")
@@ -192,7 +192,7 @@ def listeners_bp(commander: Commander):
         listener_id = request.args.get("id", "")
 
         if not listener_id.isdigit():
-            return generate_response("error", INVALID_ID, "listeners", 400)
+            return generate_response("danger", INVALID_ID, "listeners", 400)
         listener_id = int(listener_id)
 
         # Check if listener exists
@@ -204,7 +204,7 @@ def listeners_bp(commander: Commander):
             restart_listener(listener, commander)
         except Exception as e:
             log(f"({get_current_user().username}) failed to restart listener with ID {listener_id}.", "success")
-            return generate_response("error", str(e), "listeners", 500)
+            return generate_response("danger", str(e), "listeners", 500)
         else:
             log(f"({get_current_user().username}) restarted listener with ID {listener_id}.", "success")
             return generate_response("success", f"Restarted listener with ID {listener_id}", "listeners")

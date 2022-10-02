@@ -2,58 +2,157 @@
 {% block title%}Phoenix-Framework | Listeners{% endblock %}
 {% block content %}
 
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Listener</th>
+            <th>Address</th>
+            <th>Port</th>
+            <th>Type</th>
+            <th>SSL</th>
+            <th>Enabled</th>
+            <th>Actions</th>
+            <th>Start/Stop</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for listener in listeners %}
+        <tr class="dark-background">
+            <td>{{ listener.name }}</td>
+            <td>{{ listener.address }}</td>
+            <td>{{ listener.port }}</td>
+            <td>{{ listener.type }}</td>
+            {% if listener.ssl %}
+            <td>✅</td>
+            {% else %}
+            <td>❌</td>
+            {% endif %}
+            {% if listener.enabled %}
+            <td>✅</td>
+            {% else %}
+            <td>❌</td>
+            {% endif %}
+            <td>
+                <a href="/listeners/{{ listener.name }}/edit" class="btn btn-warning">Edit</a>
+                <a href="/listeners/{{ listener.name }}/delete" class="btn btn-danger">Delete</a>
+            </td>
+            {% if listener.is_active(commander) %}
+            <td>
+                <a href="/listeners/{{ listener.name }}/stop" class="btn btn-danger">Stop</a>
+            </td>
+            {% else %}
+            <td>
+                <a href="/listeners/{{ listener.name }}/start" class="btn btn-success">Start</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 <!-- Button trigger modal -->
-<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModalLong">
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModalLong" onclick="resetModal()">
     Create a new listener
 </button>
 
-<!-- Modal -->
+<!-- Create Modal -->
 <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true">
+    aria-hidden="true" id="create">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
+        <div class="modal-content dark-background">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <form>
+            <div class="modal-body" id="create-modal-body">
+                <form id="create-form">
                     <div class="form-group">
-                        <label for="exampleInput1" class="bmd-label-floating">With Floating Label</label>
-                        <input type="email" class="form-control" id="exampleInput1">
-                        <span class="bmd-help">We'll never share your email with anyone else.</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                            placeholder="Enter email">
-                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
-                            else.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleInputPassword1">Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-                    </div>
-                    <div class="form-check">
-                        <label class="form-check-label">
-                            <input class="form-check-input" type="checkbox" value="">
-                            Option one is this
-                            <span class="form-check-sign">
-                                <span class="check"></span>
-                            </span>
-                        </label>
-                    </div>
+                        <label for="type" class="bmd-label-floating">Listener Type</label>
+                        <select class="form-control" id="type" onchange="changeCreateType()" onload="changeCreateType()">
+                            {% for listener_type in listener_options %}
+                            <option value="{{ listener_type }}">{{ listener_type }}</option>
+                            {% endfor %}
+                            <option value="custom">Test</option>
 
-                    <button type="submit" class="btn btn-warning">Submit</button>
+                        </select>
+                    </div>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-warning">Save changes</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="edit">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-background">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Edit listener LISTENER</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="edit-modal-body">
+                <form id="edit-form">
+                    <div class="form-group">
+                        <label for="type" class="bmd-label-floating">Listener Type</label>
+                        <select class="form-control" id="type" onchange="changeCreateType()" onload="changeCreateType()">
+                            {% for listener_type in listener_options %}
+                            <option value="{{ listener_type }}">{{ listener_type }}</option>
+                            {% endfor %}
+                            <option value="custom">Test</option>
+
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- hidden forms for diffrent listener types -->
+<!-- loop over all listener types -->
+{% for listener_type in listener_options %}
+<script>
+    console.log("{{ listener_options[listener_type] }}");
+</script>
+<!-- create a form for each listener type -->
+<form id="{{ listener_type }}-form" style="display: none;" target="/listeners/create">
+    <!-- hidden type field -->
+    <input type="hidden" name="type" value="{{ listener_type }}">
+    <!-- loop over all options for each listener type -->
+    {% for option in listener_options[listener_type] %}
+    <!-- create a form group for each option -->
+    <div class="form-group">
+        {% if option.type == "checkbox" %}
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" id="{{ option.name }}" value="{{ option.value }}">
+                {{ option.name }}
+                <span class="form-check-sign">
+                    <span class="check"></span>
+                </span>
+            </label>
+        </div>
+        {% else %}
+        <label for="{{ option.real_name }}">{{ option.name }}</label>
+        {% if option.required %}
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}" value="{{ option.default }}" required>
+        {% else %}
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}" value="{{ option.default }}">
+        {% endif %}
+        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
+        {% endif %}
+    </div>
+    <br>
+    {% endfor %}
+    <!-- create a submit button for each form -->
+    <button type="submit" class="btn btn-warning">Submit</button>
+</form>
+{% endfor %}
 {% endblock %}

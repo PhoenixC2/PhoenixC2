@@ -32,7 +32,7 @@ def stagers_bp(commander: Commander):
         try:
             return jsonify(StagerModel.get_options_from_type(listener_type).to_json(commander))
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 400)
+            return generate_response("danger", str(e), "listeners", 400)
 
     @stagers_bp.route("/add", methods=["POST"])
     @authorized
@@ -45,17 +45,17 @@ def stagers_bp(commander: Commander):
             # Check if data is valid and clean it
             listener: ListenerModel = Session.query(ListenerModel).filter_by(id=listener).first()
             if listener is None:
-                return generate_response("error", f"Listener with ID ({listener}) doesn't exist.", "listeners", 400)
+                return generate_response("danger", f"Listener with ID ({listener}) doesn't exist.", "listeners", 400)
             options = StagerModel.get_options_from_type(listener.type)
             data = options.validate_data(data)
         except Exception as e:
-            return generate_response("error", str(e), "listeners", 400)
+            return generate_response("danger", str(e), "listeners", 400)
 
         # Add listener
         #try:
         add_stager(data)
         #except Exception as e:
-        #    return generate_response("error", str(e), "listeners", 500)
+        #    return generate_response("danger", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Stager '{name}' ({listener.type}).", "success")
         return generate_response("success", f"Created Stager '{name}' ({listener.type}).", "listeners", 201)
@@ -67,13 +67,13 @@ def stagers_bp(commander: Commander):
         stager_id = request.form.get("id", "")
 
         if not stager_id.isdigit():
-            return generate_response("error", INVALID_ID, "stagers", 400)
+            return generate_response("danger", INVALID_ID, "stagers", 400)
 
         # Check if Stager exists
         stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
-            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
+            return generate_response("danger", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         Session.delete(stager)
         Session.commit()
@@ -92,15 +92,15 @@ def stagers_bp(commander: Commander):
 
         # Check if Data is Valid
         if not change or not value or not stager_id:
-            return generate_response("error", "Missing required data.", "stagers", 400)
+            return generate_response("danger", "Missing required data.", "stagers", 400)
         if not stager_id.isdigit():
-            return generate_response("error", INVALID_ID, "stagers", 400)
+            return generate_response("danger", INVALID_ID, "stagers", 400)
 
         # Check if Stager exists
         stager: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager is None:
-            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
+            return generate_response("danger", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         log(f"({get_current_user().username}) Edited {change} to {value} for Stager with ID {stager_id}.", "success")
         # Change Stager
@@ -117,7 +117,7 @@ def stagers_bp(commander: Commander):
         elif change == "delay" and value.isdigit():
             stager.delay = int(value)
         else:
-            return generate_response("error", "Invalid Change.", "stagers", 400)
+            return generate_response("danger", "Invalid Change.", "stagers", 400)
         Session.commit()
         return generate_response("success", f"Edited {change} to {value} for Stager with ID {stager_id}.", "stagers")
 
@@ -129,19 +129,19 @@ def stagers_bp(commander: Commander):
         one_liner = request.args.get("one_liner", "") == "true"
 
         if not stager_id.isdigit():
-            return generate_response("error", INVALID_ID, "stagers", 400)
+            return generate_response("danger", INVALID_ID, "stagers", 400)
         stager_id = int(stager_id)
         # Check if Stager exists
         stager_db: StagerModel = Session.query(
             StagerModel).filter_by(id=stager_id).first()
         if stager_db is None:
-            return generate_response("error", STAGER_DOES_NOT_EXIST, "stagers", 400)
+            return generate_response("danger", STAGER_DOES_NOT_EXIST, "stagers", 400)
 
         # Get Stager
         try:
             stager_content = get_stager(stager_db, one_liner)
         except Exception as e:
-            return generate_response("error", str(e), "stagers", 500)
+            return generate_response("danger", str(e), "stagers", 500)
         else:
             if stager_db.format == "py":
                 return jsonify({"status": "success", "data": stager_content}) if use_json else stager_content

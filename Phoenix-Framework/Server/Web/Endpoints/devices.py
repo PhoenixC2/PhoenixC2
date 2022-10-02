@@ -43,7 +43,7 @@ def devices_bp(commander: Commander):
     @authorized
     def get_downloads(file: str):
         if file is None:
-            return generate_response("error", "File name is missing.", "devices", 400)
+            return generate_response("danger", "File name is missing.", "devices", 400)
         return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file, as_attachment=True)
 
 
@@ -61,7 +61,7 @@ def devices_bp(commander: Commander):
             Session.add(task)
             Session.commit()
         except Exception as e:
-            return generate_response("error", str(e), "devices", 500)
+            return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
                 return task.to_json(commander, False)
@@ -80,7 +80,7 @@ def devices_bp(commander: Commander):
             Session.add(task)
             Session.commit()
         except Exception as e:
-            return generate_response("error", str(e), "devices", 500)
+            return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
                 return task.to_json(commander, False)
@@ -98,7 +98,7 @@ def devices_bp(commander: Commander):
             Session.add(task)
             Session.commit()
         except Exception as e:
-            return generate_response("error", str(e), "devices", 500)
+            return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
                 return task.to_json(commander, False)
@@ -133,15 +133,15 @@ def devices_bp(commander: Commander):
 
         # check if file is in request
         if "file" not in request.files:
-            return generate_response("error", "The as_file parameter is true, but no file was given.", "devices", 400)
+            return generate_response("danger", "The as_file parameter is true, but no file was given.", "devices", 400)
         if target_path is None:
-            return generate_response("error", "Upload path is missing.", "devices", 400)
+            return generate_response("danger", "Upload path is missing.", "devices", 400)
         try:
             task = TaskModel.upload(device_id, request.files.get('file'), target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
-            return generate_response("error", str(e), "devices", 500)
+            return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
                 return task.to_json(commander, False)
@@ -156,13 +156,13 @@ def devices_bp(commander: Commander):
         target_path = request.args.get("path")
 
         if target_path is None:
-            return generate_response("error", "File path is missing.", "devices", 400)
+            return generate_response("danger", "File path is missing.", "devices", 400)
         try:
             task = TaskModel.download(device_id, target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
-            return generate_response("error", str(e), "/devices", 500)
+            return generate_response("danger", str(e), "/devices", 500)
         else:
             if use_json:
                 return task.to_json(commander, False)

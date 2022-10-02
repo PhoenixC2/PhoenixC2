@@ -25,17 +25,17 @@ def post_login():
             session["id"] = user.id
             session["password"] = user.password
             return generate_response("success", f"Successfully logged in as {user} using Api-Key")
-        return generate_response("error", "Invalid Api-Key.", "login", 400)
+        return generate_response("danger", "Invalid Api-Key.", "login", 400)
     if username is None or password is None:
-        return generate_response("error", "Missing username or password.", "auth", 400)
+        return generate_response("danger", "Missing username or password.", "auth", 400)
 
     user: UserModel = Session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
-        return generate_response("error", f"User {username} doesn't exist.", "login", 400)
+        return generate_response("danger", f"User {username} doesn't exist.", "login", 400)
     if user.disabled:
         log(f"{username} failed to log in because the account is disabled.", "warning")
-        return generate_response("error", "Account is disabled.", "login", 401)
+        return generate_response("danger", "Account is disabled.", "login", 401)
 
     if user.check_password(password):
         old_user = get_current_user()

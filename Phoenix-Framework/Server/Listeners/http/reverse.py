@@ -52,7 +52,7 @@ class Listener(BaseListener):
         Option(
             name="Connection limit",
             _real_name="limit",
-            description="How many devices can be connected to one listener at once.",
+            description="How many devices can be connected to the listener at once.",
             type=IntegerType,
             default=5
         ),

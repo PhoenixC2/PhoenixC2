@@ -48,7 +48,7 @@ def add_user():
 
     # Check if user exists
     if Session.query(UserModel).filter_by(username=username).first():
-        return generate_response("error", "User already exists.", "users", 403)
+        return generate_response("danger", "User already exists.", "users", 403)
 
     user = UserModel(
         username=username,
@@ -77,15 +77,15 @@ def delete_user():
     # Check if user exists
     user: UserModel = Session.query(UserModel).first()
     if user is None:
-        return generate_response("error", "User doesn't exist.", "users", 400)
+        return generate_response("danger", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix":
-        return generate_response("error", "Can't delete the Phoenix Account.", "users", 403)
+        return generate_response("danger", "Can't delete the Phoenix Account.", "users", 403)
 
     # Check if user is the operator
     if username == current_user:
-        return generate_response("error", "Can't delete your own Account.", "users")
+        return generate_response("danger", "Can't delete your own Account.", "users")
 
     # Delete user
     Session.delete(user)
@@ -110,11 +110,11 @@ def edit_user():
     user: UserModel = Session.query(
         UserModel).filter_by(username=username).first()
     if user is None:
-        return generate_response("error", "User doesn't exist.", "users", 400)
+        return generate_response("danger", "User doesn't exist.", "users", 400)
 
     # Check if user is head admin
     if username == "phoenix" and current_user.username != "phoenix":
-        return generate_response("error", "Can't edit the Phoenix Account.", "users", 403)
+        return generate_response("danger", "Can't edit the Phoenix Account.", "users", 403)
     # Edit user
     if change == "admin" and username != "phoenix":
         user.admin = value.lower() == "true"
@@ -130,7 +130,7 @@ def edit_user():
 
     elif change == "username" and username != "phoenix":
         if Session.query(UserModel).filter_by(username=value).first() or value == "":
-            return generate_response("error", "Name is already in use.", "users", 400)
+            return generate_response("danger", "Name is already in use.", "users", 400)
         user = str(escape(value))
         Session.commit()
         log(f"({current_user}) updated {user}'s username to {value}.", "success")
@@ -152,4 +152,4 @@ def edit_user():
         return jsonify({"status": "success", "message": f"Updated {username}'s api-key", "api-key": user.api_key})
 
     else:
-        return generate_response("error", "Invalid change.", "users", 400)
+        return generate_response("danger", "Invalid change.", "users", 400)

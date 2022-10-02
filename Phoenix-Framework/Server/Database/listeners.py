@@ -27,6 +27,7 @@ class ListenerModel(Base):
     address: str = Column(String(15))
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
+    enabled: bool = Column(Boolean, default=True)
     connection_limit = Column(Integer, name="limit")
     options: dict = Column(JSON, default=[])
     stagers: list["StagerModel"] = relationship(
@@ -51,6 +52,7 @@ class ListenerModel(Base):
             "id": self.id,
             "name": self.name,
             "type": self.type,
+            "enabled": self.enabled,
             "address": self.address,
             "port": self.port,
             "ssl": self.ssl,
@@ -75,8 +77,16 @@ class ListenerModel(Base):
         return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
             commander, self)
 
+    @staticmethod
+    def get_all_options(commander: "Commander") -> dict:
+        """Get all options for all listeners"""
+        options: dict = {}
+        for listener in AVAILABLE_LISTENERS:
+            options[listener] = ListenerModel.get_options_from_type(listener).to_json(commander)
+        return options
+
     def get_options(self) -> "OptionPool":
-        """Get the options based on the listener type."""
+        """Get the options of the current object."""
 
         if self.type not in AVAILABLE_LISTENERS:
             raise ValueError(f"'{self.type}' isn't available.")
@@ -106,6 +116,10 @@ class ListenerModel(Base):
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + type.replace("/", ".")).Listener
         return listener.listener_pool
+
+    def edit(self, session: Session, data: dict):
+        """Edit the listener"""
+        ...
 
     @staticmethod
     def create_listener_from_data(data: dict):

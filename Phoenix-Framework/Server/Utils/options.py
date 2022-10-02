@@ -33,7 +33,7 @@ class StringType(OptionType):
     data_type = str
 
     def __str__(self) -> str:
-        return "String"
+        return "text"
 
 
 @dataclass
@@ -42,7 +42,7 @@ class IntegerType(OptionType):
     data_type = int
 
     def __str__(self) -> str:
-        return "Integer"
+        return "number"
 
 
 @dataclass
@@ -51,7 +51,7 @@ class BooleanType(OptionType):
     data_type = bool
 
     def __str__(self) -> str:
-        return "Boolean"
+        return "checkbox"
 
 
 @dataclass
@@ -75,7 +75,7 @@ class UrlType(StringType):
             return url
 
     def __str__(self) -> str:
-        return "Url"
+        return "url"
 
 
 @dataclass
@@ -101,7 +101,7 @@ class AddressType(StringType):
             return address
 
     def __str__(self) -> str:
-        return "Address"
+        return "text"
 
 
 @dataclass
@@ -116,7 +116,7 @@ class ChoiceType(OptionType):
         return choice
 
     def __str__(self) -> str:
-        return "Choice"
+        return "select"
 
 
 @dataclass
@@ -144,7 +144,7 @@ class TableType(OptionType):
             return object
 
     def __str__(self) -> str:
-        return "Table"
+        return "select"
 
 
 @dataclass
@@ -183,11 +183,11 @@ class Option():
     def to_json(self, commander: "Commander") -> dict:
         data = {
             "name": self.name,
-            "real-name": self.real_name,
+            "real_name": self.real_name,
             "type": self.type.__str__(self).lower(),
             "required": self.required,
             "description": self.description,
-            "default": self.default
+            "default": self.default if self.default is not None else ""
         }
         if type(self.type) == ChoiceType:
             data["choices"] = self.type.choices

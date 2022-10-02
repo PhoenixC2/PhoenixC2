@@ -88,6 +88,6 @@ class FlaskThread(threading.Thread):
         self.server.shutdown()
 
 
-def render_template(name: str, **kwargs) -> Response:
+def render_template(name: str, **kwargs) -> str:
     """Updated version of render template to automatically fill user and messages"""
     return render_template_flask(name, **kwargs, user=get_current_user(), messages=get_messages())
