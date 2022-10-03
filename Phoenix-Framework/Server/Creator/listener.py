@@ -51,7 +51,7 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
         raise ValueError("Listener is already active!") from None
 
     # Get the Listener from the File
-    listener =  listener_db.get_listener_object(commander)
+    listener =  listener_db.create_listener_object(commander)
 
     # Start Listener
     listener.start()

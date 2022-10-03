@@ -68,18 +68,16 @@ class FlaskThread(threading.Thread):
     """Stoppable Flask server"""
 
     def __init__(self, app: Flask, address: str, port: int, ssl: bool, name: str):
+        threading.Thread.__init__(self)
         @app.teardown_request
         def remove(*args, **kwargs):
             Session.remove()
-        threading.Thread.__init__(self)
         self.name = name
         if ssl:
             self.server = make_server(address, port, app, threaded=True, ssl_context=(
                 "Data/ssl.pem", "Data/ssl.key"))
         else:
             self.server = make_server(address, port, app, threaded=True)
-        self.ctx = app.app_context()
-        self.ctx.push()
 
     def run(self):
         self.server.serve_forever()

@@ -14,6 +14,7 @@ from Web.Endpoints.authorization import get_current_user
 
 def create_web(commander: Commander):
     web_server = Flask(__name__)
+    
     if not os.getenv("PHOENIX_DEBUG", "") == "true":
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
@@ -22,6 +23,10 @@ def create_web(commander: Commander):
         random.choice(string.ascii_letters) for i in range(32))
     web_server.config["SECRET_KEY"] = "lol"
     print("Using session key lol")
+    
+    @web_server.context_processor
+    def inject_user():
+        return dict(user=get_current_user())
     web_server.register_blueprint(routes_bp(commander), url_prefix="/")
     web_server.register_blueprint(auth_bp, url_prefix="/auth")
     web_server.register_blueprint(users_bp, url_prefix="/users")

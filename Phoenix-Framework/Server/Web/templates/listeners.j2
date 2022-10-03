@@ -17,28 +17,28 @@
     <tbody>
         {% for listener in listeners %}
         <tr class="dark-background" id="listener-{{ listener.id }}">
-            <td>{{ listener.name }}</td>
-            <td>{{ listener.address }}</td>
-            <td>{{ listener.port }}</td>
-            <td>{{ listener.type }}</td>
+            <td id="name-{{ listener.id }}">{{ listener.name }}</td>
+            <td id="address-{{ listener.id }}">{{ listener.address }}</td>
+            <td id="port-{{ listener.id }}">{{ listener.port }}</td>
+            <td id="type-{{ listener.id }}">{{ listener.type }}</td>
             {% if listener.ssl %}
-            <td>✅</td>
+            <td id="ssl-{{ listener.id }}">✅</td>
             {% else %}
-            <td>❌</td>
+            <td id="ssl-{{ listener.id }}">❌</td>
             {% endif %}
             {% if listener.enabled %}
-            <td>✅</td>
+            <td id="enabled-{{ listener.id }}">✅</td>
             {% else %}
-            <td>❌</td>
+            <td id="enabled-{{ listener.id }}">❌</td>
             {% endif %}
             <td>
-                <a href="/listeners/{{ listener.name }}/edit" class="btn btn-warning"><i class="material-icons">edit</i></a>
-                <a href="/listeners/{{ listener.name }}/delete" class="btn btn-danger"><i class="material-icons">delete</i></a>
+                <button class="btn btn-warning"><i class="material-icons">edit</i></button>
+                <button class="btn btn-danger" onclick="deleteListener({{ listener.id }})"><i class="material-icons">delete</i></button>
                 {% if listener.is_active(commander) %}
-                <a href="/listeners/{{ listener.name }}/stop" class="btn btn-danger"><i class="material-icons">stop</i></a>
-                <a href="/listeners/{{ listener.name }}/restart" class="btn btn-success"><i class="material-icons">restart_alt</i></a>
+                <button class="btn btn-danger" onclick="stopListener({{ listener.id }})"><i class="material-icons">stop</i></button>
+                <button class="btn btn-success" onclick="restartListener({{ listener.id }})"><i class="material-icons">restart_alt</i></button>
                 {% else %}
-                <a href="/listeners/{{ listener.name }}/start" class="btn btn-success"><i class="material-icons">play_arrow</i></a>
+                <button class="btn btn-success" onclick="startListener({{ listener.id }})"><i class="material-icons">play_arrow</i></button>
                 {% endif %}
             </td>
         </tr>
@@ -146,7 +146,7 @@
     {% elif option.type == "port" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}">
+        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}" value="{{ option.default }}" name="{{ option.real_name }}">
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
     {% elif option.type == "table" %}

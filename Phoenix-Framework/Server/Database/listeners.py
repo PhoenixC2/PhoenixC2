@@ -72,7 +72,7 @@ class ListenerModel(Base):
         for stager in self.stagers:
             session.delete(stager)
 
-    def get_listener_object(self, commander: "Commander") -> "BaseListener":
+    def create_listener_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""
         return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
             commander, self)
