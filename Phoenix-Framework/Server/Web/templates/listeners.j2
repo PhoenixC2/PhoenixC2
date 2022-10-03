@@ -2,17 +2,16 @@
 {% block title%}Phoenix-Framework | Listeners{% endblock %}
 {% block content %}
 
-<table class="table table-striped">
+<table id="table" class="table table-striped">
     <thead>
         <tr>
-            <th>Listener</th>
+            <th>Name</th>
             <th>Address</th>
             <th>Port</th>
             <th>Type</th>
             <th>SSL</th>
             <th>Enabled</th>
             <th>Actions</th>
-            <th>Start/Stop</th>
         </tr>
     </thead>
     <tbody>
@@ -35,16 +34,12 @@
             <td>
                 <a href="/listeners/{{ listener.name }}/edit" class="btn btn-warning">Edit</a>
                 <a href="/listeners/{{ listener.name }}/delete" class="btn btn-danger">Delete</a>
-            </td>
             {% if listener.is_active(commander) %}
-            <td>
                 <a href="/listeners/{{ listener.name }}/stop" class="btn btn-danger">Stop</a>
-            </td>
             {% else %}
-            <td>
                 <a href="/listeners/{{ listener.name }}/start" class="btn btn-success">Start</a>
-            </td>
             {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -66,10 +61,10 @@
                 </button>
             </div>
             <div class="modal-body" id="create-modal-body">
-                <form id="create-form">
+                <form id='create-form' action='/listeners/add' method='POST' onsubmit="sendCreate()">
                     <div class="form-group">
                         <label for="type" class="bmd-label-floating">Listener Type</label>
-                        <select class="form-control" id="type" onchange="changeCreateType()" onload="changeCreateType()">
+                        <select class="form-control" id="type" onchange="changeCreateType()">
                             {% for listener_type in listener_options %}
                             <option value="{{ listener_type }}">{{ listener_type }}</option>
                             {% endfor %}
@@ -98,7 +93,7 @@
                 <form id="edit-form">
                     <div class="form-group">
                         <label for="type" class="bmd-label-floating">Listener Type</label>
-                        <select class="form-control" id="type" onchange="changeCreateType()" onload="changeCreateType()">
+                        <select class="form-control" id="type">
                             {% for listener_type in listener_options %}
                             <option value="{{ listener_type }}">{{ listener_type }}</option>
                             {% endfor %}
@@ -118,9 +113,6 @@
 <!-- hidden forms for diffrent listener types -->
 <!-- loop over all listener types -->
 {% for listener_type in listener_options %}
-<script>
-    console.log("{{ listener_options[listener_type] }}");
-</script>
 <!-- create a form for each listener type -->
 <form id="{{ listener_type }}-form" style="display: none;" target="/listeners/create">
     <!-- hidden type field -->
@@ -139,6 +131,20 @@
                 </span>
             </label>
         </div>
+        {% elif option.type == "address" %}
+        <label for="{{ option.name }}" class="bmd-label-floating">Address</label>
+        <select class="form-control" id="{{ option.name }}">
+            {% for interface in network_interfaces %}
+            <option value="{{ interface }}">{{ interface }}: {{ network_interfaces[interface] }}</option>
+            {% endfor %}
+        </select>
+        {% elif option.type == "table" %}
+        <label for="{{ option.name }}" class="bmd-label-floating">{{ option.name }}</label>
+        <select>
+            {% for object in option.type.choices%}
+            <option value="{{ object.id }}">{{ object.name }}</option>
+            {% endfor %}
+
         {% else %}
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         {% if option.required %}
@@ -151,8 +157,6 @@
     </div>
     <br>
     {% endfor %}
-    <!-- create a submit button for each form -->
-    <button type="submit" class="btn btn-warning">Submit</button>
 </form>
 {% endfor %}
 {% endblock %}

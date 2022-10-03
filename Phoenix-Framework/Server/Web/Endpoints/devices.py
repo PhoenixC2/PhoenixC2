@@ -10,9 +10,11 @@ TASK_CREATED = "Task created."
 def devices_bp(commander: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
+
     @devices_bp.route("/", methods=["GET"])
     @authorized
     def get_devices():
+
         use_json = request.args.get("json", "").lower() == "true"
         device_query = Session.query(DeviceModel)
         devices: list[DeviceModel] = device_query.all()

@@ -101,7 +101,7 @@ class AddressType(StringType):
             return address
 
     def __str__(self) -> str:
-        return "text"
+        return "address"
 
 
 @dataclass
@@ -144,7 +144,7 @@ class TableType(OptionType):
             return object
 
     def __str__(self) -> str:
-        return "select"
+        return "table"
 
 
 @dataclass
