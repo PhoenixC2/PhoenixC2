@@ -141,7 +141,7 @@ if __name__ == "__main__":
         log("Web server started.", "success")
 
     log(f"Accessible at http{'s' if web_config['ssl'] else ''}"
-        f"://{web_config['address']}:{web_config['port']} .", "info")
+        f"://{web_config['address']}:{web_config['port']}", "info")
     log(f"Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")

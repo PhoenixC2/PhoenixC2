@@ -10,7 +10,7 @@ from Database import DeviceModel, ListenerModel, Session
 from flask import Flask, Response, cli, jsonify, request
 from Handlers.http.reverse import Handler
 from Listeners.base import BaseListener
-from Utils.options import (AddressType, BooleanType, ChoiceType, IntegerType,
+from Utils.options import (AddressType, PortType, BooleanType, ChoiceType, IntegerType,
                            Option, OptionPool, StringType, TableType)
 from Utils.ui import log, log_connection
 from Utils.web import FlaskThread
@@ -39,7 +39,7 @@ class Listener(BaseListener):
         Option(
             name="Port",
             description="The port the listener should listen on.",
-            type=IntegerType,
+            type=PortType,
             required=True,
             default=9999
         ),
@@ -77,7 +77,8 @@ class Listener(BaseListener):
             type=TableType(lambda: Session.query(
                 ListenerModel).all(), ListenerModel),
             required=True,
-            default=1
+            default=1,
+            editable=False
         ),
         Option(
             name="Encoding",

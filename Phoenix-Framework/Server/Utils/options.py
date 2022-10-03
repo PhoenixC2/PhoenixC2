@@ -1,14 +1,12 @@
 """Options for creating listeners and stagers"""
 # Inspired by https://github.com/BC-SECURITY/Empire
-import importlib
 import socket
-from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
 import requests
 from Creator.available import AVAILABLE_LISTENERS, AVAILABLE_STAGERS
-from Database import Session
+from Database import Session, ListenerModel
 from Database.base import Base
 
 from .misc import get_network_interfaces
@@ -103,6 +101,20 @@ class AddressType(StringType):
     def __str__(self) -> str:
         return "address"
 
+class PortType(IntegerType):
+    """The option-type of port"""
+
+    @staticmethod
+    def validate(name: str, port: int) -> bool:
+        if port < 0 or port > 65535:
+            raise ValueError(f"The port '{port}' for the option '{name}' is invalid.")
+        if Session.query(ListenerModel).filter_by(port=port).first():
+            raise ValueError(
+                f"The port '{port}' for the option '{name}' is already in use.")
+        return port
+
+    def __str__(self) -> str:
+        return "port"
 
 @dataclass
 class ChoiceType(OptionType):
@@ -156,6 +168,7 @@ class Option():
     description: str = ""
     required: bool = False
     default: any = None
+    editable : bool = True
 
     @property
     def real_name(self) -> str:
