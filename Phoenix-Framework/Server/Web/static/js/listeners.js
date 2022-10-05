@@ -1,4 +1,5 @@
 let original_create_modal_modal_content = document.getElementById("create-modal-body").innerHTML;
+let edit_listener_id = null;
 
 function deleteListener(id) {
     fetch("/listeners/" + id + "/remove?json=true", {
@@ -65,80 +66,52 @@ function stopListener(id) {
         });
 }
 
-function showCreateModal() {
-    document.getElementById("create-modal-body").innerHTML = original_create_modal_modal_content;
-    document.getElementById("create-modal").style.display = "block";
-}
 
-function resetModal() {
-    // reset modal content
-    document.getElementById("create-modal-body").innerHTML = original_create_modal_modal_content;
-}
+
+
 function createEdit(id) {
-    // get column data
-    const name = document.getElementById("name-" + id).innerHTML;
-    const address = document.getElementById("address-" + id).innerHTML;
-    const port = document.getElementById("port-" + id).innerHTML;
-    const type = document.getElementById("type-" + id).innerHTML;
-    const ssl = document.getElementById("ssl-" + id).innerHTML;
-    const enabled = document.getElementById("enabled-" + id).innerHTML;
+    if (id == edit_listener_id) {
+        // open modal
+        $("#edit-modal").modal("show");
+        return;
+    }
+    let listener = listeners[id];
+    // get form by type
+    const form = document.getElementById(listener.type + "-form");
 
-    // get form 
-    const form = document.getElementById(type + "-form");
-    // change content of modal
-    document.getElementById("edit-form").innerHTML = form.innerHTML;
+    // get modal body
+    const modal_body = document.getElementById("edit-modal-body");
+
+    // set modal body
+    // replace all create with form
+    modal_body.innerHTML = form.innerHTML.replace(/create/g, "edit");
+
     // set values
-    document.getElementById("name").value = name;
-    document.getElementById("address").value = address;
-    document.getElementById("port").value = port;
-    document.getElementById("ssl").value = ssl;
-    document.getElementById("enabled").value = enabled;
-    // TODO: create edit
+    document.getElementById("name-edit").value = listener.name;
+    document.getElementById("address-edit").value = listener.address;
+    document.getElementById("port-edit").value = listener.port;
+    document.getElementById("ssl-edit").checked = listener.ssl;
+    document.getElementById("enabled-edit").checked = listener.enabled;
+    document.getElementById("limit-edit").value = listener.limit;
 
-}
-
-
-function changeCreateType() {
-    // get type from select
-    const type = document.getElementById("type").value;
-    // get corresponding form
-    const form = document.getElementById(type + "-form");
-    // change content of modal
-    document.getElementById("create-form").innerHTML = form.innerHTML +
-        "<input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />" +
-        "<input type='reset' value='Reset' class='btn btn-danger' />"
-}
-function sendCreate() {
-    console.log("send create");
-    // disable button
-    document.getElementById("create-button").disabled = true;
-    // get form
-    const form = document.getElementById("create-form");
-    // get data
-    const data = new FormData(form);
-    // send data
-    fetch(form.action + "?json=true", {
-        method: form.method,
-        body: data
-    }).then(response => response.json())
-        .then(data => {
-            // show notification
-            showNotification(data.message, data.status);
-            // check if success
-            if (data.status === "success") {
-                // sleep 1 second
-                setTimeout(function () {
-                    // reload page
-                    location.reload();
-                }, 1000);
+    // set options
+    for (let option_name in listener.options) {
+        if (Object.prototype.hasOwnProperty.call(listener.options, option_name)) {
+            let option = listener.options[option_name];
+            let element = document.getElementById(option_name.toLowerCase() + "-edit");
+            if (element.type === "checkbox") {
+                element.checked = option;
             }
-        });
-    // activate button
-    document.getElementById("create-button").disabled = false;
+            element.value = option;
+        }
+    }
 
-
-
+    // open modal
+    $("#edit-modal").modal("show");
+    console.log("lol");
 }
+
 
 // add event listeners
 document.getElementById("type").addEventListener("change", changeCreateType);
+console.log(listeners)

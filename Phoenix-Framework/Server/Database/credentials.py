@@ -17,7 +17,7 @@ class CredentialModel(Base):
     found_at: datetime = Column(DateTime)
     notes : str = Column(Text(500))
 
-    def to_json(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "id": self.id,
             "user": self.user,

@@ -40,12 +40,12 @@ class TaskModel(Base):
     def finished(self) -> bool:
         return self.finished_at is not None
 
-    def to_json(self, commander: "Commander", show_device: bool = True) -> dict:
+    def to_dict(self, commander: "Commander", show_device: bool = True) -> dict:
         return {
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "device": self.device.to_json(commander, show_tasks=False) if show_device else self.device.id,
+            "device": self.device.to_dict(commander, show_tasks=False) if show_device else self.device.id,
             "type": self.type,
             "args": self.args,
             "created_at": self.created_at,

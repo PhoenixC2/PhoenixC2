@@ -1,5 +1,6 @@
 """The Listeners Model"""
 import importlib
+import json
 from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_LISTENERS
@@ -47,25 +48,29 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_json(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> dict:
+    def to_dict(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> dict:
         return {
             "id": self.id,
             "name": self.name,
             "type": self.type,
-            "enabled": self.enabled,
             "address": self.address,
             "port": self.port,
             "ssl": self.ssl,
+            "enabled": self.enabled,
             "limit": self.connection_limit,
             "active": self.is_active(commander),
             "options": self.options,
-            "stagers": [stager.to_json(commander, show_listener=False)
+            "stagers": [stager.to_dict(commander, show_listener=False)
                         for stager in self.stagers] if show_stagers
             else [stager.id for stager in self.stagers],
-            "devices": [device.to_json(commander, show_listener=False)
+            "devices": [device.to_dict(commander, show_listener=False)
                         for device in self.devices] if show_devices
             else [device.id for device in self.devices]
         }
+
+    def to_json(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> str:
+        """Return a JSON string"""
+        return json.dumps(self.to_dict(commander, show_stagers, show_devices))
 
     def delete_stagers(self, session: Session):
         """Delete all stagers"""
@@ -82,7 +87,8 @@ class ListenerModel(Base):
         """Get all options for all listeners"""
         options: dict = {}
         for listener in AVAILABLE_LISTENERS:
-            options[listener] = ListenerModel.get_options_from_type(listener).to_json(commander)
+            options[listener] = ListenerModel.get_options_from_type(
+                listener).to_dict(commander)
         return options
 
     def get_options(self) -> "OptionPool":

@@ -193,7 +193,7 @@ class Option():
         data = self.type.validate(self.name, data)
         return data
 
-    def to_json(self, commander: "Commander") -> dict:
+    def to_dict(self, commander: "Commander") -> dict:
         data = {
             "name": self.name,
             "real_name": self.real_name,
@@ -206,10 +206,10 @@ class Option():
             data["choices"] = self.type.choices
         elif type(self.type) == TableType:
             try:
-                data["choices"] = [choice.to_json()
+                data["choices"] = [choice.to_dict()
                                    for choice in self.type.choices()]
             except TypeError:
-                data["choices"] = [choice.to_json(commander)
+                data["choices"] = [choice.to_dict(commander)
                                    for choice in self.type.choices()]
         return data
 
@@ -231,5 +231,5 @@ class OptionPool():
             cleaned_data[option.real_name] = option.validate_data(value)
         return cleaned_data
 
-    def to_json(self, commander: "Commander") -> list:
-        return [option.to_json(commander) for option in self.options]
+    def to_dict(self, commander: "Commander") -> list:
+        return [option.to_dict(commander) for option in self.options]

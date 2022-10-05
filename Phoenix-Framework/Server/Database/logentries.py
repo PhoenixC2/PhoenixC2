@@ -30,17 +30,17 @@ class LogEntryModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_logs")  # users who haven't seen this message
 
-    def to_json(self, show_user: bool = True, show_unseen_users: bool = True) -> dict:
+    def to_dict(self, show_user: bool = True, show_unseen_users: bool = True) -> dict:
         data =  {
             "id": self.id,
             "type": self.alert,
             "time": self.time,
             "description": self.description,
-            "unseen_users": [user.to_json(show_logs=False, show_unseen_logs=False) for user in self.unseen_users] if show_unseen_users
+            "unseen_users": [user.to_dict(show_logs=False, show_unseen_logs=False) for user in self.unseen_users] if show_unseen_users
             else [user.id for user in self.unseen_users]
         }
         if self.user is not None and show_user:
-            data["user"] = self.user.to_json(show_logs=False, show_unseen_logs=False)
+            data["user"] = self.user.to_dict(show_logs=False, show_unseen_logs=False)
         else:
             data["user"] = self.user.id if self.user is not None else None
         return data

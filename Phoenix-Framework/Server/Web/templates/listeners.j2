@@ -32,7 +32,7 @@
             <td id="enabled-{{ listener.id }}">❌</td>
             {% endif %}
             <td>
-                <button class="btn btn-warning"><i class="material-icons">edit</i></button>
+                <button class="btn btn-warning" onclick="createEdit({{ listener.id }})"><i class="material-icons">edit</i></button>
                 <button class="btn btn-danger" onclick="deleteListener({{ listener.id }})"><i class="material-icons">delete</i></button>
                 {% if listener.is_active(commander) %}
                 <button class="btn btn-danger" onclick="stopListener({{ listener.id }})"><i class="material-icons">stop</i></button>
@@ -52,8 +52,8 @@
 </button>
 
 <!-- Create Modal -->
-<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="create">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="create-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content dark-background">
             <div class="modal-header">
@@ -81,29 +81,18 @@
 </div>
 
 <!-- Edit Modal -->
-<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="edit">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="edit-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content dark-background">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Edit listener LISTENER</h5>
+                <h5 class="modal-title" id="exampleModalLongTitle">Edit listener/h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body" id="edit-modal-body">
-                <form id="edit-form">
-                    <div class="form-group">
-                        <label for="type" class="bmd-label-floating">Listener Type</label>
-                        <select class="form-control" id="type">
-                            {% for listener_type in listener_options %}
-                            <option value="{{ listener_type }}">{{ listener_type }}</option>
-                            {% endfor %}
-                            <option value="custom">Test</option>
-
-                        </select>
-                    </div>
-                </form>
+            
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -114,6 +103,7 @@
 </div>
 <!-- hidden forms for diffrent listener types -->
 <!-- loop over all listener types -->
+
 {% for listener_type in listener_options %}
 <!-- create a form for each listener type -->
 <form id="{{ listener_type }}-form" style="display: none;" target="/listeners/create">
@@ -123,8 +113,8 @@
     {% if option.type == "checkbox" %}
     <div class="form-check">
         <label class="form-check-label">
-            {% if option.default %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" checked="">
-            {% else %}<input class="form-check-input" type="checkbox" name="{{ option.name }}">
+            {% if option.default %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" checked="" id="{{ option.real_name }}-create">
+            {% else %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" id="{{ option.real_name }}-create">
             {% endif %}
             {{ option.name }}
             <span class="form-check-sign">
@@ -136,7 +126,7 @@
     {% elif option.type == "address" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}">
+        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
             {% for interface in network_interfaces %}
             <option value="{{ interface }}">{{ interface }}: {{ network_interfaces[interface] }}</option>
             {% endfor %}
@@ -146,13 +136,13 @@
     {% elif option.type == "port" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}" value="{{ option.default }}" name="{{ option.real_name }}">
+        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default }}" name="{{ option.real_name }}">
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
     {% elif option.type == "table" %}
     <div class="form-group">
         <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}">
+        <select class="form-control" id="{{ option.real_name}}-create name="{{ option.real_name }}">
             {% for object in option.type.choices%}
             <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
             {% endfor %}
@@ -163,10 +153,10 @@
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         {% if option.required %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}"
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
             value="{{ option.default }}" required>
         {% else %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}"
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
             value="{{ option.default }}">
         {% endif %}
         <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
@@ -177,5 +167,12 @@
 {% endfor %}
 {% endblock %}
 {% block scripts %}
+<script>
+    let listeners = [
+        {% for listener in listeners %}
+        {{ listener.to_json(commander, False, False) }},
+        {% endfor %}
+    ];
+</script>
 <script src="/static/js/listeners.js"></script>
 {% endblock %}

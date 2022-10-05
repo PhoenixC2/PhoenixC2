@@ -10,17 +10,28 @@ from Utils.web import (authorized, generate_response, get_current_user,
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
+
+
 def listeners_bp(commander: Commander):
     listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
+
+    @listeners_bp.route("/<int:id>", methods=["GET"])
     @listeners_bp.route("/", methods=["GET"])
     @authorized
-    def get_listeners():
+    def get_listeners(id: int = None):
+        if id:
+            listener: ListenerModel = Session.query(
+                ListenerModel).filter_by(id=id).first()
+            if listener is None:
+                return generate_response("error", INVALID_ID, 400)
+            return jsonify({"status": "success", "listener": listener.to_dict(commander)})
+    
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
         listener_options = ListenerModel.get_all_options(commander)
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
-            return jsonify([listener.to_json(commander) for listener in listeners])
+            return jsonify([listener.to_dict(commander) for listener in listeners])
         opened_listener = listener_query.filter_by(
             id=request.args.get("open")).first()
         return render_template("listeners.j2", listeners=listeners, opened_listener=opened_listener, commander=commander, listener_options=listener_options, network_interfaces=get_network_interfaces())
@@ -31,7 +42,7 @@ def listeners_bp(commander: Commander):
         # Get
         listener_type = request.args.get("type")
         try:
-            return jsonify(ListenerModel.get_options_from_type(listener_type).to_json(commander))
+            return jsonify(ListenerModel.get_options_from_type(listener_type).to_dict(commander))
         except Exception as e:
             return generate_response("danger", str(e), "listeners", 400)
 
@@ -69,7 +80,7 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])
     @authorized
-    def delete_remove(id : int):
+    def delete_remove(id: int):
         # Get request data
         stop = request.form.get("stop", "").lower() == "true"
 
@@ -80,9 +91,9 @@ def listeners_bp(commander: Commander):
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
         if stop and listener.is_active(commander):
-                stop_listener(listener, commander)
-                log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
-                return generate_response("success", f"Deleted and stopped listener with ID {id}.", "listeners")
+            stop_listener(listener, commander)
+            log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
+            return generate_response("success", f"Deleted and stopped listener with ID {id}.", "listeners")
         listener.delete_stagers(Session)
         Session.delete(listener)
         Session.commit()
@@ -91,14 +102,13 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/<int:id>/edit", methods=["PUT"])
     @authorized
-    def put_edit(id : int):
+    def put_edit(id: int):
         # Get request data
         change = request.form.get("change", "").lower()
         value = request.form.get("value", "")
         # Check if data is valid
         if not change or not value or not id:
             return generate_response("danger", "Missing required data.", "listeners", 400)
-
 
         # Check if listener exists
         listener: ListenerModel = Session.query(
@@ -127,7 +137,7 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
     @authorized
-    def post_start(id : int):
+    def post_start(id: int):
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()
@@ -148,7 +158,7 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/<int:id>/stop", methods=["POST"])
     @authorized
-    def post_stop(id : int):
+    def post_stop(id: int):
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()
@@ -168,7 +178,7 @@ def listeners_bp(commander: Commander):
 
     @listeners_bp.route("/<int:id>/restart", methods=["POST"])
     @authorized
-    def post_restart(id : int):
+    def post_restart(id: int):
 
         # Check if listener exists
         listener: ListenerModel = Session.query(

@@ -14,7 +14,7 @@ def tasks_bp(commander: Commander):
         task_query = Session.query(TaskModel)
         tasks: list[TaskModel] = task_query.all()
         if use_json:
-            return jsonify([task.to_json(commander) for task in tasks])
+            return jsonify([task.to_dict(commander) for task in tasks])
         opened_task = task_query.filter_by(id=request.args.get("open")).first()
         return render_template("tasks.html", tasks=tasks, opened_task=opened_task, messages=get_messages())
     

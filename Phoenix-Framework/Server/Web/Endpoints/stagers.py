@@ -20,7 +20,7 @@ def stagers_bp(commander: Commander):
         stager_query = Session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
         if use_json:
-            return jsonify([stager.to_json(commander) for stager in stagers])
+            return jsonify([stager.to_dict(commander) for stager in stagers])
         opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
         return render_template("stagers.html", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
 
@@ -30,7 +30,7 @@ def stagers_bp(commander: Commander):
         # Get
         listener_type = request.args.get("type")
         try:
-            return jsonify(StagerModel.get_options_from_type(listener_type).to_json(commander))
+            return jsonify(StagerModel.get_options_from_type(listener_type).to_dict(commander))
         except Exception as e:
             return generate_response("danger", str(e), "listeners", 400)
 

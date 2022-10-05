@@ -19,7 +19,7 @@ def devices_bp(commander: Commander):
         device_query = Session.query(DeviceModel)
         devices: list[DeviceModel] = device_query.all()
         if use_json:
-            return jsonify([device.to_json(commander) for device in devices])
+            return jsonify([device.to_dict(commander) for device in devices])
         opened_device = device_query.filter_by(
             id=request.args.get("open")).first()
         return render_template("devices.html", devices=devices, opened_device=opened_device, messages=get_messages())
@@ -66,7 +66,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
@@ -85,7 +85,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
@@ -103,7 +103,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
@@ -122,7 +122,7 @@ def devices_bp(commander: Commander):
             return jsonify({"status": "error", "message": str(e)})
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
@@ -146,7 +146,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
@@ -167,7 +167,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "/devices", 500)
         else:
             if use_json:
-                return task.to_json(commander, False)
+                return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
     return devices_bp

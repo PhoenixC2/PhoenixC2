@@ -19,7 +19,7 @@ def get_users():
     users: list[UserModel] = listener_query.all()
     opened_user = listener_query.filter_by(id=request.args.get("open")).first()
     if use_json:
-        data = [user.to_json() for user in users]
+        data = [user.to_dict() for user in users]
         if curr_user.admin:
             for index, user in enumerate(users):
                 if user.admin and  curr_user.username != "phoenix" \

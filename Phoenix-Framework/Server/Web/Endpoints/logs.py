@@ -21,7 +21,7 @@ def get_logs():
     Session.commit()
     opened_log = logentry_query.filter_by(id=request.args.get("open")).first()
     if use_json:
-        return jsonify({"status": "success", LOGS: [log.to_json() for log in logs]})
+        return jsonify({"status": "success", LOGS: [log.to_dict() for log in logs]})
     return render_template("logs.html", user=current_user, logs=logs, opened_log=opened_log, messages=get_messages())
 
 

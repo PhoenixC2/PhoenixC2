@@ -48,7 +48,7 @@ class UserModel(Base):
         """Check if the password is right"""
         return md5(password.encode()).hexdigest() == self.password
 
-    def to_json(self, show_logs: bool = True, show_unseen_logs: bool = True) -> dict:
+    def to_dict(self, show_logs: bool = True, show_unseen_logs: bool = True) -> dict:
         return {
             "id": self.id,
             "username": self.username,
@@ -57,9 +57,9 @@ class UserModel(Base):
             "status": self.activity_status,
             "disabled": self.disabled,
             "profile_picture": self.profile_picture,
-            "logs": [log.to_json(show_user=False, show_unseen_users=False) for log in self.logs] if show_logs
+            "logs": [log.to_dict(show_user=False, show_unseen_users=False) for log in self.logs] if show_logs
             else [log.id for log in self.logs],
-            "unseen_logs": [log.to_json(show_unseen_users=True) for log in self.unseen_logs] if show_unseen_logs
+            "unseen_logs": [log.to_dict(show_unseen_users=True) for log in self.unseen_logs] if show_unseen_logs
             else [log.id for log in self.unseen_logs]
 
         }

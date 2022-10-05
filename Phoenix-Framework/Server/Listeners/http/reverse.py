@@ -50,6 +50,12 @@ class Listener(BaseListener):
             default=True
         ),
         Option(
+            name="Enabled",
+            description="True if the listener should be enabled.",
+            type=BooleanType,
+            default=True
+        ),
+        Option(
             name="Connection limit",
             _real_name="limit",
             description="How many devices can be connected to the listener at once.",
@@ -193,7 +199,7 @@ class Listener(BaseListener):
                     return "", 404
             handler.db_entry.last_online = datetime.now()  # update last online
             Session.commit()
-            return jsonify([task.to_json(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
+            return jsonify([task.to_dict(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
 
         @self.api.route("/finish/<string:name>", methods=["POST"])
         def finish_task(name: str = None):

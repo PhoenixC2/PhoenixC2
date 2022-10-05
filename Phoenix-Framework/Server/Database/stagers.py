@@ -31,11 +31,11 @@ class StagerModel(Base):
     delay: int = Column(Integer)
     options: dict = Column(JSON)
 
-    def to_json(self, commander: "Commander", show_listener: bool = True) -> dict:
+    def to_dict(self, commander: "Commander", show_listener: bool = True) -> dict:
         return {
             "id": self.id,
             "name": self.name,
-            "listener": self.listener.to_json(commander, show_stagers=False) if show_listener else self.listener.id,
+            "listener": self.listener.to_dict(commander, show_stagers=False) if show_listener else self.listener.id,
             "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,

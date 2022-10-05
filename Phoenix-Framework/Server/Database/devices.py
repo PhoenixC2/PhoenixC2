@@ -37,15 +37,15 @@ class DeviceModel(Base):
             return True
         return False
     
-    def to_json(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:
+    def to_dict(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:
         data = {
             "id": self.id,
             "hostname": self.hostname,
             "address": self.address,
             "connection_date": self.connection_date,
             "last_online": self.last_online,
-            "listener": self.listener.to_json(commander, show_devices=False) if show_listener else self.listener_id,
-            "tasks": [task.to_json(commander, show_device=False)
+            "listener": self.listener.to_dict(commander, show_devices=False) if show_listener else self.listener_id,
+            "tasks": [task.to_dict(commander, show_device=False)
                       for task in self.tasks] if show_tasks
             else [task.id for task in self.tasks]
         }

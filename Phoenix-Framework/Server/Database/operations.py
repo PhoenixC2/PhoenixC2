@@ -16,7 +16,7 @@ class OperationModel(Base):
     time: datetime = Column(DateTime)
     description: str = Column(Text)
 
-    def to_json(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "id": self.log_id,
             "type": self.log_type,
