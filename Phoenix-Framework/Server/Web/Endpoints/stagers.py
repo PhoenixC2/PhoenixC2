@@ -22,7 +22,7 @@ def stagers_bp(commander: Commander):
         if use_json:
             return jsonify([stager.to_dict(commander) for stager in stagers])
         opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
-        return render_template("stagers.html", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
+        return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
 
     @stagers_bp.route("/options", methods=["GET"])
     @authorized

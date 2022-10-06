@@ -22,7 +22,7 @@ def devices_bp(commander: Commander):
             return jsonify([device.to_dict(commander) for device in devices])
         opened_device = device_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("devices.html", devices=devices, opened_device=opened_device, messages=get_messages())
+        return render_template("devices.j2", devices=devices, opened_device=opened_device, messages=get_messages())
     
     @devices_bp.route("/clear", methods=["POST"])
     @authorized

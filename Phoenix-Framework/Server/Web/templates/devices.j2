@@ -1,61 +1,48 @@
 {% extends 'base.j2' %}
-{% block title%}Phoenix-Framework | Listeners{% endblock %}
+{% block title%}Phoenix-Framework | Devices{% endblock %}
 {% block content %}
-
+<!-- Devices Canvas -->
+<div class="container">
+<canvas id="device-canvas"></canvas>
+</div>
 <table id="table" class="table table-striped">
     <thead>
         <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Hostname</th>
             <th>Address</th>
-            <th>Port</th>
-            <th>Type</th>
-            <th>SSL</th>
-            <th>Enabled</th>
+            <th>Last Online</th>
+            <th>Connection Date</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for listener in listeners %}
-        <tr class="dark-background" id="listener-{{ listener.id }}">
-            <td id="id-{{ listener.id }}">{{ listener.id }}</td>
-            <td id="name-{{ listener.id }}">{{ listener.name }}</td>
-            <td id="address-{{ listener.id }}">{{ listener.address }}</td>
-            <td id="port-{{ listener.id }}">{{ listener.port }}</td>
-            <td id="type-{{ listener.id }}">{{ listener.type }}</td>
-            {% if listener.ssl %}
-            <td id="ssl-{{ listener.id }}">✅</td>
-            {% else %}
-            <td id="ssl-{{ listener.id }}">❌</td>
-            {% endif %}
-            {% if listener.enabled %}
-            <td id="enabled-{{ listener.id }}">✅</td>
-            {% else %}
-            <td id="enabled-{{ listener.id }}">❌</td>
-            {% endif %}
+        {% for device in devices %}
+        <tr class="dark-background">
+            <td>{{ device.id }}</td>
+            <td>{{ device.name }}</td>
+            <td>{{ device.hostname }}</td>
+            <td>{{ device.address }}</td>
+            <td>{{ device.last_online }}</td>
+            <td>{{ device.connection_date }}</td>
             <td>
-                <button class="btn btn-warning" onclick="createEdit({{ listener.id -1 }})"><i class="material-icons">edit</i></button>
-                <button class="btn btn-danger" onclick="deleteListener({{ listener.id }})"><i class="material-icons">delete</i></button>
-                {% if listener.is_active(commander) %}
-                <button class="btn btn-danger" onclick="stopListener({{ listener.id }})"><i class="material-icons">stop</i></button>
-                <button class="btn btn-success" onclick="restartListener({{ listener.id }})"><i class="material-icons">restart_alt</i></button>
-                {% else %}
-                <button class="btn btn-success" onclick="startListener({{ listener.id }})"><i class="material-icons">play_arrow</i></button>
-                {% endif %}
+                <button type="button" class="btn btn-warning"> Manage </button>
+                <button class="btn btn-warning" onclick="createEdit({{ device.id -1 }})"><i class="material-icons">edit</i></button>
+                <button class="btn btn-danger" onclick="deleteListener({{ device.id }})"><i class="material-icons">delete</i></button>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 <!-- Button trigger modal -->
-<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
-    onclick="resetModal()">
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal" onclick="resetModal()">
     Create a new listener
 </button>
 
 <!-- Create Modal -->
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="create-modal">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true"
+    id="create-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content dark-background">
             <div class="modal-header">
@@ -83,8 +70,8 @@
 </div>
 
 <!-- Edit Modal -->
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="edit-modal">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true"
+    id="edit-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content dark-background">
             <div class="modal-header">
@@ -94,7 +81,7 @@
                 </button>
             </div>
             <div class="modal-body" id="edit-modal-body">
-            
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -115,8 +102,10 @@
     {% if option.type == "checkbox" %}
     <div class="form-check">
         <label class="form-check-label">
-            {% if option.default %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" checked="" id="{{ option.real_name }}-create">
-            {% else %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" id="{{ option.real_name }}-create">
+            {% if option.default %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" checked=""
+                id="{{ option.real_name }}-create">
+            {% else %}<input class="form-check-input" type="checkbox" name="{{ option.name }}"
+                id="{{ option.real_name }}-create">
             {% endif %}
             {{ option.name }}
             <span class="form-check-sign">
@@ -130,7 +119,8 @@
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
             {% for interface in network_interfaces %}
-            <option id="{{ network_interfaces[interface] }}-address-edit" value="{{ interface }}">{{ interface }}: {{ network_interfaces[interface] }}</option>
+            <option id="{{ network_interfaces[interface] }}-address-edit" value="{{ interface }}">{{ interface }}: {{
+                network_interfaces[interface] }}</option>
             {% endfor %}
         </select>
         <small class="form-text text-muted">{{ option.description }}</small>
@@ -138,13 +128,14 @@
     {% elif option.type == "port" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default }}" name="{{ option.real_name }}">
+        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create"
+            value="{{ option.default }}" name="{{ option.real_name }}">
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
     {% elif option.type == "table" %}
     <div class="form-group">
         <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}-create name="{{ option.real_name }}">
+        <select class="form-control" id="{{ option.real_name}}-create name=" {{ option.real_name }}">
             {% for object in option.type.choices%}
             <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
             {% endfor %}
@@ -155,11 +146,11 @@
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         {% if option.required %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default }}" required>
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control"
+            id="{{ option.real_name }}-create" value="{{ option.default }}" required>
         {% else %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default }}">
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control"
+            id="{{ option.real_name }}-create" value="{{ option.default }}">
         {% endif %}
         <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
     </div>
@@ -169,11 +160,29 @@
 {% endfor %}
 {% endblock %}
 {% block scripts %}
+// add devices to canvas using jinja
+<script>
+canvas = document.getElementById("device-canvas");
+var ctx = canvas.getContext("2d");
+var devices = {{ devices|tojson }};
+for (var i = 0; i < devices.length; i++) {
+    var device = devices[i];
+    x = Math.floor(Math.random() * 1000);
+    y = Math.floor(Math.random() * 1000);
+    ctx.fillText(device.name, device.x + 40, device.y + 40);
+
+    var image = new Image();
+    image.src = "/static/img/" + device.os + ".png";
+    image.onload = function () {
+        ctx.drawImage(image, x, y);
+    }
+
+}
 <script>
     let listeners = [
         {% for listener in listeners %}
-        {{ listener.to_json(commander, False, False) }},
-        {% endfor %}
+    { { listener.to_json(commander, False, False) } },
+    {% endfor %}
     ];
 </script>
 <script src="/static/js/listeners.js"></script>

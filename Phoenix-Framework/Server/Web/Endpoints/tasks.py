@@ -16,7 +16,7 @@ def tasks_bp(commander: Commander):
         if use_json:
             return jsonify([task.to_dict(commander) for task in tasks])
         opened_task = task_query.filter_by(id=request.args.get("open")).first()
-        return render_template("tasks.html", tasks=tasks, opened_task=opened_task, messages=get_messages())
+        return render_template("tasks.j2", tasks=tasks, opened_task=opened_task, messages=get_messages())
     
     @tasks_bp.route("/clear", methods=["POST"])
     @authorized

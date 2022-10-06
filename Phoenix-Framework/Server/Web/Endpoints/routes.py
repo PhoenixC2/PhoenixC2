@@ -7,7 +7,8 @@ from Utils.web import authorized, render_template
 
 if TYPE_CHECKING:
     from Commander import Commander
-
+import json
+json.dumps
 
 def routes_bp(commander: "Commander") -> Blueprint:
 

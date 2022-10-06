@@ -9,7 +9,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("login", methods=["GET"])
 def get_login():
-    return render_template("auth/login.html")
+    return render_template("auth/login.j2")
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -61,7 +61,7 @@ def post_login():
         log(f"{username} failed to log in", "warning")
         if not use_json:
             flash("Invalid username or password.", "error")
-            return render_template("auth/login.html", username=username)
+            return render_template("auth/login.j2", username=username)
         return jsonify({"status": "error", "message": "Invalid username or password."}), 401
 
 

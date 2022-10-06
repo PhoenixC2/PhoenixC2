@@ -90,6 +90,8 @@ class AddressType(StringType):
 
     @staticmethod
     def validate(name: str, address: str) -> bool:
+        if address in get_network_interfaces():
+            return AddressType.interface_to_address(address)
         try:
             socket.gethostbyname(address)
         except socket.gaierror as e:
@@ -101,13 +103,15 @@ class AddressType(StringType):
     def __str__(self) -> str:
         return "address"
 
+
 class PortType(IntegerType):
     """The option-type of port"""
 
     @staticmethod
     def validate(name: str, port: int) -> bool:
         if port < 0 or port > 65535:
-            raise ValueError(f"The port '{port}' for the option '{name}' is invalid.")
+            raise ValueError(
+                f"The port '{port}' for the option '{name}' is invalid.")
         if Session.query(ListenerModel).filter_by(port=port).first():
             raise ValueError(
                 f"The port '{port}' for the option '{name}' is already in use.")
@@ -115,6 +119,7 @@ class PortType(IntegerType):
 
     def __str__(self) -> str:
         return "port"
+
 
 @dataclass
 class ChoiceType(OptionType):
@@ -133,7 +138,7 @@ class ChoiceType(OptionType):
 
 @dataclass
 class TableType(OptionType):
-    choices: callable 
+    choices: callable
     # allows a updated version of the choices.
     # if choices is all listeners and a new one is added it's not in the choices.
     model: any
@@ -168,7 +173,7 @@ class Option():
     description: str = ""
     required: bool = False
     default: any = None
-    editable : bool = True
+    editable: bool = True
 
     @property
     def real_name(self) -> str:

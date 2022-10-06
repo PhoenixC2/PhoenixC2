@@ -88,7 +88,7 @@ function createEdit(id) {
 
     // set values
     document.getElementById("name-edit").value = listener.name;
-    document.getElementById("address-edit").value = listener.address;
+    document.getElementById(listener.address + "-address-edit").selected = true;
     document.getElementById("port-edit").value = listener.port;
     document.getElementById("ssl-edit").checked = listener.ssl;
     document.getElementById("enabled-edit").checked = listener.enabled;

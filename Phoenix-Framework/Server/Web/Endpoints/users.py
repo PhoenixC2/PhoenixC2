@@ -28,7 +28,7 @@ def get_users():
                 data[index]["api_key"] = user.api_key
 
         return jsonify({"status": "success", "users": data})
-    return render_template("users.html", user=curr_user, users=users, opened_user=opened_user, messages=get_messages())
+    return render_template("users.j2", user=curr_user, users=users, opened_user=opened_user, messages=get_messages())
 
 
 @users_bp.route("/add", methods=["POST"])

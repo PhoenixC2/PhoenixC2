@@ -74,7 +74,7 @@ class TaskModel(Base):
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel(
-            name=str(uuid1).split("-")[0],
+            name=str(uuid1()).split("-")[0],
             created_at=datetime.now(),
             args={}
         )
