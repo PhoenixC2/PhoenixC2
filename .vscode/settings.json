@@ -1,6 +1,6 @@
 {
     "python.analysis.extraPaths": [
-        "./Server"
+        "Phoenix-Framework/Server"
     ],
     "sqltools.connections": [
         {

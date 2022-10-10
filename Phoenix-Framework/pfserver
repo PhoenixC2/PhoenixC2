@@ -28,6 +28,7 @@ output.add_argument(
     "-q", "--quiet", help="Disable all output", action="store_true")
 
 misc = parser.add_argument_group("Misc")
+misc.add_argument("-t", "--test", help="Start a test version with disabled authorization", action="store_true")
 misc.add_argument("-v", "--version",
                   help="Print the version and exit", action="store_true")
 misc.add_argument("-l", "--location",
@@ -83,6 +84,7 @@ if __name__ == "__main__":
         os.environ["PHOENIX_DEBUG"] = str(args.debug)
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s - %(message)s')
+    
     # try:
     from Commander import Commander
     from Commander.services import start_listeners, start_web
@@ -99,9 +101,11 @@ if __name__ == "__main__":
     if not args.banner:
         ph_print(logo, True)
 
+    if args.test:
+        os.environ["PHOENIX_TEST"] = "true"
+        log("Starting Phoenix Framework in test mode. AUTHORIZATION DISABLED!", "critical")
 
     log("Welcome to Phoenix Framework.", "success")
-    print(os.getenv("PHOENIX_DEBUG"))
     # admin args
     if args.reset_database:
         if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":

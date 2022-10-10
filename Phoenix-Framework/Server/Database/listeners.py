@@ -147,7 +147,7 @@ class ListenerModel(Base):
         """Create the stager using listener validated data"""
         standard = []
         # gets standard values present in every listener and remove them to only leave options
-        for st_value in ["name", "type", "address", "port", "ssl", "limit"]:
+        for st_value in ["name", "type", "address", "port", "ssl", "limit", "enabled"]:
             standard.append(data.pop(st_value))
         return ListenerModel(
             name=standard[0],
@@ -156,5 +156,6 @@ class ListenerModel(Base):
             port=standard[3],
             ssl=standard[4],
             limit=standard[5],
+            enabled=standard[6],
             options=data
         )

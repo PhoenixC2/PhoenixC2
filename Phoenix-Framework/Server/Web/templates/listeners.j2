@@ -190,6 +190,7 @@
 
 </script>
 <script src="/static/js/listeners.js"></script>
+{% if opened_listener %}
 <script>createEdit({{ opened_listener.id -1 }});</script>
-
+{% endif %}
 {% endblock %}

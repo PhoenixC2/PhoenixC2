@@ -7,7 +7,7 @@ from Utils.web import authorized, generate_response, get_current_user
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
-@auth_bp.route("login", methods=["GET"])
+@auth_bp.route("/login", methods=["GET"])
 def get_login():
     return render_template("auth/login.j2")
 
