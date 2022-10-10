@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from Database import DeviceModel, Session, UserModel, TaskModel
+from Database import DeviceModel, Session, TaskModel, UserModel
 from flask import Blueprint
 from Utils.web import authorized, render_template
 
 if TYPE_CHECKING:
     from Commander import Commander
+
 import json
+
 json.dumps
 
 def routes_bp(commander: "Commander") -> Blueprint:

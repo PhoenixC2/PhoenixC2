@@ -1,11 +1,12 @@
 {% extends 'base.j2' %}
 {% block title%}Phoenix-Framework | Listeners{% endblock %}
 {% block content %}
-
+<div class="table-responsive">
 <table id="table" class="table table-striped">
     <thead>
         <tr>
             <th>ID</th>
+            <th>Active</th>
             <th>Name</th>
             <th>Address</th>
             <th>Port</th>
@@ -19,19 +20,24 @@
         {% for listener in listeners %}
         <tr class="dark-background" id="listener-{{ listener.id }}">
             <td id="id-{{ listener.id }}">{{ listener.id }}</td>
+            {% if listener.is_active(commander) %}
+            <td id="active-{{ listener.id }}"><i class="material-icons" style="color: green; margin-top: 4px;">circle</i></td>
+            {% else %}
+            <td id="active-{{ listener.id }}"><i class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
+            {% endif %}
             <td id="name-{{ listener.id }}">{{ listener.name }}</td>
             <td id="address-{{ listener.id }}">{{ listener.address }}</td>
             <td id="port-{{ listener.id }}">{{ listener.port }}</td>
             <td id="type-{{ listener.id }}">{{ listener.type }}</td>
             {% if listener.ssl %}
-            <td id="ssl-{{ listener.id }}">✅</td>
+            <td id="ssl-{{ listener.id }}"><i class="material-icons">done</i></td>
             {% else %}
-            <td id="ssl-{{ listener.id }}">❌</td>
+            <td id="ssl-{{ listener.id }}"><i class="material-icons">close</i></td>
             {% endif %}
             {% if listener.enabled %}
-            <td id="enabled-{{ listener.id }}">✅</td>
+            <td id="enabled-{{ listener.id }}"><i class="material-icons">done</i></td>
             {% else %}
-            <td id="enabled-{{ listener.id }}">❌</td>
+            <td id="enabled-{{ listener.id }}"><i class="material-icons">close</i></td>
             {% endif %}
             <td>
                 <button class="btn btn-warning" onclick="createEdit({{ listener.id -1 }})"><i class="material-icons">edit</i></button>
@@ -47,13 +53,14 @@
         {% endfor %}
     </tbody>
 </table>
-<!-- Button trigger modal -->
+</div>
+{# Button trigger modal #}
 <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
     onclick="resetModal()">
     Create a new listener
 </button>
 
-<!-- Create Modal -->
+{# Create Modal #}
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
     aria-hidden="true" id="create-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -82,7 +89,7 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
+{# Edit Modal #}
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
     aria-hidden="true" id="edit-modal">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -94,35 +101,40 @@
                 </button>
             </div>
             <div class="modal-body" id="edit-modal-body">
-            
+                <form id='edit-form' action='/listeners/edit' method='POST' onsubmit="sendCreate()">
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" onclick="sendEdit()">Save changes</button>
+                <button type="button" id="edit-button" class="btn btn-success" onclick="sendEdit()">Save changes</button>
             </div>
         </div>
     </div>
 </div>
-<!-- hidden forms for diffrent listener types -->
-<!-- loop over all listener types -->
+{# hidden forms for diffrent listener types #}
+{# loop over all listener types #}
 
 {% for listener_type in listener_options %}
-<!-- create a form for each listener type -->
+{# create a form for each listener type #}
 <form id="{{ listener_type }}-form" style="display: none;" target="/listeners/create">
-    <!-- hidden type field -->
-    <input type="hidden" name="type" value="{{ listener_type }}">
+    {# hidden type field #}
+    <input type="hidden" name="id" id="id-create" value="none">
+    <input type="hidden" name="type" id="type-create" value="{{ listener_type }}">
     {% for option in listener_options[listener_type] %}
     {% if option.type == "checkbox" %}
     <div class="form-check">
         <label class="form-check-label">
-            {% if option.default %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" checked="" id="{{ option.real_name }}-create">
-            {% else %}<input class="form-check-input" type="checkbox" name="{{ option.name }}" id="{{ option.real_name }}-create">
+            {# hidden field for checkbox #}
+            {% if option.default %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" checked="" id="{{ option.real_name }}-create">
+            {% else %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" id="{{ option.real_name }}-create">
             {% endif %}
             {{ option.name }}
             <span class="form-check-sign">
                 <span class="check"></span>
             </span>
         </label>
+        {# Add a hidden value for the checkbox if it is not checked #}
+        <input class="form-check-input" type="hidden" name="{{ option.real_name }}" value="off">
     </div>
     <br>
     {% elif option.type == "address" %}
@@ -144,7 +156,7 @@
     {% elif option.type == "table" %}
     <div class="form-group">
         <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}-create name="{{ option.real_name }}">
+        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
             {% for object in option.type.choices%}
             <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
             {% endfor %}
@@ -175,6 +187,9 @@
         {{ listener.to_json(commander, False, False) }},
         {% endfor %}
     ];
+
 </script>
 <script src="/static/js/listeners.js"></script>
+<script>createEdit({{ opened_listener.id -1 }});</script>
+
 {% endblock %}

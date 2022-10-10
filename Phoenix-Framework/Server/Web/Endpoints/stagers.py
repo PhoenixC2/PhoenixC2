@@ -38,6 +38,7 @@ def stagers_bp(commander: Commander):
     @authorized
     def post_add():
         # Get request data
+        use_json = request.args.get("json", "").lower() == "true"
         name = request.form.get("name")
         listener = request.form.get("listener", "")
         data = dict(request.form)
@@ -47,18 +48,20 @@ def stagers_bp(commander: Commander):
             if listener is None:
                 return generate_response("danger", f"Listener with ID ({listener}) doesn't exist.", "listeners", 400)
             options = StagerModel.get_options_from_type(listener.type)
-            data = options.validate_data(data)
+            data = options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), "listeners", 400)
 
         # Add listener
-        #try:
-        add_stager(data)
-        #except Exception as e:
-        #    return generate_response("danger", str(e), "listeners", 500)
+        try:
+            stager = add_stager(data)
+        except Exception as e:
+            return generate_response("danger", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Stager '{name}' ({listener.type}).", "success")
-        return generate_response("success", f"Created Stager '{name}' ({listener.type}).", "listeners", 201)
+        if use_json:
+            return jsonify({"status": "success", "stager": stager.to_dict(commander)}), 201
+        return generate_response("success", f"Successfully created stager '{name}'.", "stagers")
 
     @stagers_bp.route("/remove", methods=["DELETE"])
     @authorized

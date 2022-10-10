@@ -1,15 +1,19 @@
 """The Devices Model"""
+import json
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import uuid1
+
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from uuid import uuid1
+
 from .base import Base
 from .credentials import CredentialModel
 
 if TYPE_CHECKING:
     from Commander import Commander
     from Listeners.base import BaseListener
+
     from .listeners import ListenerModel
     from .tasks import TaskModel
 
@@ -50,12 +54,19 @@ class DeviceModel(Base):
             else [task.id for task in self.tasks]
         }
         try:
-            commander.get_active_handler(self.id)
+            if commander is None:
+                data["connected"] = "Unknown"
+            else:
+                commander.get_active_handler(self.id)
         except KeyError:
             data["connected"] = False
         else:
             data["connected"] = True
         return data
+
+    def to_json(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> str:
+        """Return a JSON string"""
+        return json.dumps(self.to_dict(commander, show_listener, show_tasks))
 
     @staticmethod
     def generate_device(listener: "BaseListener", hostname: str, address: str, os : str) -> "ListenerModel":

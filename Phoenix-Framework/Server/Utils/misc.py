@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from uuid import uuid1
+
 import netifaces
 from Database import LogEntryModel, Session, UserModel
 

@@ -67,7 +67,16 @@ function stopListener(id) {
 }
 
 
-
+function changeCreateType() {
+    // get type from select
+    const type = document.getElementById("type").value;
+    // get corresponding form
+    const form = document.getElementById(type + "-form");
+    // change content of modal
+    document.getElementById("create-form").innerHTML = form.innerHTML +
+        "<input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />" +
+        "<input type='reset' value='Reset' class='btn btn-danger' />"
+}
 
 function createEdit(id) {
     if (id == edit_listener_id) {
@@ -79,14 +88,13 @@ function createEdit(id) {
     // get form by type
     const form = document.getElementById(listener.type + "-form");
 
-    // get modal body
-    const modal_body = document.getElementById("edit-modal-body");
-
     // set modal body
     // replace all create with form
-    modal_body.innerHTML = form.innerHTML.replace(/create/g, "edit");
+    document.getElementById("edit-form").innerHTML = form.innerHTML.replace(/create/g, "edit");
 
     // set values
+    document.getElementById("type-edit").remove();
+    document.getElementById("id-edit").value = listener.id;
     document.getElementById("name-edit").value = listener.name;
     document.getElementById(listener.address + "-address-edit").selected = true;
     document.getElementById("port-edit").value = listener.port;
@@ -114,4 +122,3 @@ function createEdit(id) {
 
 // add event listeners
 document.getElementById("type").addEventListener("change", changeCreateType);
-console.log(listeners)

@@ -8,6 +8,7 @@ from Database import DeviceModel, Session, TaskModel
 from Modules.base import BaseModule
 from Utils.ui import log
 
+
 class BaseHandler():
     """The Base Handler Class for all Devices"""
 

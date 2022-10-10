@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_STAGERS
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 
 from .base import Base
 
@@ -74,7 +74,16 @@ class StagerModel(Base):
         listener: "BaseListener" = importlib.import_module(
             "Listeners." + type.replace("/", ".")).Listener
         return listener.stager_pool
-
+    
+    def edit(self, session: Session, data: dict):
+        """Edit the listener"""
+        for key, value in data.items():
+            if not hasattr(self, key):
+                if key in self.options:
+                    self.options[key] = value
+            else:
+                setattr(self, key, value)
+        session.commit()
     @staticmethod
     def create_stager_from_data(data: dict):
         """Create the stager using custom validated data"""

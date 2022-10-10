@@ -59,8 +59,11 @@ def add_user():
 
     Session.add(user)
     Session.commit()
-    log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} {username}.", "success")
-    return generate_response("success", f"{'Admin' if admin else 'User'} {username} added.", "users", 201)
+    log(f"({get_current_user().username}) added {'Admin' if admin else 'User'} '{username}'.", "success")
+    if use_json:
+        return jsonify({"status": "success", "user": user.to_dict()}), 201
+    return generate_response("success", f"User '{username}' added.", "users")
+
 
 
 @users_bp.route("/remove", methods=["DELETE"])

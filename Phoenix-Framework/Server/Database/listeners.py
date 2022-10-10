@@ -29,7 +29,7 @@ class ListenerModel(Base):
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
     enabled: bool = Column(Boolean, default=True)
-    connection_limit = Column(Integer, name="limit")
+    limit = Column(Integer, name="limit")
     options: dict = Column(JSON, default=[])
     stagers: list["StagerModel"] = relationship(
         "StagerModel",
@@ -39,9 +39,11 @@ class ListenerModel(Base):
         back_populates="listener"
     )
 
-    def is_active(self, commander: "Commander"):
+    def is_active(self, commander: "Commander" = None) -> bool|str:
         """Returns True if listeners is active, else False"""
         try:
+            if commander is None:
+                return "Unknown"
             commander.get_active_listener(self.id)
         except KeyError:
             return False
@@ -57,7 +59,7 @@ class ListenerModel(Base):
             "port": self.port,
             "ssl": self.ssl,
             "enabled": self.enabled,
-            "limit": self.connection_limit,
+            "limit": self.limit,
             "active": self.is_active(commander),
             "options": self.options,
             "stagers": [stager.to_dict(commander, show_listener=False)
@@ -84,7 +86,7 @@ class ListenerModel(Base):
 
     @staticmethod
     def get_all_options(commander: "Commander") -> dict:
-        """Get all options for all listeners"""
+        """Get all options for all listener types"""
         options: dict = {}
         for listener in AVAILABLE_LISTENERS:
             options[listener] = ListenerModel.get_options_from_type(
@@ -92,7 +94,7 @@ class ListenerModel(Base):
         return options
 
     def get_options(self) -> "OptionPool":
-        """Get the options of the current object."""
+        """Get the options using the type the current object."""
 
         if self.type not in AVAILABLE_LISTENERS:
             raise ValueError(f"'{self.type}' isn't available.")
@@ -123,9 +125,22 @@ class ListenerModel(Base):
             "Listeners." + type.replace("/", ".")).Listener
         return listener.listener_pool
 
-    def edit(self, session: Session, data: dict):
+    def edit(self, data: dict):
         """Edit the listener"""
-        ...
+        for key, value in data.items():
+            if hasattr(self, key):
+                if value == str(getattr(self, key)):
+                    continue
+                value = self.get_options().get_option(key).validate_data(value)
+                setattr(self, key, value)
+            else:
+                if key in self.options:
+                    if value == self.options[key]:
+                        continue
+                    value = self.get_options().get_option(key).validate_data(value)
+                    self.options[key] = value
+                else:
+                    raise KeyError(f"{key} is not a valid key")
 
     @staticmethod
     def create_listener_from_data(data: dict):
@@ -140,6 +155,6 @@ class ListenerModel(Base):
             address=standard[2],
             port=standard[3],
             ssl=standard[4],
-            connection_limit=standard[5],
+            limit=standard[5],
             options=data
         )

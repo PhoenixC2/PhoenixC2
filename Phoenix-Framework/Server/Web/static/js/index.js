@@ -23,23 +23,14 @@ function resetModal() {
     // reset modal content
     document.getElementById("create-modal-body").innerHTML = original_create_modal_modal_content;
 }
-function changeCreateType() {
-    // get type from select
-    const type = document.getElementById("type").value;
-    // get corresponding form
-    const form = document.getElementById(type + "-form");
-    // change content of modal
-    document.getElementById("create-form").innerHTML = form.innerHTML +
-        "<input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />" +
-        "<input type='reset' value='Reset' class='btn btn-danger' />"
-}
+
 function sendCreate() {
     // disable button
     document.getElementById("create-button").disabled = true;
     // get form
-    const form = document.getElementById("create-form");
+    let form = document.getElementById("create-form");
     // get data
-    const data = new FormData(form);
+    let data = new FormData(form);
     // send data
     fetch(form.action + "?json=true", {
         method: form.method,
@@ -68,9 +59,9 @@ function sendEdit() {
     // disable button
     document.getElementById("edit-button").disabled = true;
     // get form
-    const form = document.getElementById("edit-form");
+    let form = document.getElementById("edit-form");
     // get data
-    const data = new FormData(form);
+    let data = new FormData(form);
     // send data
     fetch(form.action + "?json=true", {
         method: form.method,

@@ -10,7 +10,7 @@ from Listeners.base import BaseListener
 from .available import AVAILABLE_LISTENERS
 
 
-def add_listener(data: dict) -> str:
+def add_listener(data: dict) -> ListenerModel:
     """
     Create a listener
 
@@ -29,7 +29,7 @@ def add_listener(data: dict) -> str:
     listener = ListenerModel.create_listener_from_data(data)
     Session.add(listener)
     Session.commit()
-    return f"Created '{name}' successfully!"
+    return listener
 
 
 def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional[str]:

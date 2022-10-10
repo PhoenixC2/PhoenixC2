@@ -42,7 +42,7 @@ console = Console()
 
 def log(text: str, alert: str = ""):
     """Log important information to the console"""
-    if os.getenv("PHOENIX_LOG") == "false":
+    if os.getenv("PHOENIX_LOG", "") == "false":
         return
     style = ""
     if alert == "info":
@@ -60,7 +60,7 @@ def log(text: str, alert: str = ""):
 
 def ph_print(text: str, force: bool = False):
     """Print phoenix-styled text to the console"""
-    if os.getenv("PHOENIX_LOG") == "false" and not force:
+    if os.getenv("PHOENIX_LOG", "") == "false" and not force:
         return
     print(Colorate.Horizontal(Colors.yellow_to_red, text))
 

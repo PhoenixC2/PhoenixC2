@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
 import requests
-from Creator.available import AVAILABLE_LISTENERS, AVAILABLE_STAGERS
-from Database import Session, ListenerModel
+from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
+                               AVAILABLE_LISTENERS, AVAILABLE_STAGERS)
+from Database import ListenerModel, Session
 from Database.base import Base
 
 from .misc import get_network_interfaces
@@ -48,6 +49,15 @@ class BooleanType(OptionType):
     """The option-type of boolean"""
     data_type = bool
 
+    @staticmethod
+    def validate(name: str, data: any) -> bool:
+        data = str(data).lower()
+        if data in ("true", "on"):
+            return True
+        elif data in ("false", "off"):
+            return False
+        else:
+            raise ValueError(f"'{name}' must be a boolean.")
     def __str__(self) -> str:
         return "checkbox"
 
@@ -188,7 +198,7 @@ class Option():
                 raise ValueError(f"{self.name} is required.")
             return self.default
 
-        if type(data) != self.type.data_type:
+        if type(data) != self.type.data_type and self.type != BooleanType:
             try:
                 data = self.type.data_type(data)
             except ValueError:
@@ -228,8 +238,20 @@ class OptionPool():
         """Register a new option"""
         self.options.append(option)
 
-    def validate_data(self, data: dict) -> dict:
-        """Validate the data"""
+    def get_option(self, real_name: str) -> Option:
+        """Get an option by real name"""
+        for option in self.options:
+            if option.real_name == real_name:
+                return option
+        raise ValueError(f"The option '{real_name}' doesn't exist.")
+
+    def validate(self, real_name: str, value: any) -> any:
+        """Validate data for an option"""
+        option = self.get_option(real_name)
+        return option.validate_data(value)
+
+    def validate_all(self, data: dict) -> dict:
+        """Validate all options using the data"""
         cleaned_data = {}
         for option in self.options:
             value = data.get(option.real_name, "")
@@ -238,3 +260,108 @@ class OptionPool():
 
     def to_dict(self, commander: "Commander") -> list:
         return [option.to_dict(commander) for option in self.options]
+
+
+class DefaultListenerPool(OptionPool):
+    """Contains all default options for a listener."""
+
+    def __init__(self, added_options: list[Option] = []):
+        super().__init__()
+        self.options = [
+            Option(
+                name="Name",
+                description="The name of the listener.",
+                type=StringType,
+                required=True,
+            ),
+            Option(
+                name="Address",
+                description="The address the listener should listen on.",
+                type=AddressType,
+                required=True,
+                default="0.0.0.0"
+            ),
+            Option(
+                name="Port",
+                description="The port the listener should listen on.",
+                type=PortType,
+                required=True,
+                default=9999
+            ),
+            Option(
+                name="SSL",
+                description="True if the listener should use ssl.",
+                type=BooleanType,
+                default=True
+            ),
+            Option(
+                name="Enabled",
+                description="True if the listener should be enabled.",
+                type=BooleanType,
+                default=True
+            ),
+            Option(
+                name="Connection limit",
+                _real_name="limit",
+                description="How many devices can be connected to the listener at once.",
+                type=IntegerType,
+                default=5
+            )
+        ]
+        self.options.extend(added_options)
+
+
+class DefaultStagerPool(OptionPool):
+    """Contains all default options for a stager."""
+
+    def __init__(self, added_options: list[Option] = []):
+        super().__init__()
+        self.options = [
+            Option(
+                name="Name",
+                description="The name of the stager.",
+                type=StringType,
+                required=True,
+            ),
+            Option(
+                name="Listener",
+                description="The listener, the stager should connect to.",
+                type=TableType(lambda: Session.query(
+                    ListenerModel).all(), ListenerModel),
+                required=True,
+                default=1,
+                editable=False
+            ),
+            Option(
+                name="Encoding",
+                description="The encoding to use.",
+                type=ChoiceType(AVAILABLE_ENCODINGS, "str"),
+                default=AVAILABLE_ENCODINGS[0]
+            ),
+            Option(
+                name="Random size",
+                _real_name="random_size",
+                description="Add random sized strings to the payload to bypass the AV.",
+                type=BooleanType,
+                default=False
+            ),
+            Option(
+                name="Timeout",
+                description="How often the stager should try to connect, before it will exit.",
+                type=IntegerType,
+                default=200
+            ),
+            Option(
+                name="Format",
+                description="The format of the stager.",
+                type=ChoiceType(AVAILABLE_FORMATS, str),
+                default=AVAILABLE_FORMATS[0]
+            ),
+            Option(
+                name="Delay",
+                description="The delay before the stager should connect to the server.",
+                type=IntegerType,
+                default=1
+            )
+        ]
+        self.options.extend(added_options)

@@ -2,7 +2,7 @@ from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
 from Database import ListenerModel, Session
-from flask import Blueprint, jsonify, request, flash
+from flask import Blueprint, flash, jsonify, request
 from Utils.misc import get_network_interfaces
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
@@ -25,7 +25,7 @@ def listeners_bp(commander: Commander):
             if listener is None:
                 return generate_response("error", INVALID_ID, 400)
             return jsonify({"status": "success", "listener": listener.to_dict(commander)})
-    
+
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
         listener_options = ListenerModel.get_all_options(commander)
@@ -50,6 +50,7 @@ def listeners_bp(commander: Commander):
     @authorized
     def post_add():
         # Get request data
+        use_json = request.args.get("json", "").lower() == "true"
         listener_type = request.form.get("type")
         name = request.form.get("name")
         is_interface = request.args.get("is_interface", "").lower() == "true"
@@ -63,7 +64,7 @@ def listeners_bp(commander: Commander):
         try:
             # Check if data is valid and clean it
             options = ListenerModel.get_options_from_type(listener_type)
-            data = options.validate_data(data)
+            data = options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), "listeners", 400)
 
@@ -71,18 +72,20 @@ def listeners_bp(commander: Commander):
         try:
             # has to be added again bc it got filtered out by options.validate_data(data)
             data["type"] = listener_type
-            add_listener(data)
+            listener = add_listener(data)
         except Exception as e:
             return generate_response("danger", str(e), "listeners", 500)
 
         log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
-        return generate_response("success", f"Created Listener {name}' ({listener_type}).", "listeners", 201)
+        if use_json:
+            return jsonify({"status": "success", "listener": listener.to_dict(commander)}), 201
+        return generate_response("success", f"Created Listener {name} ({listener_type}).", "listeners")
 
     @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])
     @authorized
     def delete_remove(id: int):
         # Get request data
-        stop = request.form.get("stop", "").lower() == "true"
+        stop = request.form.get("stop", "").lower() != "false"
 
         # Check if listener exists
         listener: ListenerModel = Session.query(
@@ -94,46 +97,41 @@ def listeners_bp(commander: Commander):
             stop_listener(listener, commander)
             log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
             return generate_response("success", f"Deleted and stopped listener with ID {id}.", "listeners")
+
+        
         listener.delete_stagers(Session)
-        Session.delete(listener)
-        Session.commit()
+        Session().delete(listener) 
+        Session().commit()
         log(f"({get_current_user().username}) Deleted listener with ID {id}.", "info")
         return generate_response("success", f"Deleted listener with ID {id}.", "listeners")
 
-    @listeners_bp.route("/<int:id>/edit", methods=["PUT"])
+    @listeners_bp.route("/edit", methods=["PUT", "POST"])
+    @listeners_bp.route("/<int:id>/edit", methods=["PUT, POST"])
     @authorized
-    def put_edit(id: int):
+    def put_edit(id: int = None):
         # Get request data
-        change = request.form.get("change", "").lower()
-        value = request.form.get("value", "")
-        # Check if data is valid
-        if not change or not value or not id:
-            return generate_response("danger", "Missing required data.", "listeners", 400)
+        form_data = dict(request.form)
+        if id is None:
+            if form_data.get("id") is None:
+                return generate_response("danger", INVALID_ID, "listeners", 400)
+            id = int(form_data.get("id"))
+            form_data.pop("id")
 
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()
-
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
 
-        log(f"({get_current_user().username}) Edited {change} to {value} for Listener with ID {id}.", "success")
-
-        # Change Listener
-        if change == "name":
-            listener.name = value
-
-        elif change == "address":
-            listener.address = value
-
-        elif change == "port":
-            listener.port = value
-
-        else:
-            return generate_response("danger", "Invalid Change.", "listeners", 400)
-
-        Session.commit()
-        return generate_response("success", f"Edited {change} to {value} for Listener with ID {id}.", "listeners")
+        # Edit listener
+        try:
+            listener.edit(form_data)
+            Session.commit()
+        except Exception as e:
+            return generate_response("danger", str(e), "listeners", 500)
+        
+        log(f"({get_current_user().username}) Edited listener with ID {id}.", "info")
+        return generate_response("success", f"Edited listener with ID {id}.", "listeners")
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
     @authorized
@@ -179,7 +177,6 @@ def listeners_bp(commander: Commander):
     @listeners_bp.route("/<int:id>/restart", methods=["POST"])
     @authorized
     def post_restart(id: int):
-
         # Check if listener exists
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()

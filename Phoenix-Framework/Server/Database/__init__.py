@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as Session_Type
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -14,9 +16,15 @@ from .users import UserModel
 
 c = load_config()["database"]
 if c["type"] == "sqlite":
-    engine = create_engine(f"sqlite:///{c['sqlite_location']}")
+    if "3" in os.getenv("PHOENIX_DEBUG", "") or "4" in os.getenv("PHOENIX_DEBUG", ""):
+        engine = create_engine(f"sqlite:///{c['sqlite_location']}", echo=True)
+    else:
+        engine = create_engine(f"sqlite:///{c['sqlite_location']}")
 else:
     conn_string = f"{c['type']}://{c['user']}:{c['pass']}@{c['host']}:{c['port']}/{c['database']}"
-    engine = create_engine(conn_string)
+    if "3" in os.getenv("PHOENIX_DEBUG", "") or "4" in os.getenv("PHOENIX_DEBUG", ""):
+        engine = create_engine(conn_string, echo=True)
+    else:
+        engine = create_engine(conn_string)
 
-Session : Session_Type  = scoped_session(sessionmaker(bind=engine))
+Session: Session_Type = scoped_session(sessionmaker(bind=engine))

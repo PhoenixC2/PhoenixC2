@@ -10,8 +10,9 @@ from Database import DeviceModel, ListenerModel, Session
 from flask import Flask, Response, cli, jsonify, request
 from Handlers.http.reverse import Handler
 from Listeners.base import BaseListener
-from Utils.options import (AddressType, PortType, BooleanType, ChoiceType, IntegerType,
-                           Option, OptionPool, StringType, TableType)
+from Utils.options import (AddressType, BooleanType, ChoiceType,
+                           DefaultListenerPool, DefaultStagerPool, IntegerType,
+                           Option, PortType, StringType, TableType)
 from Utils.ui import log, log_connection
 from Utils.web import FlaskThread
 
@@ -22,46 +23,7 @@ if TYPE_CHECKING:
 class Listener(BaseListener):
     """The Reverse Http Listener Class"""
     api = Flask(__name__)
-    listener_pool = OptionPool([
-        Option(
-            name="Name",
-            description="The name of the listener.",
-            type=StringType,
-            required=True,
-        ),
-        Option(
-            name="Address",
-            description="The address the listener should listen on.",
-            type=AddressType,
-            required=True,
-            default="0.0.0.0"
-        ),
-        Option(
-            name="Port",
-            description="The port the listener should listen on.",
-            type=PortType,
-            required=True,
-            default=9999
-        ),
-        Option(
-            name="SSL",
-            description="True if the listener should use ssl.",
-            type=BooleanType,
-            default=True
-        ),
-        Option(
-            name="Enabled",
-            description="True if the listener should be enabled.",
-            type=BooleanType,
-            default=True
-        ),
-        Option(
-            name="Connection limit",
-            _real_name="limit",
-            description="How many devices can be connected to the listener at once.",
-            type=IntegerType,
-            default=5
-        ),
+    listener_pool = DefaultListenerPool([
         Option(
             name="Server Header",
             _real_name="header",
@@ -70,53 +32,7 @@ class Listener(BaseListener):
             default="Werkzeug/2.2.2 Python/3.10.7"
         )
     ])
-    stager_pool = OptionPool([
-        Option(
-            name="Name",
-            description="The name of the stager.",
-            type=StringType,
-            required=True,
-        ),
-        Option(
-            name="Listener",
-            description="The listener, the stager should connect to.",
-            type=TableType(lambda: Session.query(
-                ListenerModel).all(), ListenerModel),
-            required=True,
-            default=1,
-            editable=False
-        ),
-        Option(
-            name="Encoding",
-            description="The encoding to use.",
-            type=ChoiceType(AVAILABLE_ENCODINGS, "str"),
-            default=AVAILABLE_ENCODINGS[0]
-        ),
-        Option(
-            name="Random size",
-            _real_name="random_size",
-            description="Add random sized strings to the payload to bypass the AV.",
-            type=BooleanType,
-            default=False
-        ),
-        Option(
-            name="Timeout",
-            description="How often the stager should try to connect, before it will exit.",
-            type=IntegerType,
-            default=200
-        ),
-        Option(
-            name="Format",
-            description="The format of the stager.",
-            type=ChoiceType(AVAILABLE_FORMATS, str),
-            default=AVAILABLE_FORMATS[0]
-        ),
-        Option(
-            name="Delay",
-            description="The delay before the stager should connect to the server.",
-            type=IntegerType,
-            default=1
-        ),
+    stager_pool = DefaultStagerPool([
         Option(
             name="Request User-Agent",
             _real_name="user-agent",
@@ -162,11 +78,10 @@ class Listener(BaseListener):
 
     def create_api(self):
         self.api = Flask(__name__)
-
         @self.api.route("/connect", methods=["POST"])
         def connect():
             data = request.get_json()
-            if len(self.handlers) >= self.db_entry.connection_limit:
+            if len(self.handlers) >= self.db_entry.limit:
                 log(
                     f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", "info")
                 return "", 404
@@ -228,7 +143,7 @@ class Listener(BaseListener):
             return r
 
     def start(self):
-        if os.getenv("PHOENIX_DEBUG", "") != "true":
+        if not "2" in os.getenv("PHOENIX_DEBUG", "") and not "4" in os.getenv("PHOENIX_DEBUG", ""):
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
         self.listener_thread = FlaskThread(
@@ -237,19 +152,6 @@ class Listener(BaseListener):
                                        name=self.db_entry.name+"-Refresher-Thread")
         self.listener_thread.start()
         self.refresher_thread.start()
-
-    def refresh_connections(self):
-        while True:
-            if self.stopped:
-                break
-            time.sleep(5)
-            try:
-                for handler in self.handlers:
-                    if not handler.alive():
-                        log(f"Device '{handler.name}' disconnected.", "critical")
-                        self.remove_handler(handler)
-            except Exception as e:
-                log(str(e), "error")
 
     def stop(self):
         self.stopped = True

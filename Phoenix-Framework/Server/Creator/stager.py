@@ -6,12 +6,12 @@ import string
 import urllib.parse
 from binascii import hexlify
 
-from Database import ListenerModel, Session, StagerModel
+from Database import Session, StagerModel
 
 from .available import AVAILABLE_STAGERS
 
 
-def add_stager(data: dict) -> any:
+def add_stager(data: dict) -> StagerModel:
     """
     Add a stager to the database
     """

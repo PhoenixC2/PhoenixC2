@@ -1,10 +1,11 @@
 import datetime
 import threading
 from functools import wraps
-from uuid import uuid1
+
 from Database import LogEntryModel, Session, UserModel
-from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
-                   session, render_template as render_template_flask)
+from flask import Flask, Response, abort, flash, jsonify, redirect
+from flask import render_template as render_template_flask
+from flask import request, session
 from werkzeug.serving import make_server
 
 

@@ -14,16 +14,16 @@ from Web.Endpoints.authorization import get_current_user
 
 def create_web(commander: Commander):
     web_server = Flask(__name__)
-    
-    if not os.getenv("PHOENIX_DEBUG", "") == "true":
+    if not "2" in os.getenv("PHOENIX_DEBUG", "") and not "4" in os.getenv("PHOENIX_DEBUG", ""):
+        print("Quiet")
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
-    
+
     web_server.config["SECRET_KEY"] = "".join(
         random.choice(string.ascii_letters) for i in range(32))
     web_server.config["SECRET_KEY"] = "lol"
     print("Using session key lol")
-    
+
     @web_server.context_processor
     def inject_user():
         return dict(user=get_current_user())

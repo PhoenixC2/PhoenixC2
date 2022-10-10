@@ -20,8 +20,8 @@ web.add_argument(
 web.add_argument("-s", "--ssl", help="Use SSL", action="store_true")
 
 output = parser.add_argument_group("Output")
-output.add_argument(
-    "-d", "--debug", help="Enable debugging", action="store_true")
+# multiple allowed
+output.add_argument("-d", "--debug", help="Enable debug output for services: Actions: 1 Flask: 2 Database: 3 All: 4", action="append")
 output.add_argument("-b", "--banner",
                     help="Disable banner", action="store_true")
 output.add_argument(
@@ -69,20 +69,7 @@ if __name__ == "__main__":
 
     sys.path.insert(0, args.location)
     os.chdir(args.location)
-    # try:
-    from Commander import Commander
-    from Commander.services import start_listeners, start_web
-    from Utils.admin import (recreate_ssl, recreate_super_user, reset_database,
-                             reset_table)
-    from Utils.config import load_config
-    from Utils.misc import version
-    from Utils.ui import log, logo, ph_print
-    """except ImportError:
-        print("[ERROR] Not all required libraries are installed.")
-        exit()"""
-    config = load_config()
 
-    # Output args
     if args.version:
         ph_print("Phoenix Framework C2 Server v" + version)
         exit()
@@ -92,16 +79,29 @@ if __name__ == "__main__":
     if args.quiet:
         os.environ["PHOENIX_LOG"] = "false"
         print("Starting Phoenix Framework in quiet mode.")
+    if args.debug:
+        os.environ["PHOENIX_DEBUG"] = str(args.debug)
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s - %(message)s')
+    # try:
+    from Commander import Commander
+    from Commander.services import start_listeners, start_web
+    from Utils.admin import recreate_ssl, recreate_super_user, reset_database
+    from Utils.config import load_config
+    from Utils.misc import version
+    from Utils.ui import log, logo, ph_print
+    """except ImportError:
+        print("[ERROR] Not all required libraries are installed.")
+        exit()"""
+    
+    config = load_config()
+
     if not args.banner:
         ph_print(logo, True)
 
-    if args.debug:
-        os.environ["PHOENIX_DEBUG"] = "true"
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
 
     log("Welcome to Phoenix Framework.", "success")
-
+    print(os.getenv("PHOENIX_DEBUG"))
     # admin args
     if args.reset_database:
         if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
