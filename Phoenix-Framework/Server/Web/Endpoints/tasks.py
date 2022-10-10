@@ -18,18 +18,17 @@ def tasks_bp(commander: Commander):
         opened_task = task_query.filter_by(id=request.args.get("open")).first()
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task, messages=get_messages())
     
-    @tasks_bp.route("/clear", methods=["POST"])
+    @tasks_bp.route("/<string:id>/clear", methods=["POST"])
     @authorized
-    def post_clear_tasks():
-        task_id = request.form.get("id", "")
+    def post_clear_tasks(id: str = "all"):
         count = 0
-        if task_id == "all":
+        if id == "all":
             for task in Session.query(TaskModel).all():
                 if task.finished_at is not None:
                     count += 1
                     Session.delete(task)
         else:
-            for task in Session.query(TaskModel).filter_by(device_id=task_id).all():
+            for task in Session.query(TaskModel).filter_by(device_id=id).all():
                 if task.finished_at is not None:
                     count += 1
                     Session.delete(task)

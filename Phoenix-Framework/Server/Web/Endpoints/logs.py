@@ -25,18 +25,18 @@ def get_logs():
     return render_template("logs.j2", user=current_user, logs=logs, opened_log=opened_log, messages=get_messages())
 
 
-@logs_bp.route("/clear", methods=["POST"])
+@logs_bp.route("/<string:id>/clear", methods=["POST"])
 @admin
-def post_clear_devices():
-    log_id = request.form.get("id", "")
+def post_clear_devices(id: str = "all"):
+    id = request.form.get("id", "")
     count = 0
-    if log_id == "all":
+    if id == "all":
         for log in Session.query(LogEntryModel).all():
             if not log.unseen_users:
                 count += 1
                 Session.delete(log)
     else:
-        for log in Session.query(LogEntryModel).filter_by(device_id=log_id).all():
+        for log in Session.query(LogEntryModel).filter_by(id=id).all():
             if not log.unseen_users:
                 count += 1
                 Session.delete(log)

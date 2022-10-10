@@ -7,14 +7,15 @@ from flask import (Blueprint, jsonify, render_template, request,
 from Utils.web import authorized, generate_response, get_messages
 
 TASK_CREATED = "Task created."
+DEVICE_DOES_NOT_EXIST = "Device does not exist."
+
+
 def devices_bp(commander: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
-
 
     @devices_bp.route("/", methods=["GET"])
     @authorized
     def get_devices():
-
         use_json = request.args.get("json", "").lower() == "true"
         device_query = Session.query(DeviceModel)
         devices: list[DeviceModel] = device_query.all()
@@ -23,24 +24,24 @@ def devices_bp(commander: Commander):
         opened_device = device_query.filter_by(
             id=request.args.get("open")).first()
         return render_template("devices.j2", devices=devices, opened_device=opened_device, messages=get_messages())
-    
-    @devices_bp.route("/clear", methods=["POST"])
+
+    @devices_bp.route("/<string:id>/clear", methods=["POST"])
     @authorized
-    def post_clear_devices():
-        device_id = request.form.get("id", "")
+    def post_clear_devices(id: str = "all"):
         count = 0
-        if device_id == "all":
+        if id == "all":
             for device in Session.query(DeviceModel).all():
                 if not device.connected:
                     count += 1
                     Session.delete(device)
         else:
-            for device in Session.query(DeviceModel).filter_by(device_id=device_id).all():
+            for device in Session.query(DeviceModel).filter_by(id=id).all():
                 if not device.connected:
                     count += 1
                     Session.delete(device)
         Session.commit()
         return generate_response("success", f"Cleared {count} devices.", "devices")
+
     @devices_bp.route("/downloads/<string:file>", methods=["GET"])
     @authorized
     def get_downloads(file: str):
@@ -48,18 +49,21 @@ def devices_bp(commander: Commander):
             return generate_response("danger", "File name is missing.", "devices", 400)
         return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file, as_attachment=True)
 
-
-    @devices_bp.route("/reverse_shell", methods=["POST"])
+    @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
     @authorized
-    def post_reverse_shell():
+    def post_reverse_shell(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id")
         address = request.form.get("address")
         port = request.form.get("port")
         binary = request.form.get("binary")
 
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
+            
         try:
-            task = TaskModel.reverse_shell(device_id, address, port, binary)
+            task = TaskModel.reverse_shell(id, address, port, binary)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -70,15 +74,19 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/rce", methods=["POST"])
+    @devices_bp.route("/<int:id>/rce", methods=["POST"])
     @authorized
-    def post_rce():
+    def post_rce(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id")
         cmd = request.form.get("cmd")
 
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
+
         try:
-            task = TaskModel.remote_command_execution(device_id, cmd)
+            task = TaskModel.remote_command_execution(id, cmd)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -89,14 +97,18 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/info", methods=["GET"])
+    @devices_bp.route("/<int:id>/info", methods=["GET"])
     @authorized
-    def get_infos():
+    def get_infos(int: id = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id", "")
+
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         try:
-            task = TaskModel.get_infos(device_id)
+            task = TaskModel.get_infos(id)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -107,15 +119,19 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/dir", methods=["GET"])
+    @devices_bp.route("/<int:id>/dir", methods=["GET"])
     @authorized
-    def get_dir():
+    def get_dir(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id", "")
         directory = request.args.get("dir")
 
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
+
         try:
-            task = TaskModel.list_directory_contents(device_id, directory)
+            task = TaskModel.list_directory_contents(id, directory)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -126,12 +142,16 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/upload", methods=["POST"])
+    @devices_bp.route("/<int:id>/upload", methods=["POST"])
     @authorized
-    def post_upload():
+    def post_upload(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id")
         target_path = request.args.get("path")
+
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         # check if file is in request
         if "file" not in request.files:
@@ -139,7 +159,8 @@ def devices_bp(commander: Commander):
         if target_path is None:
             return generate_response("danger", "Upload path is missing.", "devices", 400)
         try:
-            task = TaskModel.upload(device_id, request.files.get('file'), target_path)
+            task = TaskModel.upload(
+                id, request.files.get('file'), target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -150,17 +171,21 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/download", methods=["GET"])
+    @devices_bp.route("/<int:id>/download", methods=["GET"])
     @authorized
-    def get_download():
+    def get_download(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        device_id = request.args.get("id", "")
         target_path = request.args.get("path")
 
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
+            
         if target_path is None:
             return generate_response("danger", "File path is missing.", "devices", 400)
         try:
-            task = TaskModel.download(device_id, target_path)
+            task = TaskModel.download(id, target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:

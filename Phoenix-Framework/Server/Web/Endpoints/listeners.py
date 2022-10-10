@@ -10,22 +10,14 @@ from Utils.web import (authorized, generate_response, get_current_user,
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
-
+ENDPOINT = "listeners"
 
 def listeners_bp(commander: Commander):
-    listeners_bp = Blueprint("listeners", __name__, url_prefix="/listeners")
+    listeners_bp = Blueprint(ENDPOINT, __name__, url_prefix="/listeners")
 
-    @listeners_bp.route("/<int:id>", methods=["GET"])
     @listeners_bp.route("/", methods=["GET"])
     @authorized
-    def get_listeners(id: int = None):
-        if id:
-            listener: ListenerModel = Session.query(
-                ListenerModel).filter_by(id=id).first()
-            if listener is None:
-                return generate_response("error", INVALID_ID, 400)
-            return jsonify({"status": "success", "listener": listener.to_dict(commander)})
-
+    def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
         listener_options = ListenerModel.get_all_options(commander)
@@ -44,7 +36,7 @@ def listeners_bp(commander: Commander):
         try:
             return jsonify(ListenerModel.get_options_from_type(listener_type).to_dict(commander))
         except Exception as e:
-            return generate_response("danger", str(e), "listeners", 400)
+            return generate_response("danger", str(e), ENDPOINT, 400)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized
@@ -60,13 +52,13 @@ def listeners_bp(commander: Commander):
             if data.get("address", "") in interfaces:
                 data["address"] = interfaces[data["address"]]
             else:
-                return generate_response("danger", "Invalid network interface.", "listeners", 400)
+                return generate_response("danger", "Invalid network interface.", ENDPOINT, 400)
         try:
             # Check if data is valid and clean it
             options = ListenerModel.get_options_from_type(listener_type)
             data = options.validate_all(data)
         except Exception as e:
-            return generate_response("danger", str(e), "listeners", 400)
+            return generate_response("danger", str(e), ENDPOINT, 400)
 
         # Add listener
         try:
@@ -74,12 +66,12 @@ def listeners_bp(commander: Commander):
             data["type"] = listener_type
             listener = add_listener(data)
         except Exception as e:
-            return generate_response("danger", str(e), "listeners", 500)
+            return generate_response("danger", str(e), ENDPOINT, 500)
 
         log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
         if use_json:
             return jsonify({"status": "success", "listener": listener.to_dict(commander)}), 201
-        return generate_response("success", f"Created Listener {name} ({listener_type}).", "listeners")
+        return generate_response("success", f"Created Listener {name} ({listener_type}).", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])
     @authorized
@@ -91,19 +83,21 @@ def listeners_bp(commander: Commander):
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         if stop and listener.is_active(commander):
-            stop_listener(listener, commander)
+            stop_listener(listener, commander)   
+            listener.delete_stagers(Session)
+            Session().delete(listener) 
+            Session().commit()
             log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
-            return generate_response("success", f"Deleted and stopped listener with ID {id}.", "listeners")
+            return generate_response("success", f"Deleted and stopped listener with ID {id}.", ENDPOINT)
 
-        
         listener.delete_stagers(Session)
         Session().delete(listener) 
         Session().commit()
         log(f"({get_current_user().username}) Deleted listener with ID {id}.", "info")
-        return generate_response("success", f"Deleted listener with ID {id}.", "listeners")
+        return generate_response("success", f"Deleted listener with ID {id}.", ENDPOINT)
 
     @listeners_bp.route("/edit", methods=["PUT", "POST"])
     @listeners_bp.route("/<int:id>/edit", methods=["PUT, POST"])
@@ -113,7 +107,7 @@ def listeners_bp(commander: Commander):
         form_data = dict(request.form)
         if id is None:
             if form_data.get("id") is None:
-                return generate_response("danger", INVALID_ID, "listeners", 400)
+                return generate_response("danger", INVALID_ID, ENDPOINT, 400)
             id = int(form_data.get("id"))
             form_data.pop("id")
 
@@ -121,17 +115,17 @@ def listeners_bp(commander: Commander):
         listener: ListenerModel = Session.query(
             ListenerModel).filter_by(id=id).first()
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         # Edit listener
         try:
             listener.edit(form_data)
             Session.commit()
         except Exception as e:
-            return generate_response("danger", str(e), "listeners", 500)
+            return generate_response("danger", str(e), ENDPOINT, 500)
         
         log(f"({get_current_user().username}) Edited listener with ID {id}.", "info")
-        return generate_response("success", f"Edited listener with ID {id}.", "listeners")
+        return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
     @authorized
@@ -141,7 +135,7 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=id).first()
 
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         log(f"({get_current_user().username}) Starting Listener with ID {id}", "info")
 
@@ -149,10 +143,10 @@ def listeners_bp(commander: Commander):
             status = start_listener(listener, commander)
         except Exception as e:
             log(f"({get_current_user().username}) {e}", "info")
-            return generate_response("danger", str(e), "listeners", 400)
+            return generate_response("danger", str(e), ENDPOINT, 400)
         else:
             log(f"({get_current_user().username}) Started Listener with ID {id}", "success")
-            return generate_response("success", status, "listeners")
+            return generate_response("success", status, ENDPOINT)
 
     @listeners_bp.route("/<int:id>/stop", methods=["POST"])
     @authorized
@@ -162,17 +156,17 @@ def listeners_bp(commander: Commander):
             ListenerModel).filter_by(id=id).first()
 
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, "listeners", 400)
+            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         log(f"({get_current_user().username}) Stopping Listener with ID {id}", "info")
 
         try:
             stop_listener(listener, commander)
         except Exception as e:
-            return generate_response("danger", str(e), "listeners", 500)
+            return generate_response("danger", str(e), ENDPOINT, 500)
         else:
             log(f"({get_current_user().username}) Stopped Listener with ID {id}", "success")
-            return generate_response("success", f"Stopped Listener with ID {id}", "listeners")
+            return generate_response("success", f"Stopped Listener with ID {id}", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/restart", methods=["POST"])
     @authorized
@@ -186,8 +180,8 @@ def listeners_bp(commander: Commander):
             restart_listener(listener, commander)
         except Exception as e:
             log(f"({get_current_user().username}) failed to restart listener with ID {id}.", "success")
-            return generate_response("danger", str(e), "listeners", 500)
+            return generate_response("danger", str(e), ENDPOINT, 500)
         else:
             log(f"({get_current_user().username}) restarted listener with ID {id}.", "success")
-            return generate_response("success", f"Restarted listener with ID {id}", "listeners")
+            return generate_response("success", f"Restarted listener with ID {id}", ENDPOINT)
     return listeners_bp

@@ -15,7 +15,6 @@ from Web.Endpoints.authorization import get_current_user
 def create_web(commander: Commander):
     web_server = Flask(__name__)
     if not "2" in os.getenv("PHOENIX_DEBUG", "") and not "4" in os.getenv("PHOENIX_DEBUG", ""):
-        print("Quiet")
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
 
