@@ -8,7 +8,7 @@ from binascii import hexlify
 
 from Database import Session, StagerModel
 
-from .available import AVAILABLE_STAGERS
+from .available import AVAILABLE_PAYLOADS
 
 
 def add_stager(data: dict) -> StagerModel:
@@ -37,7 +37,7 @@ def get_stager(stager_db: StagerModel, one_liner: bool = True) -> str:
     :return: The Stager as a string
 
     """
-    if stager_db.listener.type not in AVAILABLE_STAGERS:  # also works as the stager type
+    if stager_db.listener.type not in AVAILABLE_PAYLOADS:  # also works as the stager type
         raise ValueError(f"Stager {stager_db.listener.type} is not available.")
     # Get the Payload from the File
     try:

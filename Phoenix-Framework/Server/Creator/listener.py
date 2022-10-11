@@ -5,9 +5,9 @@ from typing import Optional
 
 from Commander import Commander
 from Database import ListenerModel, Session
-from Listeners.base import BaseListener
+from Server.Kits.base_listener import BaseListener
 
-from .available import AVAILABLE_LISTENERS
+from .available import AVAILABLE_KITS
 
 
 def add_listener(data: dict) -> ListenerModel:

@@ -2,7 +2,7 @@
 import importlib
 from typing import TYPE_CHECKING
 
-from Creator.available import AVAILABLE_STAGERS
+from Creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import Session, relationship
 
@@ -10,7 +10,7 @@ from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
-    from Listeners.base import BaseListener
+    from Server.Kits.base_listener import BaseListener
     from Utils.options import OptionPool
 
     from .listeners import ListenerModel
@@ -44,36 +44,31 @@ class StagerModel(Base):
         }
 
     def get_options(self) -> "OptionPool":
-        """Get the options based on the listener type."""
-
-        if self.listener.type not in AVAILABLE_STAGERS:
+        """Get the options based on the stager type."""
+        if self.listener.type not in AVAILABLE_PAYLOADS:
             raise ValueError(f"'{self.listener.type}' isn't available.")
 
         try:
-            open("Payloads/" + self.listener.type + ".py", "r").close()
+            open("Kits/" + self.listener.type + "/stager.py", "r").close()
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Stager {self.listener.type} does not exist") from e
 
-        listener: "BaseListener" = importlib.import_module(
-            "Listeners." + self.listener.type.replace("/", ".")).Listener
-        return listener.stager_pool
+        return importlib.import_module("Kits." + self.type + ".stager").Stager.option_pool
 
     @staticmethod
     def get_options_from_type(type: str) -> "OptionPool":
-        """Get the options based on the listener type."""
+        """Get the options based on the stager type."""
 
-        if type not in AVAILABLE_STAGERS:
+        if type not in AVAILABLE_KITS:
             raise ValueError(f"'{type}' isn't available.")
 
         try:
-            open("Payloads/" + type + ".py", "r").close()
+            open("Kits/" + type + "/stager.py", "r").close()
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Stager {type} does not exist") from e
 
-        listener: "BaseListener" = importlib.import_module(
-            "Listeners." + type.replace("/", ".")).Listener
-        return listener.stager_pool
+        return importlib.import_module("Kits." + type + ".stager").Stager.option_pool
     
     def edit(self, session: Session, data: dict):
         """Edit the listener"""

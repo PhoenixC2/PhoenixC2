@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from Database import Session
 from Database.listeners import ListenerModel
-from Handlers.base import BaseHandler
+from .base_handler import BaseHandler
 from Utils.options import OptionPool
 from Utils.ui import log
 

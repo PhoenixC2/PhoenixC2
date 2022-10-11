@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Database import DeviceModel, ListenerModel, Session
 from flask import Flask, Response, cli, jsonify, request
-from Handlers.http.reverse import Handler
-from Listeners.base import BaseListener
+from .handler import Handler
+from ..base_listener import BaseListener
 from Utils.options import (AddressType, BooleanType, ChoiceType,
                            DefaultListenerPool, DefaultStagerPool, IntegerType,
                            Option, PortType, StringType, TableType)
@@ -23,49 +23,13 @@ if TYPE_CHECKING:
 class Listener(BaseListener):
     """The Reverse Http Listener Class"""
     api = Flask(__name__)
-    listener_pool = DefaultListenerPool([
+    option_pool = DefaultListenerPool([
         Option(
             name="Server Header",
             _real_name="header",
             description="The Server Header to return",
             type=StringType,
             default="Werkzeug/2.2.2 Python/3.10.7"
-        )
-    ])
-    stager_pool = DefaultStagerPool([
-        Option(
-            name="Request User-Agent",
-            _real_name="user-agent",
-            description="The User-Agent to use.",
-            type=StringType,
-            default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
-        ),
-        Option(
-            name="Proxy address",
-            _real_name="proxy_address",
-            description="The address of a proxy to use.",
-            type=AddressType,
-        ),
-        Option(
-            name="Proxy port",
-            _real_name="proxy_port",
-            description="The port of a proxy to use.",
-            type=IntegerType,
-            default=8080
-        ),
-        Option(
-            name="Proxy authentication",
-            _real_name="proxy_auth",
-            description="The Authentication to use (format=username:password).",
-            type=StringType,
-            default=""
-        ),
-        Option(
-            name="Different address/domain",
-            _real_name="different-address",
-            description="Use a different address/domain then specified by the listener to connect to.",
-            type=AddressType,
-            required=False
         )
     ])
 

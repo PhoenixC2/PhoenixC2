@@ -1,8 +1,8 @@
 """This is the C2 commander Class which handles the devices & listeners"""
 from typing import Optional
 
-from Handlers.base import BaseHandler
-from Listeners.base import BaseListener
+from Server.Kits.base_handler import BaseHandler
+from Server.Kits.base_listener import BaseListener
 from Utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"

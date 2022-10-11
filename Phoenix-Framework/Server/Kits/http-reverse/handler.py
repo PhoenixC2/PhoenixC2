@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from Database import DeviceModel, Session, TaskModel
-from Handlers.base import BaseHandler
+from ..base_handler import BaseHandler
 
 
 class Handler(BaseHandler):

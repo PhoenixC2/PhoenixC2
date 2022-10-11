@@ -1,8 +1,8 @@
 """All available and creatable options for the creator."""
-AVAILABLE_LISTENERS = [
-    "http/reverse"
+AVAILABLE_KITS = [
+    "http-reverse"
 ]
-AVAILABLE_STAGERS = [
+AVAILABLE_PAYLOADS = [
 ]
 AVAILABLE_LOADERS = []
 AVAILABLE_ENCODINGS = [

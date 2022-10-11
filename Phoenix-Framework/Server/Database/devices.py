@@ -12,7 +12,7 @@ from .credentials import CredentialModel
 
 if TYPE_CHECKING:
     from Commander import Commander
-    from Listeners.base import BaseListener
+    from Server.Kits.base_listener import BaseListener
 
     from .listeners import ListenerModel
     from .tasks import TaskModel

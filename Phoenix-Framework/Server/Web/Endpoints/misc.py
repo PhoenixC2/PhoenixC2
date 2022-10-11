@@ -14,9 +14,9 @@ def get_phoenix():
 @authorized
 def get_available():
     options = {
-        "listeners": avl.AVAILABLE_LISTENERS,
+        "kits": avl.AVAILABLE_KITS,
         "encodings": avl.AVAILABLE_ENCODINGS,
-        "stagers": avl.AVAILABLE_STAGERS,
+        "payloads": avl.AVAILABLE_PAYLOADS,
         "loaders": avl.AVAILABLE_LOADERS,
         "formats": avl.AVAILABLE_FORMATS
     }

@@ -3,7 +3,7 @@ import importlib
 import json
 from typing import TYPE_CHECKING
 
-from Creator.available import AVAILABLE_LISTENERS
+from Creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, Integer, String
 from sqlalchemy.orm import Session, relationship
 
@@ -11,7 +11,7 @@ from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
-    from Listeners.base import BaseListener
+    from Server.Kits.base_listener import BaseListener
     from Utils.options import OptionPool
 
     from .devices import DeviceModel
@@ -39,7 +39,7 @@ class ListenerModel(Base):
         back_populates="listener"
     )
 
-    def is_active(self, commander: "Commander" = None) -> bool|str:
+    def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
         try:
             if commander is None:
@@ -81,14 +81,14 @@ class ListenerModel(Base):
 
     def create_listener_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""
-        return importlib.import_module("Listeners." + self.type.replace("/", ".")).Listener(
+        return importlib.import_module("Kits." + self.type + ".listener").Listener(
             commander, self)
 
     @staticmethod
     def get_all_options(commander: "Commander") -> dict:
         """Get all options for all listener types"""
         options: dict = {}
-        for listener in AVAILABLE_LISTENERS:
+        for listener in AVAILABLE_KITS:
             options[listener] = ListenerModel.get_options_from_type(
                 listener).to_dict(commander)
         return options
@@ -96,7 +96,7 @@ class ListenerModel(Base):
     def get_options(self) -> "OptionPool":
         """Get the options using the type the current object."""
 
-        if self.type not in AVAILABLE_LISTENERS:
+        if self.type not in AVAILABLE_KITS:
             raise ValueError(f"'{self.type}' isn't available.")
 
         try:
@@ -104,26 +104,24 @@ class ListenerModel(Base):
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Listener {self.type} does not exist") from e
-        listener: "BaseListener" = importlib.import_module(
-            "Listeners." + self.type.replace("/", ".")).Listener
-        return listener.listener_pool
+        return importlib.import_module(
+            "Kits." + self.type + ".listener").Listener.option_pool
 
     @staticmethod
     def get_options_from_type(type: str) -> "OptionPool":
         """Get the options based on the listener type."""
 
-        if type not in AVAILABLE_LISTENERS:
+        if type not in AVAILABLE_KITS:
             raise ValueError(f"'{type}' isn't available.")
 
         try:
-            open("Listeners/" + type + ".py", "r").close()
+            open("Kits/" + type + "/listener.py", "r").close()
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Listener {type} does not exist") from e
 
-        listener: "BaseListener" = importlib.import_module(
-            "Listeners." + type.replace("/", ".")).Listener
-        return listener.listener_pool
+        return importlib.import_module(
+            "Kits." + type + ".listener").Listener.option_pool
 
     def edit(self, data: dict):
         """Edit the listener"""

@@ -5,8 +5,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
 import requests
-from Creator.available import (AVAILABLE_ENCODINGS, AVAILABLE_FORMATS,
-                               AVAILABLE_LISTENERS, AVAILABLE_STAGERS)
+from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Database import ListenerModel, Session
 from Database.base import Base
 
@@ -30,8 +29,8 @@ class OptionType():
 class StringType(OptionType):
     """The option-type of string"""
     data_type = str
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "text"
 
 
@@ -39,8 +38,8 @@ class StringType(OptionType):
 class IntegerType(OptionType):
     """The option-type of integer"""
     data_type = int
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "number"
 
 
@@ -58,7 +57,9 @@ class BooleanType(OptionType):
             return False
         else:
             raise ValueError(f"'{name}' must be a boolean.")
-    def __str__(self) -> str:
+    
+    @staticmethod
+    def __str__() -> str:
         return "checkbox"
 
 
@@ -81,8 +82,8 @@ class UrlType(StringType):
                 f"The url for the option '{name}' is invalid.") from e
         else:
             return url
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "url"
 
 
@@ -109,8 +110,8 @@ class AddressType(StringType):
                 f"{address} for the option '{name}' is invalid.") from e
         else:
             return address
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "address"
 
 
@@ -126,8 +127,8 @@ class PortType(IntegerType):
             raise ValueError(
                 f"The port '{port}' for the option '{name}' is already in use.")
         return port
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "port"
 
 
@@ -141,8 +142,8 @@ class ChoiceType(OptionType):
             raise ValueError(
                 f"{choice} isn't in the available choices for '{name}'.)")
         return choice
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "select"
 
 
@@ -169,10 +170,9 @@ class TableType(OptionType):
                 raise ValueError(
                     f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
             return object
-
-    def __str__(self) -> str:
+    @staticmethod
+    def __str__() -> str:
         return "table"
-
 
 @dataclass
 class Option():
@@ -212,7 +212,7 @@ class Option():
         data = {
             "name": self.name,
             "real_name": self.real_name,
-            "type": self.type.__str__(self).lower(),
+            "type": str(self.type),
             "required": self.required,
             "description": self.description,
             "default": self.default if self.default is not None else ""

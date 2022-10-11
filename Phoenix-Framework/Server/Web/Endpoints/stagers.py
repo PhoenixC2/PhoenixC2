@@ -1,7 +1,6 @@
 from Commander import Commander
-from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Creator.stager import add_stager, get_stager
-from Database import StagerModel, Session, StagerModel
+from Database import Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
@@ -47,8 +46,8 @@ def stagers_bp(commander: Commander):
         data = dict(request.form)
         try:
             # Check if data is valid and clean it
-            stager: stagerModel = Session.query(
-                stagerModel).filter_by(id=stager).first()
+            stager: StagerModel = Session.query(
+                StagerModel).filter_by(id=stager).first()
             if stager is None:
                 return generate_response("danger", f"stager with ID ({stager}) doesn't exist.", ENDPOINT, 400)
             options = StagerModel.get_options_from_type(stager.type)
@@ -95,7 +94,7 @@ def stagers_bp(commander: Commander):
             form_data.pop("id")
 
         # Check if stager exists
-        stager: stagerModel = Session.query(
+        stager: StagerModel = Session.query(
             StagerModel).filter_by(id=id).first()
         if stager is None:
             return generate_response("danger", STAGER_DOES_NOT_EXIST, ENDPOINT, 400)

@@ -79,3 +79,12 @@ class UserModel(Base):
             return "inactive"
         else:
             return "offline"
+
+    def edit(self, data : dict) -> None:
+        """Edit the user"""
+        self.username = data.get("username", self.username)
+        self.admin = data.get("admin", self.admin)
+        self.disabled = data.get("disabled", self.disabled)
+        self.profile_picture = data.get("profile_picture", self.profile_picture)
+        if data.get("password", None) is not None:
+            self.set_password(data.get("password", None))
