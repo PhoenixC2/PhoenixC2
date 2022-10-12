@@ -1,5 +1,5 @@
 from Commander import Commander
-from Creator.stager import add_stager, get_stager
+from Creator.stager import add_stager
 from Database import Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log

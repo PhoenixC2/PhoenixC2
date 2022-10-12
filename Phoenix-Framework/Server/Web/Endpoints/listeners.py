@@ -12,6 +12,7 @@ INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
 ENDPOINT = "listeners"
 
+
 def listeners_bp(commander: Commander):
     listeners_bp = Blueprint(ENDPOINT, __name__, url_prefix="/listeners")
 
@@ -86,15 +87,15 @@ def listeners_bp(commander: Commander):
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         if stop and listener.is_active(commander):
-            stop_listener(listener, commander)   
+            stop_listener(listener, commander)
             listener.delete_stagers(Session)
-            Session().delete(listener) 
+            Session().delete(listener)
             Session().commit()
             log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
             return generate_response("success", f"Deleted and stopped listener with ID {id}.", ENDPOINT)
 
         listener.delete_stagers(Session)
-        Session().delete(listener) 
+        Session().delete(listener)
         Session().commit()
         log(f"({get_current_user().username}) Deleted listener with ID {id}.", "info")
         return generate_response("success", f"Deleted listener with ID {id}.", ENDPOINT)
@@ -123,7 +124,7 @@ def listeners_bp(commander: Commander):
             Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
-        
+
         log(f"({get_current_user().username}) Edited listener with ID {id}.", "info")
         return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
 

@@ -29,8 +29,8 @@ class OptionType():
 class StringType(OptionType):
     """The option-type of string"""
     data_type = str
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "text"
 
 
@@ -38,8 +38,8 @@ class StringType(OptionType):
 class IntegerType(OptionType):
     """The option-type of integer"""
     data_type = int
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "number"
 
 
@@ -58,8 +58,7 @@ class BooleanType(OptionType):
         else:
             raise ValueError(f"'{name}' must be a boolean.")
     
-    @staticmethod
-    def __str__() -> str:
+    def __str__(self) -> str:
         return "checkbox"
 
 
@@ -82,8 +81,8 @@ class UrlType(StringType):
                 f"The url for the option '{name}' is invalid.") from e
         else:
             return url
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "url"
 
 
@@ -110,8 +109,8 @@ class AddressType(StringType):
                 f"{address} for the option '{name}' is invalid.") from e
         else:
             return address
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "address"
 
 
@@ -127,8 +126,8 @@ class PortType(IntegerType):
             raise ValueError(
                 f"The port '{port}' for the option '{name}' is already in use.")
         return port
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "port"
 
 
@@ -142,8 +141,8 @@ class ChoiceType(OptionType):
             raise ValueError(
                 f"{choice} isn't in the available choices for '{name}'.)")
         return choice
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "select"
 
 
@@ -170,8 +169,8 @@ class TableType(OptionType):
                 raise ValueError(
                     f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
             return object
-    @staticmethod
-    def __str__() -> str:
+
+    def __str__(self) -> str:
         return "table"
 
 @dataclass
@@ -271,40 +270,40 @@ class DefaultListenerPool(OptionPool):
             Option(
                 name="Name",
                 description="The name of the listener.",
-                type=StringType,
+                type=StringType(),
                 required=True,
             ),
             Option(
                 name="Address",
                 description="The address the listener should listen on.",
-                type=AddressType,
+                type=AddressType(),
                 required=True,
                 default="0.0.0.0"
             ),
             Option(
                 name="Port",
                 description="The port the listener should listen on.",
-                type=PortType,
+                type=PortType(),
                 required=True,
                 default=9999
             ),
             Option(
                 name="SSL",
                 description="True if the listener should use ssl.",
-                type=BooleanType,
+                type=BooleanType(),
                 default=True
             ),
             Option(
                 name="Enabled",
                 description="True if the listener should be enabled.",
-                type=BooleanType,
+                type=BooleanType(),
                 default=True
             ),
             Option(
                 name="Connection limit",
                 _real_name="limit",
                 description="How many devices can be connected to the listener at once.",
-                type=IntegerType,
+                type=IntegerType(),
                 default=5
             )
         ]
@@ -320,7 +319,7 @@ class DefaultStagerPool(OptionPool):
             Option(
                 name="Name",
                 description="The name of the stager.",
-                type=StringType,
+                type=StringType(),
                 required=True,
             ),
             Option(
@@ -342,13 +341,13 @@ class DefaultStagerPool(OptionPool):
                 name="Random size",
                 _real_name="random_size",
                 description="Add random sized strings to the payload to bypass the AV.",
-                type=BooleanType,
+                type=BooleanType(),
                 default=False
             ),
             Option(
                 name="Timeout",
                 description="How often the stager should try to connect, before it will exit.",
-                type=IntegerType,
+                type=IntegerType(),
                 default=200
             ),
             Option(
@@ -360,7 +359,7 @@ class DefaultStagerPool(OptionPool):
             Option(
                 name="Delay",
                 description="The delay before the stager should connect to the server.",
-                type=IntegerType,
+                type=IntegerType(),
                 default=1
             )
         ]

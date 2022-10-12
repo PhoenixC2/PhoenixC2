@@ -25,7 +25,7 @@ class TaskModel(Base):
                      nullable=False)
     name: str = Column(String(10), unique=True)
     description: str = Column(Text)
-    device_id: int = Column(Integer, ForeignKey("Devices.id"), nullable=False)
+    device_id: int = Column(Integer, ForeignKey("Devices.id"))
     device: "DeviceModel" = relationship(
         "DeviceModel", back_populates="tasks"
     )
@@ -124,7 +124,7 @@ class TaskModel(Base):
         return task
 
     @staticmethod
-    def reverse_shell(device_or_id: DeviceModel | int, address: str, port: int, binary: str) -> "TaskModel":
+    def reverse_shell(device_or_id: DeviceModel | int, address: str, port: int) -> "TaskModel":
         """Create a Reverse-Shell task , executed using netcat.
 
         Args:
@@ -138,7 +138,6 @@ class TaskModel(Base):
         task.type = "reverse-shell"
         task.args["address"] = address
         task.args["port"] = port
-        task.args["binary"] = binary
         return task
 
     @staticmethod

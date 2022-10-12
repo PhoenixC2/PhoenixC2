@@ -55,7 +55,6 @@ def devices_bp(commander: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         address = request.form.get("address")
         port = request.form.get("port")
-        binary = request.form.get("binary")
 
         # check if device exists
         device = Session.query(DeviceModel).filter_by(id=id).first()
@@ -63,7 +62,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
             
         try:
-            task = TaskModel.reverse_shell(id, address, port, binary)
+            task = TaskModel.reverse_shell(id, address, port)
             Session.add(task)
             Session.commit()
         except Exception as e:

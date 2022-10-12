@@ -100,7 +100,7 @@ class ListenerModel(Base):
             raise ValueError(f"'{self.type}' isn't available.")
 
         try:
-            open("Listeners/" + self.type + ".py", "r").close()
+            open("Kits/" + self.type + "/listener.py", "r").close()
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Listener {self.type} does not exist") from e
