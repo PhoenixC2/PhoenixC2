@@ -175,7 +175,17 @@ class TableType(OptionType):
 
 @dataclass
 class Option():
-    """"""
+    """
+    The Option class is used to create options for listeners and stagers.
+    
+    Args:
+        name (str): The name of the option.
+        description (str): The description of the option.
+        required (bool): If the option is required.
+        default (any): The default value of the option.
+        type (OptionType): The type of the option.
+        editable (bool): If the option is editable.
+    """
     name: str
     type: OptionType
     _real_name: str = ""

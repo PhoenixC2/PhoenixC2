@@ -1,5 +1,6 @@
+import os
 from ..base_stager import BaseStager
-from Utils.options import DefaultStagerPool, Option, StringType, AddressType, IntegerType
+from Utils.options import DefaultStagerPool, Option, StringType, AddressType, IntegerType, ChoiceType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -8,6 +9,13 @@ if TYPE_CHECKING:
 
 class Stager(BaseStager):
     option_pool = DefaultStagerPool([
+        Option(
+            name="Type",
+            description="The type of stager to generate",
+            type=ChoiceType([x.split(".")[0] for x in os.listdir("Server/Kits/http-reverse/payloads/")]),
+            default="python",
+            required=True
+        ),
         Option(
             name="Request User-Agent",
             _real_name="user-agent",
@@ -44,5 +52,9 @@ class Stager(BaseStager):
         )
     ])
 
-    def generate_stager(self, stager_db: "StagerModel") -> bytes | str:
-        raise NotImplementedError("This stager cannot be generated yet.")
+    def generate_stager(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]: 
+        if stager_db.options["type"] == "python":
+            with open("Server/Kits/http-reverse/payloads/python.py", "r") as f:
+                stager = f.read()
+                
+                return f.read().replace("{{HOST}}", stager_db.listener.address).replace("{{PORT}}", str(stager_db.listener.port)), False
