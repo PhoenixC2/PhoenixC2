@@ -11,8 +11,9 @@ from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
-    from Server.Kits.base_listener import BaseListener
     from Utils.options import OptionPool
+
+    from Server.Kits.base_listener import BaseListener
 
     from .devices import DeviceModel
     from .stagers import StagerModel
@@ -79,75 +80,59 @@ class ListenerModel(Base):
         for stager in self.stagers:
             session.delete(stager)
 
-    def create_listener_object(self, commander: "Commander") -> "BaseListener":
-        """Create the Listener Object"""
-        return importlib.import_module("Kits." + self.type + ".listener").Listener(
-            commander, self)
-
     @staticmethod
-    def get_all_options(commander: "Commander") -> dict:
-        """Get all options for all listener types"""
-        options: dict = {}
-        for listener in AVAILABLE_KITS:
-            options[listener] = ListenerModel.get_options_from_type(
-                listener).to_dict(commander)
-        return options
-
-    def get_options(self) -> "OptionPool":
-        """Get the options using the type the current object."""
-
-        if self.type not in AVAILABLE_KITS:
-            raise ValueError(f"'{self.type}' isn't available.")
-
-        try:
-            open("Kits/" + self.type + "/listener.py", "r").close()
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"Listener {self.type} does not exist") from e
-        return importlib.import_module(
-            "Kits." + self.type + ".listener").Listener.option_pool
-
-    @staticmethod
-    def get_options_from_type(type: str) -> "OptionPool":
-        """Get the options based on the listener type."""
-
+    def get_listener_class(type: str) -> "BaseListener":
+        """Get the listener class based on its type"""
         if type not in AVAILABLE_KITS:
-            raise ValueError(f"'{type}' isn't available.")
+            raise ValueError(f"Listener '{type}' isn't available.")
 
         try:
             open("Kits/" + type + "/listener.py", "r").close()
         except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"Listener {type} does not exist") from e
+        return importlib.import_module("Kits." + type + ".listener").Listener
 
-        return importlib.import_module(
-            "Kits." + type + ".listener").Listener.option_pool
+    @property
+    def listener_class(self) -> "BaseListener":
+        """Get the listener class"""
+        return self.get_listener_class(self.type)
+
+    def create_listener_object(self, commander: "Commander") -> "BaseListener":
+        """Create the Listener Object"""
+        return self.listener_class(commander, self)
+
+    @staticmethod
+    def get_all_listener_classes() -> list["BaseListener"]:
+        """Get all listener classes."""
+        return [ListenerModel.get_listener_class(listener) for listener in AVAILABLE_KITS]
 
     def edit(self, data: dict):
         """Edit the listener"""
+        options = self.listener_class.options  # so we dont have to get the class multiple times
         for key, value in data.items():
             if hasattr(self, key):
                 if value == str(getattr(self, key)):
                     continue
-                value = self.get_options().get_option(key).validate_data(value)
+                value = options.get_option(key).validate_data(value)
                 setattr(self, key, value)
             else:
                 if key in self.options:
                     if value == self.options[key]:
                         continue
-                    value = self.get_options().get_option(key).validate_data(value)
+                    value = options.get_option(key).validate_data(value)
                     self.options[key] = value
                 else:
                     raise KeyError(f"{key} is not a valid key")
 
-    @staticmethod
-    def create_listener_from_data(data: dict):
+    @classmethod
+    def create_listener_from_data(cls, data: dict):
         """Create the stager using listener validated data"""
         standard = []
         # gets standard values present in every listener and remove them to only leave options
         for st_value in ["name", "type", "address", "port", "ssl", "limit", "enabled"]:
             standard.append(data.pop(st_value))
-        return ListenerModel(
+        return cls(
             name=standard[0],
             type=standard[1],
             address=standard[2],

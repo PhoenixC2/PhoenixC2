@@ -2,8 +2,8 @@ from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
 from Database import ListenerModel, Session
-from flask import Blueprint, flash, jsonify, request
-from Utils.misc import get_network_interfaces
+from flask import Blueprint, jsonify, request
+from Utils.misc import get_network_interfaces, get_platform
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
                        render_template)
@@ -21,23 +21,36 @@ def listeners_bp(commander: Commander):
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
-        listener_options = ListenerModel.get_all_options(commander)
+        listener_types = ListenerModel.get_all_listener_classes()
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
             return jsonify([listener.to_dict(commander) for listener in listeners])
         opened_listener = listener_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("listeners.j2", listeners=listeners, opened_listener=opened_listener, commander=commander, listener_options=listener_options, network_interfaces=get_network_interfaces())
+        return render_template("listeners.j2",
+                               listeners=listeners,
+                               opened_listener=opened_listener,
+                               commander=commander,
+                               listener_types=listener_types,
+                               network_interfaces=get_network_interfaces(),
+                               platform=get_platform())
 
-    @listeners_bp.route("/options", methods=["GET"])
+    @listeners_bp.route("/available", methods=["GET"])
     @authorized
-    def get_options():
-        # Get
-        listener_type = request.args.get("type")
+    def get_available():
+        listeners = {}
+        type = request.args.get("type")
         try:
-            return jsonify(ListenerModel.get_options_from_type(listener_type).to_dict(commander))
+            if type == "all" or type is None:
+                for listener in ListenerModel.get_all_listener_classes():
+                    listeners[listener.name] = listener.to_dict(commander)
+            else:
+                listeners[type] = ListenerModel.get_listener_class(
+                    type).to_dict(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
+        else:
+            return jsonify(listeners)
 
     @listeners_bp.route("/add", methods=["POST"])
     @authorized

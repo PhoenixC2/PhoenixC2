@@ -1,11 +1,11 @@
-"""Options for creating listeners and stagers"""
+"""Options for creating listeners and stagers."""
 # Inspired by https://github.com/BC-SECURITY/Empire
 import socket
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
 import requests
-from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
+from Creator.available import AVAILABLE_ENCODINGS
 from Database import ListenerModel, Session
 from Database.base import Base
 
@@ -359,12 +359,6 @@ class DefaultStagerPool(OptionPool):
                 description="How often the stager should try to connect, before it will exit.",
                 type=IntegerType(),
                 default=200
-            ),
-            Option(
-                name="Format",
-                description="The format of the stager.",
-                type=ChoiceType(AVAILABLE_FORMATS, str),
-                default=AVAILABLE_FORMATS[0]
             ),
             Option(
                 name="Delay",

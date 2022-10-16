@@ -11,6 +11,3 @@ AVAILABLE_ENCODINGS = [
     "hex",
     "raw"
 ]
-AVAILABLE_FORMATS = [
-    "py"
-]

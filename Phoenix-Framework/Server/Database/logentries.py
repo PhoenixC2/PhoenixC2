@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 
 from .base import Base
 from .users import user_logentry_association_table
@@ -31,7 +31,7 @@ class LogEntryModel(Base):
         back_populates="unseen_logs")  # users who haven't seen this message
 
     def to_dict(self, show_user: bool = True, show_unseen_users: bool = True) -> dict:
-        data =  {
+        data = {
             "id": self.id,
             "type": self.alert,
             "time": self.time,
@@ -40,15 +40,20 @@ class LogEntryModel(Base):
             else [user.id for user in self.unseen_users]
         }
         if self.user is not None and show_user:
-            data["user"] = self.user.to_dict(show_logs=False, show_unseen_logs=False)
+            data["user"] = self.user.to_dict(
+                show_logs=False, show_unseen_logs=False)
         else:
             data["user"] = self.user.id if self.user is not None else None
         return data
 
+    def seen_by_user(self, user: "UserModel"):
+        """Remove a user from unseen users"""
+        if user in self.unseen_users:
+            self.unseen_users.remove(user)
 
-    @staticmethod
-    def generate_log(alert: str, description: str, unseen_users: list["UserModel"], user: "UserModel" = None) -> "LogEntryModel":
-        return LogEntryModel(
+    @classmethod
+    def generate_log(cls, alert: str, description: str, unseen_users: list["UserModel"], user: "UserModel" = None) -> "LogEntryModel":
+        return cls(
             alert=alert,
             time=datetime.now(),
             description=description,
@@ -56,7 +61,11 @@ class LogEntryModel(Base):
             unseen_users=unseen_users
         )
 
-    def seen_by_user(self, user : "UserModel"):
-        """Remove a user from unseen users"""
-        if user in self.unseen_users:
-            self.unseen_users.remove(user)
+    @classmethod
+    def log_to_database(cls, alert: str, description: str, session: Session, user: "UserModel" = None) -> "LogEntryModel":
+        """Log an entry to the database"""
+        log = cls.generate_log(
+            alert, description, Session.query(UserModel).all(), user)
+        session.add(log)
+        session.commit()
+        return log

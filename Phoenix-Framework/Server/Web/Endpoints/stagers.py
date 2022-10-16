@@ -1,4 +1,5 @@
 from Commander import Commander
+from Creator.available import AVAILABLE_KITS
 from Creator.stager import add_stager
 from Database import Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
@@ -26,15 +27,22 @@ def stagers_bp(commander: Commander):
             id=request.args.get("open")).first()
         return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
 
-    @stagers_bp.route("/options", methods=["GET"])
+    @stagers_bp.route("/available", methods=["GET"])
     @authorized
-    def get_options():
-        # Get
-        stager_type = request.args.get("type")
+    def get_available():
+        stagers = {}
+        type = request.args.get("type")
         try:
-            return jsonify(StagerModel.get_options_from_type(stager_type).to_dict(commander))
+            if type == "all" or type is None:
+                for stager in StagerModel.get_all_stagers():
+                    stagers[stager.name] = stager.to_dict(commander)
+            else:
+                stagers[type] = StagerModel.get_stager_class_from_type(type).to_dict(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
+        
+        else:
+            return jsonify(stagers)
 
     @stagers_bp.route("/add", methods=["POST"])
     @authorized
@@ -127,6 +135,7 @@ def stagers_bp(commander: Commander):
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
+            #TODO: update returning the finished stager
             if stager_db.format == "py":
                 return jsonify({"status": "success", "data": stager_content}) if use_json else stager_content
             elif stager_db.format == "exe":

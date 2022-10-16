@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 from uuid import uuid1
+import platform
 
 import netifaces
-from Database import LogEntryModel, Session, UserModel
 
 version = "0.1"
 
@@ -16,11 +16,14 @@ def get_network_interfaces() -> dict[str, str]:
             interfaces[interface] = ifaddresses[2][0]["addr"]
     return interfaces
 
-
-def log_to_database(alert: str, description: str, user: "UserModel" = None) -> LogEntryModel:
-    """Log an entry to the database"""
-    log = LogEntryModel.generate_log(
-        alert, description, Session.query(UserModel).all(), user)
-    Session.add(log)
-    Session.commit()
-    return log
+def get_platform() -> str:
+    """Get the platform of the host"""
+    system = platform.system()
+    if system == "Windows":
+        return "windows"
+    elif system == "Linux":
+        return "linux"
+    elif system == "Darwin":
+        return "osx"
+    else:
+        return "unknown"

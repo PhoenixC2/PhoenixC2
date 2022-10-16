@@ -18,7 +18,6 @@ def get_available():
         "encodings": avl.AVAILABLE_ENCODINGS,
         "payloads": avl.AVAILABLE_PAYLOADS,
         "loaders": avl.AVAILABLE_LOADERS,
-        "formats": avl.AVAILABLE_FORMATS
     }
     return jsonify(options)
 

@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING
 
 from Database import Session
 from Database.listeners import ListenerModel
-from .base_handler import BaseHandler
 from Utils.options import OptionPool
 from Utils.ui import log
+
+from .base_handler import BaseHandler
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
@@ -15,8 +16,10 @@ if TYPE_CHECKING:
 
 class BaseListener():
     """This is the Base Class for all Listeners."""
-    listener_pool = OptionPool()
-    stager_pool = OptionPool()
+    name: str = "BaseListener"
+    description: str = "This is the Base Class for all Listeners."
+    os : list[str] = ["linux", "windows", "osx"] # The supported OS for the listener
+    options = OptionPool()
 
     def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
         self.address = db_entry.address
@@ -88,3 +91,13 @@ class BaseListener():
     def stop(self):
         """Stop the Listener."""
         ...
+
+    @classmethod
+    def to_dict(cls, commander: "Commander") -> dict:
+        """Return a dict with all options of the Listener."""
+        return {
+            "name": cls.name,
+            "description": cls.description,
+            "os": cls.os,
+            "options": cls.options.to_dict(commander)
+        }

