@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from .logentries import LogEntryModel
+    from .logs import LogEntryModel
 
 user_logentry_association_table = Table(
     "association",

@@ -1,7 +1,7 @@
 from Commander import Commander
-from Database import Session, TaskModel
-from flask import Blueprint, jsonify, render_template, request, send_file
-from Utils.web import authorized, generate_response, get_messages
+from Database import Session, TaskModel, LogEntryModel
+from flask import Blueprint, jsonify, render_template, request
+from Utils.web import authorized, generate_response, get_messages, get_current_user
 
 
 def tasks_bp(commander: Commander):
@@ -33,6 +33,7 @@ def tasks_bp(commander: Commander):
                     count += 1
                     Session.delete(task)
         Session.commit()
+        LogEntryModel.log("info", "tasks", f"Cleared {count} tasks.", Session, get_current_user())
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 
     return tasks_bp

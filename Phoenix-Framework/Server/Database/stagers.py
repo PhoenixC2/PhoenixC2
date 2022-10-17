@@ -10,7 +10,6 @@ from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
-    from Utils.options import OptionPool
 
     from Server.Kits.base_stager import BaseStager
 
@@ -67,7 +66,7 @@ class StagerModel(Base):
         """Get all stager classes."""
         return [StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS]
 
-    def edit(self, session: Session, data: dict):
+    def edit(self, data: dict):
         """Edit the listener"""
         for key, value in data.items():
             if not hasattr(self, key):
@@ -75,7 +74,6 @@ class StagerModel(Base):
                     self.options[key] = value
             else:
                 setattr(self, key, value)
-        session.commit()
 
     @classmethod
     def create_stager_from_data(cls, data: dict):

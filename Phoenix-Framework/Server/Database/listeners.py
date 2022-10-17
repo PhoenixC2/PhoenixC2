@@ -40,6 +40,11 @@ class ListenerModel(Base):
         back_populates="listener"
     )
 
+    @property
+    def listener_class(self) -> "BaseListener":
+        """Get the listener class"""
+        return self.get_listener_class(self.type)
+
     def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
         try:
@@ -75,11 +80,6 @@ class ListenerModel(Base):
         """Return a JSON string"""
         return json.dumps(self.to_dict(commander, show_stagers, show_devices))
 
-    def delete_stagers(self, session: Session):
-        """Delete all stagers"""
-        for stager in self.stagers:
-            session.delete(stager)
-
     @staticmethod
     def get_listener_class(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
@@ -93,19 +93,15 @@ class ListenerModel(Base):
                 f"Listener {type} does not exist") from e
         return importlib.import_module("Kits." + type + ".listener").Listener
 
-    @property
-    def listener_class(self) -> "BaseListener":
-        """Get the listener class"""
-        return self.get_listener_class(self.type)
-
-    def create_listener_object(self, commander: "Commander") -> "BaseListener":
-        """Create the Listener Object"""
-        return self.listener_class(commander, self)
-
     @staticmethod
     def get_all_listener_classes() -> list["BaseListener"]:
         """Get all listener classes."""
         return [ListenerModel.get_listener_class(listener) for listener in AVAILABLE_KITS]
+
+    def delete_stagers(self, session: Session):
+        """Delete all stagers"""
+        for stager in self.stagers:
+            session.delete(stager)
 
     def edit(self, data: dict):
         """Edit the listener"""
@@ -124,6 +120,10 @@ class ListenerModel(Base):
                     self.options[key] = value
                 else:
                     raise KeyError(f"{key} is not a valid key")
+
+    def create_listener_object(self, commander: "Commander") -> "BaseListener":
+        """Create the Listener Object"""
+        return self.listener_class(commander, self)
 
     @classmethod
     def create_listener_from_data(cls, data: dict):

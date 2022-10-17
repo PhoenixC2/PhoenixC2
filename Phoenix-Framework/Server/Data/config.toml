@@ -16,7 +16,7 @@ main_server_auth = "Authentication-Key"
 
 [database]
 type = "sqlite"
-sqlite_location = "/usr/share/Phoenix-Framework/Server/Data/db.sqlite3"
+sqlite_location = "/home/screamz/Code/Phoenix-Framework/Phoenix-Framework/Server/Data/db.sqlite3"
 user = "phoenix"
 pass = "YourS3cuReP4ss"
 host = "localhost"

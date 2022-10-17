@@ -1,14 +1,13 @@
 import logging
 import os
-import time
 from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
 
-from Database import DeviceModel, ListenerModel, Session
+from Database import DeviceModel, ListenerModel, Session, LogEntryModel
 from flask import Flask, Response, cli, jsonify, request
 from Utils.options import DefaultListenerPool, Option, StringType
-from Utils.ui import log, log_connection
+from Utils.ui import log_connection
 from Utils.web import FlaskThread
 
 from ..base_listener import BaseListener
@@ -23,13 +22,12 @@ class Listener(BaseListener):
     name = "http-reverse"
     description = "Reverse HTTP Listener"
     os = ["linux", "windows", "osx"]
-    api = Flask(__name__)
     options = DefaultListenerPool([
         Option(
             name="Server Header",
             _real_name="header",
             description="The Server Header to return",
-            type=StringType,
+            type=StringType(),
             default="Werkzeug/2.2.2 Python/3.10.7"
         )
     ])
@@ -48,8 +46,8 @@ class Listener(BaseListener):
         def connect():
             data = request.get_json()
             if len(self.handlers) >= self.db_entry.limit:
-                log(
-                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", "info")
+                LogEntryModel.log("error", "listeners",
+                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", Session)
                 return "", 404
             try:
                 address = data.get("address")
@@ -61,6 +59,8 @@ class Listener(BaseListener):
                 return "", 404
             Session.add(device)
             Session.commit()
+            LogEntryModel.log("success", "devices",
+                f"Device '{device}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
             log_connection(device)
             self.add_handler(Handler(device))
             return device.name
@@ -76,6 +76,7 @@ class Listener(BaseListener):
                 if device is not None:
                     handler = Handler(device)
                     self.add_handler(handler)
+                    LogEntryModel.log("success", "devices", f"Device '{device}' reconnected to '{self.db_entry.name}'.", Session, log_to_cli=False)
                     log_connection(device, reconnect=True)
                 else:
                     return "", 404
@@ -101,7 +102,7 @@ class Listener(BaseListener):
             if task is None:
                 return "", 404
 
-            task.finish(output, success)
+            task.finish(output, success, Session)
             Session.commit()
             return "", 200
 
@@ -110,7 +111,7 @@ class Listener(BaseListener):
             return r
 
     def start(self):
-        if not "2" in os.getenv("PHOENIX_DEBUG", "") and not "4" in os.getenv("PHOENIX_DEBUG", ""):
+        if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv("PHOENIX_DEBUG", ""):
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
         self.listener_thread = FlaskThread(
@@ -124,5 +125,5 @@ class Listener(BaseListener):
         self.stopped = True
         self.listener_thread.shutdown()
 
-    def status(self) -> True:
+    def status(self) -> bool:
         return self.process.is_alive()

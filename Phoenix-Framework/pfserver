@@ -139,7 +139,7 @@ if __name__ == "__main__":
         web = start_web(web_config["address"], web_config["port"],
                         web_config["ssl"], commander)
     except Exception as e:
-        log(str(e), "error")
+        log(str(e), "danger")
         os._exit(1)
     else:
         log("Web server started.", "success")

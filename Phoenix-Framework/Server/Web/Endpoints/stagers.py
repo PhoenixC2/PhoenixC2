@@ -1,7 +1,6 @@
 from Commander import Commander
-from Creator.available import AVAILABLE_KITS
 from Creator.stager import add_stager
-from Database import Session, StagerModel
+from Database import Session, StagerModel, ListenerModel, LogEntryModel
 from flask import Blueprint, jsonify, render_template, request, send_file
 from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
@@ -10,6 +9,7 @@ from Utils.web import (authorized, generate_response, get_current_user,
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."
 ENDPOINT = "stagers"
+
 
 def stagers_bp(commander: Commander):
 
@@ -37,10 +37,11 @@ def stagers_bp(commander: Commander):
                 for stager in StagerModel.get_all_stagers():
                     stagers[stager.name] = stager.to_dict(commander)
             else:
-                stagers[type] = StagerModel.get_stager_class_from_type(type).to_dict(commander)
+                stagers[type] = StagerModel.get_stager_class_from_type(
+                    type).to_dict(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
-        
+
         else:
             return jsonify(stagers)
 
@@ -50,16 +51,26 @@ def stagers_bp(commander: Commander):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
         name = request.form.get("name")
-        stager = request.form.get("stager", "")
         data = dict(request.form)
         try:
+            # check if name is okay
+            if not name:
+                raise ValueError("Name is required.")
+
+            # check if stager name is already taken
+            if Session.query(StagerModel).filter_by(name=name).first():
+                raise ValueError("Stager name is already taken.")
+
+            # check if listener exists
+            listener : ListenerModel = Session.query(ListenerModel).filter_by(
+                id=data.get("listener")).first()
+
+            if listener is None:
+                raise ValueError("Listener does not exist.")
+
             # Check if data is valid and clean it
-            stager: StagerModel = Session.query(
-                StagerModel).filter_by(id=stager).first()
-            if stager is None:
-                return generate_response("danger", f"stager with ID ({stager}) doesn't exist.", ENDPOINT, 400)
-            options = StagerModel.get_options_from_type(stager.type)
-            data = options.validate_all(data)
+            stager_class = StagerModel.get_stager_class_from_type(listener.type)
+            data = stager_class.options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 
@@ -69,14 +80,14 @@ def stagers_bp(commander: Commander):
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
-        log(f"({get_current_user().username}) Created Stager '{name}' ({stager.type}).", "success")
+        LogEntryModel.log("success", f"Created stager '{stager.name}' from Listener '{listener.name}'.", Session, get_current_user())
         if use_json:
             return jsonify({"status": "success", "stager": stager.to_dict(commander)}), 201
         return generate_response("success", f"Successfully created stager '{name}'.", ENDPOINT)
 
     @stagers_bp.route("/<int:id>/remove", methods=["DELETE"])
     @authorized
-    def delete_remove():
+    def delete_remove(id : int):
         # Check if Stager exists
         stager: StagerModel = Session.query(
             StagerModel).filter_by(id=id).first()
@@ -86,7 +97,7 @@ def stagers_bp(commander: Commander):
         Session.delete(stager)
         Session.commit()
 
-        log(f"({get_current_user().username}) Deleted Stager with ID {id}", "info")
+        LogEntryModel.log("success", f"Deleted stager '{stager.name}' from Listener '{stager.listener.name}'" , Session, get_current_user())
         return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)
 
     @stagers_bp.route("/edit", methods=["PUT", "POST"])
@@ -95,6 +106,7 @@ def stagers_bp(commander: Commander):
     def put_edit(id: int = None):
         # Get request data
         form_data = dict(request.form)
+
         if id is None:
             if form_data.get("id") is None:
                 return generate_response("danger", INVALID_ID, ENDPOINT, 400)
@@ -113,12 +125,12 @@ def stagers_bp(commander: Commander):
             Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
-        
-        log(f"({get_current_user().username}) Edited stager with ID {id}.", "info")
+
+        LogEntryModel.log("success", f"Edited stager '{stager.name}'" , Session, get_current_user())
         return generate_response("success", f"Edited stager with ID {id}.", ENDPOINT)
 
     @stagers_bp.route("/<int:id>/download", methods=["GET"])
-    def get_download():
+    def get_download(id : int):
         # Get Request Data
         use_json = request.args.get("json", "").lower() == "true"
         one_liner = request.args.get("one_liner", "") == "true"
@@ -131,15 +143,14 @@ def stagers_bp(commander: Commander):
 
         # Get Stager
         try:
-            stager_content = get_stager(stager_db, one_liner)
+            final_payload = stager_db.stager_class.generate(stager_db, one_liner)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
-            #TODO: update returning the finished stager
-            if stager_db.format == "py":
-                return jsonify({"status": "success", "data": stager_content}) if use_json else stager_content
-            elif stager_db.format == "exe":
-                with open("/tmp/stager.exe", "wb") as f:
-                    f.write(stager_content)
-                return send_file("/tmp/stager.exe", as_attachment=True, download_name="stager.exe")
+            if final_payload.payload.compiled:
+                return send_file(final_payload.output, as_attachment=True, attachment_filename=final_payload.name)
+            else:
+                if use_json:
+                    return jsonify({"status": "success", "stager": final_payload.output})
+                return final_payload.output
     return stagers_bp

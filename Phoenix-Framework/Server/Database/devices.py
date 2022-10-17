@@ -8,7 +8,6 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
-from .credentials import CredentialModel
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -35,13 +34,11 @@ class DeviceModel(Base):
     tasks: list["TaskModel"] = relationship(
         "TaskModel",
         back_populates="device")
+
     @property
     def connected(self):
-        delta = (datetime.now() - self.last_online).seconds
-        if delta < 10:
-            return True
-        return False
-    
+        return (datetime.now() - self.last_online).seconds < 10
+
     def to_dict(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:
         data = {
             "id": self.id,
@@ -69,14 +66,14 @@ class DeviceModel(Base):
         """Return a JSON string"""
         return json.dumps(self.to_dict(commander, show_listener, show_tasks))
 
-    @staticmethod
-    def generate_device(listener: "BaseListener", hostname: str, address: str, os : str) -> "ListenerModel":
-        return DeviceModel(
-                    name=str(uuid1()).split("-")[0],
-                    hostname=hostname,
-                    address=address,
-                    os=os,
-                    connection_date=datetime.now(),
-                    last_online=datetime.now(),
-                    listener=listener.db_entry
-                )
+    @classmethod
+    def generate_device(cls, listener: "BaseListener", hostname: str, address: str, os: str) -> "ListenerModel":
+        return cls(
+            name=str(uuid1()).split("-")[0],
+            hostname=hostname,
+            address=address,
+            os=os,
+            connection_date=datetime.now(),
+            last_online=datetime.now(),
+            listener=listener.db_entry
+        )

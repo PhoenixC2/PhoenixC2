@@ -8,7 +8,7 @@ from Utils.config import load_config
 from .credentials import CredentialModel
 from .devices import DeviceModel
 from .listeners import ListenerModel
-from .logentries import LogEntryModel
+from .logs import LogEntryModel
 from .operations import OperationModel
 from .stagers import StagerModel
 from .tasks import TaskModel

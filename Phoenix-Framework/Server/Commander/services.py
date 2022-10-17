@@ -20,7 +20,7 @@ def start_listeners(commander: Commander):
             start_listener(listener, commander)
             log(f"Started listener {listener.name} ({listener.id})", "success")
         except Exception as error:
-            log(str(error), "error")
+            log(str(error), "danger")
             exit()
     Session.remove()
 

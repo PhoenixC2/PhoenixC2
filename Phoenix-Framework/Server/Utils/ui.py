@@ -51,7 +51,7 @@ def log(text: str, alert: str = ""):
         style = "green"
     elif alert == "warning":
         style = "yellow"
-    elif alert == "error":
+    elif alert == "danger":
         style = "red"
     elif alert == "critical":
         style = "#ff0000"

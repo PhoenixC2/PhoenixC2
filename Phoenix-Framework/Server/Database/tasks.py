@@ -7,12 +7,12 @@ from uuid import uuid1
 
 from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
                         String, Text)
-from sqlalchemy.orm import relationship
-from Utils.ui import log
+from sqlalchemy.orm import relationship, Session
 from werkzeug.utils import secure_filename
 
 from .base import Base
 from .devices import DeviceModel
+from .logs import LogEntryModel
 
 if TYPE_CHECKING:
     from Commander import Commander
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class TaskModel(Base):
     """The Tasks Model."""
     __tablename__ = "Tasks"
-    id: int = Column(Integer, primary_key=True, 
+    id: int = Column(Integer, primary_key=True,
                      nullable=False)
     name: str = Column(String(10), unique=True)
     description: str = Column(Text)
@@ -54,7 +54,7 @@ class TaskModel(Base):
             "output": self.output
         }
 
-    def finish(self, output: str, success: bool):
+    def finish(self, output: str, success: bool, session: Session):
         """Update the Task to be finished.
         Still has to be committed!"""
         if self.type == "download":
@@ -68,8 +68,12 @@ class TaskModel(Base):
             self.output = output
         self.success = success
         self.finished_at = datetime.now()
-        log(f"The Task '{self.name}' of type '{self.type}' finished with an {'success' if self.success else 'error'}.",
-            'success' if self.success else 'error')
+        if success:
+            LogEntryModel.log(
+                "success", "devices", f"Task '{self.name}' finished successfully", session)
+        else:
+            LogEntryModel.log(
+                "danger", "devices", f"Task '{self.name}' finished with an error", session)
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":

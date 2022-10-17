@@ -57,7 +57,7 @@ class BooleanType(OptionType):
             return False
         else:
             raise ValueError(f"'{name}' must be a boolean.")
-    
+
     def __str__(self) -> str:
         return "checkbox"
 
@@ -89,7 +89,6 @@ class UrlType(StringType):
 @dataclass
 class AddressType(StringType):
     """The option-type of address"""
-
     @staticmethod
     def interface_to_address(interface: str) -> str:
         address = get_network_interfaces().get(interface)
@@ -173,11 +172,12 @@ class TableType(OptionType):
     def __str__(self) -> str:
         return "table"
 
+
 @dataclass
 class Option():
     """
     The Option class is used to create options for listeners and stagers.
-    
+
     Args:
         name (str): The name of the option.
         description (str): The description of the option.
@@ -207,7 +207,7 @@ class Option():
                 raise ValueError(f"{self.name} is required.")
             return self.default
 
-        if type(data) != self.type.data_type and self.type != BooleanType:
+        if type(data) != self.type.data_type and type(self.type) not in (BooleanType, ChoiceType, TableType):
             try:
                 data = self.type.data_type(data)
             except ValueError:

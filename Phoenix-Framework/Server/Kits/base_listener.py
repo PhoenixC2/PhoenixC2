@@ -18,7 +18,8 @@ class BaseListener():
     """This is the Base Class for all Listeners."""
     name: str = "BaseListener"
     description: str = "This is the Base Class for all Listeners."
-    os : list[str] = ["linux", "windows", "osx"] # The supported OS for the listener
+    # The supported OS for the listener
+    os: list[str] = ["linux", "windows", "osx"]
     options = OptionPool()
 
     def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
@@ -59,8 +60,9 @@ class BaseListener():
             for handler in self.handlers:
                 if handler.name == id_or_name:
                     return handler
+
     @abstractmethod
-    def status(self) -> True:
+    def status(self) -> bool:
         """Get status of the listener.
 
         Returns:
@@ -80,7 +82,7 @@ class BaseListener():
                         log(f"Device '{handler.name}' disconnected.", "critical")
                         self.remove_handler(handler)
             except Exception as e:
-                log(str(e), "error")
+                log(str(e), "danger")
 
     @abstractmethod
     def start(self):

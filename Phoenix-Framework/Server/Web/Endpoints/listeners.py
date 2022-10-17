@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
-from Database import ListenerModel, Session
+from Database import ListenerModel, Session, LogEntryModel
 from flask import Blueprint, jsonify, request
 from Utils.misc import get_network_interfaces, get_platform
 from Utils.ui import log
@@ -69,8 +69,8 @@ def listeners_bp(commander: Commander):
                 return generate_response("danger", "Invalid network interface.", ENDPOINT, 400)
         try:
             # Check if data is valid and clean it
-            options = ListenerModel.get_options_from_type(listener_type)
-            data = options.validate_all(data)
+            data = ListenerModel.get_listener_class(
+                listener_type).options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 
@@ -81,8 +81,8 @@ def listeners_bp(commander: Commander):
             listener = add_listener(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
-
-        log(f"({get_current_user().username}) Created Listener {name} ({listener_type}).", "success")
+        LogEntryModel.log("success", "listeners",
+                          f"Added listener '{listener.name}' ({listener.type})", Session, get_current_user())
         if use_json:
             return jsonify({"status": "success", "listener": listener.to_dict(commander)}), 201
         return generate_response("success", f"Created Listener {name} ({listener_type}).", ENDPOINT)
@@ -104,17 +104,19 @@ def listeners_bp(commander: Commander):
             listener.delete_stagers(Session)
             Session().delete(listener)
             Session().commit()
-            log(f"({get_current_user().username}) Deleted and stopped listener with ID {id}.", "info")
+            LogEntryModel.log(
+                "success", "listeners", f"Deleted and stopped listener '{listener.name}' ({listener.type})", Session, get_current_user())
             return generate_response("success", f"Deleted and stopped listener with ID {id}.", ENDPOINT)
 
         listener.delete_stagers(Session)
         Session().delete(listener)
         Session().commit()
-        log(f"({get_current_user().username}) Deleted listener with ID {id}.", "info")
+        LogEntryModel.log("success", "listeners",
+                          f"Deleted listener '{listener.name}' ({listener.type})", Session, get_current_user())
         return generate_response("success", f"Deleted listener with ID {id}.", ENDPOINT)
 
     @listeners_bp.route("/edit", methods=["PUT", "POST"])
-    @listeners_bp.route("/<int:id>/edit", methods=["PUT, POST"])
+    @listeners_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
     @authorized
     def put_edit(id: int = None):
         # Get request data
@@ -138,7 +140,8 @@ def listeners_bp(commander: Commander):
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
-        log(f"({get_current_user().username}) Edited listener with ID {id}.", "info")
+        LogEntryModel.log("success", "listeners",
+                          f"Edited listener '{listener.name}' ({listener.type})", Session, get_current_user())
         return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
@@ -156,10 +159,12 @@ def listeners_bp(commander: Commander):
         try:
             status = start_listener(listener, commander)
         except Exception as e:
-            log(f"({get_current_user().username}) {e}", "info")
+            LogEntryModel.log(
+                "danger", "listeners", f"Failed to start listener '{listener.name}' ({listener.type}): {str(e)}", Session, get_current_user())
             return generate_response("danger", str(e), ENDPOINT, 400)
         else:
-            log(f"({get_current_user().username}) Started Listener with ID {id}", "success")
+            LogEntryModel.log(
+                "success", "listeners", f"Started listener '{listener.name}' ({listener.type})", Session, get_current_user())
             return generate_response("success", status, ENDPOINT)
 
     @listeners_bp.route("/<int:id>/stop", methods=["POST"])
@@ -179,7 +184,8 @@ def listeners_bp(commander: Commander):
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
-            log(f"({get_current_user().username}) Stopped Listener with ID {id}", "success")
+            LogEntryModel.log(
+                "success", "listeners", f"Stopped listener '{listener.name}' ({listener.type})", Session, get_current_user())
             return generate_response("success", f"Stopped Listener with ID {id}", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/restart", methods=["POST"])
@@ -193,9 +199,11 @@ def listeners_bp(commander: Commander):
             log(f"({get_current_user().username}) restarting listener with ID {id}.", "success")
             restart_listener(listener, commander)
         except Exception as e:
-            log(f"({get_current_user().username}) failed to restart listener with ID {id}.", "success")
+            LogEntryModel.log(
+                "danger", "listeners", f"Failed to restart listener '{listener.name}' ({listener.type}): {str(e)}", Session, get_current_user())
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
-            log(f"({get_current_user().username}) restarted listener with ID {id}.", "success")
+            LogEntryModel.log(
+                "success", "listeners", f"Restarted listener '{listener.name}' ({listener.type})", Session, get_current_user())
             return generate_response("success", f"Restarted listener with ID {id}", ENDPOINT)
     return listeners_bp
