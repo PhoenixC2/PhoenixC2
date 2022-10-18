@@ -28,7 +28,7 @@ class PythonPayload(BasePayload):
                 os.path.dirname(os.path.abspath(__file__))),
             trim_blocks=True,
             lstrip_blocks=True,
-            autoescape=False
+            autoescape=True
         )
         template = jinja2_env.get_template("payloads/python.py")
         output = template.render(

@@ -44,12 +44,12 @@ def devices_bp(commander: Commander):
         Session.commit()
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
-    @devices_bp.route("/downloads/<string:file>", methods=["GET"])
+    @devices_bp.route("/downloads/<string:file_name>", methods=["GET"])
     @authorized
-    def get_downloads(file: str):
-        if file is None:
+    def get_downloads(file_name: str):
+        if file_name is None:
             return generate_response("danger", "File name is missing.", "devices", 400)
-        return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file, as_attachment=True)
+        return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file_name, as_attachment=True)
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
     @authorized
@@ -164,7 +164,8 @@ def devices_bp(commander: Commander):
 
         # check if file is in request
         if "file" not in request.files:
-            return generate_response("danger", "The as_file parameter is true, but no file was given.", "devices", 400)
+            return generate_response("danger", "The file is missing", "devices", 400)
+            
         if target_path is None:
             return generate_response("danger", "Upload path is missing.", "devices", 400)
         try:

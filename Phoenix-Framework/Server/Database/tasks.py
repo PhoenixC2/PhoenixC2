@@ -1,6 +1,7 @@
 """The Tasks Model"""
-import io
+from werkzeug.datastructures import FileStorage
 import os
+import base64
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
@@ -45,7 +46,7 @@ class TaskModel(Base):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "device": self.device.to_dict(commander, show_tasks=False) if show_device else self.device.id,
+            "device": self.device.to_dict(commander, show_tasks=False) if show_device and self.device is not None else self.device_id,
             "type": self.type,
             "args": self.args,
             "created_at": self.created_at,
@@ -57,12 +58,12 @@ class TaskModel(Base):
     def finish(self, output: str, success: bool, session: Session):
         """Update the Task to be finished.
         Still has to be committed!"""
-        if self.type == "download":
-            file_name = secure_filename(self.args["path"].split()[-1])
+        if self.type == "download" and success:
+            file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
             with open(os.path.join("Data", "Downloads",
                                    file_name), "w") as f:
-                f.write(output)
+                f.write(base64.b64decode(output).decode("utf-8"))
             self.output = file_name  # file can then be found using the api
         else:
             self.output = output
@@ -94,7 +95,7 @@ class TaskModel(Base):
 
     """ default methods for every stager """
     @staticmethod
-    def upload(device_or_id: DeviceModel | int, file: io.TextIOWrapper, target_path: str) -> "TaskModel":
+    def upload(device_or_id: DeviceModel | int, file: FileStorage, target_path: str) -> "TaskModel":
         """Create a Upload task.
 
         Args:
@@ -105,8 +106,7 @@ class TaskModel(Base):
         """
         if target_path is None:
             raise TypeError("File path is missing.")
-        with open(os.path.join("Data", "Downloads", secure_filename(file.name)), "wb") as f:
-            f.write(file)
+        file.save(os.path.join("Data", "Uploads", secure_filename(file.name)))
         task = TaskModel.generate_task(device_or_id)
         task.type = "upload"
         task.args["file_name"] = secure_filename(file.name)

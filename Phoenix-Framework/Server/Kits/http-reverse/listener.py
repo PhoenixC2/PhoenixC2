@@ -5,7 +5,7 @@ from threading import Thread
 from typing import TYPE_CHECKING
 
 from Database import DeviceModel, ListenerModel, Session, LogEntryModel
-from flask import Flask, Response, cli, jsonify, request
+from flask import Flask, Response, cli, jsonify, request, send_from_directory
 from Utils.options import DefaultListenerPool, Option, StringType
 from Utils.ui import log_connection
 from Utils.web import FlaskThread
@@ -47,7 +47,7 @@ class Listener(BaseListener):
             data = request.get_json()
             if len(self.handlers) >= self.db_entry.limit:
                 LogEntryModel.log("error", "listeners",
-                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", Session)
+                                  f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", Session)
                 return "", 404
             try:
                 address = data.get("address")
@@ -60,7 +60,7 @@ class Listener(BaseListener):
             Session.add(device)
             Session.commit()
             LogEntryModel.log("success", "devices",
-                f"Device '{device}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
+                              f"Device '{device}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
             log_connection(device)
             self.add_handler(Handler(device))
             return device.name
@@ -76,7 +76,8 @@ class Listener(BaseListener):
                 if device is not None:
                     handler = Handler(device)
                     self.add_handler(handler)
-                    LogEntryModel.log("success", "devices", f"Device '{device}' reconnected to '{self.db_entry.name}'.", Session, log_to_cli=False)
+                    LogEntryModel.log(
+                        "success", "devices", f"Device '{device}' reconnected to '{self.db_entry.name}'.", Session, log_to_cli=False)
                     log_connection(device, reconnect=True)
                 else:
                     return "", 404
@@ -105,6 +106,14 @@ class Listener(BaseListener):
             task.finish(output, success, Session)
             Session.commit()
             return "", 200
+
+        @self.api.route("/download/<string:file_name>", methods=["GET"])
+        def download(file_name: str = None):
+            if file_name is None:
+                return "", 404
+                
+            print(os.path.join(os.getcwd(), "Data/Uploads/"))
+            return send_from_directory(os.path.join(os.getcwd(), "Data/Uploads/"), file_name, as_attachment=True)
 
         @self.api.after_request
         def change_headers(r: Response):
