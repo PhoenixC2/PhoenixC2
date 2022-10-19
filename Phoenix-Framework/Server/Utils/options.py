@@ -147,11 +147,14 @@ class ChoiceType(OptionType):
 
 @dataclass
 class TableType(OptionType):
-    choices: callable
+    _choices: callable
     # allows a updated version of the choices.
     # if choices is all listeners and a new one is added it's not in the choices.
     model: any
 
+    @property
+    def choices(self) -> MutableSequence:
+        return self._choices()
     def validate(self, name: str, id_or_name: int | str) -> bool:
         choices = self.choices()
         if str(id_or_name).isdigit():

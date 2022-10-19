@@ -46,6 +46,7 @@ class FinalPayload:
 class BaseStager:
     name: str = "Base Stager"
     description: str = "This is the base stager"
+    author: str = "Unknown"
     options = DefaultStagerPool()
     # The payloads that are supported by this stager and if they have to be compiled
     payloads: dict[str, BasePayload] = {}
@@ -53,14 +54,14 @@ class BaseStager:
 
     @classmethod
     @abstractmethod
-    def generate(cls, stager_db: "StagerModel", one_liner: bool = False) -> FinalPayload:
+    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False) -> FinalPayload:
         """Generate a stager based on the stager_db entry.
 
         Args:
         -----
             stager_db (StagerModel): The stager database entry.
             one_liner (bool, optional): If the stager should be generated as a one-liner. Defaults to False.
-
+            recompile (bool, optional): If the stager should be recompiled. Defaults to False.
         Returns:
         ------
             bytes | str: The stager or the stager path.

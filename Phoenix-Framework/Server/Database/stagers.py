@@ -1,5 +1,6 @@
 """The Stagers Model"""
 import importlib
+import json
 from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_KITS
@@ -42,7 +43,9 @@ class StagerModel(Base):
             "timeout": self.timeout,
             "delay": self.delay
         }
-
+    def to_json(self, commander: "Commander", show_listener: bool = True) -> str:
+        """Convert the stager to json"""
+        return json.dumps(self.to_dict(commander, show_listener))
     @staticmethod
     def get_stager_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
@@ -62,7 +65,7 @@ class StagerModel(Base):
         return self.get_stager_class_from_type(self.listener.type)
 
     @staticmethod
-    def get_all_stagers() -> list["BaseStager"]:
+    def get_all_stagers_classes() -> list["BaseStager"]:
         """Get all stager classes."""
         return [StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS]
 

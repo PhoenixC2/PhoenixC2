@@ -22,7 +22,7 @@ class PythonPayload(BasePayload):
     options = OptionPool()
 
     @classmethod
-    def generate(cls, stager_db: "StagerModel", one_liner: bool = False) -> "FinalPayload":
+    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False) -> "FinalPayload":
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
                 os.path.dirname(os.path.abspath(__file__))),
@@ -117,8 +117,8 @@ class Stager(BaseStager):
         "python": PythonPayload
     }
     @classmethod
-    def generate(cls, stager_db: "StagerModel", one_liner: bool = False ) -> FinalPayload:
+    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile : bool = False ) -> FinalPayload:
         if stager_db.payload_type not in cls.payloads:
             raise ValueError("Invalid payload type")
 
-        return cls.payloads[stager_db.payload_type].generate(stager_db, one_liner)
+        return cls.payloads[stager_db.payload_type].generate(stager_db, one_liner, recompile)

@@ -1,3 +1,178 @@
-{% extends 'base.j2 ' %}
-{% block title %} Stagers {% endblock %}
+{% extends 'base.j2' %}
+{% block title%}Stagers{% endblock %}
 {% block content %}
+<div class="table-responsive">
+<table id="table" class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Listener</th>
+            <th>Type</th>
+            <th>Payload</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stager in stagers %}
+        <tr class="dark-background" id="stager-{{ stager.id }}">
+            <td id="id-{{ stager.id }}">{{ stager.id }}</td>
+            <td id="name-{{ stager.id }}">{{ stager.name }}</td>
+            <td id="listener-{{ stager.id }}"><a href="/listeners/?open={{ stager.listener.id }}">{{ stager.listener.name }}</a></td>
+            <td id="type-{{ stager.id }}">{{ stager.listener.type }}</a></td>
+            <td id="payload-{{ stager.id }}">{{ stager.payload_type }}</a></td>
+            <td>
+                <button class="btn btn-warning" onclick="editStager({{ stager.id }})">Edit</button>
+                <button class="btn btn-danger" onclick="deleteStager({{ stager.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{# Button trigger modal #}
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
+    onclick="resetModal()">
+    Create a new stager
+</button>
+
+{# Create Modal #}
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="create-modal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-background">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Create a new stager</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="create-modal-body">
+                <form id='create-form' action='/stagers/add' method='POST' onsubmit="sendCreate()">
+                    <div class="form-group">
+                        <label for="type">stager Type</label>
+                        <select class="form-control" id="type" onchange="changeCreateType()">
+                            {% for stager_type in stager_types %}
+                            <option value="{{ stager_type.name }}">{{ stager_type.name }}</option>
+                            {% endfor %}
+                            <option value="custom">Test</option>
+                        </select>
+                        <small class="form-text text-muted">The type of stager to create.</small>
+                    </div>
+                    <div id="create-form-content">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />
+                <input type='reset' value='Reset' class='btn btn-danger' />
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Edit Modal #}
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="edit-modal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-background">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Edit stager</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="edit-modal-body">
+                <form id='edit-form' action='/stagers/edit' method='POST' onsubmit="sendCreate()">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="edit-button" class="btn btn-success" onclick="sendEdit()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{# hidden forms for diffrent stager types #}
+{# loop over all stager types #}
+
+{% for stager_type in stager_types %}
+{# create a form for each stager type #}
+<form id="{{ stager_type.name }}-form" style="display: none;" target="/stagers/create">
+    {# hidden type field #}
+    <input type="hidden" name="id" id="id-create" value="none">
+    <input type="hidden" name="type" id="type-create" value="{{ stager_type.name }}">
+    {% for option in stager_type.options.options %}
+    {% if option.type|string == "checkbox" %}
+    <div class="form-check">
+        <label class="form-check-label">
+            {# hidden field for checkbox #}
+            {% if option.default %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" checked="" id="{{ option.real_name }}-create">
+            {% else %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" id="{{ option.real_name }}-create">
+            {% endif %}
+            {{ option.name }}
+            <span class="form-check-sign">
+                <span class="check"></span>
+            </span>
+        </label>
+        {# Add a hidden value for the checkbox if it is not checked #}
+        <input class="form-check-input" type="hidden" name="{{ option.real_name }}" value="off">
+    </div>
+    <br>
+    {% elif option.type|string == "address" %}
+    <div class="form-group">
+        <label for="{{ option.real_name }}">{{ option.name }}</label>
+        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
+            {% for interface in network_interfaces %}
+            <option id="{{ network_interfaces[interface] }}-address-edit" value="{{ interface }}">{{ interface }}: {{ network_interfaces[interface] }}</option>
+            {% endfor %}
+        </select>
+        <small class="form-text text-muted">{{ option.description }}</small>
+    </div>
+    {% elif option.type|string == "port" %}
+    <div class="form-group">
+        <label for="{{ option.real_name }}">{{ option.name }}</label>
+        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default }}" name="{{ option.real_name }}">
+        <small class="form-text text-muted">{{ option.description }}</small>
+    </div>
+    {% elif option.type|string == "table" %}
+    <div class="form-group">
+        <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
+        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
+            {% for object in option.type.choices%}
+            <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
+            {% endfor %}
+        </select>
+        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
+    </div>
+    {% else %}
+    <div class="form-group">
+        <label for="{{ option.real_name }}">{{ option.name }}</label>
+        {% if option.required %}
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
+            value="{{ option.default }}" required>
+        {% else %}
+        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
+            value="{{ option.default }}">
+        {% endif %}
+        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
+    </div>
+    {% endif %}
+    {% endfor %}
+</form>
+{% endfor %}
+{% endblock %}
+{% block scripts %}
+<script>
+    let elements = [
+        {% for stager in stagers %}
+        {{ stager.to_json(commander, False) }},
+        {% endfor %}
+    ];
+
+</script>
+<script src="/static/js/listeners-stagers.js"></script>
+{% if opened_stager %}
+<script>createEdit({{ opened_stager.id -1 }});</script>
+{% endif %}
+{% endblock %}

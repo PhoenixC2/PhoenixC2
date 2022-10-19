@@ -18,6 +18,7 @@ class BaseListener():
     """This is the Base Class for all Listeners."""
     name: str = "BaseListener"
     description: str = "This is the Base Class for all Listeners."
+    author: str = "Unknown"
     # The supported OS for the listener
     os: list[str] = ["linux", "windows", "osx"]
     options = OptionPool()

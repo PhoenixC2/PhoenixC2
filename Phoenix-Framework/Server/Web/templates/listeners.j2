@@ -80,10 +80,15 @@
                             <option value="{{ listener_type.name }}">{{ listener_type.name }}</option>
                             {% endfor %}
                             <option value="custom">Test</option>
-
                         </select>
                     </div>
+                    <div id="create-form-content">
+                    </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />
+                <input type='reset' value='Reset' class='btn btn-danger' />
             </div>
         </div>
     </div>
@@ -125,7 +130,7 @@
     {% endif %}
     {# hidden type field #}
     <input type="hidden" name="id" id="id-create" value="none">
-    <input type="hidden" name="type" id="type-create" value="{{ listener_type }}">
+    <input type="hidden" name="type" id="type-create" value="{{ listener_type.name }}">
     {% for option in listener_type.options.options %}
     {% if option.type|string == "checkbox" %}
     <div class="form-check">
@@ -188,14 +193,14 @@
 {% endblock %}
 {% block scripts %}
 <script>
-    let listeners = [
+    let elements = [
         {% for listener in listeners %}
         {{ listener.to_json(commander, False, False) }},
         {% endfor %}
     ];
 
 </script>
-<script src="/static/js/listeners.js"></script>
+<script src="/static/js/listeners-stagers.js"></script>
 {% if opened_listener %}
 <script>createEdit({{ opened_listener.id -1 }});</script>
 {% endif %}

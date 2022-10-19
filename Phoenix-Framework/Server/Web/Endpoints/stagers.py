@@ -2,7 +2,6 @@ from Commander import Commander
 from Creator.stager import add_stager
 from Database import Session, StagerModel, ListenerModel, LogEntryModel
 from flask import Blueprint, jsonify, render_template, request, send_file
-from Utils.ui import log
 from Utils.web import (authorized, generate_response, get_current_user,
                        get_messages)
 
@@ -21,11 +20,12 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "") == "true"
         stager_query = Session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
+        stager_types = StagerModel.get_all_stagers_classes()
         if use_json:
             return jsonify([stager.to_dict(commander) for stager in stagers])
         opened_stager = stager_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, messages=get_messages())
+        return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, stager_types=stager_types, messages=get_messages())
 
     @stagers_bp.route("/available", methods=["GET"])
     @authorized
@@ -34,7 +34,7 @@ def stagers_bp(commander: Commander):
         type = request.args.get("type")
         try:
             if type == "all" or type is None:
-                for stager in StagerModel.get_all_stagers():
+                for stager in StagerModel.get_all_stagers_classes():
                     stagers[stager.name] = stager.to_dict(commander)
             else:
                 stagers[type] = StagerModel.get_stager_class_from_type(
