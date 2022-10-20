@@ -2,7 +2,7 @@ from Database import Session, UserModel, LogEntryModel
 from flask import (Blueprint, flash, jsonify, redirect, render_template,
                    request, session)
 from Utils.web import authorized, generate_response, get_current_user
-
+from Utils.ui import log
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
@@ -45,8 +45,7 @@ def post_login():
         if old_user is not None and old_user.username != username:
             session["id"] = user.id
             session["password"] = user.password
-            LogEntryModel.log("success", "auth",
-                              f"Logged changed to '{user}'.", Session, old_user)
+            log(f"Logged changed to '{user}'.", "success")
             if not use_json:
                 flash(f"Changed to {username}.", "success")
                 redirect("/")
@@ -54,14 +53,14 @@ def post_login():
         else:
             session["id"] = user.id
             session["password"] = user.password
-            LogEntryModel.log("success", "auth", f"Logged in as {'Admin' if user.admin else 'User'}'{user}'.", Session)
+            log(f"Logged in as {'Admin' if user.admin else 'User'} '{user}'.", "success")
             if not use_json:
                 flash(
-                    f"Logged in as {username} ({'Admin' if user.admin else 'User'}).", "success")
+                    f"Logged in as {'Admin' if user.admin else 'User'} {username}.", "success")
                 redirect("/")
             return jsonify({"status": "success", "message": f"Logged in as {username} ({'Admin' if user.admin else 'User'}).", "api_key": user.api_key})
     else:
-        LogEntryModel.log("danger", "auth", f"Failed to log in as '{user}'.", Session, get_current_user())
+        log(f"Failed to log in as '{user}'.", "danger")
         if not use_json:
             flash("Invalid username or password.", "error")
             return render_template("auth/login.j2", username=username)

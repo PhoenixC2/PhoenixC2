@@ -11,6 +11,7 @@ class Listener(BaseListener):
     """The Example Listener Class"""
     name = "example"
     description = "Example Listener"
+    author: str = "Example"
     os = ["linux", "windows", "osx"]
     options = DefaultListenerPool([
         Option(

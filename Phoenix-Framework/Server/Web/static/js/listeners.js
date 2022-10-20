@@ -1,4 +1,4 @@
-let original_create_modal_modal_content = document.getElementById("create-modal-body").innerHTML;
+let original_modal_content = document.getElementById("create-modal-body").innerHTML;
 let edit_listener_id = null;
 
 function deleteListener(id) {
@@ -39,12 +39,19 @@ function startListener(id) {
 
 function restartListener(id) {
     showNotification(`Restarting listener ${id}.`, "info");
+    // set listener activity status to false
+    document.getElementById("active-" + id).innerHTML = '<i class="material-icons" style="color: red; margin-top: 4px;">circle</i>'
     fetch("/listeners/" + id + "/restart?json=true", {
         method: "POST"
     }).then(response => response.json())
         .then(data => {
             // show notification
             showNotification(data.message, data.status);
+            // check if success
+            if (data.status === "success") {
+                // set listener activity status to true
+                document.getElementById("active-" + id).innerHTML = '<i class="material-icons" style="color: green; margin-top: 4px;">circle</i>';
+            }
         });
 }
 
@@ -66,16 +73,18 @@ function stopListener(id) {
         });
 }
 
-
+function resetModal() {
+    // reset modal content
+    document.getElementById("create-modal-body").innerHTML = original_modal_content;
+    changeCreateType();
+}
 function changeCreateType() {
     // get type from select
     const type = document.getElementById("type").value;
     // get corresponding form
     const form = document.getElementById(type + "-form");
     // change content of modal
-    document.getElementById("create-form").innerHTML = form.innerHTML +
-        "<input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />" +
-        "<input type='reset' value='Reset' class='btn btn-danger' />"
+    document.getElementById("create-form-content").innerHTML = form.innerHTML 
 }
 
 function createEdit(id) {
@@ -119,6 +128,3 @@ function createEdit(id) {
     console.log("lol");
 }
 
-
-// add event listeners
-document.getElementById("type").addEventListener("change", changeCreateType);

@@ -89,6 +89,7 @@ class UrlType(StringType):
 @dataclass
 class AddressType(StringType):
     """The option-type of address"""
+    interfaces = get_network_interfaces()
     @staticmethod
     def interface_to_address(interface: str) -> str:
         address = get_network_interfaces().get(interface)
@@ -155,19 +156,19 @@ class TableType(OptionType):
     @property
     def choices(self) -> MutableSequence:
         return self._choices()
+
     def validate(self, name: str, id_or_name: int | str) -> bool:
-        choices = self.choices()
         if str(id_or_name).isdigit():
             object = Session.query(
                 self.model).filter_by(id=id_or_name).first()
-            if object not in choices:
+            if object not in self.choices:
                 raise ValueError(
                     f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
             return object
         else:
             object = Session.query(self.model).filter_by(
                 name=id_or_name).first()
-            if object not in choices:
+            if object not in self.choices:
                 raise ValueError(
                     f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
             return object
@@ -234,16 +235,16 @@ class Option():
         elif type(self.type) == TableType:
             try:
                 data["choices"] = [choice.to_dict()
-                                   for choice in self.type.choices()]
+                                   for choice in self.type.choices]
             except TypeError:
                 data["choices"] = [choice.to_dict(commander)
-                                   for choice in self.type.choices()]
+                                   for choice in self.type.choices]
         return data
 
 
 @dataclass
 class OptionPool():
-    """Contains all options"""
+    """ Used to store options for a Class"""
     options: list[Option] = field(default_factory=list)
 
     def register_option(self, option: Option):
@@ -368,6 +369,13 @@ class DefaultStagerPool(OptionPool):
                 description="The delay before the stager should connect to the server.",
                 type=IntegerType(),
                 default=1
+            ),
+            Option(
+                name="Different address/domain",
+                _real_name="different-address",
+                description="Use a different address/domain then specified by the listener to connect to.",
+                type=AddressType(),
+                required=False
             )
         ]
         self.options.extend(added_options)

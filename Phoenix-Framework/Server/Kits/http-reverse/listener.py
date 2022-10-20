@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from Database import DeviceModel, ListenerModel, Session, LogEntryModel
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
-from Utils.options import DefaultListenerPool, Option, StringType
+from Utils.options import DefaultListenerPool, Option, StringType, ChoiceType
 from Utils.ui import log_connection
 from Utils.web import FlaskThread
 
@@ -21,6 +21,7 @@ class Listener(BaseListener):
     """The Reverse Http Listener Class"""
     name = "http-reverse"
     description = "Reverse HTTP Listener"
+    author: str = "Screamz2k"
     os = ["linux", "windows", "osx"]
     options = DefaultListenerPool([
         Option(
@@ -30,6 +31,7 @@ class Listener(BaseListener):
             type=StringType(),
             default="Werkzeug/2.2.2 Python/3.10.7"
         )
+
     ])
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
@@ -53,8 +55,9 @@ class Listener(BaseListener):
                 address = data.get("address")
                 hostname = data.get("hostname", "")
                 os = data.get("os", "")
+                user = data.get("user", "")
                 device = DeviceModel.generate_device(
-                    self, hostname, address, os)
+                    self, hostname, address, os, user)
             except Exception:
                 return "", 404
             Session.add(device)

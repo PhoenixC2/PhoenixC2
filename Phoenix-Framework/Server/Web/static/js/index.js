@@ -15,14 +15,11 @@ function showNotification(message, status) {
 }
 
 function showCreateModal() {
-    document.getElementById("create-modal-body").innerHTML = original_create_modal_modal_content;
-    document.getElementById("create-modal").style.display = "block";
+    document.getElementById("create-modal-body").innerHTML = original_modal_content;
+    $('#create-modal').modal('show');
 }
 
-function resetModal() {
-    // reset modal content
-    document.getElementById("create-modal-body").innerHTML = original_create_modal_modal_content;
-}
+
 
 function sendCreate() {
     // disable button

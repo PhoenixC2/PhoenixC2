@@ -1,4 +1,5 @@
 from Commander import Commander
+import pprint
 from Creator.stager import add_stager
 from Database import Session, StagerModel, ListenerModel, LogEntryModel
 from flask import Blueprint, jsonify, render_template, request, send_file
@@ -21,11 +22,14 @@ def stagers_bp(commander: Commander):
         stager_query = Session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
         stager_types = StagerModel.get_all_stagers_classes()
+        for stager_type in stager_types:
+            pprint.pprint(stager_type.options.to_dict(commander))
+        listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         if use_json:
             return jsonify([stager.to_dict(commander) for stager in stagers])
         opened_stager = stager_query.filter_by(
             id=request.args.get("open")).first()
-        return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, stager_types=stager_types, messages=get_messages())
+        return render_template("stagers.j2", stagers=stagers, opened_stager=opened_stager, commander=commander, listeners=listeners, stager_types=stager_types)
 
     @stagers_bp.route("/available", methods=["GET"])
     @authorized
@@ -52,6 +56,7 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         name = request.form.get("name")
         data = dict(request.form)
+        print(data)
         try:
             # check if name is okay
             if not name:
@@ -82,7 +87,7 @@ def stagers_bp(commander: Commander):
 
         LogEntryModel.log("success", f"Created stager '{stager.name}' from Listener '{listener.name}'.", Session, get_current_user())
         if use_json:
-            return jsonify({"status": "success", "stager": stager.to_dict(commander)}), 201
+            return jsonify({"status": "success", "message": "Stager created successfully.", "stager": stager.to_dict(commander)}), 201
         return generate_response("success", f"Successfully created stager '{name}'.", ENDPOINT)
 
     @stagers_bp.route("/<int:id>/remove", methods=["DELETE"])

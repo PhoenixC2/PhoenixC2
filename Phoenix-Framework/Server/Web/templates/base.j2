@@ -135,8 +135,12 @@
                   <a class="dropdown-item text-success" href="#">No new notifications</a>
                   {% endif %}                
                   {% for message in messages %}
-                  <a class="dropdown-item text-{{message.alert}}" href="/logs?open={{message.id}}">{{message.description}}</a>
-                  {% endfor %} 
+                  {% if message.user %}
+                  <a class="dropdown-item text-{{message.alert}}" href="/logs?open={{message.id}}">{{message.user}}: {{message.description}}</a>
+                  {% else %}
+                  <a class="dropdown-item text-{{message.alert}}" href="/logs?open={{message.id}}">System: {{message.description}}</a>
+                  {% endif %}
+                  {% endfor %}
                 </div>
               </li>
               <li class="nav-item dropdown">

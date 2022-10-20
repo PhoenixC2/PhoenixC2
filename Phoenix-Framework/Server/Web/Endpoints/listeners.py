@@ -84,7 +84,7 @@ def listeners_bp(commander: Commander):
         LogEntryModel.log("success", "listeners",
                           f"Added listener '{listener.name}' ({listener.type})", Session, get_current_user())
         if use_json:
-            return jsonify({"status": "success", "listener": listener.to_dict(commander)}), 201
+            return jsonify({"status": "success", "message": "Listener added successfully.", "listener": listener.to_dict(commander)}), 201
         return generate_response("success", f"Created Listener {name} ({listener_type}).", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])

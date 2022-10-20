@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -26,6 +26,8 @@ class DeviceModel(Base):
     hostname: str = Column(String(100))
     address: str = Column(String(100), nullable=False)
     os: str = Column(String(10))
+    user: str = Column(String(100))
+    infos: dict = Column(JSON, default={})
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
@@ -34,6 +36,7 @@ class DeviceModel(Base):
     tasks: list["TaskModel"] = relationship(
         "TaskModel",
         back_populates="device")
+    
 
     @property
     def connected(self):
@@ -42,8 +45,12 @@ class DeviceModel(Base):
     def to_dict(self, commander: "Commander", show_listener: bool = True, show_tasks: bool = True) -> dict:
         data = {
             "id": self.id,
+            "name": self.name,
             "hostname": self.hostname,
             "address": self.address,
+            "os": self.os,
+            "user": self.user,
+            "infos": self.infos,
             "connection_date": self.connection_date,
             "last_online": self.last_online,
             "listener": self.listener.to_dict(commander, show_devices=False) if show_listener else self.listener_id,
@@ -67,12 +74,13 @@ class DeviceModel(Base):
         return json.dumps(self.to_dict(commander, show_listener, show_tasks))
 
     @classmethod
-    def generate_device(cls, listener: "BaseListener", hostname: str, address: str, os: str) -> "ListenerModel":
+    def generate_device(cls, listener: "BaseListener", hostname: str, address: str, os: str, user: str) -> "ListenerModel":
         return cls(
             name=str(uuid1()).split("-")[0],
             hostname=hostname,
             address=address,
             os=os,
+            user=user,
             connection_date=datetime.now(),
             last_online=datetime.now(),
             listener=listener.db_entry

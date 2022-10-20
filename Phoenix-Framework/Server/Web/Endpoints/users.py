@@ -60,7 +60,9 @@ def add_user():
     Session.commit()
     LogEntryModel.log(
         "success", "users", f"{'Admin' if user.admin else 'User'} {username} added.", Session, get_current_user())
-    return generate_response("success", f"User {username} added.", ENDPOINT, 201, use_json)
+    if use_json:
+        return jsonify({"status": "success", "message": "User added.", "user": user.to_dict()})
+    return generate_response("success", "User added.", ENDPOINT)
 
 
 @users_bp.route("/<int:id>/remove", methods=["DELETE"])

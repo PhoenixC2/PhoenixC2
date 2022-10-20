@@ -56,26 +56,31 @@ class PythonPayload(BasePayload):
             output = 'python -c "' + output + '"'
         return FinalPayload(cls, stager_db, output)
 
+    def __str__(self) -> str:
+        return self.__class__.__name__
 
 class Stager(BaseStager):
     name = "http-reverse"
     description = "Reverse HTTP(S) stager"
+    author: str = "Screamz2k"
+    payloads = {
+        "python": PythonPayload
+    }
     options = DefaultStagerPool([
-        Option(
-            name="Type",
-            description="The type of payload to generate",
-            _real_name="payload_type",
-            type=ChoiceType([x.split(".")[0] for x in os.listdir(
-                "Kits/http-reverse/payloads/")]),
-            default="python",
-            required=True
-        ),
         Option(
             name="Sleep Time",
             description="The time to sleep between each request",
             _real_name="sleep-time",
             type=IntegerType(),
             default=5,
+            required=True
+        ),
+        Option(
+            name="Payload",
+            description="The payload to use",
+            _real_name="payload_type",
+            type=ChoiceType(payloads.keys(), str),
+            default="python",
             required=True
         ),
         Option(
@@ -104,18 +109,9 @@ class Stager(BaseStager):
             description="The Authentication to use (format=username:password).",
             type=StringType(),
             default=""
-        ),
-        Option(
-            name="Different address/domain",
-            _real_name="different-address",
-            description="Use a different address/domain then specified by the listener to connect to.",
-            type=AddressType(),
-            required=False
         )
     ])
-    payloads = {
-        "python": PythonPayload
-    }
+
     @classmethod
     def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile : bool = False ) -> FinalPayload:
         if stager_db.payload_type not in cls.payloads:

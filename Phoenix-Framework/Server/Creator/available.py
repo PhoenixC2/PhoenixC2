@@ -1,6 +1,7 @@
 """All available and creatable options for the creator."""
 AVAILABLE_KITS = [
-    "http-reverse"
+    "http-reverse",
+    "example",
 ]
 AVAILABLE_PAYLOADS = [
 ]
