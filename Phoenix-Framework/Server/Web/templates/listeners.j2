@@ -154,7 +154,7 @@
         <input list="{{ option.real_name }}-create-datalist" type="text" class="form-control" name="{{ option.real_name }}" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}">
         <datalist id="{{ option.real_name }}-create-datalist">
             {% for interface in option.type.interfaces %}
-            <option value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
+            <option id="{{ option.type.interfaces[interface] }}-{{option.real_name}}-create" value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
             {% endfor %}
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
@@ -163,16 +163,16 @@
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}" name="{{ option.real_name }}">
         <small class="form-text text-muted">{{ option.description }}</small>
-    </div>
+    </div>    
     {% elif option.type|string == "select" %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         <select class="form-control" id="{{ option.real_name }}-create" name="{{ option.real_name }}">
             {% for choice in option.type.choices %}
-            {% if choice == option.default %}
-            <option value="{{ choice }}" selected>{{ choice }}</option>
+            {% if choice == option.default  %}
+            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}" selected>{{ choice }}</option>
             {% else %}
-            <option value="{{ choice }}">{{ choice }}</option>
+            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}">{{ choice }}</option>
             {% endif %}
             {% endfor %}
         </select>

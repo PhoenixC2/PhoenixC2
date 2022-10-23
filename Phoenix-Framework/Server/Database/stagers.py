@@ -12,7 +12,7 @@ from .base import Base
 if TYPE_CHECKING:
     from Commander import Commander
 
-    from Server.Kits.base_stager import BaseStager
+    from Server.Kits.base_stager import BaseStager, BasePayload
 
     from .listeners import ListenerModel
 
@@ -30,6 +30,7 @@ class StagerModel(Base):
     random_size: bool = Column(Boolean)
     timeout: int = Column(Integer)
     delay: int = Column(Integer)
+    different_address = Column(String(100))
     options: dict = Column(JSON)
 
     def to_dict(self, commander: "Commander", show_listener: bool = True) -> dict:
@@ -41,11 +42,15 @@ class StagerModel(Base):
             "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,
-            "delay": self.delay
+            "delay": self.delay,
+            "different_address": self.different_address,
+            "options": self.options
         }
+
     def to_json(self, commander: "Commander", show_listener: bool = True) -> str:
         """Convert the stager to json"""
         return json.dumps(self.to_dict(commander, show_listener))
+
     @staticmethod
     def get_stager_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
@@ -64,26 +69,40 @@ class StagerModel(Base):
         """Returns the stager class."""
         return self.get_stager_class_from_type(self.listener.type)
 
+    @property
+    def payload_class(self) -> "BasePayload":
+        """Returns the payload class."""
+        return self.stager_class.payloads[self.payload_type]
+
     @staticmethod
     def get_all_stagers_classes() -> list["BaseStager"]:
         """Get all stager classes."""
         return [StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS]
 
     def edit(self, data: dict):
-        """Edit the listener"""
+        """Edit the stager"""
+        options = self.stager_class.options  # so we dont have to get the class multiple times
         for key, value in data.items():
-            if not hasattr(self, key):
-                if key in self.options:
-                    self.options[key] = value
-            else:
+            if hasattr(self, key):
+                if value == str(getattr(self, key)):
+                    continue
+                value = options.get_option(key).validate_data(value)
                 setattr(self, key, value)
+            else:
+                if key in self.options:
+                    if value == self.options[key]:
+                        continue
+                    value = options.get_option(key).validate_data(value)
+                    self.options[key] = value
+                else:
+                    raise KeyError(f"{key} is not a valid key")
 
     @classmethod
     def create_stager_from_data(cls, data: dict):
         """Create the stager using custom validated data"""
         standard = []
         # gets standard values present in every stager and remove them to only leave options
-        for st_value in ["name", "listener", "payload_type", "encoding", "random_size", "timeout", "delay"]:
+        for st_value in ["name", "listener", "payload_type", "encoding", "random_size", "timeout", "delay", "different_address"]:
             standard.append(data.pop(st_value))
         return cls(
             name=standard[0],
@@ -93,5 +112,6 @@ class StagerModel(Base):
             random_size=standard[4],
             timeout=standard[5],
             delay=standard[6],
+            different_address=standard[7],
             options=data
         )

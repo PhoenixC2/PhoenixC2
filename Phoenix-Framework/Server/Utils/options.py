@@ -372,7 +372,7 @@ class DefaultStagerPool(OptionPool):
             ),
             Option(
                 name="Different address/domain",
-                _real_name="different-address",
+                _real_name="different_address",
                 description="Use a different address/domain then specified by the listener to connect to.",
                 type=AddressType(),
                 required=False

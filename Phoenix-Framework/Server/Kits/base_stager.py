@@ -20,7 +20,11 @@ class BasePayload:
     def generate(self, stager_db: "StagerModel", one_liner: bool = False) -> "FinalPayload":
         """ Generate the payload """
         ...
-
+    
+    @abstractmethod
+    def is_compiled(self, stager_db: "StagerModel") -> bool:
+        """ Return if the payload is compiled """
+        ...
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
         return {
@@ -30,6 +34,7 @@ class BasePayload:
             "compiled": cls.compiled,
             "options": cls.options.to_dict(commander)
         }
+
 
 
 class FinalPayload:

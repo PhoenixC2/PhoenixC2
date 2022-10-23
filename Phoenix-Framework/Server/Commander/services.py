@@ -29,9 +29,7 @@ def start_web(address: str, port: int, ssl:bool, commander: Commander):
     # Create Web App
     web_server = create_web(commander)
     # Create Thread
-    thread = FlaskThread(web_server, address, port, ssl, "WebServer")
-    # Register Thread
-    commander.web_server = thread
+    commander.web_server = FlaskThread(web_server, address, port, ssl, "WebServer")
     # Start Thread
     commander.web_server.start()
     return web_server

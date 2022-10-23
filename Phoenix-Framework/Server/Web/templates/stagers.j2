@@ -22,8 +22,22 @@
             <td id="type-{{ stager.id }}">{{ stager.listener.type }}</a></td>
             <td id="payload-{{ stager.id }}">{{ stager.payload_type }}</a></td>
             <td>
-                <button class="btn btn-warning" onclick="editStager({{ stager.id }})">Edit</button>
-                <button class="btn btn-danger" onclick="deleteStager({{ stager.id }})">Delete</button>
+                <div class="dropdown">
+                    <button class="btn btn-success" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <i class="material-icons">download</i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" target="_blank" href="/stagers/{{stager.id}}/download?one_liner=false">Download</a>
+                        <a class="dropdown-item" target="_blank" href="/stagers/{{stager.id}}/download?one_liner=true">Download as command</a>
+                        <a class="dropdown-item" onclick="copyToClipboard({{stager.id}}, false)" href="#">Copy to clipboard (https)</a>
+                        <a class="dropdown-item" copyToClipboard({{stager.id}}, true) href="#">Copy to clipboard as command (https)</a>
+                        {% if stager.payload_class.is_compiled and stager.payload_class.compiled %}
+                        <a class="dropdown-item" href="#">Recompile</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <button data-toggle="tooltip" data-placement="top" title="Edit stager" class="btn btn-warning" onclick="createEdit({{ stager.id -1 }})"><i class="material-icons">edit</i></button>
+                <button data-toggle="tooltip" data-placement="top" title="Delete stager"class="btn btn-danger" onclick="deleteStager({{ stager.id }})"><i class="material-icons">delete</i></button>
             </td>
         </tr>
         {% endfor %}
@@ -53,7 +67,7 @@
                         <label for="type">Listener</label>
                         <select name="listener" class="form-control" id="listener" onchange="changeListener()">
                             {% for listener in listeners %}
-                            <option value="{{ listener.id }}">{{ listener.name }}</option>
+                            <option value="{{ listener.id }}">{{ listener.name }}: {{listener.type}}</option>
                             {% endfor %}
                             <option value="custom">Custom</option>
                         </select>
@@ -101,7 +115,6 @@
 <form id="{{ stager_type.name }}-form" style="display: none;" target="/stagers/create">
     {# hidden type field #}
     <input type="hidden" name="id" id="id-create" value="none">
-    <input type="hidden" name="type" id="type-create" value="{{ stager_type.name }}">
     {% for option in stager_type.options.options %}
     {% if option.type|string == "checkbox" %}
     <div class="form-check">
@@ -125,7 +138,7 @@
         <input list="{{ option.real_name }}-create-datalist" type="text" class="form-control" name="{{ option.real_name }}" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}">
         <datalist id="{{ option.real_name }}-create-datalist">
             {% for interface in option.type.interfaces %}
-            <option value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
+            <option id="{{ option.type.interfaces[interface] }}-{{option.real_name}}-create" value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
             {% endfor %}
         <small class="form-text text-muted">{{ option.description }}</small>
     </div>
@@ -141,9 +154,9 @@
         <select class="form-control" id="{{ option.real_name }}-create" name="{{ option.real_name }}">
             {% for choice in option.type.choices %}
             {% if choice == option.default  %}
-            <option value="{{ choice }}" selected>{{ choice }}</option>
+            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}" selected>{{ choice }}</option>
             {% else %}
-            <option value="{{ choice }}">{{ choice }}</option>
+            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}">{{ choice }}</option>
             {% endif %}
             {% endfor %}
         </select>
@@ -175,6 +188,8 @@
     {% endif %}
     {% endif %}
     {% endfor %}
+    {# show author of the stager #}
+    <p class="text-muted">Created by: {{ stager_type.author }}</p>
 </form>
 {% endfor %}
 {% endblock %}
@@ -182,7 +197,7 @@
 <script>
     let stagers = [
         {% for stager in stagers %}
-        {{ stager.to_json(commander, False) }},
+        {{ stager.to_json(commander, True) }},
         {% endfor %}
     ];
     let listeners = [

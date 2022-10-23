@@ -98,7 +98,7 @@ function createEdit(id) {
     const form = document.getElementById(listener.type + "-form");
 
     // set modal body
-    // replace all create with form
+    // replace all edit with create
     document.getElementById("edit-form").innerHTML = form.innerHTML.replace(/create/g, "edit");
 
     // set values
@@ -122,9 +122,10 @@ function createEdit(id) {
             element.value = option;
         }
     }
-
+    edit_listener_id = id;
     // open modal
     $("#edit-modal").modal("show");
-    console.log("lol");
+
+
 }
 

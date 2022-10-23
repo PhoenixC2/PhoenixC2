@@ -1,6 +1,5 @@
 """The Log Entries Model"""
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Session, relationship
@@ -61,7 +60,7 @@ class LogEntryModel(Base):
         )
 
     @classmethod
-    def log(cls, alert: str, endpoint: str, description: str, session: Session, user: "UserModel" = None, log_to_cli: bool = True) -> "LogEntryModel":
+    def log(cls, alert: str, endpoint: str, description: str, session: Session, user: UserModel = None, log_to_cli: bool = True) -> "LogEntryModel":
         """Log an entry to the database"""
         if log_to_cli:
             cli_log(f"({user if user is not None else 'System'}) {description}", alert)
