@@ -2,7 +2,9 @@ from typing import TYPE_CHECKING
 
 from Database import ListenerModel
 from Utils.options import DefaultListenerPool, Option, StringType
+
 from ..base_listener import BaseListener
+
 if TYPE_CHECKING:
     from Commander import Commander
 

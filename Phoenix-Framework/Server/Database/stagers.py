@@ -5,14 +5,15 @@ from typing import TYPE_CHECKING
 
 from Creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.mutable import MutableDict
 
 from .base import Base
 
 if TYPE_CHECKING:
     from Commander import Commander
 
-    from Server.Kits.base_stager import BaseStager, BasePayload
+    from Server.Kits.base_stager import BasePayload, BaseStager
 
     from .listeners import ListenerModel
 
@@ -31,7 +32,7 @@ class StagerModel(Base):
     timeout: int = Column(Integer)
     delay: int = Column(Integer)
     different_address = Column(String(100))
-    options: dict = Column(JSON)
+    options: dict = Column(MutableDict.as_mutable(JSON), default={})
 
     def to_dict(self, commander: "Commander", show_listener: bool = True) -> dict:
         return {

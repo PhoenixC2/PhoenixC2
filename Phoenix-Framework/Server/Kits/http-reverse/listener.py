@@ -4,9 +4,9 @@ from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
 
-from Database import DeviceModel, ListenerModel, Session, LogEntryModel
+from Database import DeviceModel, ListenerModel, LogEntryModel, Session
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
-from Utils.options import DefaultListenerPool, Option, StringType, ChoiceType
+from Utils.options import ChoiceType, DefaultListenerPool, Option, StringType
 from Utils.ui import log_connection
 from Utils.web import FlaskThread
 

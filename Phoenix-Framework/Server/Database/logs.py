@@ -4,8 +4,9 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Session, relationship
 from Utils.ui import log as cli_log
+
 from .base import Base
-from .users import user_logentry_association_table, UserModel
+from .users import UserModel, user_logentry_association_table
 
 
 class LogEntryModel(Base):

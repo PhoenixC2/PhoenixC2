@@ -1,7 +1,8 @@
 from Commander import Commander
-from Database import Session, TaskModel, LogEntryModel
+from Database import LogEntryModel, Session, TaskModel
 from flask import Blueprint, jsonify, render_template, request
-from Utils.web import authorized, generate_response, get_messages, get_current_user
+from Utils.web import (authorized, generate_response, get_current_user,
+                       get_messages)
 
 
 def tasks_bp(commander: Commander):

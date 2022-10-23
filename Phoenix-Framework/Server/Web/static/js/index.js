@@ -79,3 +79,23 @@ function sendEdit() {
     // activate button
     document.getElementById("edit-button").disabled = false;
 }
+
+function readNotifications() {
+    // send data
+    fetch("/logs?json=true", {
+        method: "GET"
+    }).then(response => response.json())
+        .then(data => {
+            // show notification
+            showNotification("Read all messages.", data.status);
+            // check if success
+            if (data.status === "success") {
+                // sleep 1 second
+                setTimeout(function () {
+                    // reload page
+                    location.reload();
+                }, 1000);
+            }
+        }
+    );
+}

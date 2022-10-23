@@ -2,7 +2,7 @@ import os
 from typing import TYPE_CHECKING
 
 import jinja2
-from Utils.options import (DefaultStagerPool, Option, OptionPool, StringType)
+from Utils.options import DefaultStagerPool, Option, OptionPool, StringType
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 

@@ -1,10 +1,10 @@
 import tempfile
+
 from Commander import Commander
 from Creator.stager import add_stager
-from Database import Session, StagerModel, ListenerModel, LogEntryModel
+from Database import ListenerModel, LogEntryModel, Session, StagerModel
 from flask import Blueprint, jsonify, render_template, request, send_file
-from Utils.web import (authorized, generate_response, get_current_user,
-                       get_messages)
+from Utils.web import authorized, generate_response, get_current_user
 
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."
@@ -54,7 +54,6 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         name = request.form.get("name")
         data = dict(request.form)
-        print(data)
         try:
             # check if name is okay
             if not name:
@@ -115,7 +114,6 @@ def stagers_bp(commander: Commander):
     def put_edit(id: int = None):
         # Get request data
         form_data = dict(request.form)
-
         if id is None:
             if form_data.get("id") is None:
                 return generate_response("danger", INVALID_ID, ENDPOINT, 400)

@@ -1,8 +1,7 @@
 """The Credentials Model"""
 from datetime import datetime
 
-from sqlalchemy import (Boolean, Column, DateTime, Integer, String,
-                        Text)
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 
 from .base import Base
 

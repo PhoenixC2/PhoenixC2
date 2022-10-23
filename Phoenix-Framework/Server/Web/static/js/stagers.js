@@ -57,7 +57,7 @@ function createEdit(id) {
     document.getElementById("random_size-edit").checked = stager.random_size;
     document.getElementById("timeout-edit").value = stager.timeout;
     document.getElementById("delay-edit").value = stager.delay;
-    document.getElementById("different-address-edit").value = stager.different_address;
+    document.getElementById("different_address-edit").value = stager.different_address;
     // set options
     for (let option_name in stager.options) {
         if (Object.prototype.hasOwnProperty.call(stager.options, option_name)) {

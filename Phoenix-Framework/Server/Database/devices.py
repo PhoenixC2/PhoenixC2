@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, JSON
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
+from sqlalchemy.ext.mutable import MutableDict
 from .base import Base
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class DeviceModel(Base):
     address: str = Column(String(100), nullable=False)
     os: str = Column(String(10))
     user: str = Column(String(100))
-    infos: dict = Column(JSON, default={})
+    infos: dict = Column(MutableDict.as_mutable(JSON), default={})
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))

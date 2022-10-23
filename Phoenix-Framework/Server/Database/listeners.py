@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from Creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, Integer, String
 from sqlalchemy.orm import Session, relationship
-
+from sqlalchemy.ext.mutable import MutableDict
 from .base import Base
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class ListenerModel(Base):
     ssl: bool = Column(Boolean)
     enabled: bool = Column(Boolean, default=True)
     limit = Column(Integer, name="limit")
-    options: dict = Column(JSON, default=[])
+    options: dict = Column(MutableDict.as_mutable(JSON), default=[])
     stagers: list["StagerModel"] = relationship(
         "StagerModel",
         back_populates="listener")

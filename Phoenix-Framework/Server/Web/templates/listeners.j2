@@ -21,9 +21,9 @@
         <tr class="dark-background" id="listener-{{ listener.id }}">
             <td id="id-{{ listener.id }}">{{ listener.id }}</td>
             {% if listener.is_active(commander) %}
-            <td id="active-{{ listener.id }}"><i class="material-icons" style="color: green; margin-top: 4px;">circle</i></td>
+            <td id="active-{{ listener.id }}"><i title="Active" class="material-icons" style="color: green; margin-top: 4px;">circle</i></td>
             {% else %}
-            <td id="active-{{ listener.id }}"><i class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
+            <td id="active-{{ listener.id }}"><i title="Offline" class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
             {% endif %}
             <td id="name-{{ listener.id }}">{{ listener.name }}</td>
             <td id="address-{{ listener.id }}">{{ listener.address }}</td>

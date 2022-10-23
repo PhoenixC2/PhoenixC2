@@ -1,14 +1,15 @@
 """The Tasks Model"""
-from werkzeug.datastructures import FileStorage
-import os
 import base64
+import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
 from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
                         String, Text)
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import Session, relationship
+from sqlalchemy.ext.mutable import MutableDict
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from .base import Base
@@ -31,7 +32,7 @@ class TaskModel(Base):
         "DeviceModel", back_populates="tasks"
     )
     type: str = Column(String(10), nullable=False)
-    args: dict[str, any] = Column(JSON, default={})
+    args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default={})
     created_at: datetime = Column(DateTime)
     finished_at: datetime = Column(DateTime)
     success: bool = Column(Boolean)  # success | error

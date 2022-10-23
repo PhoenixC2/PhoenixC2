@@ -1,8 +1,9 @@
-from Database import Session, UserModel, LogEntryModel
+from Database import LogEntryModel, Session, UserModel
 from flask import (Blueprint, flash, jsonify, redirect, render_template,
                    request, session)
-from Utils.web import authorized, generate_response, get_current_user
 from Utils.ui import log
+from Utils.web import authorized, generate_response, get_current_user
+
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 

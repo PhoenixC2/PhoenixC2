@@ -1,11 +1,12 @@
 import os
 
 from Commander import Commander
-from Database import DeviceModel, Session, TaskModel, LogEntryModel
-from flask import (Blueprint, jsonify, request,
-                   send_from_directory)
-from Utils.web import authorized, generate_response, get_messages, get_current_user, render_template
+from Database import DeviceModel, LogEntryModel, Session, TaskModel
+from flask import Blueprint, jsonify, request, send_from_directory
 from Utils.ui import log
+from Utils.web import (authorized, generate_response, get_current_user,
+                       get_messages, render_template)
+
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."
 

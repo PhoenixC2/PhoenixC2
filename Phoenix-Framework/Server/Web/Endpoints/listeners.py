@@ -1,7 +1,7 @@
 from Commander import Commander
 from Creator.listener import (add_listener, restart_listener, start_listener,
                               stop_listener)
-from Database import ListenerModel, Session, LogEntryModel
+from Database import ListenerModel, LogEntryModel, Session
 from flask import Blueprint, jsonify, request
 from Utils.misc import get_network_interfaces, get_platform
 from Utils.ui import log

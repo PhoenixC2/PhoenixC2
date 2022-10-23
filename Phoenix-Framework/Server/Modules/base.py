@@ -1,5 +1,6 @@
-from Utils.options import OptionPool
 from Database import DeviceModel
+from Utils.options import OptionPool
+
 """The base module class"""
 class BaseModule:
     """This is the Base Class for all Modules."""

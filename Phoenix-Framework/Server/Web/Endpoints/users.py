@@ -1,10 +1,10 @@
-from Utils.web import (admin, authorized, generate_response, get_current_user,
-                       get_messages)
-from Utils.ui import log
 from uuid import uuid1
 
-from Database import Session, UserModel, LogEntryModel
+from Database import LogEntryModel, Session, UserModel
 from flask import Blueprint, jsonify, render_template, request
+from Utils.ui import log
+from Utils.web import (admin, authorized, generate_response, get_current_user,
+                       get_messages)
 
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."

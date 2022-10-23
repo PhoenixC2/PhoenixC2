@@ -1,6 +1,5 @@
 from Database import LogEntryModel, Session
-from flask import (Blueprint, jsonify,
-                   render_template, request)
+from flask import Blueprint, jsonify, render_template, request
 from Utils.web import (admin, authorized, generate_response, get_current_user,
                        get_messages)
 

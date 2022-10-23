@@ -1,5 +1,5 @@
-import os
 import base64
+import os
 import urllib
 from typing import TYPE_CHECKING
 
@@ -108,6 +108,12 @@ class Stager(BaseStager):
             description="The Authentication to use (format=username:password).",
             type=StringType(),
             default=""
+        ),
+        Option(
+            name="Choice",
+            description="The choice to use",
+            type=ChoiceType(["1", "2", "3"], str),
+            default="1"
         )
     ])
 

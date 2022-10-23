@@ -1,6 +1,6 @@
+import platform
 from typing import TYPE_CHECKING
 from uuid import uuid1
-import platform
 
 import netifaces
 
