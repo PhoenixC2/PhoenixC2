@@ -40,9 +40,10 @@ def devices_bp(commander: Commander):
                 if not device.connected:
                     count += 1
                     Session.delete(device)
-        LogEntryModel.log(
-            "info", "devices", f"Cleared {count} devices.", Session, get_current_user())
         Session.commit()
+        if count > 0:
+            LogEntryModel.log(
+                "info", "devices", f"Cleared {count} devices.", Session, get_current_user())
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
     @devices_bp.route("/downloads/<string:file_name>", methods=["GET"])
@@ -166,7 +167,7 @@ def devices_bp(commander: Commander):
         # check if file is in request
         if "file" not in request.files:
             return generate_response("danger", "The file is missing", "devices", 400)
-            
+
         if target_path is None:
             return generate_response("danger", "Upload path is missing.", "devices", 400)
         try:

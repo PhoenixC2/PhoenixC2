@@ -55,15 +55,17 @@ class Listener(BaseListener):
                 address = data.get("address")
                 hostname = data.get("hostname", "")
                 os = data.get("os", "")
+                architecture = data.get("architecture", "")
                 user = data.get("user", "")
+                admin = data.get("admin", False)
                 device = DeviceModel.generate_device(
-                    self, hostname, address, os, user)
+                    self, hostname, address, os, architecture, user, admin)
             except Exception:
                 return "", 404
             Session.add(device)
             Session.commit()
             LogEntryModel.log("success", "devices",
-                              f"Device '{device}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
+                              f"Device '{device.name}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
             log_connection(device)
             self.add_handler(Handler(device))
             return device.name

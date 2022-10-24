@@ -34,7 +34,8 @@ def tasks_bp(commander: Commander):
                     count += 1
                     Session.delete(task)
         Session.commit()
-        LogEntryModel.log("info", "tasks", f"Cleared {count} tasks.", Session, get_current_user())
+        if count > 0:
+            LogEntryModel.log("info", "tasks", f"Cleared {count} tasks.", Session, get_current_user())
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 
     return tasks_bp

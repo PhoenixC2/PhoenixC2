@@ -31,6 +31,7 @@ class BasePayload:
             "supported_target_os": cls.supported_target_os,
             "supported_target_arch": cls.supported_target_arch,
             "supported_server_os": cls.supported_server_os,
+            "end_format": cls.end_format,
             "compiled": cls.compiled,
             "options": cls.options.to_dict(commander)
         }

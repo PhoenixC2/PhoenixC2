@@ -37,6 +37,7 @@ def post_clear_devices(id: str = "all"):
             if not log.unseen_users:
                 count += 1
                 Session.delete(log)
-    LogEntryModel.log("info", "logs", f"Cleared {count} logs.", Session, get_current_user())
     Session.commit()
+    if count > 0:
+        LogEntryModel.log("info", "logs", f"Cleared {count} logs.", Session, get_current_user())
     return generate_response("success", f"Cleared {count} log entries.", "logs")

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.mutable import MutableDict
 from .base import Base
@@ -26,7 +26,9 @@ class DeviceModel(Base):
     hostname: str = Column(String(100))
     address: str = Column(String(100), nullable=False)
     os: str = Column(String(10))
+    architecture: str = Column(String(10))
     user: str = Column(String(100))
+    admin: bool = Column(Boolean, default=False)
     infos: dict = Column(MutableDict.as_mutable(JSON), default={})
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
@@ -49,7 +51,9 @@ class DeviceModel(Base):
             "hostname": self.hostname,
             "address": self.address,
             "os": self.os,
+            "architecture": self.architecture,
             "user": self.user,
+            "admin": self.admin,
             "infos": self.infos,
             "connection_date": self.connection_date,
             "last_online": self.last_online,
@@ -74,13 +78,15 @@ class DeviceModel(Base):
         return json.dumps(self.to_dict(commander, show_listener, show_tasks))
 
     @classmethod
-    def generate_device(cls, listener: "BaseListener", hostname: str, address: str, os: str, user: str) -> "ListenerModel":
+    def generate_device(cls, listener: "BaseListener", hostname: str, address: str, os: str, architecture: str, user: str, admin: bool) -> "ListenerModel":
         return cls(
             name=str(uuid1()).split("-")[0],
             hostname=hostname,
             address=address,
             os=os,
+            architecture=architecture,
             user=user,
+            admin=admin,
             connection_date=datetime.now(),
             last_online=datetime.now(),
             listener=listener.db_entry

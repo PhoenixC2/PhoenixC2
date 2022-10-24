@@ -78,7 +78,7 @@ class Stager(BaseStager):
             name="Payload",
             description="The payload to use",
             _real_name="payload_type",
-            type=ChoiceType(payloads.keys(), str),
+            type=ChoiceType(list(payloads.keys()), str),
             default="python",
             required=True
         ),
@@ -93,7 +93,7 @@ class Stager(BaseStager):
             name="Proxy address",
             _real_name="proxy_address",
             description="The address of a proxy to use.",
-            type=AddressType,
+            type=AddressType(),
         ),
         Option(
             name="Proxy port",
