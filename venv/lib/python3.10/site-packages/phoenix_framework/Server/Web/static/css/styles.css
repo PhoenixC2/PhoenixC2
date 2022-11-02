@@ -1,0 +1,10 @@
+.dark-background {
+    background-color: #1a2035 !important;
+    color: white !important
+}
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
