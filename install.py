@@ -32,6 +32,14 @@ def create_main_folder(path: str):
                     path + ".")
     print("[SUCCESS] Copied files.")
 
+def create_venv(path: str):
+    """Create the virtual environment"""
+    print("[INFO] Creating virtual environment.")
+    os.system(f"python3 -m venv {path}/venv")
+    print("[SUCCESS] Created virtual environment.")
+    # activate venv
+    os.system(f"source {path}/venv/bin/activate")
+    print("[SUCCESS] Activated virtual environment.")
 
 def install_requirements():
     global sqlalchemy, sessionmaker
@@ -78,9 +86,9 @@ def generate_ssl(path: str):
 
 
 def create_connection(path: str):
+    """Create the database connection"""
     global Database, engine, db_session
     os.environ["PHOENIX_CONFIG_PATH"] = path + "/Server/Data/config.toml"
-    """Create the database connection"""
     sys.path.insert(0, path + "/Server")
     os.chdir(path + "/Server")
     Database = importlib.import_module("Phoenix-Framework.Server.Database")
@@ -88,6 +96,14 @@ def create_connection(path: str):
         f"sqlite:///{path}/Server/Data/db.sqlite3")
     db_session = sessionmaker(bind=engine)()
 
+
+def create_config(path : str): 
+    """Create the config file"""
+    print("[INFO] Creating config file.")
+    with open(os.getcwd() + "Server/Data/config.toml") as f:
+        config = f.read()
+    
+    
 
 def create_database():
     """Create the database"""

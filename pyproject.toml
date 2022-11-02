@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "phoenix-framework"
+version = "0.1.0"
+description = "A Command & Control Phramework written in pure python3"
+authors = ["screamz2k <luca.hennemann@outlook.de>"]
+readme = "README.md"
+packages = [{include = "phoenix_framework"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+SQLAlchemy = "^1.4.42"
+Flask = "^2.2.2"
+rich = "^12.6.0"
+pystyle = "^2.0"
+netifaces = "^0.11.0"
+requests = "^2.28.1"
+tomli-w = "^1.0.0"
+tomli = "^2.0.1"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
