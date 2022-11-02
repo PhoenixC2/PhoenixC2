@@ -42,7 +42,7 @@ def authorized(func):
                 session["password"] = Session.query(UserModel).first().password
         user = get_current_user()
         if user is None:
-            abort(401)
+            return redirect("/auth/login")
         else:
             if user.disabled:
                 flash("Your account got disabled!", "error")
@@ -68,7 +68,7 @@ def admin(func):
             else:
                 return func(*args, **kwargs)
         else:
-            abort(401)
+            return redirect("/auth/login")
     return wrapper
 
 

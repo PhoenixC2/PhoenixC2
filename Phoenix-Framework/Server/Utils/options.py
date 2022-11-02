@@ -228,7 +228,8 @@ class Option():
             "type": str(self.type),
             "required": self.required,
             "description": self.description,
-            "default": self.default if self.default is not None else ""
+            "default": self.default if self.default is not None else "",
+            "editable": self.editable
         }
         if type(self.type) == ChoiceType:
             data["choices"] = self.type.choices

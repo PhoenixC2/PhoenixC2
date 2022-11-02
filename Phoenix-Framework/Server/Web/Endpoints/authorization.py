@@ -9,7 +9,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("/login", methods=["GET"])
 def get_login():
-    return render_template("auth/login.j2")
+    return render_template("login.j2")
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -46,7 +46,7 @@ def post_login():
         if old_user is not None and old_user.username != username:
             session["id"] = user.id
             session["password"] = user.password
-            log(f"Logged changed to '{user}'.", "success")
+            LogEntryModel.log("info", "auth", f"Logged in as {user}.", Session, old_user)
             if not use_json:
                 flash(f"Changed to {username}.", "success")
                 redirect("/")
@@ -54,7 +54,7 @@ def post_login():
         else:
             session["id"] = user.id
             session["password"] = user.password
-            log(f"Logged in as {'Admin' if user.admin else 'User'} '{user}'.", "success")
+            LogEntryModel.log("info", "auth", f"Logged in as {user}.", Session, user)
             if not use_json:
                 flash(
                     f"Logged in as {'Admin' if user.admin else 'User'} {username}.", "success")
@@ -74,4 +74,4 @@ def logout():
     user = get_current_user()
     LogEntryModel.log("info", "auth", f"{'Admin' if user.admin else 'User'} {user} logged out.", Session, user)
     session.clear()
-    return generate_response("success", "Logged out.")
+    return generate_response("success", "Logged out.", "auth/login")

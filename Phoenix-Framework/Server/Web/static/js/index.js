@@ -9,7 +9,7 @@ function showNotification(message, status) {
         timer: 3000,
         placement: {
             from: "top",
-            align: "center"
+            align: "right"
         }
     });
 }

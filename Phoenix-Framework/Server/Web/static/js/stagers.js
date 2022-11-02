@@ -24,6 +24,17 @@ function resetModal() {
     document.getElementById("create-modal-body").innerHTML = original_modal_content;
     changeListener();
 }
+function changePayload() {
+    // get the payload value
+    if (document.getElementById("create-payload_type") != null) {
+        let payload = document.getElementById("create-payload_type").value;
+    }
+    else {
+        let payload = document.getElementById("edit-payload_type").value;
+    }
+    payload = payloads[payload];
+
+}
 function changeListener() {
     // get value of select
     let listener_id = document.getElementById("listener").value;
@@ -41,7 +52,16 @@ function createEdit(id) {
         return;
     }
     let stager = stagers[id];
+    let stager_type = stager_types[stager.listener.type];
 
+    // create object of uneditable options
+    let uneditable_options = [];
+    for (let option of stager_type.options) {
+        if (option.editable === false) {
+            uneditable_options.push(option.real_name);
+        }
+    }
+    console.log(uneditable_options)
     // get form by type
     const form = document.getElementById(stager.listener.type + "-form");
 
@@ -62,13 +82,17 @@ function createEdit(id) {
     for (let option_name in stager.options) {
         if (Object.prototype.hasOwnProperty.call(stager.options, option_name)) {
             let option = stager.options[option_name];
-            console.log(option_name.toLowerCase() + "-edit");
             let element = document.getElementById(option_name.toLowerCase() + "-edit");
             if (element.type === "checkbox") {
                 element.checked = option;
             }
             element.value = option;
         }
+        // check if option is not editable
+        if (uneditable_options.includes(option_name)) {
+            document.getElementById(option_name.toLowerCase() + "-edit").disabled = true;
+        }
+
     }
     edit_stager_id = id;
     // open modal
@@ -87,11 +111,14 @@ function copyToClipboard(id, one_liner) {
         .then(data => {
             // check if success
             if (data.status === "success") {
-                console.log("penis")
-                // show notification
-                showNotification("Copied to clipboard.", data.status);
                 // copy to clipboard
-                navigator.clipboard.writeText(data.stager);
+                try {
+                    navigator.clipboard.writeText(data.stager);
+                    showNotification("Failed to copy to clipboard", "danger");
+                }
+                catch (err) {
+                    showNotification("Failed to copy to clipboard", "danger");
+                }
             }
             else {
                 showNotification(data.message, data.success)

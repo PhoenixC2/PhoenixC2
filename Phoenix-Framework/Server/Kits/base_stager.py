@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-
+import json
 from Utils.options import DefaultStagerPool, OptionPool
 
 if TYPE_CHECKING:
@@ -57,10 +57,8 @@ class BaseStager:
     # The payloads that are supported by this stager and if they have to be compiled
     payloads: dict[str, BasePayload] = {}
 
-
     @classmethod
-    @abstractmethod
-    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False) -> FinalPayload:
+    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile : bool = False ) -> FinalPayload:
         """Generate a stager based on the stager_db entry.
 
         Args:
@@ -73,8 +71,11 @@ class BaseStager:
             bytes | str: The stager or the stager path.
             bool: If the stager is a path or not.
             """
-        # Credit to BC-Security/Empire for using jinja2 for stagers.
-        pass
+        # credit to BC-SECURITY/Empire for the using jinja2 for stagers
+        if stager_db.payload_type not in cls.payloads:
+            raise ValueError("Invalid payload type")
+
+        return cls.payloads[stager_db.payload_type].generate(stager_db, one_liner, recompile)
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
@@ -85,3 +86,7 @@ class BaseStager:
             "options": cls.options.to_dict(commander),
             "payloads": {x: cls.payloads[x].to_dict(commander) for x in cls.payloads},
         }
+    @classmethod
+    def to_json(cls, commander: "Commander") -> str:
+        """Return a json of the stager."""
+        return json.dumps(cls.to_dict(commander))

@@ -1,5 +1,5 @@
-function clearDevices() {
-    fetch('/devices/all/clear?json=true', {
+function clearDevice(id) {
+    fetch('/devices/'+ id + '/clear?json=true', {
         method: 'POST',
     }).then(response => {
         return response.json();

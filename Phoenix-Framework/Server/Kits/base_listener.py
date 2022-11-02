@@ -2,8 +2,7 @@ import time
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from Database import Session
-from Database.listeners import ListenerModel
+from Database import Session, ListenerModel, LogEntryModel
 from Utils.options import OptionPool
 from Utils.ui import log
 
@@ -80,7 +79,7 @@ class BaseListener():
             try:
                 for handler in self.handlers:
                     if not handler.alive():
-                        log(f"Device '{handler.name}' disconnected.", "critical")
+                        LogEntryModel.log("danger", "devices", f"Device '{handler.name}' disconnected.", Session)
                         self.remove_handler(handler)
             except Exception as e:
                 log(str(e), "danger")

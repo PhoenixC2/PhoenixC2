@@ -108,18 +108,5 @@ class Stager(BaseStager):
             description="The Authentication to use (format=username:password).",
             type=StringType(),
             default=""
-        ),
-        Option(
-            name="Choice",
-            description="The choice to use",
-            type=ChoiceType(["1", "2", "3"], str),
-            default="1"
         )
     ])
-
-    @classmethod
-    def generate(cls, stager_db: "StagerModel", one_liner: bool = False, recompile : bool = False ) -> FinalPayload:
-        if stager_db.payload_type not in cls.payloads:
-            raise ValueError("Invalid payload type")
-
-        return cls.payloads[stager_db.payload_type].generate(stager_db, one_liner, recompile)

@@ -110,13 +110,19 @@ class ListenerModel(Base):
             if hasattr(self, key):
                 if value == str(getattr(self, key)):
                     continue
-                value = options.get_option(key).validate_data(value)
+                option = options.get_option(key)
+                if not option.editable:
+                    raise ValueError(f"Option '{key}' is not editable.")
+                value = option.validate_data(value)
                 setattr(self, key, value)
             else:
                 if key in self.options:
                     if value == self.options[key]:
                         continue
-                    value = options.get_option(key).validate_data(value)
+                    option = options.get_option(key)
+                    if not option.editable:
+                        raise ValueError(f"Option '{key}' is not editable.")
+                    value = option.validate_data(value)
                     self.options[key] = value
                 else:
                     raise KeyError(f"{key} is not a valid key")

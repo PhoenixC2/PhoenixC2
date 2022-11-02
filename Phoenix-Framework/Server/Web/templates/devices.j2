@@ -51,13 +51,13 @@
             <td>
                 <button type="button" class="btn btn-warning"> Manage </button>
                 <button class="btn btn-warning" onclick="createEdit({{ device.id -1 }})"><i class="material-icons">edit</i></button>
-                <button class="btn btn-danger" onclick="deleteDevice({{ device.id }})"><i class="material-icons">delete</i></button>
+                <button class="btn btn-danger" onclick="clearDevice({{ device.id }})"><i class="material-icons">delete</i></button>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<button class="btn btn-danger" onclick="clearDevices()">Clear inactive devices</button>
+<button class="btn btn-danger" onclick="clearDevice('all')">Clear inactive devices</button>
 </div>
 <!-- Edit Modal -->
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true"
