@@ -1,1 +1,0 @@
-# Bind Socket UDP Payload
