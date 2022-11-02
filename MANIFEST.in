@@ -1,0 +1,8 @@
+global-exclude __pycache__ *.py[co] .git
+include Phoenix-Framework/Client/Data/Downloads
+include Phoenix-Framework/Server/Data/Downloads
+include Phoenix-Framework/Server/Data/Stagers
+include Phoenix-Framework/Server/Data/Uploads
+include Phoenix-Framework/Server/Data/config.toml
+recursive-include Phoenix-Framework/Server/Loaders *
+recursive-include Phoenix-Framework/Server/Web *

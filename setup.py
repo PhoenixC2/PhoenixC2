@@ -5,8 +5,8 @@ setup(
     version="1.0",
     packages=find_packages(
         where="phoenix-framework",
-        exclude=["tests", "tests.*"]
     ),
+    include_package_data=True,
     install_requires=[
         "sqlalchemy",
         "flask",
