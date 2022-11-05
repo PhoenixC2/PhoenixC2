@@ -6,12 +6,9 @@ import sys
 import time
 from argparse import ArgumentParser
 
-# Check if the user is root
-"""if not os.getuid() == 0:
-    print("Please start with Sudo or Root Rights")
-    exit()"""
+
 parser = ArgumentParser(
-    "pfserver", usage="sudo pfserver [options]", description="Start the Phoenix-Framework C2 server.")
+    "pfserver", usage="pfserver [options]", description="Start the Phoenix-Framework C2 server.")
 
 web = parser.add_argument_group("Web Server")
 web.add_argument("-a", "--address", help=f"The address")

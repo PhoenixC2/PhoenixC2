@@ -3,9 +3,24 @@ from setuptools import setup, find_packages
 setup(
     name="Phoenix-Framework",
     version="1.0",
-    packages=find_packages(
-        where="phoenix-framework",
-    ),
+    author="Screamz2k",
+    description="A C2 Framework for Red Team Operations",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/Screamz2k/Phoenix-Framework",
+    license="Apache License 2.0",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Pentesters",
+        "License :: OSI Approved :: Apache License 2.0",
+        "Programming Language :: Python :: 3",
+    ],
+    keywords="Red Team, C2, Pentesting",
+    project_urls={
+        "Documentation": "https://screamz2k.gitbook.io/phoenix-framework/",
+        "Source": "https://github.com/Screamz2k/Phoenix-Framework",
+        "Tracker": "https://github.com/Screamz2k/Phoenix-Framework/issues"
+    },
     include_package_data=True,
     install_requires=[
         "sqlalchemy",
@@ -15,13 +30,13 @@ setup(
         "netifaces",
         "requests",
         "tomli",
-        "tomli-w"
+        "tomli_w"
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pfserver = phoenix-framework.pfserver:main",
-            "pfclient = phoenix-framework.pfclient:main"
+            "pfserver=phoenix_framework.pfserver",
+            "pfclient=phoenix_framework.pfclient"
         ]
-    }
+    },
 )

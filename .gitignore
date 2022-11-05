@@ -2,5 +2,6 @@ __pycache__
 *.pyc
 db.sqlite3
 ssl.*
-Downloads/*
-Uploads/*
+Downloads/**
+Uploads/**
+venv
