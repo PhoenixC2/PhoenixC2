@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-
 setup(
     name="Phoenix-Framework",
     version="1.0",
@@ -35,8 +34,8 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pfserver=phoenix_framework.pfserver",
-            "pfclient=phoenix_framework.pfclient"
+            "pfserver=phoenix_framework.pfserver:main",
+            "pfclient=phoenix_framework.pfclient:main",
         ]
     },
 )

@@ -1,8 +1,10 @@
-recursive-include phoenix_framework *
-recursive-exclude phoenix_framework/Server/Data/Downloads/ *
-recursive-exclude phoenix_framework/Server/Data/Uploads/ *
-recursive-exclude phoenix_framework/Server/Data/Stagers/ *
-exclude phoenix_framework/Server/Data/db.sqlite3
-exclude phoenix_framework/Server/Data/ssl.*
+include phoenix_framework/pf* 
+recursive-include phoenix_framework/server *
+recursive-include phoenix_framework/client *
+recursive-exclude phoenix_framework/server/data/downloads/ *
+recursive-exclude phoenix_framework/server/data/sploads/ *
+recursive-exclude phoenix_framework/server/data/stagers/ *
+exclude phoenix_framework/server/data/db.sqlite3
+exclude phoenix_framework/server/data/ssl.*
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

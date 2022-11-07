@@ -5,3 +5,5 @@ ssl.*
 Downloads/**
 Uploads/**
 venv
+build
+*.egg-info
