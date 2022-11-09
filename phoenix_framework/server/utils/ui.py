@@ -7,7 +7,8 @@ from rich.console import Console
 if TYPE_CHECKING:
     from phoenix_framework.server.database import DeviceModel
 # logo
-logo = Add.Add("""
+logo = Add.Add(
+    """
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣈⠀⠀⠀⠀⠀⢀⣬⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⠀⠀⠀⠀⣬⣿⣯⣮⣌⣌⣌⢌⢈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣨⣿⣿⠀⠀⠀⣸⣿⣿⠁⠀⠐⠑⠑⠳⡳⣷⣮⢌⠈⠀⠀⠀⠀⠀⠀⠀⠀
@@ -25,7 +26,8 @@ logo = Add.Add("""
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡳⣷⣎⣌⣿⣿⣿⣿⣏⠈⠱⣧⣌⠈⢈⣈⣮⡿⠓⠁⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠱⡳⡷⣷⣿⣿⣯⣮⣾⡿⡷⠳⠓⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-""", f"""
+""",
+    f"""
 
    ▄███████▄    ▄█    █▄     ▄██████▄     ▄████████ ███▄▄▄▄    ▄█  ▀████    ▐████▀ 
   ███    ███   ███    ███   ███    ███   ███    ███ ███▀▀▀██▄ ███    ███▌   ████▀  
@@ -35,7 +37,10 @@ logo = Add.Add("""
   ███          ███    ███   ███    ███   ███    █▄  ███   ███ ███    ▐███  ▀███    
   ███          ███    ███   ███    ███   ███    ███ ███   ███ ███   ▄███     ███▄  
  ▄████▀        ███    █▀     ▀██████▀    ██████████  ▀█   █▀  █▀   ████       ███▄
-{Box.DoubleCube("Made by Screamz2k")}""", 4, True)
+{Box.DoubleCube("Made by Screamz2k")}""",
+    4,
+    True,
+)
 
 console = Console()
 
@@ -69,7 +74,9 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
     """Log the new connection"""
     if reconnect:
         ph_print(
-            f"""Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]""")
+            f"""Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]"""
+        )
     else:
         ph_print(
-            f"""New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]""")
+            f"""New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]"""
+        )

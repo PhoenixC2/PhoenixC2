@@ -2,7 +2,7 @@ import time
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import Session, ListenerModel, LogEntryModel
+from phoenix_framework.server.database import ListenerModel, LogEntryModel, Session
 from phoenix_framework.server.utils.options import OptionPool
 from phoenix_framework.server.utils.ui import log
 
@@ -13,8 +13,9 @@ if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
 
 
-class BaseListener():
+class BaseListener:
     """This is the Base Class for all Listeners."""
+
     name: str = "BaseListener"
     description: str = "This is the Base Class for all Listeners."
     author: str = "Unknown"
@@ -79,7 +80,12 @@ class BaseListener():
             try:
                 for handler in self.handlers:
                     if not handler.alive():
-                        LogEntryModel.log("danger", "devices", f"Device '{handler.name}' disconnected.", Session)
+                        LogEntryModel.log(
+                            "danger",
+                            "devices",
+                            f"Device '{handler.name}' disconnected.",
+                            Session,
+                        )
                         self.remove_handler(handler)
             except Exception as e:
                 log(str(e), "danger")
@@ -101,5 +107,5 @@ class BaseListener():
             "name": cls.name,
             "description": cls.description,
             "os": cls.os,
-            "options": cls.options.to_dict(commander)
+            "options": cls.options.to_dict(commander),
         }

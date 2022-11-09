@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
 import requests
+
 from phoenix_framework.server.creator.available import AVAILABLE_ENCODINGS
 from phoenix_framework.server.database import ListenerModel, Session
 from phoenix_framework.server.database.base import Base
@@ -16,8 +17,9 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class OptionType():
+class OptionType:
     """The base option-type"""
+
     data_type = any = None
 
     @staticmethod
@@ -28,6 +30,7 @@ class OptionType():
 @dataclass
 class StringType(OptionType):
     """The option-type of string"""
+
     data_type = str
 
     def __str__(self) -> str:
@@ -37,6 +40,7 @@ class StringType(OptionType):
 @dataclass
 class IntegerType(OptionType):
     """The option-type of integer"""
+
     data_type = int
 
     def __str__(self) -> str:
@@ -46,6 +50,7 @@ class IntegerType(OptionType):
 @dataclass
 class BooleanType(OptionType):
     """The option-type of boolean"""
+
     data_type = bool
 
     @staticmethod
@@ -72,13 +77,16 @@ class UrlType(StringType):
             requests.get(url)
         except requests.ConnectionError as e:
             raise requests.ConnectionError(
-                f"Couldn't connect to the url for the option '{name}'.") from e
+                f"Couldn't connect to the url for the option '{name}'."
+            ) from e
         except requests.exceptions.MissingSchema as e:
             raise requests.exceptions.MissingSchema(
-                f"The url for the option '{name}' is invalid.") from e
+                f"The url for the option '{name}' is invalid."
+            ) from e
         except requests.exceptions.InvalidURL as e:
             raise requests.exceptions.MissingSchema(
-                f"The url for the option '{name}' is invalid.") from e
+                f"The url for the option '{name}' is invalid."
+            ) from e
         else:
             return url
 
@@ -89,7 +97,9 @@ class UrlType(StringType):
 @dataclass
 class AddressType(StringType):
     """The option-type of address"""
+
     interfaces = get_network_interfaces()
+
     @staticmethod
     def interface_to_address(interface: str) -> str:
         address = get_network_interfaces().get(interface)
@@ -106,7 +116,8 @@ class AddressType(StringType):
             socket.gethostbyname(address)
         except socket.gaierror as e:
             raise socket.gaierror(
-                f"{address} for the option '{name}' is invalid.") from e
+                f"{address} for the option '{name}' is invalid."
+            ) from e
         else:
             return address
 
@@ -120,11 +131,11 @@ class PortType(IntegerType):
     @staticmethod
     def validate(name: str, port: int) -> bool:
         if port < 0 or port > 65535:
-            raise ValueError(
-                f"The port '{port}' for the option '{name}' is invalid.")
+            raise ValueError(f"The port '{port}' for the option '{name}' is invalid.")
         if Session.query(ListenerModel).filter_by(port=port).first():
             raise ValueError(
-                f"The port '{port}' for the option '{name}' is already in use.")
+                f"The port '{port}' for the option '{name}' is already in use."
+            )
         return port
 
     def __str__(self) -> str:
@@ -138,8 +149,7 @@ class ChoiceType(OptionType):
 
     def validate(self, name: str, choice: str) -> bool:
         if choice not in self.choices:
-            raise ValueError(
-                f"{choice} isn't in the available choices for '{name}'.)")
+            raise ValueError(f"{choice} isn't in the available choices for '{name}'.)")
         return choice
 
     def __str__(self) -> str:
@@ -159,18 +169,18 @@ class TableType(OptionType):
 
     def validate(self, name: str, id_or_name: int | str) -> bool:
         if str(id_or_name).isdigit():
-            object = Session.query(
-                self.model).filter_by(id=id_or_name).first()
+            object = Session.query(self.model).filter_by(id=id_or_name).first()
             if object not in self.choices:
                 raise ValueError(
-                    f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)")
+                    f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)"
+                )
             return object
         else:
-            object = Session.query(self.model).filter_by(
-                name=id_or_name).first()
+            object = Session.query(self.model).filter_by(name=id_or_name).first()
             if object not in self.choices:
                 raise ValueError(
-                    f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)")
+                    f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)"
+                )
             return object
 
     def __str__(self) -> str:
@@ -178,7 +188,7 @@ class TableType(OptionType):
 
 
 @dataclass
-class Option():
+class Option:
     """
     The Option class is used to create options for listeners and stagers.
 
@@ -190,6 +200,7 @@ class Option():
         type (OptionType): The type of the option.
         editable (bool): If the option is editable.
     """
+
     name: str
     type: OptionType
     _real_name: str = ""
@@ -211,12 +222,17 @@ class Option():
                 raise ValueError(f"{self.name} is required.")
             return self.default
 
-        if type(data) != self.type.data_type and type(self.type) not in (BooleanType, ChoiceType, TableType):
+        if type(data) != self.type.data_type and type(self.type) not in (
+            BooleanType,
+            ChoiceType,
+            TableType,
+        ):
             try:
                 data = self.type.data_type(data)
             except ValueError:
                 raise TypeError(
-                    f"{self.name} has to be a type of '{self.type.data_type.__name__}'.")
+                    f"{self.name} has to be a type of '{self.type.data_type.__name__}'."
+                )
 
         data = self.type.validate(self.name, data)
         return data
@@ -229,23 +245,24 @@ class Option():
             "required": self.required,
             "description": self.description,
             "default": self.default if self.default is not None else "",
-            "editable": self.editable
+            "editable": self.editable,
         }
         if type(self.type) == ChoiceType:
             data["choices"] = self.type.choices
         elif type(self.type) == TableType:
             try:
-                data["choices"] = [choice.to_dict()
-                                   for choice in self.type.choices]
+                data["choices"] = [choice.to_dict() for choice in self.type.choices]
             except TypeError:
-                data["choices"] = [choice.to_dict(commander)
-                                   for choice in self.type.choices]
+                data["choices"] = [
+                    choice.to_dict(commander) for choice in self.type.choices
+                ]
         return data
 
 
 @dataclass
-class OptionPool():
-    """ Used to store options for a Class"""
+class OptionPool:
+    """Used to store options for a Class"""
+
     options: list[Option] = field(default_factory=list)
 
     def register_option(self, option: Option):
@@ -293,34 +310,34 @@ class DefaultListenerPool(OptionPool):
                 description="The address the listener should listen on.",
                 type=AddressType(),
                 required=True,
-                default="0.0.0.0"
+                default="0.0.0.0",
             ),
             Option(
                 name="Port",
                 description="The port the listener should listen on.",
                 type=PortType(),
                 required=True,
-                default=9999
+                default=9999,
             ),
             Option(
                 name="SSL",
                 description="True if the listener should use ssl.",
                 type=BooleanType(),
-                default=True
+                default=True,
             ),
             Option(
                 name="Enabled",
                 description="True if the listener should be enabled.",
                 type=BooleanType(),
-                default=True
+                default=True,
             ),
             Option(
                 name="Connection limit",
                 _real_name="limit",
                 description="How many devices can be connected to the listener at once.",
                 type=IntegerType(),
-                default=5
-            )
+                default=5,
+            ),
         ]
         self.options.extend(added_options)
 
@@ -340,43 +357,44 @@ class DefaultStagerPool(OptionPool):
             Option(
                 name="Listener",
                 description="The listener, the stager should connect to.",
-                type=TableType(lambda: Session.query(
-                    ListenerModel).all(), ListenerModel),
+                type=TableType(
+                    lambda: Session.query(ListenerModel).all(), ListenerModel
+                ),
                 required=True,
                 default=1,
-                editable=False
+                editable=False,
             ),
             Option(
                 name="Encoding",
                 description="The encoding to use.",
                 type=ChoiceType(AVAILABLE_ENCODINGS, "str"),
-                default=AVAILABLE_ENCODINGS[0]
+                default=AVAILABLE_ENCODINGS[0],
             ),
             Option(
                 name="Random size",
                 _real_name="random_size",
                 description="Add random sized strings to the payload to bypass the AV.",
                 type=BooleanType(),
-                default=False
+                default=False,
             ),
             Option(
                 name="Timeout",
                 description="How often the stager should try to connect, before it will exit.",
                 type=IntegerType(),
-                default=200
+                default=200,
             ),
             Option(
                 name="Delay",
                 description="The delay before the stager should connect to the server.",
                 type=IntegerType(),
-                default=1
+                default=1,
             ),
             Option(
                 name="Different address/domain",
                 _real_name="different_address",
                 description="Use a different address/domain then specified by the listener to connect to.",
                 type=AddressType(),
-                required=False
-            )
+                required=False,
+            ),
         ]
         self.options.extend(added_options)

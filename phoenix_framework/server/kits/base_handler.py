@@ -7,7 +7,7 @@ from phoenix_framework.server.database import DeviceModel, Session, TaskModel
 from phoenix_framework.server.modules.base import BaseModule
 
 
-class BaseHandler():
+class BaseHandler:
     """The Base Handler Class for all Devices"""
 
     def __str__(self) -> TaskModel:
@@ -26,8 +26,7 @@ class BaseHandler():
     def load_module(self, name: str, load_module: bool = True) -> BaseModule:
         """Load a module"""
         # Get module
-        module: BaseModule = importlib.import_module(
-            "Modules." + name).Module()
+        module: BaseModule = importlib.import_module("Modules." + name).Module()
         if load_module:
             module.load()
         # Add to list
@@ -49,7 +48,7 @@ class BaseHandler():
         return TaskModel(
             name=str(uuid1).split("-")[0],
             device=self.db_entry,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
     def add_task(self, task: TaskModel):

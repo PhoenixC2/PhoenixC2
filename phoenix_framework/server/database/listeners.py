@@ -3,17 +3,19 @@ import importlib
 import json
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, Integer, String
-from sqlalchemy.orm import Session, relationship
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import Session, relationship
+
+from phoenix_framework.server.creator.available import AVAILABLE_KITS
+from phoenix_framework.server.utils.resources import get_resource
+
 from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.utils.options import OptionPool
-
     from phoenix_framework.server.kits.base_listener import BaseListener
+    from phoenix_framework.server.utils.options import OptionPool
 
     from .devices import DeviceModel
     from .stagers import StagerModel
@@ -21,9 +23,9 @@ if TYPE_CHECKING:
 
 class ListenerModel(Base):
     """The Listeners Model"""
+
     __tablename__ = "Listeners"
-    id: int = Column(
-        Integer, primary_key=True, nullable=False)
+    id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
     type: str = Column(String(100))
     address: str = Column(String(15))
@@ -33,17 +35,16 @@ class ListenerModel(Base):
     limit = Column(Integer, name="limit")
     options: dict = Column(MutableDict.as_mutable(JSON), default=[])
     stagers: list["StagerModel"] = relationship(
-        "StagerModel",
-        back_populates="listener")
+        "StagerModel", back_populates="listener"
+    )
     devices: list["DeviceModel"] = relationship(
-        "DeviceModel",
-        back_populates="listener"
+        "DeviceModel", back_populates="listener"
     )
 
     @property
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
-        return self.get_listener_class(self.type)
+        return self.get_listener_class_from_type(self.type)
 
     def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
@@ -56,7 +57,12 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_dict(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> dict:
+    def to_dict(
+        self,
+        commander: "Commander",
+        show_stagers: bool = True,
+        show_devices: bool = True,
+    ) -> dict:
         return {
             "id": self.id,
             "name": self.name,
@@ -68,35 +74,50 @@ class ListenerModel(Base):
             "limit": self.limit,
             "active": self.is_active(commander),
             "options": self.options,
-            "stagers": [stager.to_dict(commander, show_listener=False)
-                        for stager in self.stagers] if show_stagers
+            "stagers": [
+                stager.to_dict(commander, show_listener=False)
+                for stager in self.stagers
+            ]
+            if show_stagers
             else [stager.id for stager in self.stagers],
-            "devices": [device.to_dict(commander, show_listener=False)
-                        for device in self.devices] if show_devices
-            else [device.id for device in self.devices]
+            "devices": [
+                device.to_dict(commander, show_listener=False)
+                for device in self.devices
+            ]
+            if show_devices
+            else [device.id for device in self.devices],
         }
 
-    def to_json(self, commander: "Commander", show_stagers: bool = True, show_devices: bool = True) -> str:
+    def to_json(
+        self,
+        commander: "Commander",
+        show_stagers: bool = True,
+        show_devices: bool = True,
+    ) -> str:
         """Return a JSON string"""
         return json.dumps(self.to_dict(commander, show_stagers, show_devices))
 
     @staticmethod
-    def get_listener_class(type: str) -> "BaseListener":
+    def get_listener_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
         if type not in AVAILABLE_KITS:
             raise ValueError(f"Listener '{type}' isn't available.")
-
         try:
-            open("Kits/" + type + "/listener.py", "r").close()
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"Listener {type} does not exist") from e
-        return importlib.import_module("Kits." + type + ".listener").Listener
+            listener = importlib.import_module(
+                "phoenix_framework.server.kits." + type.replace("-", "_") + ".listener"
+            ).Listener
+        except ModuleNotFoundError as e:
+            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
+        else:
+            return listener
 
     @staticmethod
     def get_all_listener_classes() -> list["BaseListener"]:
         """Get all listener classes."""
-        return [ListenerModel.get_listener_class(listener) for listener in AVAILABLE_KITS]
+        return [
+            ListenerModel.get_listener_class_from_type(listener)
+            for listener in AVAILABLE_KITS
+        ]
 
     def delete_stagers(self, session: Session):
         """Delete all stagers"""
@@ -105,7 +126,9 @@ class ListenerModel(Base):
 
     def edit(self, data: dict):
         """Edit the listener"""
-        options = self.listener_class.options  # so we dont have to get the class multiple times
+        options = (
+            self.listener_class.options
+        )  # so we dont have to get the class multiple times
         for key, value in data.items():
             if hasattr(self, key):
                 if value == str(getattr(self, key)):
@@ -146,5 +169,5 @@ class ListenerModel(Base):
             ssl=standard[4],
             limit=standard[5],
             enabled=standard[6],
-            options=data
+            options=data,
         )

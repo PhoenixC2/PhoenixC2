@@ -21,21 +21,22 @@ class ExamplePayload(BasePayload):
     def generate(stager_db: "StagerModel") -> FinalPayload:
         print("Generating example payload")
 
+
 class Stager(BaseStager):
     name = "example"
     description = "Example Stager"
-    options = DefaultStagerPool([
-        Option(
-            name="Example Option",
-            description="Example Option Description",
-            type=StringType(),
-            default="Example Default Value",
-            required=True
-        )
-    ])
-    payloads = {
-        "example": ExamplePayload
-    }
+    options = DefaultStagerPool(
+        [
+            Option(
+                name="Example Option",
+                description="Example Option Description",
+                type=StringType(),
+                default="Example Default Value",
+                required=True,
+            )
+        ]
+    )
+    payloads = {"example": ExamplePayload}
 
     def generate(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]:
         if stager_db.payload_type not in self.payloads:

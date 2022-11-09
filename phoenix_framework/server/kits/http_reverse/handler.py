@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from database import DeviceModel, Session, TaskModel
+from phoenix_framework.server.database import DeviceModel, Session, TaskModel
 
 from ..base_handler import BaseHandler
 
@@ -10,6 +10,6 @@ class Handler(BaseHandler):
 
     def __init__(self, db_entry: DeviceModel):
         super().__init__(db_entry)
-    
+
     def alive(self) -> bool:
         return self.db_entry.connected

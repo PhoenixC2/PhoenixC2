@@ -1,19 +1,26 @@
 import os
+
 import tomli
 import tomli_w
+
 from .resources import get_resource
 
-def load_config(name: str) -> dict:
+
+def load_config() -> dict:
     """Load the config from the config file."""
-    config = get_resource("server/data/configs/", name)
+    name = os.getenv("PHOENIX_CONFIG", "default") + ".toml"
+    config = get_resource("data/configs", name)
     if not os.path.exists(config):
         raise FileNotFoundError(f"Config file '{name}' does not exist.")
-    
-    with config.open() as f:
+
+    with config.open("rb") as f:
         return tomli.load(f)
 
-def save_config(name: str, config: dict):
+
+def save_config(config: dict, name: str = None) -> None:
     """Save the updated config to the config file."""
-    config = get_resource("server/data/configs/", name)
-    with config.open("w") as f:
-        return tomli_w.dump(config, f)
+    if name is None:
+        name = os.getenv("PHOENIX_CONFIG", "default") + ".toml"
+    config_file = get_resource("data/configs/", name)
+    with config_file.open("wb") as f:
+        tomli_w.dump(config, f)

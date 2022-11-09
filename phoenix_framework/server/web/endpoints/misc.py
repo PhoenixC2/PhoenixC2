@@ -1,9 +1,11 @@
-import phoenix_framework.server.creator.available as avl
 from flask import Blueprint, jsonify
+
+import phoenix_framework.server.creator.available as avl
 from phoenix_framework.server.utils.misc import get_network_interfaces, version
 from phoenix_framework.server.utils.web import authorized
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
+
 
 @misc_bp.route("/version", methods=["GET"])
 def get_phoenix():
@@ -20,6 +22,7 @@ def get_available():
         "loaders": avl.AVAILABLE_LOADERS,
     }
     return jsonify(options)
+
 
 @misc_bp.route("/interfaces", methods=["GET"])
 @authorized

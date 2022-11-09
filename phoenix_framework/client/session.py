@@ -8,11 +8,11 @@ class CliSession(Session):
         super().__init__()
         self.server = server
         self.api_key = ""
-    def login_pass(self, user:str, password:str):
+
+    def login_pass(self, user: str, password: str):
         """Login using username and password"""
         ...
-    
-    def login_key(self, key:str):
+
+    def login_key(self, key: str):
         """Login using Api-key"""
         ...
-    

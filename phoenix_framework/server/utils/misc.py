@@ -16,6 +16,7 @@ def get_network_interfaces() -> dict[str, str]:
             interfaces[interface] = ifaddresses[2][0]["addr"]
     return interfaces
 
+
 def get_platform() -> str:
     """Get the platform of the host"""
     system = platform.system()

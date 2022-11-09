@@ -1,8 +1,12 @@
+from flask import Blueprint, jsonify, render_template, request
+
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.database import LogEntryModel, Session, TaskModel
-from flask import Blueprint, jsonify, render_template, request
-from phoenix_framework.server.utils.web import (authorized, generate_response, get_current_user,
-                       get_messages)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 
 def tasks_bp(commander: Commander):
@@ -17,8 +21,8 @@ def tasks_bp(commander: Commander):
         if use_json:
             return jsonify([task.to_dict(commander) for task in tasks])
         opened_task = task_query.filter_by(id=request.args.get("open")).first()
-        return render_template("tasks.j2", tasks=tasks, opened_task=opened_task, messages=get_messages())
-    
+        return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
+
     @tasks_bp.route("/<string:id>/clear", methods=["POST"])
     @authorized
     def post_clear_tasks(id: str = "all"):
@@ -35,7 +39,9 @@ def tasks_bp(commander: Commander):
                     Session.delete(task)
         Session.commit()
         if count > 0:
-            LogEntryModel.log("info", "tasks", f"Cleared {count} tasks.", Session, get_current_user())
+            LogEntryModel.log(
+                "info", "tasks", f"Cleared {count} tasks.", Session, get_current_user()
+            )
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 
     return tasks_bp

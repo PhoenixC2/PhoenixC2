@@ -3,8 +3,16 @@ from datetime import datetime
 from hashlib import md5
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
-                        Table, Text)
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -22,6 +30,7 @@ user_logentry_association_table = Table(
 
 class UserModel(Base):
     """The Users Model"""
+
     __tablename__ = "Users"
     id: int = Column(Integer, primary_key=True, nullable=False)
     username: str = Column(String(50))
@@ -30,15 +39,15 @@ class UserModel(Base):
     admin: bool = Column(Boolean)
     last_activity: datetime = Column(DateTime)
     disabled: bool = Column(Boolean, default=False)
-    profile_picture: str = Column(
-        String(100), default="/static/images/icon.png")
+    profile_picture: str = Column(String(100), default="/static/images/icon.png")
     logs: list["LogEntryModel"] = relationship(
-        "LogEntryModel",
-        back_populates="user")  # Logs triggered by user
+        "LogEntryModel", back_populates="user"
+    )  # Logs triggered by user
     unseen_logs: list["LogEntryModel"] = relationship(
         "LogEntryModel",
         secondary=user_logentry_association_table,
-        back_populates="unseen_users")  # Logs not seen by user yet
+        back_populates="unseen_users",
+    )  # Logs not seen by user yet
 
     def set_password(self, password: str):
         """Hash the Password and save it."""
@@ -57,11 +66,17 @@ class UserModel(Base):
             "status": self.activity_status,
             "disabled": self.disabled,
             "profile_picture": self.profile_picture,
-            "logs": [log.to_dict(show_user=False, show_unseen_users=False) for log in self.logs] if show_logs
+            "logs": [
+                log.to_dict(show_user=False, show_unseen_users=False)
+                for log in self.logs
+            ]
+            if show_logs
             else [log.id for log in self.logs],
-            "unseen_logs": [log.to_dict(show_unseen_users=True) for log in self.unseen_logs] if show_unseen_logs
-            else [log.id for log in self.unseen_logs]
-
+            "unseen_logs": [
+                log.to_dict(show_unseen_users=True) for log in self.unseen_logs
+            ]
+            if show_unseen_logs
+            else [log.id for log in self.unseen_logs],
         }
 
     def __str__(self) -> str:
@@ -80,7 +95,7 @@ class UserModel(Base):
         else:
             return "offline"
 
-    def edit(self, data : dict) -> None:
+    def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
         self.admin = data.get("admin", self.admin)

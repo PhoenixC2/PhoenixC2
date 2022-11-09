@@ -5,12 +5,22 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String, Text)
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+
+from phoenix_framework.server.utils.resources import get_resource
 
 from .base import Base
 from .devices import DeviceModel
@@ -22,15 +32,13 @@ if TYPE_CHECKING:
 
 class TaskModel(Base):
     """The Tasks Model."""
+
     __tablename__ = "Tasks"
-    id: int = Column(Integer, primary_key=True,
-                     nullable=False)
+    id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(10), unique=True)
     description: str = Column(Text)
     device_id: int = Column(Integer, ForeignKey("Devices.id"))
-    device: "DeviceModel" = relationship(
-        "DeviceModel", back_populates="tasks"
-    )
+    device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
     type: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default={})
     created_at: datetime = Column(DateTime)
@@ -47,13 +55,15 @@ class TaskModel(Base):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "device": self.device.to_dict(commander, show_tasks=False) if show_device and self.device is not None else self.device_id,
+            "device": self.device.to_dict(commander, show_tasks=False)
+            if show_device and self.device is not None
+            else self.device_id,
             "type": self.type,
             "args": self.args,
             "created_at": self.created_at,
             "finished_at": self.finished_at,
             "success": self.success,
-            "output": self.output
+            "output": self.output,
         }
 
     def finish(self, output: str, success: bool, session: Session):
@@ -62,9 +72,8 @@ class TaskModel(Base):
         if self.type == "download" and success:
             file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
-            with open(os.path.join("Data", "Downloads",
-                                   file_name), "w") as f:
-                f.write(base64.b64decode(output).decode("utf-8"))
+            with get_resource("data/downloads/" + file_name).open("wb") as f:
+                f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
         else:
             self.output = output
@@ -72,17 +81,23 @@ class TaskModel(Base):
         self.finished_at = datetime.now()
         if success:
             LogEntryModel.log(
-                "success", "devices", f"Task '{self.name}' finished successfully", session)
+                "success",
+                "devices",
+                f"Task '{self.name}' finished successfully",
+                session,
+            )
         else:
             LogEntryModel.log(
-                "danger", "devices", f"Task '{self.name}' finished with an error", session)
+                "danger",
+                "devices",
+                f"Task '{self.name}' finished with an error",
+                session,
+            )
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel(
-            name=str(uuid1()).split("-")[0],
-            created_at=datetime.now(),
-            args={}
+            name=str(uuid1()).split("-")[0], created_at=datetime.now(), args={}
         )
         if type(device_or_id) == DeviceModel:
             task.device = device_or_id
@@ -95,8 +110,11 @@ class TaskModel(Base):
         return task
 
     """ default methods for every stager """
+
     @staticmethod
-    def upload(device_or_id: DeviceModel | int, file: FileStorage, target_path: str) -> "TaskModel":
+    def upload(
+        device_or_id: DeviceModel | int, file: FileStorage, target_path: str
+    ) -> "TaskModel":
         """Create a Upload task.
 
         Args:
@@ -129,7 +147,9 @@ class TaskModel(Base):
         return task
 
     @staticmethod
-    def reverse_shell(device_or_id: DeviceModel | int, address: str, port: int) -> "TaskModel":
+    def reverse_shell(
+        device_or_id: DeviceModel | int, address: str, port: int
+    ) -> "TaskModel":
         """Create a Reverse-Shell task , executed using netcat.
 
         Args:
@@ -146,7 +166,9 @@ class TaskModel(Base):
         return task
 
     @staticmethod
-    def remote_command_execution(device_or_id: DeviceModel | int, cmd: str) -> "TaskModel":
+    def remote_command_execution(
+        device_or_id: DeviceModel | int, cmd: str
+    ) -> "TaskModel":
         """Create a Remote-Command-Execution task.
 
         Args:
@@ -160,7 +182,9 @@ class TaskModel(Base):
         return task
 
     @staticmethod
-    def list_directory_contents(device_or_id: DeviceModel | int, dir: str) -> "TaskModel":
+    def list_directory_contents(
+        device_or_id: DeviceModel | int, dir: str
+    ) -> "TaskModel":
         """Create a List-Directory-Contents task.
 
         Args:

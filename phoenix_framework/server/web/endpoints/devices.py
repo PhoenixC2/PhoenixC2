@@ -1,11 +1,19 @@
 import os
 
-from commander import Commander
-from database import DeviceModel, LogEntryModel, Session, TaskModel
-from flask import Blueprint, jsonify, request, send_from_directory
-from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (authorized, generate_response, get_current_user,
-                       get_messages, render_template)
+from flask import Blueprint, jsonify, request, send_from_directory, render_template
+
+from phoenix_framework.server.commander import Commander
+from phoenix_framework.server.database import (
+    DeviceModel,
+    LogEntryModel,
+    Session,
+    TaskModel,
+)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."
@@ -22,9 +30,10 @@ def devices_bp(commander: Commander):
         devices: list[DeviceModel] = device_query.all()
         if use_json:
             return jsonify([device.to_dict(commander) for device in devices])
-        opened_device = device_query.filter_by(
-            id=request.args.get("open")).first()
-        return render_template("devices.j2", devices=devices, opened_device=opened_device)
+        opened_device = device_query.filter_by(id=request.args.get("open")).first()
+        return render_template(
+            "devices.j2", devices=devices, opened_device=opened_device
+        )
 
     @devices_bp.route("/<string:id>/clear", methods=["POST"])
     @authorized
@@ -43,7 +52,12 @@ def devices_bp(commander: Commander):
         Session.commit()
         if count > 0:
             LogEntryModel.log(
-                "info", "devices", f"Cleared {count} devices.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Cleared {count} devices.",
+                Session,
+                get_current_user(),
+            )
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
     @devices_bp.route("/downloads/<string:file_name>", methods=["GET"])
@@ -51,7 +65,9 @@ def devices_bp(commander: Commander):
     def get_downloads(file_name: str):
         if file_name is None:
             return generate_response("danger", "File name is missing.", "devices", 400)
-        return send_from_directory(os.path.join(os.getcwd(), "Data/Downloads/"), file_name, as_attachment=True)
+        return send_from_directory(
+            os.path.join(os.getcwd(), "Data/Downloads/"), file_name, as_attachment=True
+        )
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
     @authorized
@@ -73,7 +89,12 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created reverse shell task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created reverse shell task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
@@ -98,7 +119,12 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created remote command execution task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created remote command execution task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
@@ -122,7 +148,12 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "devices", 500)
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created get infos task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created get infos task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
@@ -147,7 +178,12 @@ def devices_bp(commander: Commander):
             return jsonify({"status": "error", "message": str(e)})
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created list directory contents task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created list directory contents task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
@@ -169,17 +205,23 @@ def devices_bp(commander: Commander):
             return generate_response("danger", "The file is missing", "devices", 400)
 
         if target_path is None:
-            return generate_response("danger", "Upload path is missing.", "devices", 400)
+            return generate_response(
+                "danger", "Upload path is missing.", "devices", 400
+            )
         try:
-            task = TaskModel.upload(
-                id, request.files.get('file'), target_path)
+            task = TaskModel.upload(id, request.files.get("file"), target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created upload task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created upload task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
@@ -206,9 +248,15 @@ def devices_bp(commander: Commander):
             return generate_response("danger", str(e), "/devices", 500)
         else:
             LogEntryModel.log(
-                "info", "devices",  f"Created download task for '{device.name}'.", Session, get_current_user())
+                "info",
+                "devices",
+                f"Created download task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
             if use_json:
                 return task.to_dict(commander, False)
             else:
                 return generate_response("success", TASK_CREATED, "devices")
+
     return devices_bp

@@ -1,10 +1,14 @@
 from uuid import uuid1
 
-from phoenix_framework.server.database import LogEntryModel, Session, UserModel
 from flask import Blueprint, jsonify, render_template, request
-from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (admin, authorized, generate_response, get_current_user,
-                       get_messages)
+
+from phoenix_framework.server.database import LogEntryModel, Session, UserModel
+from phoenix_framework.server.utils.web import (
+    admin,
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."
@@ -24,13 +28,20 @@ def get_users():
         data = [user.to_dict() for user in users]
         if curr_user.admin:
             for index, user in enumerate(users):
-                if user.admin and curr_user.username != "phoenix" \
-                        and curr_user.username != user.username:
+                if (
+                    user.admin
+                    and curr_user.username != "phoenix"
+                    and curr_user.username != user.username
+                ):
                     continue
                 data[index]["api_key"] = user.api_key
 
         return jsonify({"status": "success", ENDPOINT: data})
-    return render_template("users.j2", user=curr_user, users=users, opened_user=opened_user, messages=get_messages())
+    return render_template(
+        "users.j2",
+        users=users,
+        opened_user=opened_user,
+    )
 
 
 @users_bp.route("/add", methods=["POST"])
@@ -43,25 +54,32 @@ def add_user():
     disabled = request.form.get("disabled", "").lower() == "true"
 
     if not username or not password:
-        return generate_response("danger", "Username and password are required.", ENDPOINT, 400, use_json)
+        return generate_response(
+            "danger", "Username and password are required.", ENDPOINT, 400, use_json
+        )
 
     # Check if user exists
     if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("danger", "User already exists.", ENDPOINT, 403)
 
     user = UserModel(
-        username=username,
-        admin=admin,
-        disabled=disabled,
-        api_key=str(uuid1()))
+        username=username, admin=admin, disabled=disabled, api_key=str(uuid1())
+    )
     user.set_password(password)
 
     Session.add(user)
     Session.commit()
     LogEntryModel.log(
-        "success", "users", f"{'Admin' if user.admin else 'User'} {username} added.", Session, get_current_user())
+        "success",
+        "users",
+        f"{'Admin' if user.admin else 'User'} {username} added.",
+        Session,
+        get_current_user(),
+    )
     if use_json:
-        return jsonify({"status": "success", "message": "User added.", "user": user.to_dict()})
+        return jsonify(
+            {"status": "success", "message": "User added.", "user": user.to_dict()}
+        )
     return generate_response("success", "User added.", ENDPOINT)
 
 
@@ -78,7 +96,9 @@ def delete_user(id: int = None):
 
     # Check if user is head admin
     if user.username == "phoenix":
-        return generate_response("danger", "Can't delete the Phoenix Account.", ENDPOINT, 403)
+        return generate_response(
+            "danger", "Can't delete the Phoenix Account.", ENDPOINT, 403
+        )
 
     # Check if user is the operator
     if user == current_user:
@@ -88,8 +108,17 @@ def delete_user(id: int = None):
     Session.delete(user)
     Session.commit()
     LogEntryModel.log(
-        "success", "users", f"{'Admin' if user.admin else 'User'} {user.username} deleted.", Session, current_user)
-    return generate_response("success", f"Deleted {'Admin' if user.admin else 'User'} {user.username}", ENDPOINT)
+        "success",
+        "users",
+        f"{'Admin' if user.admin else 'User'} {user.username} deleted.",
+        Session,
+        current_user,
+    )
+    return generate_response(
+        "success",
+        f"Deleted {'Admin' if user.admin else 'User'} {user.username}",
+        ENDPOINT,
+    )
 
 
 @users_bp.route("/edit", methods=["PUT", "POST"])
@@ -106,8 +135,7 @@ def edit_user(id: int = None):
         form_data.pop("id")
 
     # Check if user exists
-    user: UserModel = Session.query(
-        UserModel).filter_by(id=id).first()
+    user: UserModel = Session.query(UserModel).filter_by(id=id).first()
     if user is None:
         return generate_response("danger", USER_DOES_NOT_EXIST, ENDPOINT, 400)
 
@@ -118,5 +146,11 @@ def edit_user(id: int = None):
     except Exception as e:
         return generate_response("danger", str(e), ENDPOINT, 500)
 
-    LogEntryModel.log("success", "users", f"{'Admin' if user.admin else 'User'} {user.username} edited.", Session, current_user)
+    LogEntryModel.log(
+        "success",
+        "users",
+        f"{'Admin' if user.admin else 'User'} {user.username} edited.",
+        Session,
+        current_user,
+    )
     return generate_response("success", f"Edited user with ID {id}.", ENDPOINT)

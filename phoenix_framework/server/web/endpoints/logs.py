@@ -1,7 +1,12 @@
+from flask import Blueprint, jsonify, render_template, request, render_template
+
 from phoenix_framework.server.database import LogEntryModel, Session
-from flask import Blueprint, jsonify, render_template, request
-from phoenix_framework.server.utils.web import (admin, authorized, generate_response, get_current_user,
-                       get_messages)
+from phoenix_framework.server.utils.web import (
+    admin,
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
@@ -20,7 +25,11 @@ def get_logs():
     opened_log = logentry_query.filter_by(id=request.args.get("open")).first()
     if use_json:
         return jsonify({"status": "success", ENDPOINT: [log.to_dict() for log in logs]})
-    return render_template("logs.j2", user=current_user, logs=logs, opened_log=opened_log, messages=get_messages())
+    return render_template(
+        "logs.j2",
+        logs=logs,
+        opened_log=opened_log,
+    )
 
 
 @logs_bp.route("/<string:id>/clear", methods=["POST"])
@@ -39,5 +48,7 @@ def post_clear_devices(id: str = "all"):
                 Session.delete(log)
     Session.commit()
     if count > 0:
-        LogEntryModel.log("info", "logs", f"Cleared {count} logs.", Session, get_current_user())
+        LogEntryModel.log(
+            "info", "logs", f"Cleared {count} logs.", Session, get_current_user()
+        )
     return generate_response("success", f"Cleared {count} log entries.", "logs")

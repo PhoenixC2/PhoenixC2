@@ -1,10 +1,18 @@
 """Arguments for the server."""
-import os
 import logging
+import os
 from argparse import ArgumentParser
-from phoenix_framework.server.utils.ui import ph_print, logo, log
-from phoenix_framework.server.utils.admin import recreate_ssl, recreate_super_user, reset_database
+
 from phoenix_framework.server import version
+from phoenix_framework.server.database.base import Base
+from phoenix_framework.server.utils.admin import (
+    regenerate_ssl,
+    recreate_super_user,
+    reset_database,
+    reset_server,
+    reset_table,
+)
+from phoenix_framework.server.utils.ui import log, logo, ph_print
 
 parser = ArgumentParser(
     "pfserver",
@@ -52,6 +60,12 @@ misc.add_argument(
 )
 admin = parser.add_argument_group("Admin")
 admin.add_argument(
+    "-r",
+    "--reset",
+    help="Reset the server to the default state",
+    action="store_true",
+)
+admin.add_argument(
     "--recreate-super-user", help="Recreate the super user.", action="store_true"
 )
 admin.add_argument("--backup-database", help="Backup database to the given location.")
@@ -59,29 +73,17 @@ admin.add_argument("--reset-database", help="Reset the database", action="store_
 admin.add_argument(
     "--reset-database-table",
     help="Reset a specified database table.",
-    choices=[
-        "users",
-        "listeners",
-        "stagers",
-        "credentials",
-        "operations",
-        "devices",
-        "logs",
-    ],
+    choices=[Base.metadata.tables.keys()],
 )
 
-admin.add_argument("--degrade", help="Degrade to a sub server", action="store_true")
 admin.add_argument(
-    "--promote", help="Promote the to a main server", action="store_true"
-)
-admin.add_argument(
-    "--recreate-ssl-certificates",
-    help="Recreate the ssl certificates",
+    "--regenerate-ssl",
+    help="Regenerate the ssl certificates",
     action="store_true",
 )
 
 
-def parse_args(args, config : dict) -> dict:
+def parse_args(args, config: dict) -> dict:
 
     # output args
     if args.version:
@@ -108,24 +110,34 @@ def parse_args(args, config : dict) -> dict:
             "critical",
         )
 
-
     # admin args
-    if args.reset_database:
-        if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
-            reset_database()
+    if args.reset:
+        reset_server()
     if args.recreate_super_user:
         recreate_super_user()
-    if args.recreate_ssl_certificates:
-        recreate_ssl()
-    
-    # web-server args
-    # replace config data with args if they are specified
+    if args.reset_database:
+        if (
+            input("Are you sure, that you want to reset the database [Y/n]: ").lower()
+            == "y"
+        ):
+            reset_database()
+    if args.reset_database_table:
+        if (
+            input(
+                f"Are you sure, that you want to reset the table {args.reset_database_table} [Y/n]: "
+            ).lower()
+            == "y"
+        ):
+            reset_table(args.reset_database_table)
+    if args.regenerate_ssl:
+        regenerate_ssl()
 
+    # web-server args
     if args.address:
         config["web"]["address"] = args.address
     if args.port:
         config["web"]["port"] = args.port
     if args.ssl:
         config["web"]["ssl"] = args.ssl
-    
+
     return config

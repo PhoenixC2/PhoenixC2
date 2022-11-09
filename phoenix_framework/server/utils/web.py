@@ -3,18 +3,24 @@ import os
 import threading
 from functools import wraps
 
-from phoenix_framework.server.database import LogEntryModel, Session, UserModel
 from flask import Flask, Response, abort, flash, jsonify, redirect
-from flask import render_template as render_template_flask
 from flask import request, session
 from werkzeug.serving import make_server
 
+from phoenix_framework.server.database import LogEntryModel, Session, UserModel
+
 
 def get_messages() -> list[LogEntryModel]:
-    return [log for log in Session.query(LogEntryModel).all() if get_current_user() in log.unseen_users]
+    return [
+        log
+        for log in Session.query(LogEntryModel).all()
+        if get_current_user() in log.unseen_users
+    ]
 
 
-def generate_response(alert: str, text: str, redirect_location: str = "", response_code: int = 200) -> Response:
+def generate_response(
+    alert: str, text: str, redirect_location: str = "", response_code: int = 200
+) -> Response:
     """Generate the Endpoint Response"""
     use_json = request.args.get("json", "").lower() == "true"
     if use_json:
@@ -26,8 +32,11 @@ def generate_response(alert: str, text: str, redirect_location: str = "", respon
 def get_current_user() -> UserModel | None:
     """Get the user object or None"""
     if request.headers.get("Api-Key") is not None:
-        user = Session.query(UserModel).filter_by(
-            api_key=request.headers.get("Api-Key")).first()
+        user = (
+            Session.query(UserModel)
+            .filter_by(api_key=request.headers.get("Api-Key"))
+            .first()
+        )
         if user is not None:
             return user
     return Session.query(UserModel).filter_by(password=session.get("password")).first()
@@ -35,6 +44,7 @@ def get_current_user() -> UserModel | None:
 
 def authorized(func):
     """Check if a user is logged in and redirect to login page if not"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         if os.getenv("PHOENIX_TEST") == "true":
@@ -51,11 +61,13 @@ def authorized(func):
             user.last_activity = datetime.datetime.now()
             Session.commit()
             return func(*args, **kwargs)
+
     return wrapper
 
 
 def admin(func):
     """Check if a user is admin and redirect to login page if not"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         if os.getenv("PHOENIX_TEST") == "true":
@@ -69,6 +81,7 @@ def admin(func):
                 return func(*args, **kwargs)
         else:
             return redirect("/auth/login")
+
     return wrapper
 
 
@@ -77,13 +90,20 @@ class FlaskThread(threading.Thread):
 
     def __init__(self, app: Flask, address: str, port: int, ssl: bool, name: str):
         threading.Thread.__init__(self)
+
         @app.teardown_request
         def remove(*args, **kwargs):
             Session.remove()
+
         self.name = name
         if ssl:
-            self.server = make_server(address, port, app, threaded=True, ssl_context=(
-                "Data/ssl.pem", "Data/ssl.key"))
+            self.server = make_server(
+                address,
+                port,
+                app,
+                threaded=True,
+                ssl_context=("Data/ssl.pem", "Data/ssl.key"),
+            )
         else:
             self.server = make_server(address, port, app, threaded=True)
 
@@ -92,8 +112,3 @@ class FlaskThread(threading.Thread):
 
     def shutdown(self):
         self.server.shutdown()
-
-
-def render_template(name: str, **kwargs) -> str:
-    """Updated version of render template to automatically fill user and messages"""
-    return render_template_flask(name, **kwargs, user=get_current_user(), messages=get_messages())

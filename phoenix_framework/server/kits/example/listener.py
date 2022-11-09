@@ -11,19 +11,22 @@ if TYPE_CHECKING:
 
 class Listener(BaseListener):
     """The Example Listener Class"""
+
     name = "example"
     description = "Example Listener"
     author: str = "Example"
     os = ["linux", "windows", "osx"]
-    options = DefaultListenerPool([
-        Option(
-            name="Example Option",
-            description="Example Option Description",
-            type=StringType(),
-            default="Example Default Value",
-            required=True
-        )
-    ])
+    options = DefaultListenerPool(
+        [
+            Option(
+                name="Example Option",
+                description="Example Option Description",
+                type=StringType(),
+                default="Example Default Value",
+                required=True,
+            )
+        ]
+    )
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)

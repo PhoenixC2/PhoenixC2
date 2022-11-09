@@ -3,16 +3,17 @@ import importlib
 import json
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.creator.available import AVAILABLE_KITS
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import relationship
+
+from phoenix_framework.server.creator.available import AVAILABLE_KITS
+from phoenix_framework.server.utils.resources import get_resource
 
 from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-
     from phoenix_framework.server.kits.base_stager import BasePayload, BaseStager
 
     from .listeners import ListenerModel
@@ -20,12 +21,12 @@ if TYPE_CHECKING:
 
 class StagerModel(Base):
     """The Stagers Model"""
+
     __tablename__ = "Stagers"
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
-    listener: "ListenerModel" = relationship(
-        "ListenerModel", back_populates="stagers")
+    listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
     payload_type: str = Column(String(100))
     encoding: str = Column(String(10))
     random_size: bool = Column(Boolean)
@@ -38,14 +39,16 @@ class StagerModel(Base):
         return {
             "id": self.id,
             "name": self.name,
-            "listener": self.listener.to_dict(commander, show_stagers=False) if show_listener else self.listener.id,
+            "listener": self.listener.to_dict(commander, show_stagers=False)
+            if show_listener
+            else self.listener.id,
             "payload_type": self.payload_type,
             "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,
             "delay": self.delay,
             "different_address": self.different_address,
-            "options": self.options
+            "options": self.options,
         }
 
     def to_json(self, commander: "Commander", show_listener: bool = True) -> str:
@@ -57,13 +60,14 @@ class StagerModel(Base):
         """Return the stager class based on its type."""
         if type not in AVAILABLE_KITS:
             raise ValueError(f"Stager '{type}' isn't available.")
-
         try:
-            open("Kits/" + type + "/stager.py", "r").close()
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"Stager {type} does not exist") from e
-        return importlib.import_module("Kits." + type + ".stager").Stager
+            stager = importlib.import_module(
+                "phoenix_framework.server.kits." + type.replace("-", "_") + ".stager"
+            ).Stager
+        except ModuleNotFoundError as e:
+            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
+        else:
+            return stager
 
     @property
     def stager_class(self) -> "BaseStager":
@@ -78,11 +82,15 @@ class StagerModel(Base):
     @staticmethod
     def get_all_stagers_classes() -> list["BaseStager"]:
         """Get all stager classes."""
-        return [StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS]
+        return [
+            StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS
+        ]
 
     def edit(self, data: dict):
         """Edit the stager"""
-        options = self.stager_class.options  # so we dont have to get the class multiple times
+        options = (
+            self.stager_class.options
+        )  # so we dont have to get the class multiple times
         for key, value in data.items():
             if hasattr(self, key):
                 if value == str(getattr(self, key)):
@@ -109,7 +117,16 @@ class StagerModel(Base):
         """Create the stager using custom validated data"""
         standard = []
         # gets standard values present in every stager and remove them to only leave options
-        for st_value in ["name", "listener", "payload_type", "encoding", "random_size", "timeout", "delay", "different_address"]:
+        for st_value in [
+            "name",
+            "listener",
+            "payload_type",
+            "encoding",
+            "random_size",
+            "timeout",
+            "delay",
+            "different_address",
+        ]:
             standard.append(data.pop(st_value))
         return cls(
             name=standard[0],
@@ -120,5 +137,5 @@ class StagerModel(Base):
             timeout=standard[5],
             delay=standard[6],
             different_address=standard[7],
-            options=data
+            options=data,
         )

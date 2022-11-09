@@ -4,7 +4,6 @@ from typing import Optional
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.database import ListenerModel, Session
-
 from phoenix_framework.server.kits.base_listener import BaseListener
 
 from .available import AVAILABLE_KITS
@@ -51,7 +50,7 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
         raise ValueError("Listener is already active!") from None
 
     # Get the Listener from the File
-    listener =  listener_db.create_listener_object(commander)
+    listener = listener_db.create_listener_object(commander)
 
     # Start Listener
     listener.start()
@@ -71,10 +70,11 @@ def stop_listener(listener_db: ListenerModel, commander: Commander) -> None:
     listener.stop()
     commander.remove_listener(listener_db.id)
 
+
 def restart_listener(listener_db: ListenerModel, commander: Commander) -> None:
     """
     Restart a listener
-    
+
     :param listener_id: The ID of the listener
     :param commander: The main commander
     """

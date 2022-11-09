@@ -3,9 +3,23 @@ import unittest
 import requests as r
 
 # Test the Frontend
-routes = ["dashboard", "listeners", "stagers", "devices", "users", "logs", "tasks", "settings", "credentials", "loaders", "modules"]
+routes = [
+    "dashboard",
+    "listeners",
+    "stagers",
+    "devices",
+    "users",
+    "logs",
+    "tasks",
+    "settings",
+    "credentials",
+    "loaders",
+    "modules",
+]
+
+
 class RouteTest(unittest.TestCase):
-    url = 'http://localhost:8080/'
+    url = "http://localhost:8080/"
     session = r.Session()
 
     def test_get_routes(self):
@@ -14,5 +28,6 @@ class RouteTest(unittest.TestCase):
             response = self.session.get(self.url + route)
             self.assertEqual(response.status_code, 200)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

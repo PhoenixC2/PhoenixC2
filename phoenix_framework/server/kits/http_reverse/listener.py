@@ -4,9 +4,20 @@ from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
 
-from database import DeviceModel, ListenerModel, LogEntryModel, Session
+from phoenix_framework.server.database import (
+    DeviceModel,
+    ListenerModel,
+    LogEntryModel,
+    Session,
+)
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
-from phoenix_framework.server.utils.options import ChoiceType, DefaultListenerPool, Option, StringType
+
+from phoenix_framework.server.utils.options import (
+    ChoiceType,
+    DefaultListenerPool,
+    Option,
+    StringType,
+)
 from phoenix_framework.server.utils.ui import log_connection
 from phoenix_framework.server.utils.web import FlaskThread
 
@@ -19,20 +30,22 @@ if TYPE_CHECKING:
 
 class Listener(BaseListener):
     """The Reverse Http Listener Class"""
+
     name = "http-reverse"
     description = "Reverse HTTP Listener"
     author: str = "Screamz2k"
     os = ["linux", "windows", "osx"]
-    options = DefaultListenerPool([
-        Option(
-            name="Server Header",
-            _real_name="header",
-            description="The Server Header to return",
-            type=StringType(),
-            default="Werkzeug/2.2.2 Python/3.10.7"
-        )
-
-    ])
+    options = DefaultListenerPool(
+        [
+            Option(
+                name="Server Header",
+                _real_name="header",
+                description="The Server Header to return",
+                type=StringType(),
+                default="Werkzeug/2.2.2 Python/3.10.7",
+            )
+        ]
+    )
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)
@@ -48,8 +61,12 @@ class Listener(BaseListener):
         def connect():
             data = request.get_json()
             if len(self.handlers) >= self.db_entry.limit:
-                LogEntryModel.log("error", "listeners",
-                                  f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.", Session)
+                LogEntryModel.log(
+                    "error",
+                    "listeners",
+                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.",
+                    Session,
+                )
                 return "", 404
             try:
                 address = data.get("address")
@@ -59,13 +76,19 @@ class Listener(BaseListener):
                 user = data.get("user", "")
                 admin = data.get("admin", False)
                 device = DeviceModel.generate_device(
-                    self, hostname, address, os, architecture, user, admin)
+                    self, hostname, address, os, architecture, user, admin
+                )
             except Exception:
                 return "", 404
             Session.add(device)
             Session.commit()
-            LogEntryModel.log("success", "devices",
-                              f"Device '{device.name}' connected to '{self.db_entry.name}'.", Session, log_to_cli=False)
+            LogEntryModel.log(
+                "success",
+                "devices",
+                f"Device '{device.name}' connected to '{self.db_entry.name}'.",
+                Session,
+                log_to_cli=False,
+            )
             log_connection(device)
             self.add_handler(Handler(device))
             return device.name
@@ -76,19 +99,31 @@ class Listener(BaseListener):
                 return "", 400
             handler = self.get_handler(name)
             if handler is None:
-                device: DeviceModel = Session.query(
-                    DeviceModel).filter_by(name=name).first()
+                device: DeviceModel = (
+                    Session.query(DeviceModel).filter_by(name=name).first()
+                )
                 if device is not None:
                     handler = Handler(device)
                     self.add_handler(handler)
                     LogEntryModel.log(
-                        "success", "devices", f"Device '{device}' reconnected to '{self.db_entry.name}'.", Session, log_to_cli=False)
+                        "success",
+                        "devices",
+                        f"Device '{device}' reconnected to '{self.db_entry.name}'.",
+                        Session,
+                        log_to_cli=False,
+                    )
                     log_connection(device, reconnect=True)
                 else:
                     return "", 404
             handler.db_entry.last_online = datetime.now()  # update last online
             Session.commit()
-            return jsonify([task.to_dict(self.commander, False) for task in handler.db_entry.tasks if task.finished_at is None])
+            return jsonify(
+                [
+                    task.to_dict(self.commander, False)
+                    for task in handler.db_entry.tasks
+                    if task.finished_at is None
+                ]
+            )
 
         @self.api.route("/finish/<string:name>", methods=["POST"])
         def finish_task(name: str = None):
@@ -116,22 +151,31 @@ class Listener(BaseListener):
         def download(file_name: str = None):
             if file_name is None:
                 return "", 404
-                
+
             print(os.path.join(os.getcwd(), "Data/Uploads/"))
-            return send_from_directory(os.path.join(os.getcwd(), "Data/Uploads/"), file_name, as_attachment=True)
+            return send_from_directory(
+                os.path.join(os.getcwd(), "Data/Uploads/"),
+                file_name,
+                as_attachment=True,
+            )
 
         @self.api.after_request
         def change_headers(r: Response):
             return r
 
     def start(self):
-        if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv("PHOENIX_DEBUG", ""):
+        if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(
+            "PHOENIX_DEBUG", ""
+        ):
             cli.show_server_banner = lambda *args: None
             logging.getLogger("werkzeug").disabled = True
         self.listener_thread = FlaskThread(
-            self.api, self.address, self.port, self.ssl, self.db_entry.name)
-        self.refresher_thread = Thread(target=self.refresh_connections,
-                                       name=self.db_entry.name+"-Refresher-Thread")
+            self.api, self.address, self.port, self.ssl, self.db_entry.name
+        )
+        self.refresher_thread = Thread(
+            target=self.refresh_connections,
+            name=self.db_entry.name + "-Refresher-Thread",
+        )
         self.listener_thread.start()
         self.refresher_thread.start()
 

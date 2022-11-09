@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING
 import importlib
 import os
+from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .base import BaseModule
 
@@ -17,7 +18,11 @@ def get_all_module_paths():
     for root, directories, files in os.walk("Modules"):
         for filename in files:
             # check that the root is not __pycache__ or the parent directory
-            if "__pycache__" in root or "base.py" in filename or "__init__.py" in filename:
+            if (
+                "__pycache__" in root
+                or "base.py" in filename
+                or "__init__.py" in filename
+            ):
                 print("lol")
                 continue
             filepath = os.path.join(root, filename)

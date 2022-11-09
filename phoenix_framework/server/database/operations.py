@@ -6,13 +6,13 @@ from sqlalchemy import Column, DateTime, Integer, String, Text
 from .base import Base
 
 
-#TODO Add Association Table for many to many relationship between operations and users|devices|credentials
+# TODO Add Association Table for many to many relationship between operations and users|devices|credentials
 class OperationModel(Base):
     """The Operation Model"""
+
     __tablename__ = "Operations"
-    log_id: int = Column(Integer, primary_key=True,
-                    nullable=False)
-    log_type: str = Column(String(10), name="type") # info|alert|error|critical|success
+    log_id: int = Column(Integer, primary_key=True, nullable=False)
+    log_type: str = Column(String(10), name="type")  # info|alert|error|critical|success
     time: datetime = Column(DateTime)
     description: str = Column(Text)
 
@@ -21,7 +21,5 @@ class OperationModel(Base):
             "id": self.log_id,
             "type": self.log_type,
             "time": self.time,
-            "description": self.description
+            "description": self.description,
         }
-
-    

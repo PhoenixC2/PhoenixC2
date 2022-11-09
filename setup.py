@@ -1,4 +1,5 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 setup(
     name="Phoenix-Framework",
     version="1.0",
@@ -18,7 +19,7 @@ setup(
     project_urls={
         "Documentation": "https://screamz2k.gitbook.io/phoenix-framework/",
         "Source": "https://github.com/Screamz2k/Phoenix-Framework",
-        "Tracker": "https://github.com/Screamz2k/Phoenix-Framework/issues"
+        "Tracker": "https://github.com/Screamz2k/Phoenix-Framework/issues",
     },
     include_package_data=True,
     install_requires=[
@@ -29,13 +30,21 @@ setup(
         "netifaces",
         "requests",
         "tomli",
-        "tomli_w"
+        "tomli_w",
+        "importlib-resources"
     ],
+    extras_require={
+        "dev": [
+            "black",
+            "isort",
+            "pylint"
+        ]
+    },
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pfserver=phoenix_framework.pfserver:main",
-            "pfclient=phoenix_framework.pfclient:main",
+            "pfserver=phoenix_framework.server.__main__:main",
+            "pfclient=phoenix_framework.client.__main__:main",
         ]
     },
 )

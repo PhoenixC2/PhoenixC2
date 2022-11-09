@@ -1,15 +1,16 @@
 """This is the C2 commander Class which handles the devices & listeners"""
 from typing import Optional
 
-from phoenix_framework.server.utils.web import FlaskThread
-
 from phoenix_framework.server.kits.base_handler import BaseHandler
 from phoenix_framework.server.kits.base_listener import BaseListener
+from phoenix_framework.server.utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"
 HANDLER_DOES_NOT_EXIST = "Handler doesn't exist"
 LISTENER_DOES_NOT_EXIST = "Listener doesn't exist"
-class Commander():
+
+
+class Commander:
     """This is the Commander which handles the devices & listeners"""
 
     def __init__(self):

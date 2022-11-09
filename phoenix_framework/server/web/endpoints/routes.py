@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
+from flask import Blueprint, render_template
+
 from phoenix_framework.server.database import DeviceModel, Session, TaskModel, UserModel
-from flask import Blueprint
-from phoenix_framework.server.utils.web import authorized, render_template
+from phoenix_framework.server.utils.web import authorized
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 import json
 
 json.dumps
+
 
 def routes_bp(commander: "Commander") -> Blueprint:
 
@@ -29,7 +31,9 @@ def routes_bp(commander: "Commander") -> Blueprint:
             if delta.seconds / 60 <= 60:
                 connections_last_hour += 1
                 connections_today += 1
-            elif datetime.date(device.connection_date) == datetime.date(datetime.today()):
+            elif datetime.date(device.connection_date) == datetime.date(
+                datetime.today()
+            ):
                 connections_today += 1
         active_users = 0
         for user in Session.query(UserModel).all():
@@ -45,6 +49,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
             active_listeners=active_listeners,
             active_users=active_users,
             connections_last_hour=connections_last_hour,
-            connections_today=connections_today)
+            connections_today=connections_today,
+        )
 
     return routes_bp

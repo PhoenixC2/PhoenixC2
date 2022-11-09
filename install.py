@@ -1,19 +1,24 @@
-import os
-import sys
-import shutil
+import argparse
 import importlib
+import os
 import random
+import shutil
 import string
 import subprocess
-import argparse
+import sys
 import uuid
 
 parser = argparse.ArgumentParser(
-    "install.py", "sudo install.py", "Install, modify or remove the Phoenix-Framework.")
+    "install.py", "sudo install.py", "Install, modify or remove the Phoenix-Framework."
+)
 parser.add_argument("--remove", help="Remove the framework :(", action="store_true")
 parser.add_argument("--update", help="Update the framework", action="store_true")
 parser.add_argument(
-    "-p", "--password", help="The password to use for the super user account instead of a random one.", default="")
+    "-p",
+    "--password",
+    help="The password to use for the super user account instead of a random one.",
+    default="",
+)
 
 
 def create_venv(path: str):
@@ -32,33 +37,44 @@ def run_setup():
     os.system("python -m pip install .")
     print("[SUCCESS] Installed package.")
 
+
 def generate_ssl(path: str):
     """Generate the ssl certificates"""
     print("[INFO] Generating SSL certificates.")
-    country = "".join(random.choices(
-        string.ascii_uppercase + string.digits, k=2))
-    state = "".join(random.choices(
-        string.ascii_uppercase + string.digits, k=10))
-    city = "".join(random.choices(
-        string.ascii_uppercase + string.digits, k=10))
+    country = "".join(random.choices(string.ascii_uppercase + string.digits, k=2))
+    state = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    city = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
     org = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    org_unit = "".join(random.choices(
-        string.ascii_uppercase + string.digits, k=10))
-    common_name = "".join(random.choices(
-        string.ascii_uppercase + string.digits, k=10))
-    subprocess.run(["openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", path + "/Server/Data/ssl.key",
-                    "-out", path + "/Server/Data/ssl.pem", "-subj", f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}"], shell=False)
+    org_unit = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    common_name = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    subprocess.run(
+        [
+            "openssl",
+            "req",
+            "-x509",
+            "-nodes",
+            "-days",
+            "365",
+            "-newkey",
+            "rsa:2048",
+            "-keyout",
+            path + "/Server/Data/ssl.key",
+            "-out",
+            path + "/Server/Data/ssl.pem",
+            "-subj",
+            f"/C={country}/ST={state}/L={city}/O={org}/OU={org_unit}/CN={common_name}",
+        ],
+        shell=False,
+    )
     print("[SUCCESS] Generated SSL certificates.")
 
 
-
-def create_config(path : str): 
+def create_config(path: str):
     """Create the config file"""
     print("[INFO] Creating config file.")
     with open(os.getcwd() + "Server/Data/config.toml") as f:
         config = f.read()
-    
-    
+
 
 def create_database():
     """Create the database"""
@@ -67,18 +83,23 @@ def create_database():
     Base.metadata.create_all(engine)
 
 
-def remove(): 
+def remove():
     """Remove the framework"""
     os.system("python -m pip uninstall Phoenix-Framework")
 
-def update(): 
+
+def update():
     """Update the framework"""
     os.system("python -m pip install Phoenix-Framework --upgrade")
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.remove:
-        if input("Are you sure you want to remove the Framework [Y/n]: ").lower() in ["y", "yes"]:
+        if input("Are you sure you want to remove the Framework [Y/n]: ").lower() in [
+            "y",
+            "yes",
+        ]:
             remove()
             print("Uninstalled.")
             exit()
