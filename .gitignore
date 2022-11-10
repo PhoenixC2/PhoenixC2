@@ -3,8 +3,8 @@ __pycache__
 *.sqlite3
 ssl.*
 downloads/
-uploads
-stagers
+uploads/
+stagers/
 venv
 build
 *.egg-info
