@@ -2,11 +2,8 @@ from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.database import LogEntryModel, Session, TaskModel
-from phoenix_framework.server.utils.web import (
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.utils.web import (authorized, generate_response,
+                                                get_current_user)
 
 
 def tasks_bp(commander: Commander):

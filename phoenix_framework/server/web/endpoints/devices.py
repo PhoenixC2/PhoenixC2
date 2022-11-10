@@ -1,19 +1,13 @@
 import os
 
-from flask import Blueprint, jsonify, request, send_from_directory, render_template
+from flask import (Blueprint, jsonify, render_template, request,
+                   send_from_directory)
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (
-    DeviceModel,
-    LogEntryModel,
-    Session,
-    TaskModel,
-)
-from phoenix_framework.server.utils.web import (
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.database import (DeviceModel, LogEntryModel,
+                                               Session, TaskModel)
+from phoenix_framework.server.utils.web import (authorized, generate_response,
+                                                get_current_user)
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."

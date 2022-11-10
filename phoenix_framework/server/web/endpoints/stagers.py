@@ -4,17 +4,10 @@ from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.creator.stager import add_stager
-from phoenix_framework.server.database import (
-    ListenerModel,
-    LogEntryModel,
-    Session,
-    StagerModel,
-)
-from phoenix_framework.server.utils.web import (
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
+                                               Session, StagerModel)
+from phoenix_framework.server.utils.web import (authorized, generate_response,
+                                                get_current_user)
 
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."

@@ -20,11 +20,12 @@ def start_listeners(commander: Commander):
     for listener in listeners:
         try:
             # Start Listener
-            start_listener(listener, commander)
-            log(f"Started listener {listener.name} ({listener.id})", "success")
+            status = start_listener(listener, commander)
         except Exception as error:
             log(str(error), "danger")
             exit()
+        else:
+            log(status, "success")
     Session.remove()
 
 

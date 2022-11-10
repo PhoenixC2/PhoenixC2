@@ -3,12 +3,9 @@ from uuid import uuid1
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
-from phoenix_framework.server.utils.web import (
-    admin,
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.utils.web import (admin, authorized,
+                                                generate_response,
+                                                get_current_user)
 
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."

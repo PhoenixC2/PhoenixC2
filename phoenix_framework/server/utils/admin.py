@@ -4,23 +4,71 @@ import string
 import subprocess
 from uuid import uuid1
 
-from phoenix_framework.server.database import (
-    CredentialModel,
-    DeviceModel,
-    ListenerModel,
-    LogEntryModel,
-    OperationModel,
-    Session,
-    StagerModel,
-    TaskModel,
-    UserModel,
-    engine,
-)
+from sqlalchemy import inspect
+
+from phoenix_framework.server.database import (CredentialModel, DeviceModel,
+                                               ListenerModel, LogEntryModel,
+                                               OperationModel, Session,
+                                               StagerModel, TaskModel,
+                                               UserModel, engine)
 from phoenix_framework.server.database.base import Base
+from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log
 
 DIRECTORIES = ["stagers", "downloads", "uploads"]
+
+
+def generate_database():
+    """Create the database."""
+    log("Creating database", "info")
+    Base.metadata.create_all(engine)
+    log("Created the database.", "success")
+
+
+def backup_database():
+    """Backup the database."""
+    ...
+
+
+def check_for_admin():
+    """Return if the server has an admin user."""
+    try:
+        return Session.query(UserModel).first() is not None
+    except Exception:
+        return False
+
+
+def check_for_directories():
+    """Return if the server has the directories."""
+    return all(
+        [
+            os.path.exists(str(get_resource("data", dir, skip_file_check=True)))
+            for dir in DIRECTORIES
+        ]
+    )
+
+
+def check_for_ssl():
+    """Return if the server has ssl certificates."""
+    return all(
+        [
+            os.path.exists(str(get_resource("data", dir, skip_file_check=True)))
+            for dir in ["ssl.pem", "ssl.key"]
+        ]
+    )
+
+
+def check_for_database():
+    """Return if the database exists."""
+    config = load_config()
+    # check if all the tables exist
+    return all(
+        [
+            table in inspect(engine).get_table_names()
+            for table in Base.metadata.tables.keys()
+        ]
+    )
 
 
 def regenerate_ssl():
@@ -69,18 +117,6 @@ def reset_directories():
 
     if has_to_create:
         log("Created directories.", "success")
-
-
-def generate_database():
-    """Create the database."""
-    log("Creating database", "info")
-    Base.metadata.create_all(engine)
-    log("Created the database.", "success")
-
-
-def backup_database():
-    """Backup the database."""
-    ...
 
 
 def reset_database():
@@ -137,19 +173,22 @@ def recreate_super_user():
     Session.remove()
 
 
-def reset_server(first_time: bool = False):
+def reset_server(reset: bool = False):
     """Reset the server to the default state."""
-    if first_time:
-        log("Setting up the server for the first time.", "info")
-    else:
+    if reset:
         log("Resetting server", "critical")
+    else:
+        log("Setting up the server.", "info")
+    if not check_for_directories() or reset:
+        reset_directories()
+    if not check_for_ssl() or reset:
+        regenerate_ssl()
+    if not check_for_database() or reset:
+        generate_database()
+    if not check_for_admin() or reset:
+        recreate_super_user()
 
-    reset_directories()
-    regenerate_ssl()
-    reset_database()
-    recreate_super_user()
-
-    if first_time:
+    if reset:
         log("Setup finished.", "success")
     else:
         log("Reset finished.", "success")
@@ -159,7 +198,9 @@ def check_for_setup():
     """Return if the server has been setup."""
     return all(
         [
-            os.path.exists(str(get_resource("data", dir, skip_file_check=True)))
-            for dir in DIRECTORIES + ["ssl.pem", "ssl.key"]
+            check_for_admin(),
+            check_for_directories(),
+            check_for_ssl(),
+            check_for_database(),
         ]
     )

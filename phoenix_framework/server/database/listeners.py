@@ -100,11 +100,12 @@ class ListenerModel(Base):
     @staticmethod
     def get_listener_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
+        type = type.replace("-", "_")
         if type not in AVAILABLE_KITS:
             raise ValueError(f"Listener '{type}' isn't available.")
         try:
             listener = importlib.import_module(
-                "phoenix_framework.server.kits." + type.replace("-", "_") + ".listener"
+                "phoenix_framework.server.kits." + type + ".listener"
             ).Listener
         except ModuleNotFoundError as e:
             raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e

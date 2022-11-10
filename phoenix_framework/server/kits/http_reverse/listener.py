@@ -4,20 +4,14 @@ from datetime import datetime
 from threading import Thread
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import (
-    DeviceModel,
-    ListenerModel,
-    LogEntryModel,
-    Session,
-)
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
 
-from phoenix_framework.server.utils.options import (
-    ChoiceType,
-    DefaultListenerPool,
-    Option,
-    StringType,
-)
+from phoenix_framework.server.database import (DeviceModel, ListenerModel,
+                                               LogEntryModel, Session)
+from phoenix_framework.server.utils.options import (ChoiceType,
+                                                    DefaultListenerPool,
+                                                    Option, StringType)
+from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log_connection
 from phoenix_framework.server.utils.web import FlaskThread
 
@@ -152,9 +146,8 @@ class Listener(BaseListener):
             if file_name is None:
                 return "", 404
 
-            print(os.path.join(os.getcwd(), "Data/Uploads/"))
             return send_from_directory(
-                os.path.join(os.getcwd(), "Data/Uploads/"),
+                get_resource("downloads"),
                 file_name,
                 as_attachment=True,
             )

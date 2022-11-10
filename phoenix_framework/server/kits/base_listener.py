@@ -2,7 +2,8 @@ import time
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import ListenerModel, LogEntryModel, Session
+from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
+                                               Session)
 from phoenix_framework.server.utils.options import OptionPool
 from phoenix_framework.server.utils.ui import log
 

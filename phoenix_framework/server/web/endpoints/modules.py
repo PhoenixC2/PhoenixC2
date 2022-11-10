@@ -1,10 +1,7 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.modules import get_all_module_paths, get_module
-from phoenix_framework.server.utils.web import (
-    authorized,
-    generate_response,
-)
+from phoenix_framework.server.utils.web import authorized, generate_response
 
 modules_bp = Blueprint("modules", __name__, url_prefix="/modules")
 

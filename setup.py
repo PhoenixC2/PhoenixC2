@@ -31,15 +31,9 @@ setup(
         "requests",
         "tomli",
         "tomli_w",
-        "importlib-resources"
+        "importlib-resources",
     ],
-    extras_require={
-        "dev": [
-            "black",
-            "isort",
-            "pylint"
-        ]
-    },
+    extras_require={"dev": ["black", "isort", "pylint"]},
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [

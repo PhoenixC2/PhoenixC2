@@ -19,8 +19,10 @@ from .users import UserModel
 c = load_config()["database"]
 
 if c["type"] == "sqlite":
-    conn_string = "sqlite:///" + str(
-        get_resource("data", c["sqlite_name"], skip_file_check=True)
+    conn_string = (
+        "sqlite:///"
+        + str(get_resource("data", c["sqlite_name"], skip_file_check=True))
+        + ".sqlite3"
     )
 
 else:

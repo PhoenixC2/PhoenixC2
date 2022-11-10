@@ -3,16 +3,8 @@ from datetime import datetime
 from hashlib import md5
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-    Text,
-)
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
+                        Table, Text)
 from sqlalchemy.orm import relationship
 
 from .base import Base

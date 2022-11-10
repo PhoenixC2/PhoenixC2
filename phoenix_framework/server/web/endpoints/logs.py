@@ -1,12 +1,9 @@
-from flask import Blueprint, jsonify, render_template, request, render_template
+from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.database import LogEntryModel, Session
-from phoenix_framework.server.utils.web import (
-    admin,
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.utils.web import (admin, authorized,
+                                                generate_response,
+                                                get_current_user)
 
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")

@@ -1,20 +1,17 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.creator.listener import (
-    add_listener,
-    restart_listener,
-    start_listener,
-    stop_listener,
-)
-from phoenix_framework.server.database import ListenerModel, LogEntryModel, Session
-from phoenix_framework.server.utils.misc import get_network_interfaces, get_platform
+from phoenix_framework.server.creator.listener import (add_listener,
+                                                       restart_listener,
+                                                       start_listener,
+                                                       stop_listener)
+from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
+                                               Session)
+from phoenix_framework.server.utils.misc import (get_network_interfaces,
+                                                 get_platform)
 from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (
-    authorized,
-    generate_response,
-    get_current_user,
-)
+from phoenix_framework.server.utils.web import (authorized, generate_response,
+                                                get_current_user)
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
@@ -54,9 +51,9 @@ def listeners_bp(commander: Commander):
                 for listener in ListenerModel.get_all_listener_classes():
                     listeners[listener.name] = listener.to_dict(commander)
             else:
-                listeners[type] = ListenerModel.get_listener_class(type).to_dict(
-                    commander
-                )
+                listeners[type] = ListenerModel.get_listener_class_from_type(
+                    type
+                ).to_dict(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
         else:
@@ -81,9 +78,9 @@ def listeners_bp(commander: Commander):
                 )
         try:
             # Check if data is valid and clean it
-            data = ListenerModel.get_listener_class(listener_type).options.validate_all(
-                data
-            )
+            data = ListenerModel.get_listener_class_from_type(
+                listener_type
+            ).options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 
@@ -205,7 +202,7 @@ def listeners_bp(commander: Commander):
             LogEntryModel.log(
                 "danger",
                 "listeners",
-                f"Failed to start listener '{listener.name}' ({listener.type}): {str(e)}",
+                status,
                 Session,
                 get_current_user(),
             )
@@ -214,7 +211,7 @@ def listeners_bp(commander: Commander):
             LogEntryModel.log(
                 "success",
                 "listeners",
-                f"Started listener '{listener.name}' ({listener.type})",
+                status,
                 Session,
                 get_current_user(),
             )

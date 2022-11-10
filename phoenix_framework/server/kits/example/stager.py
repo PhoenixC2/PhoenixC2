@@ -1,13 +1,12 @@
-import os
 from typing import TYPE_CHECKING
 
-import jinja2
-from utils.options import DefaultStagerPool, Option, OptionPool, StringType
+from phoenix_framework.server.utils.options import (DefaultStagerPool, Option,
+                                                    OptionPool, StringType)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
 if TYPE_CHECKING:
-    from database import StagerModel
+    from phoenix_framework.server.database import StagerModel
 
 
 class ExamplePayload(BasePayload):

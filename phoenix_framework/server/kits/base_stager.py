@@ -2,7 +2,8 @@ import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import DefaultStagerPool, OptionPool
+from phoenix_framework.server.utils.options import (DefaultStagerPool,
+                                                    OptionPool)
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander

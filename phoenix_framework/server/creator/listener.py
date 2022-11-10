@@ -55,7 +55,7 @@ def start_listener(listener_db: ListenerModel, commander: Commander) -> Optional
     # Start Listener
     listener.start()
     commander.add_active_listener(listener)
-    return f"Started Listener with ID {listener_db.id}"
+    return f"Started Listener '{listener_db.name}' ({listener_db.type}) on {listener_db.address}:{listener_db.port} ({listener_db.id})"
 
 
 def stop_listener(listener_db: ListenerModel, commander: Commander) -> None:

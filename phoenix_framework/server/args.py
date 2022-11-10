@@ -5,13 +5,10 @@ from argparse import ArgumentParser
 
 from phoenix_framework.server import version
 from phoenix_framework.server.database.base import Base
-from phoenix_framework.server.utils.admin import (
-    regenerate_ssl,
-    recreate_super_user,
-    reset_database,
-    reset_server,
-    reset_table,
-)
+from phoenix_framework.server.utils.admin import (recreate_super_user,
+                                                  regenerate_ssl,
+                                                  reset_database, reset_server,
+                                                  reset_table)
 from phoenix_framework.server.utils.ui import log, logo, ph_print
 
 parser = ArgumentParser(

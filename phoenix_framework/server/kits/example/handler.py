@@ -1,4 +1,4 @@
-from database import DeviceModel
+from phoenix_framework.server.database import DeviceModel
 
 from ..base_handler import BaseHandler
 

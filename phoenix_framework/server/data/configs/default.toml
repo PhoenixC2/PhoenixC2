@@ -2,7 +2,7 @@
 address = "localhost"
 port = 8080
 ssl = false
-secret_key = "VpLOuzYziZr8931e5yxuDlbOqaokaec1"
+secret_key = ""
 show_cookie = false
 show_cookie_name = "show_server"
 show_cookie_value = "plsshowtheserver"
@@ -15,7 +15,7 @@ main_server_auth = "Authentication-Key"
 
 [database]
 type = "sqlite"
-sqlite_name = "default.sqlite"
+sqlite_name = "default"
 user = "phoenix"
 pass = "YourS3cuReP4ss"
 host = "localhost"

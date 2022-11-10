@@ -3,11 +3,12 @@ import os
 import threading
 from functools import wraps
 
-from flask import Flask, Response, abort, flash, jsonify, redirect
-from flask import request, session
+from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
+                   session)
 from werkzeug.serving import make_server
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
+from phoenix_framework.server.utils.resources import get_resource
 
 
 def get_messages() -> list[LogEntryModel]:
@@ -102,7 +103,10 @@ class FlaskThread(threading.Thread):
                 port,
                 app,
                 threaded=True,
-                ssl_context=("Data/ssl.pem", "Data/ssl.key"),
+                ssl_context=(
+                    str(get_resource("data", "ssl.pem")),
+                    str(get_resource("data", "ssl.key")),
+                ),
             )
         else:
             self.server = make_server(address, port, app, threaded=True)

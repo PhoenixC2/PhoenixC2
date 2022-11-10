@@ -14,7 +14,8 @@ from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_stager import BasePayload, BaseStager
+    from phoenix_framework.server.kits.base_stager import (BasePayload,
+                                                           BaseStager)
 
     from .listeners import ListenerModel
 
