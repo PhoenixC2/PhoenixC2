@@ -59,6 +59,7 @@ class StagerModel(Base):
     @staticmethod
     def get_stager_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
+        type = type.replace("-", "_")
         if type not in AVAILABLE_KITS:
             raise ValueError(f"Stager '{type}' isn't available.")
         try:

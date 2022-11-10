@@ -17,7 +17,7 @@ def get_resource(
         )
     else:
         resource = files("phoenix_framework.server." + path.replace("/", "."))
-    if resource.exists() or skip_file_check:
+    if os.path.exists(str(resource)) or skip_file_check:
         return resource
     else:
         raise FileNotFoundError(f"Resource '{file}' does not exist.")

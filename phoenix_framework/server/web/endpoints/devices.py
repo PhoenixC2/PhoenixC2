@@ -8,6 +8,7 @@ from phoenix_framework.server.database import (DeviceModel, LogEntryModel,
                                                Session, TaskModel)
 from phoenix_framework.server.utils.web import (authorized, generate_response,
                                                 get_current_user)
+from phoenix_framework.server.utils.resources import get_resource
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."
@@ -60,7 +61,7 @@ def devices_bp(commander: Commander):
         if file_name is None:
             return generate_response("danger", "File name is missing.", "devices", 400)
         return send_from_directory(
-            os.path.join(os.getcwd(), "Data/Downloads/"), file_name, as_attachment=True
+            str(get_resource("data/downloads", skip_file_check=True)), file_name, as_attachment=True
         )
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])

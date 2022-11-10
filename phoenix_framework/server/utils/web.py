@@ -3,8 +3,7 @@ import os
 import threading
 from functools import wraps
 
-from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
-                   session)
+from flask import Flask, Response, abort, flash, jsonify, redirect, request, session
 from werkzeug.serving import make_server
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
@@ -48,11 +47,14 @@ def authorized(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        use_json = request.args.get("json", "").lower() == "true"
         if os.getenv("PHOENIX_TEST") == "true":
             if session.get("password") is None:
                 session["password"] = Session.query(UserModel).first().password
         user = get_current_user()
         if user is None:
+            if use_json:
+                return jsonify({"status": "error", "message": "Unauthorized"}), 401
             return redirect("/auth/login")
         else:
             if user.disabled:
@@ -71,12 +73,17 @@ def admin(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        use_json = request.args.get("json", "").lower() == "true"
         if os.getenv("PHOENIX_TEST") == "true":
             if session.get("password") is None:
                 session["password"] = Session.query(UserModel).first().password
         user = get_current_user()
         if user is not None:
             if not user.admin:
+                if use_json:
+                    return (
+                        jsonify({"status": "error", "message": "Unauthorized"}),
+                    ), 401
                 abort(403)
             else:
                 return func(*args, **kwargs)

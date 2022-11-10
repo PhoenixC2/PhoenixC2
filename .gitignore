@@ -2,8 +2,9 @@ __pycache__
 *.pyc
 *.sqlite3
 ssl.*
-Downloads/**
-Uploads/**
+downloads/
+uploads
+stagers
 venv
 build
 *.egg-info

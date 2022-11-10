@@ -64,7 +64,7 @@ class TaskModel(Base):
         if self.type == "download" and success:
             file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
-            with get_resource("data/downloads/" + file_name).open("wb") as f:
+            with get_resource("data/downloads/", file_name, skip_file_check=True).open("wb") as f:
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
         else:
@@ -117,7 +117,7 @@ class TaskModel(Base):
         """
         if target_path is None:
             raise TypeError("File path is missing.")
-        file.save(os.path.join("Data", "Uploads", secure_filename(file.name)))
+        file.save(get_resource("data/uploads", secure_filename(file.name), skip_file_check=True))
         task = TaskModel.generate_task(device_or_id)
         task.type = "upload"
         task.args["file_name"] = secure_filename(file.name)
