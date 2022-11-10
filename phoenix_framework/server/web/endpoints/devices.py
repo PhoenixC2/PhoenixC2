@@ -55,14 +55,7 @@ def devices_bp(commander: Commander):
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
-    @devices_bp.route("/downloads/<string:file_name>", methods=["GET"])
-    @authorized
-    def get_downloads(file_name: str):
-        if file_name is None:
-            return generate_response("danger", "File name is missing.", "devices", 400)
-        return send_from_directory(
-            str(get_resource("data/downloads", skip_file_check=True)), file_name, as_attachment=True
-        )
+
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
     @authorized
