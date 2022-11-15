@@ -31,7 +31,7 @@ def backup_database():
     ...
 
 
-def check_for_admin():
+def check_for_super_user():
     """Return if the server has an admin user."""
     try:
         return Session.query(UserModel).first() is not None
@@ -162,7 +162,7 @@ def recreate_super_user():
         log("Deleted current admin.", "success")
     log("Creating new admin", "info")
     password = "".join(
-        random.choice(string.ascii_letters + string.digits) for _ in range(10)
+        random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(10)
     )
     admin = UserModel(id=1, username="phoenix", admin=True, api_key=str(uuid1()))
     admin.set_password(password)
@@ -179,26 +179,29 @@ def reset_server(reset: bool = False):
         log("Resetting server", "critical")
     else:
         log("Setting up the server.", "info")
+    print(check_for_database())
+    print(check_for_super_user())
+    print(Session.query(UserModel).first())
     if not check_for_directories() or reset:
         reset_directories()
     if not check_for_ssl() or reset:
         regenerate_ssl()
     if not check_for_database() or reset:
         generate_database()
-    if not check_for_admin() or reset:
+    if not check_for_super_user() or reset:
         recreate_super_user()
 
     if reset:
-        log("Setup finished.", "success")
-    else:
         log("Reset finished.", "success")
+    else:
+        log("Setup finished.", "success")
 
 
 def check_for_setup():
     """Return if the server has been setup."""
     return all(
         [
-            check_for_admin(),
+            check_for_super_user(),
             check_for_directories(),
             check_for_ssl(),
             check_for_database(),

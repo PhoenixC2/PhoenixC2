@@ -1,7 +1,6 @@
 """Starts the different services"""
 import threading
 
-from phoenix_framework.server.creator.listener import start_listener
 from phoenix_framework.server.database import ListenerModel, Session
 from phoenix_framework.server.utils.ui import log
 from phoenix_framework.server.utils.web import FlaskThread
@@ -20,7 +19,7 @@ def start_listeners(commander: Commander):
     for listener in listeners:
         try:
             # Start Listener
-            status = start_listener(listener, commander)
+            status = listener.start(commander)
         except Exception as error:
             log(str(error), "danger")
             exit()

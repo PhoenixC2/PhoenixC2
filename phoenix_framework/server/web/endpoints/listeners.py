@@ -1,10 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.creator.listener import (add_listener,
-                                                       restart_listener,
-                                                       start_listener,
-                                                       stop_listener)
 from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
                                                Session)
 from phoenix_framework.server.utils.misc import (get_network_interfaces,
@@ -26,7 +22,7 @@ def listeners_bp(commander: Commander):
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
-        listener_types = ListenerModel.get_all_listener_classes()
+        listener_types = ListenerModel.get_all_classes()
         listeners: list[ListenerModel] = listener_query.all()
         if use_json:
             return jsonify([listener.to_dict(commander) for listener in listeners])
@@ -48,10 +44,10 @@ def listeners_bp(commander: Commander):
         type = request.args.get("type")
         try:
             if type == "all" or type is None:
-                for listener in ListenerModel.get_all_listener_classes():
+                for listener in ListenerModel.get_all_classes():
                     listeners[listener.name] = listener.to_dict(commander)
             else:
-                listeners[type] = ListenerModel.get_listener_class_from_type(
+                listeners[type] = ListenerModel.get_class_from_type(
                     type
                 ).to_dict(commander)
         except Exception as e:
@@ -78,7 +74,7 @@ def listeners_bp(commander: Commander):
                 )
         try:
             # Check if data is valid and clean it
-            data = ListenerModel.get_listener_class_from_type(
+            data = ListenerModel.get_class_from_type(
                 listener_type
             ).options.validate_all(data)
         except Exception as e:
@@ -88,7 +84,7 @@ def listeners_bp(commander: Commander):
         try:
             # has to be added again bc it got filtered out by options.validate_data(data)
             data["type"] = listener_type
-            listener = add_listener(data)
+            listener = ListenerModel.add(Session, data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         LogEntryModel.log(
@@ -125,7 +121,7 @@ def listeners_bp(commander: Commander):
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         if stop and listener.is_active(commander):
-            stop_listener(listener, commander)
+            listener.stop(commander)
             listener.delete_stagers(Session)
             Session().delete(listener)
             Session().commit()
@@ -197,7 +193,7 @@ def listeners_bp(commander: Commander):
         log(f"({get_current_user().username}) Starting Listener with ID {id}", "info")
 
         try:
-            status = start_listener(listener, commander)
+            status = listener.start(commander)
         except Exception as e:
             LogEntryModel.log(
                 "danger",
@@ -229,7 +225,7 @@ def listeners_bp(commander: Commander):
         log(f"({get_current_user().username}) Stopping Listener with ID {id}", "info")
 
         try:
-            stop_listener(listener, commander)
+            listener.stop(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
@@ -252,10 +248,10 @@ def listeners_bp(commander: Commander):
 
         try:
             log(
-                f"({get_current_user().username}) restarting listener with ID {id}.",
-                "success",
+                f"({get_current_user().username}) Restarting listener with ID {id}.",
+                "info",
             )
-            restart_listener(listener, commander)
+            listener.restart(commander)
         except Exception as e:
             LogEntryModel.log(
                 "danger",

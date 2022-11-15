@@ -109,7 +109,7 @@ def parse_args(args, config: dict) -> dict:
 
     # admin args
     if args.reset:
-        reset_server()
+        reset_server(True)
     if args.recreate_super_user:
         recreate_super_user()
     if args.reset_database:

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, MutableSequence
 
 import requests
 
-from phoenix_framework.server.creator.available import AVAILABLE_ENCODINGS
+from phoenix_framework.server import AVAILABLE_ENCODINGS
 from phoenix_framework.server.database import ListenerModel, Session
 from phoenix_framework.server.database.base import Base
 

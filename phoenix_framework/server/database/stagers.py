@@ -1,21 +1,20 @@
 """The Stagers Model"""
 import importlib
 import json
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session 
 
-from phoenix_framework.server.creator.available import AVAILABLE_KITS
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix_framework.server import AVAILABLE_KITS
 
 from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_stager import (BasePayload,
-                                                           BaseStager)
+    from phoenix_framework.server.kits.base_stager import BasePayload, BaseStager
 
     from .listeners import ListenerModel
 
@@ -35,6 +34,8 @@ class StagerModel(Base):
     delay: int = Column(Integer)
     different_address = Column(String(100))
     options: dict = Column(MutableDict.as_mutable(JSON), default={})
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     def to_dict(self, commander: "Commander", show_listener: bool = True) -> dict:
         return {
@@ -57,7 +58,7 @@ class StagerModel(Base):
         return json.dumps(self.to_dict(commander, show_listener))
 
     @staticmethod
-    def get_stager_class_from_type(type: str) -> "BaseStager":
+    def get_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
         type = type.replace("-", "_")
         if type not in AVAILABLE_KITS:
@@ -74,7 +75,7 @@ class StagerModel(Base):
     @property
     def stager_class(self) -> "BaseStager":
         """Returns the stager class."""
-        return self.get_stager_class_from_type(self.listener.type)
+        return self.get_class_from_type(self.listener.type)
 
     @property
     def payload_class(self) -> "BasePayload":
@@ -82,10 +83,10 @@ class StagerModel(Base):
         return self.stager_class.payloads[self.payload_type]
 
     @staticmethod
-    def get_all_stagers_classes() -> list["BaseStager"]:
+    def get_all_classes() -> list["BaseStager"]:
         """Get all stager classes."""
         return [
-            StagerModel.get_stager_class_from_type(stager) for stager in AVAILABLE_KITS
+            StagerModel.get_class_from_type(stager) for stager in AVAILABLE_KITS
         ]
 
     def edit(self, data: dict):
@@ -115,7 +116,7 @@ class StagerModel(Base):
                     raise KeyError(f"{key} is not a valid key")
 
     @classmethod
-    def create_stager_from_data(cls, data: dict):
+    def create_from_data(cls, data: dict):
         """Create the stager using custom validated data"""
         standard = []
         # gets standard values present in every stager and remove them to only leave options
@@ -141,3 +142,11 @@ class StagerModel(Base):
             different_address=standard[7],
             options=data,
         )
+
+    @classmethod
+    def add(cls, session: Session, data: dict) -> "StagerModel":
+        """Add a stager to the database"""
+        stager = cls.create_from_data(data)
+        session.add(stager)
+        session.commit()
+        return stager

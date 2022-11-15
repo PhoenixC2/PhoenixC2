@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class BaseListener:
-    """This is the Base Class for all Listeners."""
+    """This is the base class for all listeners."""
 
     name: str = "BaseListener"
-    description: str = "This is the Base Class for all Listeners."
+    description: str = "This is the base class for all listeners."
     author: str = "Unknown"
     # The supported OS for the listener
     os: list[str] = ["linux", "windows", "osx"]
@@ -45,12 +45,12 @@ class BaseListener:
         return handlers
 
     def add_handler(self, handler: BaseHandler):
-        """Add a Handler to the Listener"""
+        """Add a handler to the listener."""
         self.commander.add_active_handler(handler)
 
     def remove_handler(self, handler: BaseHandler):
-        """Remove a Handler from the Listener"""
-        self.commander.remove_handler(handler.id)
+        """Remove a handler from the listener."""
+        self.commander.remove_active_handler(handler.id)
 
     def get_handler(self, id_or_name: int | str) -> BaseHandler | None:
         """Return a handler based on its id or name."""
@@ -93,17 +93,17 @@ class BaseListener:
 
     @abstractmethod
     def start(self):
-        """Start the Listener."""
+        """Start the listener."""
         ...
 
     @abstractmethod
     def stop(self):
-        """Stop the Listener."""
+        """Stop the listener."""
         ...
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
-        """Return a dict with all options of the Listener."""
+        """Return a dict with all options of the listener."""
         return {
             "name": cls.name,
             "description": cls.description,

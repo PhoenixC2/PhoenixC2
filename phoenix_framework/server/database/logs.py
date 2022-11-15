@@ -18,7 +18,7 @@ class LogEntryModel(Base):
     # info|alert|error|critical|success
     alert: str = Column(String(10), name="type")
     endpoint = Column(String(50))
-    time: datetime = Column(DateTime)
+    time: datetime = Column(DateTime, default=datetime.now)
     description: str = Column(Text(100))
     user_id: int = Column(Integer, ForeignKey("Users.id"))
     user: "UserModel" = relationship(
@@ -66,7 +66,6 @@ class LogEntryModel(Base):
     ) -> "LogEntryModel":
         return cls(
             alert=alert,
-            time=datetime.now(),
             description=description,
             user=user,
             unseen_users=unseen_users,

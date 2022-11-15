@@ -29,7 +29,7 @@ class UserModel(Base):
     password: str = Column(Text)
     api_key: str = Column(String(30), nullable=False)
     admin: bool = Column(Boolean)
-    last_activity: datetime = Column(DateTime)
+    last_activity: datetime = Column(DateTime, onupdate=datetime.now)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(String(100), default="/static/images/icon.png")
     logs: list["LogEntryModel"] = relationship(

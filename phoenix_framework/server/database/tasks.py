@@ -33,8 +33,8 @@ class TaskModel(Base):
     device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
     type: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default={})
-    created_at: datetime = Column(DateTime)
-    finished_at: datetime = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.now)
+    finished_at: datetime = Column(DateTime, onupdate=datetime.now)
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
 
@@ -89,7 +89,7 @@ class TaskModel(Base):
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel(
-            name=str(uuid1()).split("-")[0], created_at=datetime.now(), args={}
+            name=str(uuid1()).split("-")[0], args={}
         )
         if type(device_or_id) == DeviceModel:
             task.device = device_or_id

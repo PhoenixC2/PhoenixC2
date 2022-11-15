@@ -1,13 +1,15 @@
 """The Listeners Model"""
 import importlib
 import json
+import time
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, Integer, String
+from sqlalchemy import JSON, Boolean, Column, Integer, String, DateTime
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
-from phoenix_framework.server.creator.available import AVAILABLE_KITS
+from phoenix_framework.server import AVAILABLE_KITS
 from phoenix_framework.server.utils.resources import get_resource
 
 from .base import Base
@@ -40,11 +42,13 @@ class ListenerModel(Base):
     devices: list["DeviceModel"] = relationship(
         "DeviceModel", back_populates="listener"
     )
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     @property
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
-        return self.get_listener_class_from_type(self.type)
+        return self.get_class_from_type(self.type)
 
     def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
@@ -86,6 +90,8 @@ class ListenerModel(Base):
             ]
             if show_devices
             else [device.id for device in self.devices],
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
     def to_json(
@@ -98,7 +104,7 @@ class ListenerModel(Base):
         return json.dumps(self.to_dict(commander, show_stagers, show_devices))
 
     @staticmethod
-    def get_listener_class_from_type(type: str) -> "BaseListener":
+    def get_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
         type = type.replace("-", "_")
         if type not in AVAILABLE_KITS:
@@ -113,12 +119,33 @@ class ListenerModel(Base):
             return listener
 
     @staticmethod
-    def get_all_listener_classes() -> list["BaseListener"]:
+    def get_all_classes() -> list["BaseListener"]:
         """Get all listener classes."""
         return [
-            ListenerModel.get_listener_class_from_type(listener)
-            for listener in AVAILABLE_KITS
+            ListenerModel.get_class_from_type(listener) for listener in AVAILABLE_KITS
         ]
+
+    def start(self, commander: "Commander") -> str:
+        """Start the listener"""
+        listener_obj = self.create_object(commander)
+        listener_obj.start()
+        commander.add_active_listener(listener_obj)
+        return f"Started listener '{self.name}' ({self.type}) on {self.address}:{self.port} ({self.id})"
+
+    def stop(self, commander: "Commander"):
+        """Stop the listener"""
+        if self.is_active(commander):
+            listener_obj = commander.get_active_listener(self.id)
+            listener_obj.stop()
+            commander.remove_active_listener(self.id)
+        else:
+            raise ValueError(f"Listener '{self.name}' isn't active.")
+
+    def restart(self, commander: "Commander"):
+        """Restart the listener"""
+        self.stop(commander)
+        time.sleep(2)
+        self.start(commander)
 
     def delete_stagers(self, session: Session):
         """Delete all stagers"""
@@ -151,12 +178,12 @@ class ListenerModel(Base):
                 else:
                     raise KeyError(f"{key} is not a valid key")
 
-    def create_listener_object(self, commander: "Commander") -> "BaseListener":
+    def create_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""
         return self.listener_class(commander, self)
 
     @classmethod
-    def create_listener_from_data(cls, data: dict):
+    def create_from_data(cls, data: dict):
         """Create the stager using listener validated data"""
         standard = []
         # gets standard values present in every listener and remove them to only leave options
@@ -172,3 +199,10 @@ class ListenerModel(Base):
             enabled=standard[6],
             options=data,
         )
+
+    @classmethod
+    def add(cls, session: Session, data: dict) -> "ListenerModel":
+        """Add a listener to the database"""
+        listener = cls.create_from_data(data)
+        session.add(listener)
+        return listener

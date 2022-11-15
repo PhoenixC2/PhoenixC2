@@ -3,7 +3,6 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.creator.stager import add_stager
 from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
                                                Session, StagerModel)
 from phoenix_framework.server.utils.web import (authorized, generate_response,
@@ -24,7 +23,7 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "") == "true"
         stager_query = Session.query(StagerModel)
         stagers: list[StagerModel] = stager_query.all()
-        stager_types = StagerModel.get_all_stagers_classes()
+        stager_types = StagerModel.get_all_classes()
         listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         if use_json:
             return jsonify([stager.to_dict(commander) for stager in stagers])
@@ -45,10 +44,10 @@ def stagers_bp(commander: Commander):
         type = request.args.get("type")
         try:
             if type == "all" or type is None:
-                for stager in StagerModel.get_all_stagers_classes():
+                for stager in StagerModel.get_all_classes():
                     stagers[stager.name] = stager.to_dict(commander)
             else:
-                stagers[type] = StagerModel.get_stager_class_from_type(type).to_dict(
+                stagers[type] = StagerModel.get_class_from_type(type).to_dict(
                     commander
                 )
         except Exception as e:
@@ -82,14 +81,14 @@ def stagers_bp(commander: Commander):
                 raise ValueError("Listener does not exist.")
 
             # Check if data is valid and clean it
-            stager_class = StagerModel.get_stager_class_from_type(listener.type)
+            stager_class = StagerModel.get_class_from_type(listener.type)
             data = stager_class.options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 
         # Add stager
         try:
-            stager = add_stager(data)
+            stager = StagerModel.add(Session, data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 

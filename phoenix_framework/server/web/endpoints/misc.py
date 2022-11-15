@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, send_from_directory
 
-import phoenix_framework.server.creator.available as avl
+import phoenix_framework.server as avl
 from phoenix_framework.server.utils.misc import get_network_interfaces, version
 from phoenix_framework.server.utils.web import authorized, generate_response, admin
 from phoenix_framework.server.utils.resources import get_resource

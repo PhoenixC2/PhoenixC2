@@ -44,7 +44,7 @@ class Commander:
         """Add a handler to the commander"""
         self.active_handlers[int(handler.id)] = handler
 
-    def remove_listener(self, listener_id: int):
+    def remove_active_listener(self, listener_id: int):
         """Remove a listener from the commander"""
         try:
             self.active_listeners.pop(int(listener_id))
@@ -53,7 +53,7 @@ class Commander:
         except KeyError as e:
             raise KeyError(LISTENER_DOES_NOT_EXIST) from e
 
-    def remove_handler(self, handler_id: int):
+    def remove_active_handler(self, handler_id: int):
         """Remove a device from the commander by id"""
         try:
             self.active_handlers.pop(int(handler_id))
