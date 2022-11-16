@@ -6,15 +6,21 @@ from typing import TYPE_CHECKING
 
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
 
-from phoenix_framework.server.database import (DeviceModel, ListenerModel,
-                                               LogEntryModel, Session)
-from phoenix_framework.server.utils.options import (ChoiceType,
-                                                    DefaultListenerPool,
-                                                    Option, StringType)
+from phoenix_framework.server.database import (
+    DeviceModel,
+    ListenerModel,
+    LogEntryModel,
+    Session,
+)
+from phoenix_framework.server.utils.options import (
+    DefaultListenerPool,
+    Option,
+    StringType,
+)
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log_connection
 from phoenix_framework.server.utils.web import FlaskThread
-
+from phoenix_framework.server.modules import get_module
 from ..base_listener import BaseListener
 from .handler import Handler
 
@@ -76,13 +82,6 @@ class Listener(BaseListener):
                 return "", 404
             Session.add(device)
             Session.commit()
-            LogEntryModel.log(
-                "success",
-                "devices",
-                f"Device '{device.name}' connected to '{self.db_entry.name}'.",
-                Session,
-                log_to_cli=False,
-            )
             log_connection(device)
             self.add_handler(Handler(device))
             return device.name
@@ -99,13 +98,6 @@ class Listener(BaseListener):
                 if device is not None:
                     handler = Handler(device)
                     self.add_handler(handler)
-                    LogEntryModel.log(
-                        "success",
-                        "devices",
-                        f"Device '{device}' reconnected to '{self.db_entry.name}'.",
-                        Session,
-                        log_to_cli=False,
-                    )
                     log_connection(device, reconnect=True)
                 else:
                     return "", 404
@@ -152,9 +144,35 @@ class Listener(BaseListener):
                 as_attachment=True,
             )
 
+        @self.api.route("/module/<string:module_name>", methods=["GET"])
+        def get_module_info(module_name: str = None):
+            if module_name is None:
+                return "", 404
+            try:
+                module = get_module(module_name)
+            except Exception:
+                return "", 404
+            if module is None:
+                return "", 404
+            
+            return jsonify(module.to_dict())
+        
+        @self.api.route("/module/<string:module_name>/download", methods=["GET"])
+        def download_module_content(module_name: str = None):
+            try:
+                module = get_module(module_name)
+            except Exception:
+                return "", 404
+            if module is None:
+                return "", 404
+            return module.code
+
         @self.api.after_request
         def change_headers(r: Response):
+            r.headers["Server"] = self.options.header.value
             return r
+        
+
 
     def start(self):
         if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(

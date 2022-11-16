@@ -5,8 +5,16 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String, Text)
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
@@ -64,9 +72,13 @@ class TaskModel(Base):
         if self.type == "download" and success:
             file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
-            with get_resource("data/downloads/", file_name, skip_file_check=True).open("wb") as f:
+            with get_resource("data/downloads/", file_name, skip_file_check=True).open(
+                "wb"
+            ) as f:
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
+        elif self.type == "info" and success:
+            self.device.infos = output
         else:
             self.output = output
         self.success = success
@@ -88,9 +100,7 @@ class TaskModel(Base):
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
-        task = TaskModel(
-            name=str(uuid1()).split("-")[0], args={}
-        )
+        task = TaskModel(name=str(uuid1()).split("-")[0], args={})
         if type(device_or_id) == DeviceModel:
             task.device = device_or_id
         elif type(device_or_id) == int:
@@ -117,7 +127,11 @@ class TaskModel(Base):
         """
         if target_path is None:
             raise TypeError("File path is missing.")
-        file.save(get_resource("data/uploads", secure_filename(file.name), skip_file_check=True))
+        file.save(
+            get_resource(
+                "data/uploads", secure_filename(file.name), skip_file_check=True
+            )
+        )
         task = TaskModel.generate_task(device_or_id)
         task.type = "upload"
         task.args["file_name"] = secure_filename(file.name)
@@ -187,4 +201,34 @@ class TaskModel(Base):
         task = TaskModel.generate_task(device_or_id)
         task.type = "dir"
         task.args["dir"] = dir
+        return task
+
+    @staticmethod
+    def get_info(device_or_id: DeviceModel | int) -> "TaskModel":
+        """Create a Get-Info task.
+
+        Args:
+        -----
+            device (DeviceModel): the device to execute the task
+        """
+        task = TaskModel.generate_task(device_or_id)
+        task.type = "info"
+        return task
+
+    @staticmethod
+    def execute_module(
+        device_or_id: DeviceModel | int, module: str, args: dict
+    ) -> "TaskModel":
+        """Create a Execute-Module task.
+
+        Args:
+        -----
+            device (DeviceModel): the device to execute the task
+            module (str): The module to execute
+            args (dict): The arguments for the module
+        """
+        task = TaskModel.generate_task(device_or_id)
+        task.type = "module"
+        task.args["module"] = module
+        task.args["args"] = args
         return task

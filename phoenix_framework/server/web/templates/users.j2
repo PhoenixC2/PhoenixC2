@@ -49,5 +49,67 @@
     </tbody>
 
 </table>
+{# Button trigger modal #}
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
+    onclick="resetModal()">
+    Create a new user
+</button>
 
+{# Create Modal #}
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true" id="create-modal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content dark-background">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="create-modal-body">
+                <form id="create-form" action="/users/add" method="POST">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <img id="profile-picture-preview" src="/static/images/icon.png" alt="profile picture preview" class="profile-picture">
+                        </div>
+                    </div>
+                    <div class"form-group">
+                        <label for="profile-picture">Profile Picture</label>
+                        <input type="file" class="form-control" id="profile-picture" name="profile-picture" onchange="previewImage()" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+                    </div>
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="admin" name="admin">
+                            Admin
+                            <span class="form-check-sign">
+                                <span class="check"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="disabled" name="disabled">
+                            Disabled
+                            <span class="form-check-sign">
+                                <span class="check"></span>
+                            </span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />
+                <input type='reset' value='Reset' class='btn btn-danger' />
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

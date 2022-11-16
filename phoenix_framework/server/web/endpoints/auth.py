@@ -1,11 +1,13 @@
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, session)
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
 from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
-
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
+INVALID_CREDENTIALS = "Invalid username or password."
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
@@ -36,9 +38,8 @@ def post_login():
     user: UserModel = Session.query(UserModel).filter_by(username=username).first()
 
     if user is None:
-        return generate_response(
-            "danger", f"User {username} doesn't exist.", "login", 400
-        )
+        flash(INVALID_CREDENTIALS, "danger")
+        return render_template("login.j2", username=username)
     if user.disabled:
         LogEntryModel.log(
             "info",
@@ -47,7 +48,8 @@ def post_login():
             Session,
             get_current_user(),
         )
-        return generate_response("danger", "Account is disabled.", "login", 401)
+        flash("This user is disabled.", "danger")
+        return render_template("login.j2", username=username)
 
     if user.check_password(password):
         old_user = get_current_user()
@@ -56,11 +58,15 @@ def post_login():
             session["id"] = user.id
             session["password"] = user.password
             LogEntryModel.log(
-                "info", "auth", f"Logged in as {user}.", Session, old_user
+                "info",
+                "auth",
+                f"Logged in as {'admin' if user.admin else 'user'}  {user}.",
+                Session,
+                old_user,
             )
             if not use_json:
                 flash(f"Changed to {username}.", "success")
-                redirect("/")
+                return redirect("/")
             return jsonify(
                 {
                     "status": "success",
@@ -71,27 +77,33 @@ def post_login():
         else:
             session["id"] = user.id
             session["password"] = user.password
-            LogEntryModel.log("info", "auth", f"Logged in as {user}.", Session, user)
+            LogEntryModel.log(
+                "info",
+                "auth",
+                f"Logged in as {'admin' if user.admin else 'user'} {user}.",
+                Session,
+                user,
+            )
             if not use_json:
                 flash(
-                    f"Logged in as {'Admin' if user.admin else 'User'} {username}.",
+                    f"Logged in as {'admin' if user.admin else 'user'} {username}.",
                     "success",
                 )
-                redirect("/")
+                return redirect("/")
             return jsonify(
                 {
                     "status": "success",
-                    "message": f"Logged in as {username} ({'Admin' if user.admin else 'User'}).",
+                    "message": f"Logged in as {username} ({'admin' if user.admin else 'user'}).",
                     "api_key": user.api_key,
                 }
             )
     else:
         log(f"Failed to log in as '{user}'.", "danger")
         if not use_json:
-            flash("Invalid username or password.", "danger")
+            flash(INVALID_CREDENTIALS, "danger")
             return render_template("login.j2", username=username)
         return (
-            jsonify({"status": "error", "message": "Invalid username or password."}),
+            jsonify({"status": "error", "message": INVALID_CREDENTIALS}),
             401,
         )
 
@@ -103,7 +115,7 @@ def logout():
     LogEntryModel.log(
         "info",
         "auth",
-        f"{'Admin' if user.admin else 'User'} {user} logged out.",
+        f"{'admin' if user.admin else 'User'} {user} logged out.",
         Session,
         user,
     )

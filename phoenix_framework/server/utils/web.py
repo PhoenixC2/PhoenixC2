@@ -55,6 +55,7 @@ def authorized(func):
         if user is None:
             if use_json:
                 return jsonify({"status": "error", "message": "Unauthorized"}), 401
+            flash("You need to be logged in.", "danger")
             return redirect("/auth/login")
         else:
             if user.disabled:

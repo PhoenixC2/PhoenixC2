@@ -7,12 +7,6 @@ show_cookie = false
 show_cookie_name = "show_server"
 show_cookie_value = "plsshowtheserver"
 
-[commander]
-type = "main"
-main_server_address = ""
-main_server_port = 8080
-main_server_auth = "Authentication-Key"
-
 [database]
 type = "sqlite"
 sqlite_name = "default"

@@ -51,11 +51,13 @@ class StagerModel(Base):
             "delay": self.delay,
             "different_address": self.different_address,
             "options": self.options,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
     def to_json(self, commander: "Commander", show_listener: bool = True) -> str:
         """Convert the stager to json"""
-        return json.dumps(self.to_dict(commander, show_listener))
+        return json.dumps(self.to_dict(commander, show_listener), default=str)
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseStager":

@@ -29,7 +29,6 @@ class UserModel(Base):
     password: str = Column(Text)
     api_key: str = Column(String(30), nullable=False)
     admin: bool = Column(Boolean)
-    last_activity: datetime = Column(DateTime, onupdate=datetime.now)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(String(100), default="/static/images/icon.png")
     logs: list["LogEntryModel"] = relationship(
@@ -40,7 +39,8 @@ class UserModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_users",
     )  # Logs not seen by user yet
-
+    last_login = Column(DateTime)
+    last_activity: datetime = Column(DateTime, onupdate=datetime.now)
     def set_password(self, password: str):
         """Hash the Password and save it."""
         self.password = md5(password.encode()).hexdigest()
@@ -54,7 +54,6 @@ class UserModel(Base):
             "id": self.id,
             "username": self.username,
             "admin": self.admin,
-            "last_activity": self.last_activity,
             "status": self.activity_status,
             "disabled": self.disabled,
             "profile_picture": self.profile_picture,
@@ -69,6 +68,8 @@ class UserModel(Base):
             ]
             if show_unseen_logs
             else [log.id for log in self.unseen_logs],
+            "last_login": self.last_login,
+            "last_activity": self.last_activity,
         }
 
     def __str__(self) -> str:

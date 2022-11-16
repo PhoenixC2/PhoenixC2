@@ -30,11 +30,11 @@
                         <form action="/auth/login" method="post">
                             <div class="form-group">
                                 <label for="username">Username</label>
-                                <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required>
+                                <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required value="{{ username }}">
                             </div>
                             <div class="form-group">
                                 <label for="password">Password</label>
-                                <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password">
                             </div>
                             <button type="submit" class="btn btn-warning">Login</button>
                         </form>
@@ -45,3 +45,24 @@
     </div>
 
 </body>
+<!-- flash messages -->
+<!--   Scripts  -->
+<script src="/static/js/index.js"></script>
+<script src="/static/js/core/jquery.min.js"></script>
+<script src="/static/js/core/popper.min.js"></script>
+<script src="/static/js/core/bootstrap-material-design.min.js"></script>
+<script src="/static/js/plugins/perfect-scrollbar.jquery.min.js"></script>
+<!--  Notifications Plugin    -->
+<script src="/static/js/plugins/bootstrap-notify.js"></script>
+<!-- Control Center for Material Dashboard: parallax effects-->
+<script src="/static/js/material-dashboard.js?v=2.1.0"></script>
+<script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+showNotification("{{ message }}", "{{ category }}");
+{% endfor %}
+{% endif %}
+{% endwith %}
+</script>
+</html>

@@ -85,7 +85,7 @@ class DeviceModel(Base):
         show_tasks: bool = True,
     ) -> str:
         """Return a JSON string"""
-        return json.dumps(self.to_dict(commander, show_listener, show_tasks))
+        return json.dumps(self.to_dict(commander, show_listener, show_tasks), default=str)
 
     @classmethod
     def generate_device(

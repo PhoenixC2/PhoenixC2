@@ -52,7 +52,7 @@ def add_user():
 
     if not username or not password:
         return generate_response(
-            "danger", "Username and password are required.", ENDPOINT, 400, use_json
+            "danger", "Username and password are required.", ENDPOINT, 400
         )
 
     # Check if user exists

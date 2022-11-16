@@ -101,7 +101,7 @@ class ListenerModel(Base):
         show_devices: bool = True,
     ) -> str:
         """Return a JSON string"""
-        return json.dumps(self.to_dict(commander, show_stagers, show_devices))
+        return json.dumps(self.to_dict(commander, show_stagers, show_devices), default=str)
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseListener":

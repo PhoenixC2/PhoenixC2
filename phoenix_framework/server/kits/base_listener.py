@@ -62,7 +62,6 @@ class BaseListener:
             for handler in self.handlers:
                 if handler.name == id_or_name:
                     return handler
-
     @abstractmethod
     def status(self) -> bool:
         """Get status of the listener.
@@ -110,3 +109,4 @@ class BaseListener:
             "os": cls.os,
             "options": cls.options.to_dict(commander),
         }
+

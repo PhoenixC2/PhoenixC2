@@ -1,4 +1,4 @@
-from .authorization import auth_bp
+from .auth import auth_bp
 from .devices import devices_bp
 from .listeners import listeners_bp
 from .loaders import loaders_bp

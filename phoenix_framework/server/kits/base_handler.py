@@ -21,27 +21,6 @@ class BaseHandler:
     def db_entry(self) -> DeviceModel:
         return Session().query(DeviceModel).filter_by(id=self.id).first()
 
-    def load_module(self, name: str, load_module: bool = True) -> BaseModule:
-        """Load a module"""
-        # Get module
-        module: BaseModule = importlib.import_module("Modules." + name).Module()
-        if load_module:
-            module.load()
-        # Add to list
-        self.modules.append(module)
-        # Return module
-
-        return module
-
-    def unload_module(self, name: str):
-        """Unload a module"""
-        # Get module
-        for module in self.modules:
-            if module.name == name:
-                self.modules.remove(module)
-                return module
-        raise FileNotFoundError("Module not found")
-
     def generate_task(self) -> TaskModel:
         return TaskModel(
             name=str(uuid1).split("-")[0],

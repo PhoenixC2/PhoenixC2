@@ -25,7 +25,21 @@ class BaseModule:
         self.device = device
 
     @property
-    def code(self) -> str:
+    def code(self) -> str | bytes:
         """The code to be executed"""
         # Code can be modified here
         return ""
+
+    @classmethod
+    def to_dict(cls) -> dict:
+        return {
+            "name": cls.name,
+            "description": cls.description,
+            "author": cls.author,
+            "language": cls.language,
+            "os": cls.os,
+            "options": cls.options.to_dict(),
+            "stagers": cls.stagers,
+            "admin": cls.admin,
+            "execution_type": cls.execution_type,
+        }

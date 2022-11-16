@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from pystyle import Add, Box, Colorate, Colors
 from rich.console import Console
+from phoenix_framework.server.database import LogEntryModel, Session
 
 if TYPE_CHECKING:
     from phoenix_framework.server.database import DeviceModel
@@ -71,12 +72,16 @@ def ph_print(text: str, force: bool = False):
 
 
 def log_connection(device: "DeviceModel", reconnect: bool = False):
-    """Log the new connection"""
+    """Log the new connection to the console and database"""
     if reconnect:
-        ph_print(
-            f"""Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]"""
-        )
+        status = f"Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]"
     else:
-        ph_print(
-            f"""New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]"""
-        )
+        status = f"New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]"
+    ph_print(status)
+    LogEntryModel.log(
+        "success",
+        "devices",
+        f"Device '{device.name}' connected to '{device.db_entry.name}'.",
+        Session,
+        log_to_cli=False,
+    )
