@@ -41,11 +41,12 @@ def start_web(address: str, port: int, ssl: bool, commander: Commander):
 def load_plugins(commander: Commander):
     """Load all plugins which are specified in the config"""
     plugins = load_config()["plugins"]
-
-    for plugin in plugins:
-        try:
-            commander.load_plugin(get_plugin(plugin))
-        except Exception as error:
-            log(str(error), "danger")
+    for plugin in plugins.keys():
+        plugin_config = plugins[plugin]
+        if plugin_config["enabled"]:
+            try:
+                commander.load_plugin(get_plugin(plugin))
+            except Exception as error:
+                log(str(error), "danger")
     
     log("Loaded Plugins.", "success")
