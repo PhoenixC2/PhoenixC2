@@ -36,13 +36,9 @@ function changePayload() {
 
 }
 function changeListener() {
-    // get value of select
     let listener_id = document.getElementById("listener").value;
-    // get form using listener id
     let listener = listeners[listener_id - 1];
-    // get form
     let form = document.getElementById(listener.type + "-form");
-    // change content of modal
     document.getElementById("create-form-content").innerHTML = form.innerHTML;
 }
 function createEdit(id) {
@@ -61,15 +57,10 @@ function createEdit(id) {
             uneditable_options.push(option.real_name);
         }
     }
-    console.log(uneditable_options)
-    // get form by type
     const form = document.getElementById(stager.listener.type + "-form");
 
-    // set modal body
-    // replace all edit with create
     document.getElementById("edit-form").innerHTML = form.innerHTML.replace(/create/g, "edit");
 
-    // set values
     document.getElementById("id-edit").value = stager.id;
     document.getElementById("name-edit").value = stager.name;
     document.getElementById(stager.payload_type + "-payload_type-edit").selected = true;
@@ -78,7 +69,8 @@ function createEdit(id) {
     document.getElementById("timeout-edit").value = stager.timeout;
     document.getElementById("delay-edit").value = stager.delay;
     document.getElementById("different_address-edit").value = stager.different_address;
-    // set options
+
+
     for (let option_name in stager.options) {
         if (Object.prototype.hasOwnProperty.call(stager.options, option_name)) {
             let option = stager.options[option_name];
@@ -95,7 +87,7 @@ function createEdit(id) {
 
     }
     edit_stager_id = id;
-    // open modal
+
     $("#edit-modal").modal("show");
 
 }
@@ -117,6 +109,7 @@ function copyToClipboard(id, one_liner) {
                     showNotification("Failed to copy to clipboard", "danger");
                 }
                 catch (err) {
+                    console.log(err);
                     showNotification("Failed to copy to clipboard", "danger");
                 }
             }

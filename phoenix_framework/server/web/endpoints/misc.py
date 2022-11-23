@@ -1,10 +1,12 @@
 import os
+
 from flask import Blueprint, jsonify, send_from_directory
 
 import phoenix_framework.server as avl
 from phoenix_framework.server.utils.misc import get_network_interfaces, version
-from phoenix_framework.server.utils.web import authorized, generate_response, admin
 from phoenix_framework.server.utils.resources import get_resource
+from phoenix_framework.server.utils.web import (admin, authorized,
+                                                generate_response)
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 

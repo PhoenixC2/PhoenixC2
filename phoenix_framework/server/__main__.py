@@ -5,8 +5,7 @@ import time
 
 from phoenix_framework.server.args import parse_args, parser
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.commander.services import (start_listeners,
-                                                         start_web)
+from phoenix_framework.server.commander.services import start_listeners, start_web, load_plugins
 from phoenix_framework.server.utils.admin import check_for_setup, reset_server
 from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.ui import log
@@ -30,26 +29,30 @@ def main():
     # Start listeners
     log("Starting listeners.", "info")
     start_listeners(commander)
-    log("All listeners started.", "success")
 
     # Start the web server
     log("Starting web server.", "info")
-    # try:
-    web_config = config["web"]  # shorten code
-    web = start_web(
-        web_config["address"], web_config["port"], web_config["ssl"], commander
-    )
-    # except Exception as e:
-    #     log(str(e), "danger")
-    #     os._exit(1)
-    # else:
-    #     log("Web server started.", "success")
+    try:
+        web_config = config["web"]  # shorten code
+        start_web(
+            web_config["address"], web_config["port"], web_config["ssl"], commander
+        )
+    except Exception as e:
+        log(str(e), "danger")
+        os._exit(1)
+    else:
+        log("Web server started.", "success")
 
     log(
         f"Accessible at http{'s' if web_config['ssl'] else ''}"
         f"://{web_config['address']}:{web_config['port']}",
         "info",
     )
+
+    # load plugins
+    log("Loading plugins.", "info")
+    load_plugins(commander)
+
     log(f"Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")

@@ -2,7 +2,6 @@ import os
 import random
 import string
 import subprocess
-from uuid import uuid1
 
 from sqlalchemy import inspect
 
@@ -16,7 +15,7 @@ from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log
 
-DIRECTORIES = ["stagers", "downloads", "uploads"]
+DIRECTORIES = ["stagers", "downloads", "uploads", "pictures"]
 
 
 def generate_database():
@@ -164,12 +163,14 @@ def recreate_super_user():
     password = "".join(
         random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(10)
     )
-    admin = UserModel(id=1, username="phoenix", admin=True, api_key=str(uuid1()))
+    admin = UserModel(id=1, username="phoenix", admin=True)
+    admin.generate_api_key()
     admin.set_password(password)
     Session.add(admin)
     Session.commit()
     log("Admin user recreated.", "success")
     log(f"Credentials: phoenix:{password}", "info")
+    log(f"API Key: '{admin.api_key}'", "info")
     Session.remove()
 
 
@@ -179,9 +180,6 @@ def reset_server(reset: bool = False):
         log("Resetting server", "critical")
     else:
         log("Setting up the server.", "info")
-    print(check_for_database())
-    print(check_for_super_user())
-    print(Session.query(UserModel).first())
     if not check_for_directories() or reset:
         reset_directories()
     if not check_for_ssl() or reset:

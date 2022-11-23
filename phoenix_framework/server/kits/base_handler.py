@@ -5,6 +5,8 @@ from uuid import uuid1
 
 from phoenix_framework.server.database import DeviceModel, Session, TaskModel
 from phoenix_framework.server.modules.base import BaseModule
+
+
 class BaseHandler:
     """The Base Handler Class for all Devices"""
 

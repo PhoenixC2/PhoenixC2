@@ -197,17 +197,17 @@
 <script>
     let stagers = [
         {% for stager in stagers %}
-        {{ stager.to_json(commander, True) }},
+        {{ to_json(stager, commander, True) }},
         {% endfor %}
     ];
     let stager_types = {
         {% for stager_type in stager_types %}
-        "{{ stager_type.name }}": {{ stager_type.to_json(commander) }},
+        "{{ stager_type.name }}": {{ to_json(stager_type, commander) }},
         {% endfor %}
     };
     let listeners = [
         {% for listener in listeners %}
-        {{ listener.to_json(commander, False, False) }},
+        {{ to_json(listener, commander, False, False) }},
         {% endfor %}
     ];
 </script>

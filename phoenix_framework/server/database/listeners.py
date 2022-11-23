@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, Integer, String, DateTime
+from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
@@ -36,15 +36,11 @@ class ListenerModel(Base):
     enabled: bool = Column(Boolean, default=True)
     limit = Column(Integer, name="limit")
     options: dict = Column(MutableDict.as_mutable(JSON), default=[])
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     stagers: list["StagerModel"] = relationship(
         "StagerModel", back_populates="listener"
     )
-    devices: list["DeviceModel"] = relationship(
-        "DeviceModel", back_populates="listener"
-    )
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
     @property
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
@@ -64,8 +60,7 @@ class ListenerModel(Base):
     def to_dict(
         self,
         commander: "Commander",
-        show_stagers: bool = True,
-        show_devices: bool = True,
+        show_stagers: bool = True
     ) -> dict:
         return {
             "id": self.id,
@@ -78,30 +73,16 @@ class ListenerModel(Base):
             "limit": self.limit,
             "active": self.is_active(commander),
             "options": self.options,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
             "stagers": [
                 stager.to_dict(commander, show_listener=False)
                 for stager in self.stagers
             ]
             if show_stagers
             else [stager.id for stager in self.stagers],
-            "devices": [
-                device.to_dict(commander, show_listener=False)
-                for device in self.devices
-            ]
-            if show_devices
-            else [device.id for device in self.devices],
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
         }
 
-    def to_json(
-        self,
-        commander: "Commander",
-        show_stagers: bool = True,
-        show_devices: bool = True,
-    ) -> str:
-        """Return a JSON string"""
-        return json.dumps(self.to_dict(commander, show_stagers, show_devices), default=str)
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseListener":

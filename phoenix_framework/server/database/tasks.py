@@ -5,16 +5,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
@@ -37,14 +29,14 @@ class TaskModel(Base):
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(10), unique=True)
     description: str = Column(Text)
-    device_id: int = Column(Integer, ForeignKey("Devices.id"))
-    device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
     type: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime, default=datetime.now)
     finished_at: datetime = Column(DateTime, onupdate=datetime.now)
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
+    device_id: int = Column(Integer, ForeignKey("Devices.id"))
+    device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
 
     @property
     def finished(self) -> bool:
@@ -55,15 +47,15 @@ class TaskModel(Base):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "device": self.device.to_dict(commander, show_tasks=False)
-            if show_device and self.device is not None
-            else self.device_id,
             "type": self.type,
             "args": self.args,
             "created_at": self.created_at,
             "finished_at": self.finished_at,
             "success": self.success,
             "output": self.output,
+            "device": self.device.to_dict(commander, show_tasks=False)
+            if show_device and self.device is not None
+            else self.device_id,
         }
 
     def finish(self, output: str, success: bool, session: Session):

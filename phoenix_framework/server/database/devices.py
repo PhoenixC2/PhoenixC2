@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from phoenix_framework.server.kits.base_listener import BaseListener
 
     from .listeners import ListenerModel
+    from .stagers import StagerModel
     from .tasks import TaskModel
 
 
@@ -34,8 +35,8 @@ class DeviceModel(Base):
     infos: dict = Column(MutableDict.as_mutable(JSON), default={})
     connection_date: datetime = Column(DateTime)
     last_online: datetime = Column(DateTime)
-    listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
-    listener: "ListenerModel" = relationship("ListenerModel", back_populates="devices")
+    stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
+    stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
     tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
 
     @property
@@ -45,7 +46,7 @@ class DeviceModel(Base):
     def to_dict(
         self,
         commander: "Commander",
-        show_listener: bool = True,
+        show_stager: bool = True,
         show_tasks: bool = True,
     ) -> dict:
         data = {
@@ -60,9 +61,7 @@ class DeviceModel(Base):
             "infos": self.infos,
             "connection_date": self.connection_date,
             "last_online": self.last_online,
-            "listener": self.listener.to_dict(commander, show_devices=False)
-            if show_listener
-            else self.listener_id,
+            "stager": self.stager.to_dict(commander, show_listener=False) if show_stager else self.stager.id,
             "tasks": [task.to_dict(commander, show_device=False) for task in self.tasks]
             if show_tasks
             else [task.id for task in self.tasks],
@@ -78,19 +77,10 @@ class DeviceModel(Base):
             data["connected"] = True
         return data
 
-    def to_json(
-        self,
-        commander: "Commander",
-        show_listener: bool = True,
-        show_tasks: bool = True,
-    ) -> str:
-        """Return a JSON string"""
-        return json.dumps(self.to_dict(commander, show_listener, show_tasks), default=str)
-
     @classmethod
     def generate_device(
         cls,
-        listener: "BaseListener",
+        stager: "StagerModel",
         hostname: str,
         address: str,
         os: str,
@@ -108,5 +98,5 @@ class DeviceModel(Base):
             admin=admin,
             connection_date=datetime.now(),
             last_online=datetime.now(),
-            listener=listener.db_entry,
+            stager=stager,
         )

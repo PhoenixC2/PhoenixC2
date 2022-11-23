@@ -1,4 +1,5 @@
 """The Web Server Class to interact with the Server using an API and a Web Interface"""
+import json
 import logging
 import os
 import random
@@ -10,19 +11,19 @@ from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.utils.config import load_config, save_config
 from phoenix_framework.server.utils.web import get_messages
 from phoenix_framework.server.web.endpoints import *
-from phoenix_framework.server.web.endpoints.auth import \
-    get_current_user
+from phoenix_framework.server.web.endpoints.auth import get_current_user
 
 # disable flask logging
 
 
 def create_web(commander: Commander) -> Flask:
     web_server = Flask(__name__)
-    if not "2" in os.getenv("PHOENIX_DEBUG", "") and not "4" in os.getenv(
+    if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(
         "PHOENIX_DEBUG", ""
     ):
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
+        
     config = load_config()
     secret_key = config["web"]["secret_key"]
     if secret_key == "":
@@ -40,6 +41,13 @@ def create_web(commander: Commander) -> Flask:
     @web_server.context_processor
     def inject_messages():
         return dict(messages=get_messages())
+
+    @web_server.context_processor
+    def utility_processor():
+        def to_json(data, *args, **kwargs):
+            return json.dumps(data.to_dict(*args, **kwargs), default=str)
+
+        return dict(to_json=to_json)
 
     web_server.register_blueprint(routes_bp(commander), url_prefix="/")
     web_server.register_blueprint(auth_bp, url_prefix="/auth")

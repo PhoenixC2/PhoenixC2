@@ -4,9 +4,10 @@ import json
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String)
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship, Session 
+from sqlalchemy.orm import Session, relationship
 
 from phoenix_framework.server import AVAILABLE_KITS
 
@@ -14,8 +15,10 @@ from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_stager import BasePayload, BaseStager
+    from phoenix_framework.server.kits.base_stager import (BasePayload,
+                                                           BaseStager)
 
+    from .devices import DeviceModel
     from .listeners import ListenerModel
 
 
@@ -25,8 +28,6 @@ class StagerModel(Base):
     __tablename__ = "Stagers"
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
-    listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
-    listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
     payload_type: str = Column(String(100))
     encoding: str = Column(String(10))
     random_size: bool = Column(Boolean)
@@ -36,14 +37,19 @@ class StagerModel(Base):
     options: dict = Column(MutableDict.as_mutable(JSON), default={})
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
+    listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
+    devices: list["DeviceModel"] = relationship("DeviceModel", back_populates="stager")
 
-    def to_dict(self, commander: "Commander", show_listener: bool = True) -> dict:
+    def to_dict(
+        self,
+        commander: "Commander",
+        show_listener: bool = True,
+        show_devices: bool = True,
+    ) -> dict:
         return {
             "id": self.id,
             "name": self.name,
-            "listener": self.listener.to_dict(commander, show_stagers=False)
-            if show_listener
-            else self.listener.id,
             "payload_type": self.payload_type,
             "encoding": self.encoding,
             "random_size": self.random_size,
@@ -53,11 +59,16 @@ class StagerModel(Base):
             "options": self.options,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "listener": self.listener.to_dict(commander, show_stagers=False)
+            if show_listener
+            else self.listener.id,
+            "devices": [
+                device.to_dict(commander, show_listener=False)
+                for device in self.devices
+            ]
+            if show_devices
+            else [device.id for device in self.devices],
         }
-
-    def to_json(self, commander: "Commander", show_listener: bool = True) -> str:
-        """Convert the stager to json"""
-        return json.dumps(self.to_dict(commander, show_listener), default=str)
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseStager":
@@ -87,9 +98,7 @@ class StagerModel(Base):
     @staticmethod
     def get_all_classes() -> list["BaseStager"]:
         """Get all stager classes."""
-        return [
-            StagerModel.get_class_from_type(stager) for stager in AVAILABLE_KITS
-        ]
+        return [StagerModel.get_class_from_type(stager) for stager in AVAILABLE_KITS]
 
     def edit(self, data: dict):
         """Edit the stager"""

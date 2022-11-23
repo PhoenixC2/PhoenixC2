@@ -211,7 +211,7 @@
 <script>
     let listeners = [
         {% for listener in listeners %}
-        {{ listener.to_json(commander, False, False) }},
+        {{ to_json(listener, commander) }},
         {% endfor %}
     ];
 </script>

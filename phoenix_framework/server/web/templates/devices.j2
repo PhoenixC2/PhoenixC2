@@ -57,7 +57,9 @@
         {% endfor %}
     </tbody>
 </table>
+{% if devices|length  %}
 <button class="btn btn-danger" onclick="clearDevice('all')">Clear inactive devices</button>
+{% endif %}
 </div>
 <!-- Edit Modal -->
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true"
@@ -85,7 +87,7 @@
 <script>
     let devices = [
         {% for device in devices %}
-        device.to_json(commander, False, False)
+        {{ to_json(device, commander) }},
         {% endfor %}
     ];
 </script>

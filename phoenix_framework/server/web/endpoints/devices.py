@@ -6,9 +6,9 @@ from flask import (Blueprint, jsonify, render_template, request,
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.database import (DeviceModel, LogEntryModel,
                                                Session, TaskModel)
+from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.web import (authorized, generate_response,
                                                 get_current_user)
-from phoenix_framework.server.utils.resources import get_resource
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."

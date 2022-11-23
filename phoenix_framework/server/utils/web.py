@@ -3,7 +3,8 @@ import os
 import threading
 from functools import wraps
 
-from flask import Flask, Response, abort, flash, jsonify, redirect, request, session
+from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
+                   session)
 from werkzeug.serving import make_server
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel

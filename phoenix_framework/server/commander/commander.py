@@ -1,8 +1,11 @@
 """This is the C2 commander Class which handles the devices & listeners"""
 from typing import Optional
-
+import subprocess
+from threading import Thread
+from multiprocessing import Process
 from phoenix_framework.server.kits.base_handler import BaseHandler
 from phoenix_framework.server.kits.base_listener import BaseListener
+from phoenix_framework.server.plugins.base import BasePlugin
 from phoenix_framework.server.utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"
@@ -17,6 +20,7 @@ class Commander:
         self.web_server: FlaskThread
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
+        self.active_plugins: dict[str, BasePlugin] = {}
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
         """Get a handler by id"""
@@ -61,3 +65,31 @@ class Commander:
             raise ValueError(INVALID_ID) from e
         except KeyError as e:
             raise KeyError(HANDLER_DOES_NOT_EXIST) from e
+
+    def load_plugin(self, plugin: BasePlugin):
+        """Load a plugin"""
+        if plugin.name in self.active_plugins:
+            raise KeyError(f"Plugin {plugin.name} already loaded")
+
+        if plugin.execution_type not in ["function", "thread", "process", "file"]:
+            raise ValueError(f"Invalid execution type {plugin.execution_type}")
+        try:
+            if plugin.execution_type == "function":
+                plugin.execute(self)
+            elif plugin.execution_type == "thread":
+                Thread(target=plugin.execute, args=(self,)).start()
+            elif plugin.execution_type == "process":
+                Process(target=plugin.execute, args=(self,)).start()
+            elif plugin.execution_type == "file":
+                subprocess.Popen([plugin.execute, self])
+        except Exception as e:
+            raise Exception(f"Failed to load plugin '{plugin.name}'") from e
+
+        self.active_plugins[plugin.name] = plugin
+
+    def unload_plugin(self, plugin_name: str):
+        """Unload a plugin"""
+        try:
+            self.active_plugins.pop(plugin_name)
+        except KeyError as e:
+            raise KeyError(f"Plugin {plugin_name} not loaded") from e

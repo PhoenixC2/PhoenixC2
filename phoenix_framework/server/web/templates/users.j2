@@ -26,7 +26,7 @@
             {% else %}
             <td id="active-{{ user.id }}"><i title="Offline" class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
             {% endif %}
-            <td id="profile-picture-{{user.id}}"><img src="{{ user.profile_picture }}" alt="/static/images/icon.png" class="profile-picture"></td>
+            <td id="profile-picture-{{user.id}}"><img src="/users/{{user.id}}/profile_picture" alt="/static/images/icon.png" class="profile-picture"></td>
             <td id="username-{{user.id}}">{{ user.username }}</td>
             {% if user.admin %}
             <td id="admin-{{ user.id }}"><i class="material-icons">done</i></td>
@@ -68,14 +68,19 @@
             </div>
             <div class="modal-body" id="create-modal-body">
                 <form id="create-form" action="/users/add" method="POST">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <img id="profile-picture-preview" src="/static/images/icon.png" alt="profile picture preview" class="profile-picture">
+                    {# centered preview of the profile picture using bootstrap4 #}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-5">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <img id="profile-picture-preview" src="/static/images/icon.png" alt="profile picture preview" class="profile-picture">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class"form-group">
-                        <label for="profile-picture">Profile Picture</label>
-                        <input type="file" class="form-control" id="profile-picture" name="profile-picture" onchange="previewImage()" accept="image/*">
                     </div>
                     <div class="form-group">
                         <label for="username">Username</label>
@@ -103,6 +108,10 @@
                             </span>
                         </label>
                     </div>
+                    <div class"form-group">
+                        <label for="profile-picture">Profile Picture</label>
+                        <input type="file" class="form-control" id="profile-picture" name="profile-picture" onchange="previewImage()" accept="image/*">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -112,4 +121,18 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/users.js"></script>
+
+<script>
+    let users = [
+        {% for user in users %}
+        {{ to_json(user) }},
+        {% endfor %}
+    ];
+</script>
+
 {% endblock %}

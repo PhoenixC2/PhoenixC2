@@ -1,0 +1,30 @@
+[web]
+address = "Address of the web server"
+port = Port of the web server
+ssl = true/false
+secret_key = "Secret key for the web server"
+show_cookie = true/false # If true, the web app can only be accessed using the cookie
+show_cookie_name = "Name of the cookie"
+show_cookie_value = "Value of the cookie"
+[/web]
+
+[database]
+type = "Type of the database"
+sqlite_name = "Name of the sqlite database"
+user = "Username of the database"
+pass = "Password of the database"
+host = "Host of the database"
+port = Port of the database
+database = Name of the database
+[/database]
+
+[logging]
+location = "Location of the log file"
+enabled = true/false
+[/logging]
+
+[plugins]
+
+[plugins.example]
+enabled = true/false
+# Other options for the plugin

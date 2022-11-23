@@ -19,3 +19,6 @@ database = "PhoenixFramework"
 [logging]
 location = "/Data/phoenix.log"
 enabled = false
+
+[plugins]
+
