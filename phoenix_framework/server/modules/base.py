@@ -1,10 +1,11 @@
 from phoenix_framework.server.database import DeviceModel
 from phoenix_framework.server.utils.options import OptionPool
+from abc import ABC, abstractmethod
 
 """The base module class"""
 
 
-class BaseModule:
+class BaseModule(ABC):
     """This is the Base Class for all Modules."""
 
     name: str = "BaseModule"
@@ -21,14 +22,11 @@ class BaseModule:
     # - file - execute the code as an external file
     execution_type: str = "code"
 
-    def __init__(self, device: DeviceModel):
-        self.device = device
-
-    @property
-    def code(self) -> str | bytes:
+    @classmethod
+    @abstractmethod
+    def code(cls, device: DeviceModel) -> str | bytes:
         """The code to be executed"""
-        # Code can be modified here
-        return ""
+        pass
 
     @classmethod
     def to_dict(cls) -> dict:
@@ -43,3 +41,9 @@ class BaseModule:
             "admin": cls.admin,
             "execution_type": cls.execution_type,
         }
+
+    @classmethod
+    @abstractmethod
+    def finish(cls, data: str | bytes):
+        """This function is called when the module is finished"""
+        pass
