@@ -66,6 +66,7 @@ class LogEntryModel(Base):
     ) -> "LogEntryModel":
         return cls(
             alert=alert,
+            endpoint=endpoint,
             description=description,
             user=user,
             unseen_users=unseen_users,

@@ -2,8 +2,7 @@ import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import (DefaultStagerPool,
-                                                    OptionPool)
+from phoenix_framework.server.utils.options import DefaultStagerPool, OptionPool
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
@@ -11,6 +10,9 @@ if TYPE_CHECKING:
 
 
 class BasePayload:
+    name = "BasePayload"
+    description = "BasePayload"
+    author: str = "Screamz2k"
     supported_target_os: list[str] = []
     supported_target_arch: list[str] = []
     supported_server_os: list[str] = []
@@ -33,6 +35,9 @@ class BasePayload:
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
         return {
+            "name": cls.name,
+            "description": cls.description,
+            "author": cls.author,
             "supported_target_os": cls.supported_target_os,
             "supported_target_arch": cls.supported_target_arch,
             "supported_server_os": cls.supported_server_os,
@@ -40,7 +45,7 @@ class BasePayload:
             "compiled": cls.compiled,
             "options": cls.options.to_dict(commander),
         }
-
+    
 
 class FinalPayload:
     def __init__(

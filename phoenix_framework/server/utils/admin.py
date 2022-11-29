@@ -5,11 +5,18 @@ import subprocess
 
 from sqlalchemy import inspect
 
-from phoenix_framework.server.database import (CredentialModel, DeviceModel,
-                                               ListenerModel, LogEntryModel,
-                                               OperationModel, Session,
-                                               StagerModel, TaskModel,
-                                               UserModel, engine)
+from phoenix_framework.server.database import (
+    CredentialModel,
+    DeviceModel,
+    ListenerModel,
+    LogEntryModel,
+    OperationModel,
+    Session,
+    StagerModel,
+    TaskModel,
+    UserModel,
+    engine,
+)
 from phoenix_framework.server.database.base import Base
 from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.resources import get_resource
@@ -153,15 +160,15 @@ def reset_table(table: str):
 
 def recreate_super_user():
     """Recreate the head admin."""
-    existing_admin = Session.query(UserModel).first()
+    existing_admin: UserModel = Session.query(UserModel).first()
     if existing_admin is not None:
         log("Deleting current admin.", "info")
-        Session.delete(existing_admin)
-        Session.commit()
+        existing_admin.delete(Session)
         log("Deleted current admin.", "success")
     log("Creating new admin", "info")
     password = "".join(
-        random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(10)
+        random.choice(string.ascii_letters + string.digits + string.punctuation)
+        for _ in range(10)
     )
     admin = UserModel(id=1, username="phoenix", admin=True)
     admin.generate_api_key()

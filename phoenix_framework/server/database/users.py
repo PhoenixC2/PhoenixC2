@@ -1,9 +1,10 @@
 """The Users Model"""
 import json
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid1
 import os
 from datetime import datetime
-from hashlib import md5
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -16,7 +17,7 @@ from sqlalchemy import (
     Table,
     Text,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from werkzeug.datastructures import FileStorage
 
 from phoenix_framework.server.utils.resources import get_resource
@@ -41,7 +42,7 @@ class UserModel(Base):
     id = Column(Integer, primary_key=True)
     id: int = Column(Integer, primary_key=True, nullable=False)
     username: str = Column(String(50))
-    password: str = Column(Text)
+    password_hash: str = Column(Text)
     api_key: str = Column(String(30), nullable=False)
     admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
@@ -59,16 +60,16 @@ class UserModel(Base):
 
     def set_password(self, password: str):
         """Hash the Password and save it."""
-        self.password = md5(password.encode()).hexdigest()
+        self.password_hash = generate_password_hash(password)
 
     def check_password(self, password: str):
         """Check if the password is right"""
-        return md5(password.encode()).hexdigest() == self.password
+        return check_password_hash(self.password_hash, password)
 
     def generate_api_key(self) -> None:
-        """Generate a new API Key"""
+        """Generate a new API key"""
         self.api_key = str(uuid1())
-        
+
     def to_dict(self, show_logs: bool = True, show_unseen_logs: bool = True) -> dict:
         return {
             "id": self.id,
@@ -110,6 +111,22 @@ class UserModel(Base):
         else:
             return "offline"
 
+    @classmethod
+    def add(
+        cls, username: str, password: str, admin: bool, disabled: bool, session: Session
+    ) -> "UserModel":
+        """Add a new user"""
+        user = cls(
+            username=username,
+            admin=admin,
+            disabled=disabled,
+        )
+        user.set_password(password)
+        user.generate_api_key()
+        session.add(user)
+        session.commit()
+        return user
+
     def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
@@ -119,6 +136,17 @@ class UserModel(Base):
 
         if data.get("password", None) is not None:
             self.set_password(data.get("password", None))
+
+    def delete(self, session: Session) -> None:
+        """Delete the user and profile picture and read all logs"""
+        if self.profile_picture:
+            os.rm(str(get_resource("data", self.profile_picture, skip_file_check=True)))
+
+        for log in self.unseen_logs:
+            log.seen_by_user(self)
+
+        session.delete(self)
+        session.commit()
 
     def set_profile_picture(self, file: FileStorage) -> None:
         """Set the profile picture and save it"""
@@ -131,4 +159,8 @@ class UserModel(Base):
 
     def get_profile_picture(self) -> str:
         """Get the profile picture"""
-        return str(get_resource("data/pictures/", self.username)) if self.profile_picture else get_resource("web/static/images", "icon.png")
+        return (
+            str(get_resource("data/pictures/", self.username))
+            if self.profile_picture
+            else get_resource("web/static/images", "icon.png")
+        )

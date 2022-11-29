@@ -1,1 +1,11 @@
-{}
+{
+    "python.analysis.typeCheckingMode": "off",
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Database",
+            "database": "${workspaceFolder:Phoenix-Framework}/phoenix_framework/server/data/default.sqlite3"
+        }
+    ]
+}

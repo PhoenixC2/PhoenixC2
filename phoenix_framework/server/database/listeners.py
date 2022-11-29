@@ -41,6 +41,7 @@ class ListenerModel(Base):
     stagers: list["StagerModel"] = relationship(
         "StagerModel", back_populates="listener"
     )
+
     @property
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
@@ -57,11 +58,7 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_dict(
-        self,
-        commander: "Commander",
-        show_stagers: bool = True
-    ) -> dict:
+    def to_dict(self, commander: "Commander", show_stagers: bool = True) -> dict:
         return {
             "id": self.id,
             "name": self.name,
@@ -82,7 +79,6 @@ class ListenerModel(Base):
             if show_stagers
             else [stager.id for stager in self.stagers],
         }
-
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseListener":
@@ -133,7 +129,7 @@ class ListenerModel(Base):
         for stager in self.stagers:
             session.delete(stager)
 
-    def edit(self, data: dict):
+    def edit(self, data: dict, session: Session):
         """Edit the listener"""
         options = (
             self.listener_class.options
@@ -158,6 +154,7 @@ class ListenerModel(Base):
                     self.options[key] = value
                 else:
                     raise KeyError(f"{key} is not a valid key")
+        session.commit()
 
     def create_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""
@@ -182,8 +179,16 @@ class ListenerModel(Base):
         )
 
     @classmethod
-    def add(cls, session: Session, data: dict) -> "ListenerModel":
+    def add(cls, data: dict, session: Session, ) -> "ListenerModel":
         """Add a listener to the database"""
         listener = cls.create_from_data(data)
         session.add(listener)
         return listener
+
+    def delete(self, stop: bool, commander: "Commander", session: Session):
+        """Delete the listener"""
+        if stop and self.is_active(commander):
+            self.stop(commander)
+        self.delete_stagers(session)
+        session.delete(self)
+        session.commit()

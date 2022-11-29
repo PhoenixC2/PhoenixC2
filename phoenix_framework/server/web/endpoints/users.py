@@ -71,16 +71,12 @@ def add_user():
     if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("danger", "User already exists.", ENDPOINT, 403)
 
-    user = UserModel(
-        username=username, admin=admin, disabled=disabled, api_key=str(uuid1())
-    )
-    user.set_password(password)
+    user = UserModel.add(username, password, admin, disabled, Session)
 
     if request.files.get("profile-picture"):
         profile_picture = request.files["profile-picture"]
         user.set_profile_picture(profile_picture)
 
-    Session.add(user)
     Session.commit()
     LogEntryModel.log(
         "success",
@@ -119,8 +115,8 @@ def delete_user(id: int = None):
         return generate_response("danger", "Can't delete your own Account.", ENDPOINT)
 
     # Delete user
-    Session.delete(user)
-    Session.commit()
+    user.delete(Session)
+    
     LogEntryModel.log(
         "success",
         "users",
@@ -156,9 +152,7 @@ def edit_user(id: int = None):
 
     # Check if user is head admin
     if user.id == 1 and current_user.id != 1:
-        return generate_response(
-            "danger", "Can't edit the head admin.", ENDPOINT, 403
-        )
+        return generate_response("danger", "Can't edit the head admin.", ENDPOINT, 403)
 
     # Edit user
     try:
@@ -175,6 +169,7 @@ def edit_user(id: int = None):
         current_user,
     )
     return generate_response("success", f"Edited user with ID {id}.", ENDPOINT)
+
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])
 @authorized
@@ -195,7 +190,7 @@ def reset_api_key(id: int = None):
         return generate_response(
             "danger", "Can't reset the head admin's api key.", ENDPOINT, 403
         )
-    
+
     # Reset API Key
     user.generate_api_key()
     Session.commit()

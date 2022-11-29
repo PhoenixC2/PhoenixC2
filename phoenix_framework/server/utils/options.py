@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class OptionType:
     """The base option-type"""
 
-    data_type = any = None
+    data_type = None
 
     @staticmethod
     def validate(name: str, data: any) -> bool:
@@ -345,7 +345,7 @@ class DefaultListenerPool(OptionPool):
 class DefaultStagerPool(OptionPool):
     """Contains all default options for a stager."""
 
-    def __init__(self, added_options: list[Option] = []):
+    def __init__(self, added_options: list[Option] = [], payloads: list[str] = []):
         super().__init__()
         self.options = [
             Option(
@@ -398,3 +398,13 @@ class DefaultStagerPool(OptionPool):
             ),
         ]
         self.options.extend(added_options)
+        self.options.append(
+            Option(
+                name="Payload",
+                description="The payload to use",
+                _real_name="payload_type",
+                type=ChoiceType(payloads, str),
+                default="python",
+                required=True,
+            )
+        )

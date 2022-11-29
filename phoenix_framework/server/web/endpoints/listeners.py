@@ -1,13 +1,14 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
-                                               Session)
-from phoenix_framework.server.utils.misc import (get_network_interfaces,
-                                                 get_platform)
+from phoenix_framework.server.database import ListenerModel, LogEntryModel, Session
+from phoenix_framework.server.utils.misc import get_network_interfaces, get_platform
 from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
@@ -47,9 +48,9 @@ def listeners_bp(commander: Commander):
                 for listener in ListenerModel.get_all_classes():
                     listeners[listener.name] = listener.to_dict(commander)
             else:
-                listeners[type] = ListenerModel.get_class_from_type(
-                    type
-                ).to_dict(commander)
+                listeners[type] = ListenerModel.get_class_from_type(type).to_dict(
+                    commander
+                )
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
         else:
@@ -84,7 +85,7 @@ def listeners_bp(commander: Commander):
         try:
             # has to be added again bc it got filtered out by options.validate_data(data)
             data["type"] = listener_type
-            listener = ListenerModel.add(Session, data)
+            listener = ListenerModel.add(data, Session)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         LogEntryModel.log(
@@ -119,34 +120,22 @@ def listeners_bp(commander: Commander):
         listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
-
-        if stop and listener.is_active(commander):
-            listener.stop(commander)
-            listener.delete_stagers(Session)
-            Session().delete(listener)
-            Session().commit()
-            LogEntryModel.log(
-                "success",
-                "listeners",
-                f"Deleted and stopped listener '{listener.name}' ({listener.type})",
-                Session,
-                get_current_user(),
-            )
-            return generate_response(
-                "success", f"Deleted and stopped listener with ID {id}.", ENDPOINT
-            )
-
-        listener.delete_stagers(Session)
-        Session().delete(listener)
-        Session().commit()
+        name = listener.name
+        type = listener.type
+        listener.delete(stop, commander, Session)
+        status = (
+            f"Deleted and stopped listener '{name}' ({type})"
+            if stop
+            else f"Deleted listener '{name}' ({type})"
+        )
         LogEntryModel.log(
             "success",
             "listeners",
-            f"Deleted listener '{listener.name}' ({listener.type})",
+            status,
             Session,
             get_current_user(),
         )
-        return generate_response("success", f"Deleted listener with ID {id}.", ENDPOINT)
+        return generate_response("success", status, ENDPOINT)
 
     @listeners_bp.route("/edit", methods=["PUT", "POST"])
     @listeners_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
@@ -167,8 +156,7 @@ def listeners_bp(commander: Commander):
 
         # Edit listener
         try:
-            listener.edit(form_data)
-            Session.commit()
+            listener.edit(form_data, Session)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 

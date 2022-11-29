@@ -26,7 +26,7 @@ def post_login():
         if user is not None:
             LogEntryModel.log("info", "auth", f"Logged in via API key.", Session, user)
             session["id"] = user.id
-            session["password"] = user.password
+            session["password"] = user.password_hash
             return generate_response(
                 "success", f"Successfully logged in as {user} using Api-Key"
             )
@@ -55,7 +55,7 @@ def post_login():
 
         if old_user is not None and old_user.username != username:
             session["id"] = user.id
-            session["password"] = user.password
+            session["password"] = user.password_hash
             LogEntryModel.log(
                 "info",
                 "auth",
@@ -75,7 +75,7 @@ def post_login():
             )
         else:
             session["id"] = user.id
-            session["password"] = user.password
+            session["password"] = user.password_hash
             LogEntryModel.log(
                 "info",
                 "auth",

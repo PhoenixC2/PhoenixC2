@@ -40,7 +40,7 @@ def get_current_user() -> UserModel | None:
         )
         if user is not None:
             return user
-    return Session.query(UserModel).filter_by(password=session.get("password")).first()
+    return Session.query(UserModel).filter_by(password_hash=session.get("password")).first()
 
 
 def authorized(func):

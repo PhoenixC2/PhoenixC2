@@ -1,11 +1,9 @@
 """The Devices Model"""
-import json
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String)
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
@@ -13,7 +11,6 @@ from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_listener import BaseListener
 
     from .listeners import ListenerModel
     from .stagers import StagerModel
@@ -61,7 +58,9 @@ class DeviceModel(Base):
             "infos": self.infos,
             "connection_date": self.connection_date,
             "last_online": self.last_online,
-            "stager": self.stager.to_dict(commander, show_listener=False) if show_stager else self.stager.id,
+            "stager": self.stager.to_dict(commander, show_listener=False)
+            if show_stager
+            else self.stager.id,
             "tasks": [task.to_dict(commander, show_device=False) for task in self.tasks]
             if show_tasks
             else [task.id for task in self.tasks],
@@ -100,3 +99,11 @@ class DeviceModel(Base):
             last_online=datetime.now(),
             stager=stager,
         )
+
+    def delete(self, session):
+        """Delete the device and all unfinished tasks"""
+        session.delete(self)
+        for task in self.tasks:
+            if not task.finished:
+                session.delete(task)
+        session.commit()

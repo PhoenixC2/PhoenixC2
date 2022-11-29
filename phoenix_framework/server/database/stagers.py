@@ -1,6 +1,5 @@
 """The Stagers Model"""
 import importlib
-import json
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -155,7 +154,7 @@ class StagerModel(Base):
         )
 
     @classmethod
-    def add(cls, session: Session, data: dict) -> "StagerModel":
+    def add(cls, data: dict, session: Session) -> "StagerModel":
         """Add a stager to the database"""
         stager = cls.create_from_data(data)
         session.add(stager)

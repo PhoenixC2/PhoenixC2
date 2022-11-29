@@ -24,15 +24,12 @@ function resetModal() {
     document.getElementById("create-modal-body").innerHTML = original_modal_content;
     changeListener();
 }
-function changePayload() {
+function changePayload(type) {
     // get the payload value
-    if (document.getElementById("create-payload_type") != null) {
-        let payload = document.getElementById("create-payload_type").value;
-    }
-    else {
-        let payload = document.getElementById("edit-payload_type").value;
-    }
-    payload = payloads[payload];
+    let payload = document.getElementById(`${type}-payload_type`).value;
+
+    // get content of payload div
+    let payload_div = document.getElementById("payload-div");
 
 }
 function changeListener() {

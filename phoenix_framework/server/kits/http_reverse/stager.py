@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 
 
 class PythonPayload(BasePayload):
+    name = "Python"
+    description = "Python Payload"
+    author = "Screamz2k"
     supported_target_os = ["linux", "windows", "osx"]
     supported_target_arch = ["x64", "x86"]
     supported_server_os = ["linux", "windows"]
@@ -116,5 +119,5 @@ class Stager(BaseStager):
                 type=StringType(),
                 default="",
             ),
-        ]
+        ], list(payloads.keys())
     )

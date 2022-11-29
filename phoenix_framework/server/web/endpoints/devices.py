@@ -38,12 +38,12 @@ def devices_bp(commander: Commander):
             for device in Session.query(DeviceModel).all():
                 if not device.connected:
                     count += 1
-                    Session.delete(device)
+                    device.delete(Session)
         else:
             for device in Session.query(DeviceModel).filter_by(id=id).all():
                 if not device.connected:
                     count += 1
-                    Session.delete(device)
+                    device.delete(Session)
         Session.commit()
         if count > 0:
             LogEntryModel.log(

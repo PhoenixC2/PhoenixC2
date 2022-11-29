@@ -88,7 +88,7 @@ def stagers_bp(commander: Commander):
 
         # Add stager
         try:
-            stager = StagerModel.add(Session, data)
+            stager = StagerModel.add(data, Session)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
