@@ -54,8 +54,6 @@ class LogEntryModel(Base):
         """Remove a user from unseen users"""
         if user in self.unseen_users:
             self.unseen_users.remove(user)
-
-    @classmethod
     def generate_log(
         cls,
         alert: str,

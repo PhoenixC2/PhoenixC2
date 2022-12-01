@@ -5,8 +5,7 @@ from flask import Blueprint, jsonify, send_from_directory
 import phoenix_framework.server as avl
 from phoenix_framework.server.utils.misc import get_network_interfaces, version
 from phoenix_framework.server.utils.resources import get_resource
-from phoenix_framework.server.utils.web import (admin, authorized,
-                                                generate_response)
+from phoenix_framework.server.utils.web import admin, authorized, generate_response
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
@@ -50,6 +49,7 @@ def get_downloads(file_name: str):
         file_name,
         as_attachment=True,
     )
+
 
 @misc_bp.route("/downloads/clear", methods=["POST"])
 @admin

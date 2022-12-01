@@ -116,7 +116,7 @@ def delete_user(id: int = None):
 
     # Delete user
     user.delete(Session)
-    
+
     LogEntryModel.log(
         "success",
         "users",

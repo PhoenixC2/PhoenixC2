@@ -164,3 +164,8 @@ class UserModel(Base):
             if self.profile_picture
             else get_resource("web/static/images", "icon.png")
         )
+
+    def read_all_logs(self) -> None:
+        """Read all logs"""
+        for log in self.unseen_logs:
+            log.seen_by_user(self)

@@ -1,14 +1,20 @@
 import os
 
-from flask import (Blueprint, jsonify, render_template, request,
-                   send_from_directory)
+from flask import Blueprint, jsonify, render_template, request, send_from_directory
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (DeviceModel, LogEntryModel,
-                                               Session, TaskModel)
+from phoenix_framework.server.database import (
+    DeviceModel,
+    LogEntryModel,
+    Session,
+    TaskModel,
+)
 from phoenix_framework.server.utils.resources import get_resource
-from phoenix_framework.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."
@@ -34,16 +40,14 @@ def devices_bp(commander: Commander):
     @authorized
     def post_clear_devices(id: str = "all"):
         count = 0
-        if id == "all":
-            for device in Session.query(DeviceModel).all():
-                if not device.connected:
-                    count += 1
-                    device.delete(Session)
-        else:
-            for device in Session.query(DeviceModel).filter_by(id=id).all():
-                if not device.connected:
-                    count += 1
-                    device.delete(Session)
+        for device in (
+            Session.query(DeviceModel).all()
+            if id == "all"
+            else Session.query(DeviceModel).filter_by(id=id).all()
+        ):
+            if not device.connected:
+                count += 1
+                device.delete(Session)
         Session.commit()
         if count > 0:
             LogEntryModel.log(
@@ -54,8 +58,6 @@ def devices_bp(commander: Commander):
                 get_current_user(),
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
-
-
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
     @authorized

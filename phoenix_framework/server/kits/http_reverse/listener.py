@@ -6,15 +6,22 @@ from typing import TYPE_CHECKING
 
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
 
-from phoenix_framework.server.database import (DeviceModel, ListenerModel,
-                                               LogEntryModel, Session)
+from phoenix_framework.server.database import (
+    DeviceModel,
+    ListenerModel,
+    LogEntryModel,
+    Session,
+)
 from phoenix_framework.server.modules import get_module
-from phoenix_framework.server.utils.options import (DefaultListenerPool,
-                                                    Option, StringType)
+from phoenix_framework.server.utils.options import (
+    DefaultListenerPool,
+    Option,
+    StringType,
+)
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log_connection
 from phoenix_framework.server.utils.web import FlaskThread
-
+from phoenix_framework.server.utils.features import Feature
 from ..base_listener import BaseListener
 from .handler import Handler
 
@@ -40,6 +47,13 @@ class Listener(BaseListener):
             )
         ]
     )
+    features = [
+        Feature(
+            name="https",
+            description="Encrypted traffic using https",
+            pro=False,
+        )
+    ]
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):
         super().__init__(commander, db_entry)
@@ -148,9 +162,9 @@ class Listener(BaseListener):
                 return "", 404
             if module is None:
                 return "", 404
-            
+
             return jsonify(module.to_dict())
-        
+
         @self.api.route("/module/<string:module_name>/download", methods=["GET"])
         def download_module_content(module_name: str = None):
             try:
@@ -165,8 +179,6 @@ class Listener(BaseListener):
         def change_headers(r: Response):
             r.headers["Server"] = self.options.header.value
             return r
-        
-
 
     def start(self):
         if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(

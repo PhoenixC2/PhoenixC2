@@ -12,7 +12,7 @@ def get_resource(
     # remove the first slash if it exists
     if path[-1] == "/":
         path = path[:-1]
-    
+
     # check if file is given
     if file is not None:
         resource = files("phoenix_framework.server." + path.replace("/", ".")).joinpath(
@@ -22,7 +22,7 @@ def get_resource(
         resource = files("phoenix_framework.server." + path.replace("/", ".")).joinpath(
             ""
         )
-    
+
     # check if file or directory exists if skip_file_check is False
     if os.path.exists(str(resource)) or skip_file_check:
         return resource

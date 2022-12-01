@@ -3,10 +3,17 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
-                                               Session, StagerModel)
-from phoenix_framework.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix_framework.server.database import (
+    ListenerModel,
+    LogEntryModel,
+    Session,
+    StagerModel,
+)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."
@@ -47,9 +54,7 @@ def stagers_bp(commander: Commander):
                 for stager in StagerModel.get_all_classes():
                     stagers[stager.name] = stager.to_dict(commander)
             else:
-                stagers[type] = StagerModel.get_class_from_type(type).to_dict(
-                    commander
-                )
+                stagers[type] = StagerModel.get_class_from_type(type).to_dict(commander)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 

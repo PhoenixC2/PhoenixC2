@@ -179,7 +179,11 @@ class ListenerModel(Base):
         )
 
     @classmethod
-    def add(cls, data: dict, session: Session, ) -> "ListenerModel":
+    def add(
+        cls,
+        data: dict,
+        session: Session,
+    ) -> "ListenerModel":
         """Add a listener to the database"""
         listener = cls.create_from_data(data)
         session.add(listener)

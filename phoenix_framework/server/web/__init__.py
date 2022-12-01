@@ -23,7 +23,7 @@ def create_web(commander: Commander) -> Flask:
     ):
         cli.show_server_banner = lambda *args: None
         logging.getLogger("werkzeug").disabled = True
-        
+
     config = load_config()
     secret_key = config["web"]["secret_key"]
     if secret_key == "":

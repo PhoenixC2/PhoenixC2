@@ -2,8 +2,11 @@ from flask import Blueprint, jsonify, render_template, request
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.database import LogEntryModel, Session, TaskModel
-from phoenix_framework.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix_framework.server.utils.web import (
+    authorized,
+    generate_response,
+    get_current_user,
+)
 
 
 def tasks_bp(commander: Commander):
@@ -24,16 +27,14 @@ def tasks_bp(commander: Commander):
     @authorized
     def post_clear_tasks(id: str = "all"):
         count = 0
-        if id == "all":
-            for task in Session.query(TaskModel).all():
-                if task.finished_at is not None:
-                    count += 1
-                    Session.delete(task)
-        else:
-            for task in Session.query(TaskModel).filter_by(device_id=id).all():
-                if task.finished_at is not None:
-                    count += 1
-                    Session.delete(task)
+        for task in (
+            Session.query(TaskModel).all()
+            if id == "all"
+            else Session.query(TaskModel).filter_by(id=id).all()
+        ):
+            if task.finished_at is not None:
+                count += 1
+                Session.delete(task)
         Session.commit()
         if count > 0:
             LogEntryModel.log(

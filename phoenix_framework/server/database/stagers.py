@@ -3,8 +3,7 @@ import importlib
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String)
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
@@ -14,8 +13,7 @@ from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_stager import (BasePayload,
-                                                           BaseStager)
+    from phoenix_framework.server.kits.base_stager import BasePayload, BaseStager
 
     from .devices import DeviceModel
     from .listeners import ListenerModel

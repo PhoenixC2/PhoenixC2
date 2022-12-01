@@ -1,8 +1,11 @@
 from typing import TYPE_CHECKING
 
 from phoenix_framework.server.database import ListenerModel
-from phoenix_framework.server.utils.options import (DefaultListenerPool,
-                                                    Option, StringType)
+from phoenix_framework.server.utils.options import (
+    DefaultListenerPool,
+    Option,
+    StringType,
+)
 
 from ..base_listener import BaseListener
 

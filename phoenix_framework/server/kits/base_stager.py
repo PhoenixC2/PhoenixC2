@@ -3,6 +3,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 from phoenix_framework.server.utils.options import DefaultStagerPool, OptionPool
+from phoenix_framework.server.utils.features import Feature
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
@@ -19,6 +20,7 @@ class BasePayload:
     end_format: str = ""
     compiled: bool = False
     options: OptionPool = OptionPool()
+    features: list[Feature] = []
 
     @abstractmethod
     def generate(
@@ -45,7 +47,7 @@ class BasePayload:
             "compiled": cls.compiled,
             "options": cls.options.to_dict(commander),
         }
-    
+
 
 class FinalPayload:
     def __init__(

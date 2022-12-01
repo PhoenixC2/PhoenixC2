@@ -72,6 +72,7 @@ def ph_print(text: str, force: bool = False):
 
 def log_connection(device: "DeviceModel", reconnect: bool = False):
     from phoenix_framework.server.database import LogEntryModel, Session
+
     """Log the new connection to the console and database"""
     if reconnect:
         status = f"Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]"

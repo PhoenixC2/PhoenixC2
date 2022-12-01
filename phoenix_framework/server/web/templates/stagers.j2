@@ -1,4 +1,5 @@
 {% extends 'base.j2' %}
+{% from 'macros.j2' import render_options %}
 {% block title%}Stagers{% endblock %}
 {% block content %}
 <div class="table-responsive">
@@ -117,160 +118,17 @@
 <form id="{{ stager_type.name }}-form" style="display: none;" target="/stagers/create">
     {# hidden type field #}
     <input type="hidden" name="id" id="id-create" value="none">
-    {% for option in stager_type.options.options %}
-    {% if option.type|string == "checkbox" %}
-    <div class="form-check">
-        <label class="form-check-label">
-            {# hidden field for checkbox #}
-            {% if option.default %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" checked="" id="{{ option.real_name }}-create">
-            {% else %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" id="{{ option.real_name }}-create">
-            {% endif %}
-            {{ option.name }}
-            <span class="form-check-sign">
-                <span class="check"></span>
-            </span>
-        </label>
-        {# Add a hidden value for the checkbox if it is not checked #}
-        <input class="form-check-input" type="hidden" name="{{ option.real_name }}" value="off">
-    </div>
-    <br>
-    {% elif option.type|string == "address" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input list="{{ option.real_name }}-create-datalist" type="text" class="form-control" name="{{ option.real_name }}" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}">
-        <datalist id="{{ option.real_name }}-create-datalist">
-            {% for interface in option.type.interfaces %}
-            <option id="{{ option.type.interfaces[interface] }}-{{option.real_name}}-create" value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
-            {% endfor %}
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% elif option.type|string == "port" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}" name="{{ option.real_name }}">
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>    
-    {% elif option.type|string == "select" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name }}-create" name="{{ option.real_name }}">
-            {% for choice in option.type.choices %}
-            {% if choice == option.default  %}
-            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}" selected>{{ choice }}</option>
-            {% else %}
-            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}">{{ choice }}</option>
-            {% endif %}
-            {% endfor %}
-        </select>
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% elif option.type|string == "table" and option.name != "Listener" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
-            {% for object in option.type.choices%}
-            <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
-            {% endfor %}
-        </select>
-        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% else %}
-    {% if option.name != "Listener" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        {% if option.required %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default if option.default }}" required>
-        {% else %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default if option.default }}">
-        {% endif %}
-        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% endif %}
-    {% endif %}
-    {% endfor %}
+    {{ render_options(stager_type.options.options) }}
     {# show author of the stager #}
     <p class="text-muted">Created by: {{ stager_type.author }}</p>
 </form>
+
 {# divs for the payloads which will be injected into the create/edit modal #}
 {% for payload in stager_type.payloads %}
 <div id="{{ stager_type.name }}-{{ payload }}-payload" style="display: none;">
     {# hidden type field #}
-    {% for option in stager_type.payloads[payload].options.options if stager_type.payloads[payload].options.options %}
-    {% if option.type|string == "checkbox" %}
-    <div class="form-check">
-        <label class="form-check-label">
-            {# hidden field for checkbox #}
-            {% if option.default %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" checked="" id="{{ option.real_name }}-create">
-            {% else %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" id="{{ option.real_name }}-create">
-            {% endif %}
-            {{ option.name }}
-            <span class="form-check-sign">
-                <span class="check"></span>
-            </span>
-        </label>
-        {# Add a hidden value for the checkbox if it is not checked #}
-        <input class="form-check-input" type="hidden" name="{{ option.real_name }}" value="off">
-    </div>
-    <br>
-    {% elif option.type|string == "address" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input list="{{ option.real_name }}-create-datalist" type="text" class="form-control" name="{{ option.real_name }}" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}">
-        <datalist id="{{ option.real_name }}-create-datalist">
-            {% for interface in option.type.interfaces %}
-            <option id="{{ option.type.interfaces[interface] }}-{{option.real_name}}-create" value="{{ interface }}">{{ interface }}: {{ option.type.interfaces[interface] }}</option>
-            {% endfor %}
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% elif option.type|string == "port" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <input min="1" max="65535" type="number" class="form-control" id="{{ option.real_name }}-create" value="{{ option.default if option.default }}" name="{{ option.real_name }}">
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>    
-    {% elif option.type|string == "select" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name }}-create" name="{{ option.real_name }}">
-            {% for choice in option.type.choices %}
-            {% if choice == option.default  %}
-            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}" selected>{{ choice }}</option>
-            {% else %}
-            <option id="{{choice}}-{{option.real_name}}-create" value="{{ choice }}">{{ choice }}</option>
-            {% endif %}
-            {% endfor %}
-        </select>
-        <small class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% elif option.type|string == "table" and option.name != "Listener" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}" class="bmd-label-floating">{{ option.name }}</label>
-        <select class="form-control" id="{{ option.real_name}}-create" name="{{ option.real_name }}">
-            {% for object in option.type.choices%}
-            <option value="{{ object.real_name }}-{{ object.id }}">{{ object.name }}</option>
-            {% endfor %}
-        </select>
-        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% else %}
-    {% if option.name != "Listener" %}
-    <div class="form-group">
-        <label for="{{ option.real_name }}">{{ option.name }}</label>
-        {% if option.required %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default if option.default }}" required>
-        {% else %}
-        <input name="{{option.real_name}}" type="{{ option.type }}" class="form-control" id="{{ option.real_name }}-create"
-            value="{{ option.default if option.default }}">
-        {% endif %}
-        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
-    </div>
-    {% endif %}
-    {% endif %}
-    {% endfor %}
-    {# show author of the stager #}
+    {{ render_options(stager_type.payloads[payload].options.options) if stager_type.payloads[payload].options.options }}
+    {# show author of the payload #}
     <p class="text-muted">Created by: {{ stager_type.payloads[payload].author }}</p>
 </div>
 {% endfor %}

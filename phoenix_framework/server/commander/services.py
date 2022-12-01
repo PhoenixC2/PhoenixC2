@@ -38,6 +38,7 @@ def start_web(address: str, port: int, ssl: bool, commander: Commander):
     commander.web_server.start()
     return web_server
 
+
 def load_plugins(commander: Commander):
     """Load all plugins which are specified in the config"""
     plugins = load_config()["plugins"]
@@ -48,5 +49,5 @@ def load_plugins(commander: Commander):
                 commander.load_plugin(get_plugin(plugin))
             except Exception as error:
                 log(str(error), "danger")
-    
+
     log("Loaded Plugins.", "success")

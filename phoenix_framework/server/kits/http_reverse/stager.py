@@ -5,10 +5,15 @@ from typing import TYPE_CHECKING
 
 import jinja2
 
-from phoenix_framework.server.utils.options import (AddressType, ChoiceType,
-                                                    DefaultStagerPool,
-                                                    IntegerType, Option,
-                                                    OptionPool, StringType)
+from phoenix_framework.server.utils.options import (
+    AddressType,
+    ChoiceType,
+    DefaultStagerPool,
+    IntegerType,
+    Option,
+    OptionPool,
+    StringType,
+)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
@@ -119,5 +124,6 @@ class Stager(BaseStager):
                 type=StringType(),
                 default="",
             ),
-        ], list(payloads.keys())
+        ],
+        list(payloads.keys()),
     )

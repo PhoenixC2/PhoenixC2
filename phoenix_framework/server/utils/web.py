@@ -3,8 +3,7 @@ import os
 import threading
 from functools import wraps
 
-from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
-                   session)
+from flask import Flask, Response, abort, flash, jsonify, redirect, request, session
 from werkzeug.serving import make_server
 
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
@@ -40,7 +39,11 @@ def get_current_user() -> UserModel | None:
         )
         if user is not None:
             return user
-    return Session.query(UserModel).filter_by(password_hash=session.get("password")).first()
+    return (
+        Session.query(UserModel)
+        .filter_by(password_hash=session.get("password"))
+        .first()
+    )
 
 
 def authorized(func):

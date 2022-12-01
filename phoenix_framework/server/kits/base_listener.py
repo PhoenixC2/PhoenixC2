@@ -2,10 +2,10 @@ import time
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
-                                               Session)
+from phoenix_framework.server.database import ListenerModel, LogEntryModel, Session
 from phoenix_framework.server.utils.options import OptionPool
 from phoenix_framework.server.utils.ui import log
+from phoenix_framework.server.utils.features import Feature
 
 from .base_handler import BaseHandler
 
@@ -23,6 +23,7 @@ class BaseListener:
     # The supported OS for the listener
     os: list[str] = ["linux", "windows", "osx"]
     options = OptionPool()
+    features: list[Feature] = []
 
     def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
         self.address = db_entry.address
@@ -62,6 +63,7 @@ class BaseListener:
             for handler in self.handlers:
                 if handler.name == id_or_name:
                     return handler
+
     @abstractmethod
     def status(self) -> bool:
         """Get status of the listener.
@@ -109,4 +111,3 @@ class BaseListener:
             "os": cls.os,
             "options": cls.options.to_dict(commander),
         }
-

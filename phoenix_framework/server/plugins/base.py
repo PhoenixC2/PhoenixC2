@@ -5,11 +5,14 @@ from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
+
+
 class BasePlugin(ABC):
     """The Base Plugin class."""
+
     name: str
     description: str
-    author : str
+    author: str
     os = ["linux", "windows", "osx"]
     options = OptionPool()
     # execution types:
@@ -22,13 +25,12 @@ class BasePlugin(ABC):
     @abstractmethod
     def execute(self, commander: "Commander") -> None:
         """The main function of the plugin to be executed
-        
+
         Execution type:
         - file - return the path to the file to be executed in a external process
         - everything else - write the code to be executed in the function
         """
         pass
-
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
