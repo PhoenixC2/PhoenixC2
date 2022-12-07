@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
+import time
 from phoenix_framework.server.plugins import BasePlugin
 from phoenix_framework.server.utils.options import OptionPool
-
-if TYPE_CHECKING:
-    from phoenix_framework.server.commander.commander import Commander
 
 
 class Plugin(BasePlugin):
@@ -14,7 +11,9 @@ class Plugin(BasePlugin):
     author = "Screamz2k"
     os = ["linux", "windows", "osx"]
     options = OptionPool()
-    execution_type = "function"
+    execution_type = "thread"
 
-    def execute(self, commander: "Commander") -> None:
-        print("Hello World!")
+    def execute(self, commander, config) -> None:
+        while True:
+            time.sleep(config["interval"])
+            print("Hello World!")

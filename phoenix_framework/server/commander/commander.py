@@ -66,7 +66,7 @@ class Commander:
         except KeyError as e:
             raise KeyError(HANDLER_DOES_NOT_EXIST) from e
 
-    def load_plugin(self, plugin: BasePlugin):
+    def load_plugin(self, plugin: BasePlugin, config: dict):
         """Load a plugin"""
         if plugin.name in self.active_plugins:
             raise KeyError(f"Plugin {plugin.name} already loaded")
@@ -75,13 +75,13 @@ class Commander:
             raise ValueError(f"Invalid execution type {plugin.execution_type}")
         try:
             if plugin.execution_type == "function":
-                plugin.execute(self)
+                plugin.execute(self, config)
             elif plugin.execution_type == "thread":
-                Thread(target=plugin.execute, args=(self,)).start()
+                Thread(target=plugin.execute, args=(self, config)).start()
             elif plugin.execution_type == "process":
-                Process(target=plugin.execute, args=(self,)).start()
+                Process(target=plugin.execute, args=(self, config)).start()
             elif plugin.execution_type == "file":
-                subprocess.Popen([plugin.execute, self])
+                subprocess.Popen([plugin.execute])
         except Exception as e:
             raise Exception(f"Failed to load plugin '{plugin.name}'") from e
 

@@ -338,6 +338,13 @@ class DefaultListenerPool(OptionPool):
                 type=IntegerType(),
                 default=5,
             ),
+            Option(
+                name="Response timeout",
+                _real_name="response_time",
+                description="How long the listener should wait for a response before closing the connection.",
+                type=IntegerType(),
+                default=10,
+            ),
         ]
         self.options.extend(added_options)
 

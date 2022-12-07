@@ -72,7 +72,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         try:
-            task = TaskModel.reverse_shell(id, address, port)
+            task = TaskModel.reverse_shell(device, address, port)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -102,7 +102,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         try:
-            task = TaskModel.remote_command_execution(id, cmd)
+            task = TaskModel.remote_command_execution(device, cmd)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -122,7 +122,7 @@ def devices_bp(commander: Commander):
 
     @devices_bp.route("/<int:id>/info", methods=["GET"])
     @authorized
-    def get_infos(int: id = None):
+    def get_infos(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
 
         # check if device exists
@@ -131,7 +131,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         try:
-            task = TaskModel.get_infos(id)
+            task = TaskModel.get_infos(device)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -161,7 +161,7 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         try:
-            task = TaskModel.list_directory_contents(id, directory)
+            task = TaskModel.list_directory_contents(device, directory)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -199,7 +199,7 @@ def devices_bp(commander: Commander):
                 "danger", "Upload path is missing.", "devices", 400
             )
         try:
-            task = TaskModel.upload(id, request.files.get("file"), target_path)
+            task = TaskModel.upload(device, request.files.get("file"), target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -231,7 +231,7 @@ def devices_bp(commander: Commander):
         if target_path is None:
             return generate_response("danger", "File path is missing.", "devices", 400)
         try:
-            task = TaskModel.download(id, target_path)
+            task = TaskModel.download(device, target_path)
             Session.add(task)
             Session.commit()
         except Exception as e:
@@ -241,6 +241,46 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created download task for '{device.name}'.",
+                Session,
+                get_current_user(),
+            )
+            if use_json:
+                return task.to_dict(commander, False)
+            else:
+                return generate_response("success", TASK_CREATED, "devices")
+
+    @devices_bp.route("/<int:id>/module", methods=["POST"])
+    @authorized
+    def post_execute_module(id: int = None):
+        use_json = request.args.get("json", "").lower() == "true"
+        path = request.form.get("path")
+        execution_method = request.form.get("method")
+        data = request.form.get("data", {})
+
+        # check if device exists
+        device = Session.query(DeviceModel).filter_by(id=id).first()
+        if device is None:
+            return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
+
+        if path is None:
+            return generate_response("danger", "Module path is missing.", "devices", 400)
+        try:
+            data = dict(data)
+        except Exception:
+            return generate_response(
+                "danger", "Data is not a valid JSON object.", "devices", 400
+            )
+        try:
+            task = TaskModel.execute_module(device, path, execution_method, data)
+            Session.add(task)
+            Session.commit()
+        except Exception as e:
+            return generate_response("danger", str(e), "devices", 500)
+        else:
+            LogEntryModel.log(
+                "info",
+                "devices",
+                f"Created module execution task for '{device.name}'.",
                 Session,
                 get_current_user(),
             )

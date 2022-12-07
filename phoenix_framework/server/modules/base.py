@@ -1,8 +1,12 @@
-from phoenix_framework.server.database import DeviceModel
 from phoenix_framework.server.utils.options import OptionPool
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from phoenix_framework.server.database import DeviceModel, ListenerModel
+    from phoenix_framework.server.commander import Commander
 """The base module class"""
+
 
 
 class BaseModule(ABC):
@@ -14,36 +18,42 @@ class BaseModule(ABC):
     language: str = "python"
     os: list[str] = ["linux", "windows", "osx"]
     options = OptionPool()
-    stagers: list[str] = []
     admin: bool = False
-    # execution types:
-    # - code - execute the code directly
-    # - shellcode - execute the code as shellcode
-    # - file - execute the code as an external file
-    execution_type: str = "code"
+    # code types:
+    # - native: code is written in the language of the module
+    # - shellcode: shellcode
+    # - compiled: a compiled binary
+    code_type: str = "native"
+    # execution methods:
+    # - direct: normal code & shellcode
+    # - thread: normal code
+    # - process: normal code
+    # - injection: inject shellcode into a process
+    # - external: create a file save the binary content to it and execute it externally
+    execution_methods: list[str] = ["direct", "thread", "process", "injection", "external"]
+
 
     @classmethod
     @abstractmethod
-    def code(cls, device: DeviceModel) -> str | bytes:
+    def code(cls, device: "DeviceModel", listener: "ListenerModel", args: dict) -> str | bytes:
         """The code to be executed"""
         pass
 
     @classmethod
-    def to_dict(cls) -> dict:
+    def to_dict(cls, commander: "Commander") -> dict:
         return {
             "name": cls.name,
             "description": cls.description,
             "author": cls.author,
             "language": cls.language,
             "os": cls.os,
-            "options": cls.options.to_dict(),
-            "stagers": cls.stagers,
+            "options": cls.options.to_dict(commander),
             "admin": cls.admin,
-            "execution_type": cls.execution_type,
+            "code_type": cls.execution_type,
+            "execution_methods": cls.execution_methods,
         }
 
     @classmethod
-    @abstractmethod
-    def finish(cls, data: str | bytes):
-        """This function is called when the module is finished"""
-        pass
+    def finish(cls, data: str | bytes) -> str:
+        """This function is called when the module is finished which returns the final output"""
+        return data

@@ -10,7 +10,9 @@ from phoenix_framework.server.database import (
     DeviceModel,
     ListenerModel,
     LogEntryModel,
+    StagerModel,
     Session,
+    TaskModel,
 )
 from phoenix_framework.server.modules import get_module
 from phoenix_framework.server.utils.options import (
@@ -67,7 +69,7 @@ class Listener(BaseListener):
 
         @self.api.route("/connect", methods=["POST"])
         def connect():
-            data = request.get_json()
+            data: dict = request.get_json()
             if len(self.handlers) >= self.db_entry.limit:
                 LogEntryModel.log(
                     "error",
@@ -83,15 +85,27 @@ class Listener(BaseListener):
                 architecture = data.get("architecture", "")
                 user = data.get("user", "")
                 admin = data.get("admin", False)
+                stager_id = data.get("stager", "")
+
+                stager = Session.query(StagerModel).filter_by(id=stager_id).first()
+
+                if stager is None:
+                    LogEntryModel.log(
+                        "error",
+                        "listeners",
+                        f"A Stager is trying to connect to '{self.db_entry.name}' but the stager id is invalid.",
+                        Session,
+                    )
+                    raise ValueError("Invalid Stager ID")
                 device = DeviceModel.generate_device(
-                    self, hostname, address, os, architecture, user, admin
+                    hostname, address, os, architecture, user, admin, stager
                 )
-            except Exception:
+            except Exception as e:
                 return "", 404
             Session.add(device)
             Session.commit()
             log_connection(device)
-            self.add_handler(Handler(device))
+            self.add_handler(Handler(device, self))
             return device.name
 
         @self.api.route("/tasks/<string:name>")
@@ -104,7 +118,7 @@ class Listener(BaseListener):
                     Session.query(DeviceModel).filter_by(name=name).first()
                 )
                 if device is not None:
-                    handler = Handler(device)
+                    handler = Handler(device, self)
                     self.add_handler(handler)
                     log_connection(device, reconnect=True)
                 else:
@@ -141,6 +155,28 @@ class Listener(BaseListener):
             Session.commit()
             return "", 200
 
+        @self.api.route("/update/<string:name>", methods=["POST"])
+        def update_task_output(name: str = None):
+            """Update the output of a task in the database"""
+            if name is None:
+                return "", 404
+
+            handler = self.get_handler(name)
+            if handler is None:
+                return "", 404
+
+            data: dict = request.get_json()
+            task_id = data.get("id", "")
+            output = data.get("output", "")
+
+            task = handler.get_task(task_id)
+            if task is None:
+                return "", 404
+
+            task.output = output
+            Session.commit()
+            return "", 200
+
         @self.api.route("/download/<string:file_name>", methods=["GET"])
         def download(file_name: str = None):
             if file_name is None:
@@ -152,12 +188,12 @@ class Listener(BaseListener):
                 as_attachment=True,
             )
 
-        @self.api.route("/module/<string:module_name>", methods=["GET"])
-        def get_module_info(module_name: str = None):
-            if module_name is None:
+        @self.api.route("/module/<string:path>", methods=["GET"])
+        def get_module_info(path: str = None):
+            if path is None:
                 return "", 404
             try:
-                module = get_module(module_name)
+                module = get_module(path)
             except Exception:
                 return "", 404
             if module is None:
@@ -165,19 +201,23 @@ class Listener(BaseListener):
 
             return jsonify(module.to_dict())
 
-        @self.api.route("/module/<string:module_name>/download", methods=["GET"])
-        def download_module_content(module_name: str = None):
+        @self.api.route("/module/download", methods=["GET"])
+        def download_module_content(path: str = None):
+            task_name = request.args.get("name", "")
+
+            task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
+
+            if task is None:
+                return "", 404
+
             try:
-                module = get_module(module_name)
-            except Exception:
+                return task.get_module_code()
+            except ValueError as e:
                 return "", 404
-            if module is None:
-                return "", 404
-            return module.code
 
         @self.api.after_request
         def change_headers(r: Response):
-            r.headers["Server"] = self.options.header.value
+            r.headers["Server"] = self.db_entry.options["header"]
             return r
 
     def start(self):

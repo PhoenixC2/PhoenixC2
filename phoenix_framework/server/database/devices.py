@@ -19,10 +19,12 @@ if TYPE_CHECKING:
 
 class DeviceModel(Base):
     """The Devices Model"""
-
+    __mapper_args__ = {
+        "confirm_deleted_rows": False
+    } # needed to avoid error bc of cascade delete
     __tablename__ = "Devices"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String, unique=True, nullable=False)
+    name: str = Column(String, default=lambda: str(uuid1()).split("-")[0], unique=True, nullable=False)
     hostname: str = Column(String(100))
     address: str = Column(String(100), nullable=False)
     os: str = Column(String(10))
@@ -30,8 +32,8 @@ class DeviceModel(Base):
     user: str = Column(String(100))
     admin: bool = Column(Boolean, default=False)
     infos: dict = Column(MutableDict.as_mutable(JSON), default={})
-    connection_date: datetime = Column(DateTime)
-    last_online: datetime = Column(DateTime)
+    connection_date: datetime = Column(DateTime, default=datetime.now)
+    last_online: datetime = Column(DateTime, default=datetime.now)
     stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
     stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
     tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
@@ -79,24 +81,21 @@ class DeviceModel(Base):
     @classmethod
     def generate_device(
         cls,
-        stager: "StagerModel",
         hostname: str,
         address: str,
         os: str,
         architecture: str,
         user: str,
         admin: bool,
+        stager: "StagerModel",
     ) -> "ListenerModel":
         return cls(
-            name=str(uuid1()).split("-")[0],
             hostname=hostname,
             address=address,
             os=os,
             architecture=architecture,
             user=user,
             admin=admin,
-            connection_date=datetime.now(),
-            last_online=datetime.now(),
             stager=stager,
         )
 

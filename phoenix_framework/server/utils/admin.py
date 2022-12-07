@@ -147,14 +147,10 @@ def reset_table(table: str):
     if table not in models:
         log(f"{table} doesn't exist.", "error")
         exit(1)
-    log(f"Resetting {table}")
-    model = models[table]
-    count = 0
-    for entry in Session.query(model).all():
-        Session.delete(entry)
-        count += 1
-    Session.commit()
-    log(f"Deleted {count} columns from {table}.", "success")
+    log(f"Resetting {table}", "info")
+    Base.metadata.drop_all(engine, [models[table].__table__])
+    Base.metadata.create_all(engine, [models[table].__table__])
+    log(f"Reset {table}", "success")
     Session.remove()
 
 

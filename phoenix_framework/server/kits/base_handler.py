@@ -3,7 +3,7 @@ from abc import abstractmethod
 from datetime import datetime
 from uuid import uuid1
 
-from phoenix_framework.server.database import DeviceModel, Session, TaskModel
+from phoenix_framework.server.database import DeviceModel, Session, TaskModel, ListenerModel
 from phoenix_framework.server.modules.base import BaseModule
 
 
@@ -13,11 +13,12 @@ class BaseHandler:
     def __str__(self) -> TaskModel:
         return str(self.addr)
 
-    def __init__(self, db_entry: DeviceModel):
+    def __init__(self, db_entry: DeviceModel, listener: ListenerModel):
         self.addr = db_entry.address
         self.id = db_entry.id
         self.name = db_entry.name
         self.modules: list[BaseModule] = []
+        self.listener = listener
 
     @property
     def db_entry(self) -> DeviceModel:

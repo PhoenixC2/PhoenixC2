@@ -1,5 +1,4 @@
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session
-
 from phoenix_framework.server.database import LogEntryModel, Session, UserModel
 from phoenix_framework.server.utils.ui import log
 from phoenix_framework.server.utils.web import (
@@ -9,12 +8,13 @@ from phoenix_framework.server.utils.web import (
 )
 
 INVALID_CREDENTIALS = "Invalid username or password."
+TEMPLATE = "login.j2"
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @auth_bp.route("/login", methods=["GET"])
 def get_login():
-    return render_template("login.j2")
+    return render_template(TEMPLATE)
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -23,6 +23,7 @@ def post_login():
     api_key = request.headers.get("Api-Key")
     username = request.form.get("username")
     password = request.form.get("password")
+
     if api_key is not None:
         user = get_current_user()
         if user is not None:
@@ -40,7 +41,7 @@ def post_login():
 
     if user is None:
         flash(INVALID_CREDENTIALS, "danger")
-        return render_template("login.j2", username=username)
+        return render_template(TEMPLATE, username=username)
     if user.disabled:
         LogEntryModel.log(
             "info",
@@ -50,8 +51,7 @@ def post_login():
             get_current_user(),
         )
         flash("This user is disabled.", "danger")
-        return render_template("login.j2", username=username)
-
+        return render_template(TEMPLATE, username=username)
     if user.check_password(password):
         old_user = get_current_user()
 
@@ -102,7 +102,7 @@ def post_login():
         log(f"Failed to log in as '{user}'.", "danger")
         if not use_json:
             flash(INVALID_CREDENTIALS, "danger")
-            return render_template("login.j2", username=username)
+            return render_template(TEMPLATE, username=username)
         return (
             jsonify({"status": "error", "message": INVALID_CREDENTIALS}),
             401,

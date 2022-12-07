@@ -23,7 +23,7 @@ class BasePlugin(ABC):
     execution_type: str = "function"
 
     @abstractmethod
-    def execute(self, commander: "Commander") -> None:
+    def execute(self, commander: "Commander", config: dict) -> None:
         """The main function of the plugin to be executed
 
         Execution type:

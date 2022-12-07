@@ -14,8 +14,8 @@ class CredentialModel(Base):
     user: str = Column(String(100))
     credential: str = Column(String(100))
     hash: bool = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     notes: str = Column(Text(500))
 
     def to_dict(self) -> dict:

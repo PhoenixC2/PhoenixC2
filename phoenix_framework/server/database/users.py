@@ -55,7 +55,7 @@ class UserModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_users",
     )  # Logs not seen by user yet
-    last_login = Column(DateTime)
+    last_login: datetime = Column(DateTime)
     last_activity: datetime = Column(DateTime, onupdate=datetime.now)
 
     def set_password(self, password: str):

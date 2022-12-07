@@ -73,7 +73,7 @@ admin.add_argument("--reset-database", help="Reset the database", action="store_
 admin.add_argument(
     "--reset-database-table",
     help="Reset a specified database table.",
-    choices=[Base.metadata.tables.keys()],
+    choices=[table.lower() for table in Base.metadata.tables.keys()]
 )
 
 admin.add_argument(
@@ -115,20 +115,20 @@ def parse_args(args, config: dict) -> dict:
         reset_server(True)
     if args.recreate_super_user:
         recreate_super_user()
-    if args.reset_database:
-        if (
-            input("Are you sure, that you want to reset the database [Y/n]: ").lower()
-            == "y"
-        ):
-            reset_database()
-    if args.reset_database_table:
-        if (
-            input(
-                f"Are you sure, that you want to reset the table {args.reset_database_table} [Y/n]: "
-            ).lower()
-            == "y"
-        ):
-            reset_table(args.reset_database_table)
+    if (
+        args.reset_database
+        and input("Are you sure, that you want to reset the database [Y/n]: ").lower()
+        == "y"
+    ):
+        reset_database()
+    if (
+        args.reset_database_table
+        and input(
+            f"Are you sure, that you want to reset the table {args.reset_database_table} [Y/n]: "
+        ).lower()
+        == "y"
+    ):
+        reset_table(args.reset_database_table)
     if args.regenerate_ssl:
         regenerate_ssl()
 

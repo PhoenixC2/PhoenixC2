@@ -33,14 +33,14 @@ class BaseListener:
         self.id: int = db_entry.id
 
     @property
-    def db_entry(self):
+    def db_entry(self) -> ListenerModel:
         return Session().query(ListenerModel).filter_by(id=self.id).first()
 
     @property
     def handlers(self) -> list[BaseHandler]:
         handlers = []
         for handler in self.commander.active_handlers.values():
-            if handler.db_entry.listener == self.db_entry:
+            if handler.listener.db_entry == self.db_entry:
                 handlers.append(handler)
         Session.remove()
         return handlers
@@ -72,13 +72,12 @@ class BaseListener:
             bool: True if listener is running, False if not"""
         ...
 
-    @abstractmethod
     def refresh_connections(self):
         """Check if the connections are still alive."""
-        while True:
+        while self.db_entry.response_time > 0:
             if self.stopped:
                 break
-            time.sleep(5)
+            time.sleep(self.db_entry.response_time)
             try:
                 for handler in self.handlers:
                     if not handler.alive():

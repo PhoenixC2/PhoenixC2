@@ -10,14 +10,12 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
 from phoenix_framework.server import AVAILABLE_KITS
-from phoenix_framework.server.utils.resources import get_resource
 
 from .base import Base
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
     from phoenix_framework.server.kits.base_listener import BaseListener
-    from phoenix_framework.server.utils.options import OptionPool
 
     from .devices import DeviceModel
     from .stagers import StagerModel
@@ -27,6 +25,7 @@ class ListenerModel(Base):
     """The Listeners Model"""
 
     __tablename__ = "Listeners"
+
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
     type: str = Column(String(100))
@@ -34,12 +33,13 @@ class ListenerModel(Base):
     port: int = Column(Integer)
     ssl: bool = Column(Boolean)
     enabled: bool = Column(Boolean, default=True)
-    limit = Column(Integer, name="limit")
+    limit: int = Column(Integer, name="limit")
+    response_time: int = Column(Integer, name="response_time", default=10)
     options: dict = Column(MutableDict.as_mutable(JSON), default=[])
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     stagers: list["StagerModel"] = relationship(
-        "StagerModel", back_populates="listener"
+        "StagerModel", back_populates="listener", cascade="all, delete-orphan"
     )
 
     @property
@@ -68,6 +68,7 @@ class ListenerModel(Base):
             "ssl": self.ssl,
             "enabled": self.enabled,
             "limit": self.limit,
+            "response_time": self.response_time,
             "active": self.is_active(commander),
             "options": self.options,
             "created_at": self.created_at,

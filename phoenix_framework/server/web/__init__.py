@@ -5,7 +5,7 @@ import os
 import random
 import string
 
-from flask import Flask, cli
+from flask import Flask, cli, request, abort
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.utils.config import load_config, save_config
@@ -26,14 +26,19 @@ def create_web(commander: Commander) -> Flask:
 
     config = load_config()
     secret_key = config["web"]["secret_key"]
+
     if secret_key == "":
+        # check if the secret key is set in the config
+        # if not, generate a new one and save it
         secret_key = "".join(
             random.choice(string.ascii_letters + string.digits) for _ in range(32)
         )
         config["web"]["secret_key"] = secret_key
         save_config(config)
+
     web_server.secret_key = secret_key
 
+    # context processors for the templates
     @web_server.context_processor
     def inject_user():
         return dict(user=get_current_user())
@@ -44,10 +49,23 @@ def create_web(commander: Commander) -> Flask:
 
     @web_server.context_processor
     def utility_processor():
+        # function which converts a database element to a json string to be used in javascript
         def to_json(data, *args, **kwargs):
             return json.dumps(data.to_dict(*args, **kwargs), default=str)
 
         return dict(to_json=to_json)
+
+    @web_server.before_request
+    def before_request():
+        # check if the show cookie is enabled and if the request has the cookie
+        # if not show 403
+
+        if (
+            config["web"]["show_cookie"]
+            and request.cookies.get(config["web"]["show_cookie_name"])
+            != config["web"]["show_cookie_value"]
+        ):
+            return abort(403)
 
     web_server.register_blueprint(routes_bp(commander), url_prefix="/")
     web_server.register_blueprint(auth_bp, url_prefix="/auth")

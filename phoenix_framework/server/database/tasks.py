@@ -21,6 +21,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from phoenix_framework.server.utils.resources import get_resource
+from phoenix_framework.server.modules import get_module
 
 from .base import Base
 from .devices import DeviceModel
@@ -35,11 +36,11 @@ class TaskModel(Base):
 
     __tablename__ = "Tasks"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String(10), unique=True)
+    name: str = Column(String(10), unique=True, default=lambda: str(uuid1()).split("-")[0])
     description: str = Column(Text)
     type: str = Column(String(10), nullable=False)
-    args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default={})
-    created_at = Column(DateTime, default=datetime.now)
+    args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default=dict)
+    created_at: datetime = Column(DateTime, default=datetime.now)
     finished_at: datetime = Column(DateTime, onupdate=datetime.now)
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
@@ -100,15 +101,12 @@ class TaskModel(Base):
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
-        task = TaskModel(name=str(uuid1()).split("-")[0], args={})
+        task = TaskModel()
         if type(device_or_id) == DeviceModel:
             task.device = device_or_id
-        elif type(device_or_id) == int:
-            task.device_id = device_or_id
-        elif type(device_or_id) == str:
-            task.device_id = int(device_or_id)
         else:
-            raise TypeError("Invalid Type for device.")
+            task.device_id = int(device_or_id)
+        task.args = {}
         return task
 
     """ default methods for every stager """
@@ -217,18 +215,45 @@ class TaskModel(Base):
 
     @staticmethod
     def execute_module(
-        device_or_id: DeviceModel | int, module: str, args: dict
+        device_or_id: DeviceModel | int, path: str, execution_method: str, data: dict
     ) -> "TaskModel":
         """Create a Execute-Module task.
 
         Args:
         -----
-            device (DeviceModel): the device to execute the task
-            module (str): The module to execute
-            args (dict): The arguments for the module
+            device_or_id (DeviceModel | int): the device to execute the task
+            path (str): The path of the module
+            execution_method (str): The execution method of the module
+            data (dict): The data for the module
         """
+        try:
+            module = get_module(path)
+        except ModuleNotFoundError as e:
+            raise ModuleNotFoundError(f"Module '{path}' not found.") from e
+
+        if execution_method not in module.execution_methods:
+            raise ValueError(
+                f"Execution method '{execution_method}' not supported by module '{module.name}'."
+            )
+        
+        # validate data
+        data = module.options.validate_all(data)
+
         task = TaskModel.generate_task(device_or_id)
         task.type = "module"
-        task.args["module"] = module
-        task.args["args"] = args
+        task.args["path"] = path
+        task.args["execution_method"] = execution_method
+        task.args.update(data)
         return task
+
+    def get_module_code(self) -> str:
+        """Get the code of the module.
+
+        Returns:
+        --------
+            str: The code of the module
+        """
+        if self.type != "module":
+            raise ValueError("Task is not a module task.")
+        module = get_module(self.args["path"])
+        return module.code(self.device, self.device.stager.listener, self.args)

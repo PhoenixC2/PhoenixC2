@@ -1,4 +1,5 @@
 """Starts the different services"""
+import os
 from phoenix_framework.server.database import ListenerModel, Session
 from phoenix_framework.server.utils.ui import log
 from phoenix_framework.server.utils.web import FlaskThread
@@ -46,8 +47,11 @@ def load_plugins(commander: Commander):
         plugin_config = plugins[plugin]
         if plugin_config["enabled"]:
             try:
-                commander.load_plugin(get_plugin(plugin))
+                commander.load_plugin(get_plugin(plugin), plugin_config)
             except Exception as error:
                 log(str(error), "danger")
+                os._exit(1)
+            else:
+                log(f"Plugin '{plugin}' loaded.", "success")
 
     log("Loaded Plugins.", "success")

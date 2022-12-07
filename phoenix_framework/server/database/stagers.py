@@ -21,7 +21,9 @@ if TYPE_CHECKING:
 
 class StagerModel(Base):
     """The Stagers Model"""
-
+    __mapper_args__ = {
+        "confirm_deleted_rows": False
+    } # needed to avoid error bc of cascade delete
     __tablename__ = "Stagers"
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
@@ -32,11 +34,11 @@ class StagerModel(Base):
     delay: int = Column(Integer)
     different_address = Column(String(100))
     options: dict = Column(MutableDict.as_mutable(JSON), default={})
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
     listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
-    devices: list["DeviceModel"] = relationship("DeviceModel", back_populates="stager")
+    devices: list["DeviceModel"] = relationship("DeviceModel", back_populates="stager", cascade="all, delete-orphan")
 
     def to_dict(
         self,
@@ -60,7 +62,7 @@ class StagerModel(Base):
             if show_listener
             else self.listener.id,
             "devices": [
-                device.to_dict(commander, show_listener=False)
+                device.to_dict(commander, show_stager=False)
                 for device in self.devices
             ]
             if show_devices

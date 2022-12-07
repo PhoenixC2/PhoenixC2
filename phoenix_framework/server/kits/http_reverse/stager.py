@@ -25,10 +25,17 @@ class PythonPayload(BasePayload):
     name = "Python"
     description = "Python Payload"
     author = "Screamz2k"
-    supported_target_os = ["linux", "windows", "osx"]
+    supported_target_os = ["linux"]
     supported_target_arch = ["x64", "x86"]
-    supported_server_os = ["linux", "windows"]
-    end_format: str = "py"
+    supported_execution_methods = [
+        "direct",
+        "thread",
+        "process",
+        "external",
+    ]
+    supported_code_types = ["shellcode", "compiled", "native"]
+    supported_languages = ["python", "bash"]
+    end_format = "py"
     compiled = False
     options = OptionPool()
 
@@ -44,18 +51,7 @@ class PythonPayload(BasePayload):
         )
         template = jinja2_env.get_template("payloads/python.py")
         output = template.render(
-            address=stager_db.listener.address,
-            port=stager_db.listener.port,
-            ssl=stager_db.listener.ssl,
-            random_size=stager_db.random_size,
-            timeout=stager_db.timeout,
-            different_address=stager_db.different_address,
-            delay=stager_db.delay,
-            sleep_time=stager_db.options["sleep-time"],
-            user_agent=stager_db.options["user-agent"],
-            proxy_address=stager_db.options["proxy_address"],
-            proxy_port=stager_db.options["proxy_port"],
-            proxy_auth=stager_db.options["proxy_auth"],
+            stager=stager_db
         )
         if stager_db.encoding == "base64":
             output = f"import base64;exec(base64.b64decode('{base64.b64encode(output.encode()).decode()}'))"

@@ -82,7 +82,7 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
     LogEntryModel.log(
         "success",
         "devices",
-        f"Device '{device.name}' connected to '{device.db_entry.name}'.",
+        f"Device '{device.name}' connected to '{device.name}'.",
         Session,
         log_to_cli=False,
     )
