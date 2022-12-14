@@ -77,9 +77,9 @@ class Commander:
             if plugin.execution_type == "function":
                 plugin.execute(self, config)
             elif plugin.execution_type == "thread":
-                Thread(target=plugin.execute, args=(self, config)).start()
+                Thread(target=plugin.execute, args=(self, config), name=plugin.name).start()
             elif plugin.execution_type == "process":
-                Process(target=plugin.execute, args=(self, config)).start()
+                Process(target=plugin.execute, args=(self, config), name=plugin.name).start()
             elif plugin.execution_type == "file":
                 subprocess.Popen([plugin.execute])
         except Exception as e:

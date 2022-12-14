@@ -26,10 +26,12 @@ function resetModal() {
 }
 function changePayload(type) {
     // get the payload value
-    let payload = document.getElementById(`${type}-payload_type`).value;
+    let payload = document.getElementById(`payload-${type}`).value;
 
     // get content of payload div
-    let payload_div = document.getElementById("payload-div");
+    let payload_div = document.getElementById(`payload-options-${type}`);
+
+    let payload_form = document.getElementById(`${payload}`);
 
 }
 function changeListener() {

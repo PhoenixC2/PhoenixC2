@@ -62,6 +62,5 @@ function createEdit(id) {
 
     // set values
     form.elements["username"].value = user.username;
-    form.elements[]
 
 }

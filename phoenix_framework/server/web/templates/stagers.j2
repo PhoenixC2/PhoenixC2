@@ -21,7 +21,7 @@
             <td id="name-{{ stager.id }}">{{ stager.name }}</td>
             <td id="listener-{{ stager.id }}"><a href="/listeners/?open={{ stager.listener.id }}">{{ stager.listener.name }}</a></td>
             <td id="type-{{ stager.id }}">{{ stager.listener.type }}</a></td>
-            <td id="payload-{{ stager.id }}">{{ stager.payload_type }}</a></td>
+            <td id="payload_type-{{ stager.id }}">{{ stager.payload_type_type }}</a></td>
             <td>
                 <div class="dropdown">
                     <button class="btn btn-success" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -32,7 +32,7 @@
                         <a class="dropdown-item" target="_blank" href="/stagers/{{stager.id}}/download?one_liner=true">Download as command</a>
                         <a class="dropdown-item" onclick="copyToClipboard({{stager.id}}, false)" href="#">Copy to clipboard (https)</a>
                         <a class="dropdown-item" copyToClipboard({{stager.id}}, true) href="#">Copy to clipboard as command (https)</a>
-                        {% if stager.payload_class.is_compiled and stager.payload_class.compiled %}
+                        {% if stager.payload_type_class.is_compiled and stager.payload_type_class.compiled %}
                         <a class="dropdown-item" href="#">Recompile</a>
                         {% endif %}
                     </div>
@@ -119,17 +119,33 @@
     {# hidden type field #}
     <input type="hidden" name="id" id="id-create" value="none">
     {{ render_options(stager_type.options.options) }}
+    <div class="form-group">
+        <label for="payload_type">Payload</label>
+        <select class="form-control" id="payload_type-create" name="payload_type" onchange="changePayload('create')">
+            {% set option = stager_type.options.get_option("payload_type") %}
+            {% for payload_type in option.options %}
+            {% if payload_type == option.default  %}
+            <option id="{{payload_type}}-payload_type-create" value="{{ payload_type }}" selected>{{ payload_type }}</option>
+            {% else %}
+            <option id="{{payload_type}}-payload_type-create" value="{{ payload_type }}">{{ payload_type }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <small class="form-text text-muted">{{ option.description }}</small>
+        <div id="payload_type-options-create">
+        </div>
+    </div>
     {# show author of the stager #}
     <p class="text-muted">Created by: {{ stager_type.author }}</p>
 </form>
 
-{# divs for the payloads which will be injected into the create/edit modal #}
-{% for payload in stager_type.payloads %}
-<div id="{{ stager_type.name }}-{{ payload }}-payload" style="display: none;">
+{# divs for the payload_types which will be injected into the create/edit modal #}
+{% for payload_type in stager_type.payload_types %}
+<div id="{{ stager_type.name }}-{{ payload_type }}-payload_type" style="display: none;">
     {# hidden type field #}
-    {{ render_options(stager_type.payloads[payload].options.options) if stager_type.payloads[payload].options.options }}
-    {# show author of the payload #}
-    <p class="text-muted">Created by: {{ stager_type.payloads[payload].author }}</p>
+    {{ render_options(stager_type.payload_types[payload_type].options.options) if stager_type.payload_types[payload_type].options.options }}
+    {# show author of the payload_type #}
+    <p class="text-muted">Created by: {{ stager_type.payload_types[payload_type].author }}</p>
 </div>
 {% endfor %}
 {% endfor %}

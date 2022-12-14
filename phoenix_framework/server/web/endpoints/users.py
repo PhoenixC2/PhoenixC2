@@ -59,8 +59,8 @@ def add_user():
     use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
     password = request.form.get("password")
-    admin = request.form.get("admin", "").lower() == "true"
-    disabled = request.form.get("disabled", "").lower() == "true"
+    admin = request.form.get("admin", "") == "on"
+    disabled = request.form.get("disabled", "").lower() == "on"
 
     if not username or not password:
         return generate_response(

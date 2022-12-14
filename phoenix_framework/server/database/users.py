@@ -140,7 +140,7 @@ class UserModel(Base):
     def delete(self, session: Session) -> None:
         """Delete the user and profile picture and read all logs"""
         if self.profile_picture:
-            os.rm(str(get_resource("data", self.profile_picture, skip_file_check=True)))
+            os.remove(str(get_resource("data/pictures", self.username, skip_file_check=True)))
 
         for log in self.unseen_logs:
             log.seen_by_user(self)
@@ -152,7 +152,7 @@ class UserModel(Base):
         """Set the profile picture and save it"""
 
         if self.profile_picture:
-            os.rm(str(get_resource("data", self.profile_picture, skip_file_check=True)))
+            os.rm(str(get_resource("data/pictures/", self.username,  skip_file_check=True)))
 
         self.profile_picture = True
         file.save(get_resource("data/pictures/", self.username, skip_file_check=True))

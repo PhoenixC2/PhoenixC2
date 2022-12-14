@@ -3,7 +3,6 @@
     {% if option.type|string == "checkbox" %}
     <div class="form-check">
         <label class="form-check-label">
-            {# hidden field for checkbox #}
             {% if option.default %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" checked="" id="{{ option.real_name }}-create">
             {% else %}<input class="form-check-input" type="checkbox" value="on" name="{{ option.real_name }}" id="{{ option.real_name }}-create">
             {% endif %}
