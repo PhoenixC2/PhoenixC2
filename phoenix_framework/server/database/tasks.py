@@ -79,7 +79,10 @@ class TaskModel(Base):
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
         elif self.type == "info" and success:
-            self.device.infos = output
+            self.device.address = output["address"]
+            self.device.hostname = output["hostname"]
+            self.device.username = output["username"]
+            self.device.admin = output["admin"]
         else:
             self.output = output
         self.success = success

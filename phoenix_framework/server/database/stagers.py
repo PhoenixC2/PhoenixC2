@@ -99,7 +99,7 @@ class StagerModel(Base):
         """Get all stager classes."""
         return [StagerModel.get_class_from_type(stager) for stager in AVAILABLE_KITS]
 
-    def edit(self, data: dict):
+    def edit(self, data: dict[str, any]):
         """Edit the stager"""
         options = (
             self.stager_class.options

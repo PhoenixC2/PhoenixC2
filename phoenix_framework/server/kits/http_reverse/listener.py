@@ -212,7 +212,7 @@ class Listener(BaseListener):
 
             try:
                 return task.get_module_code()
-            except ValueError as e:
+            except ValueError:
                 return "", 404
 
         @self.api.after_request
