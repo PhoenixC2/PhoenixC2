@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Integer, String
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
     from phoenix_framework.server.kits.base_listener import BaseListener
 
-    from .devices import DeviceModel
+    from .operations import OperationModel
     from .stagers import StagerModel
 
 
@@ -36,11 +36,15 @@ class ListenerModel(Base):
     limit: int = Column(Integer, name="limit")
     response_time: int = Column(Integer, name="response_time", default=10)
     options: dict = Column(MutableDict.as_mutable(JSON), default=[])
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    operation_id: int = Column(Integer, ForeignKey("Operations.id"))
+    operation: "OperationModel" = relationship(
+        "OperationModel", back_populates="listeners"
+    )
     stagers: list["StagerModel"] = relationship(
         "StagerModel", back_populates="listener", cascade="all, delete-orphan"
     )
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     @property
     def listener_class(self) -> "BaseListener":
@@ -58,8 +62,13 @@ class ListenerModel(Base):
         else:
             return True
 
-    def to_dict(self, commander: "Commander", show_stagers: bool = True) -> dict:
-        return {
+    def to_dict(
+        self,
+        commander: "Commander",
+        show_operation: bool = False,
+        show_stagers: bool = False,
+    ) -> dict:
+        data = {
             "id": self.id,
             "name": self.name,
             "type": self.type,
@@ -71,15 +80,19 @@ class ListenerModel(Base):
             "response_time": self.response_time,
             "active": self.is_active(commander),
             "options": self.options,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "stagers": [
-                stager.to_dict(commander, show_listener=False)
-                for stager in self.stagers
-            ]
+            "stagers": [stager.to_dict(commander) for stager in self.stagers]
             if show_stagers
             else [stager.id for stager in self.stagers],
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
+        if self.operation is not None and show_operation:
+            data["operation"] = self.operation.to_dict()
+        else:
+            data["operation"] = (
+                self.operation.id if self.operation is not None else None
+            )
+        return data
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseListener":

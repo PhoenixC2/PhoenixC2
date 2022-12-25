@@ -1,7 +1,7 @@
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from phoenix_framework.server.utils.options import OptionPool
-from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander

@@ -2,6 +2,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+
 from phoenix_framework.server.database.base import Base
 
 engine = create_engine("sqlite:///:memory:", echo=True)

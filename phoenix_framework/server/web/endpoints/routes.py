@@ -27,13 +27,13 @@ def routes_bp(commander: "Commander") -> Blueprint:
         # get count of connections from today
         connections_today = (
             Session.query(DeviceModel)
-            .filter(DeviceModel.connection_date >= datetime.now() - timedelta(days=1))
+            .filter(DeviceModel.connection_time >= datetime.now() - timedelta(days=1))
             .count()
         )
         # get count of connections from the last hour
         connections_last_hour = (
             Session.query(DeviceModel)
-            .filter(DeviceModel.connection_date >= datetime.now() - timedelta(hours=1))
+            .filter(DeviceModel.connection_time >= datetime.now() - timedelta(hours=1))
             .count()
         )
         active_users = (

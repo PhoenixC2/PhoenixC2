@@ -5,18 +5,7 @@ import subprocess
 
 from sqlalchemy import inspect
 
-from phoenix_framework.server.database import (
-    CredentialModel,
-    DeviceModel,
-    ListenerModel,
-    LogEntryModel,
-    OperationModel,
-    Session,
-    StagerModel,
-    TaskModel,
-    UserModel,
-    engine,
-)
+from phoenix_framework.server.database import *
 from phoenix_framework.server.database.base import Base
 from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.resources import get_resource
@@ -167,7 +156,6 @@ def recreate_super_user():
         for _ in range(10)
     )
     admin = UserModel(id=1, username="phoenix", admin=True)
-    admin.generate_api_key()
     admin.set_password(password)
     Session.add(admin)
     Session.commit()

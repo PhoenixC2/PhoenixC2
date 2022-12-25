@@ -1,12 +1,12 @@
-from phoenix_framework.server.utils.options import OptionPool
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from phoenix_framework.server.database import DeviceModel, ListenerModel
-    from phoenix_framework.server.commander import Commander
-"""The base module class"""
+from phoenix_framework.server.utils.options import OptionPool
 
+if TYPE_CHECKING:
+    from phoenix_framework.server.commander import Commander
+    from phoenix_framework.server.database import DeviceModel, ListenerModel
+"""The base module class"""
 
 
 class BaseModule(ABC):
@@ -30,12 +30,19 @@ class BaseModule(ABC):
     # - process: normal code
     # - injection: inject shellcode into a process
     # - external: create a file save the binary content to it and execute it externally
-    execution_methods: list[str] = ["direct", "thread", "process", "injection", "external"]
-
+    execution_methods: list[str] = [
+        "direct",
+        "thread",
+        "process",
+        "injection",
+        "external",
+    ]
 
     @classmethod
     @abstractmethod
-    def code(cls, device: "DeviceModel", listener: "ListenerModel", args: dict) -> str | bytes:
+    def code(
+        cls, device: "DeviceModel", listener: "ListenerModel", args: dict
+    ) -> str | bytes:
         """The code to be executed"""
         pass
 

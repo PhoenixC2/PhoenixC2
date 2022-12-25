@@ -73,7 +73,7 @@ admin.add_argument("--reset-database", help="Reset the database", action="store_
 admin.add_argument(
     "--reset-database-table",
     help="Reset a specified database table.",
-    choices=[table.lower() for table in Base.metadata.tables.keys()]
+    choices=[table.lower() for table in Base.metadata.tables.keys()],
 )
 
 admin.add_argument(

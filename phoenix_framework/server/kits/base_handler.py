@@ -3,7 +3,12 @@ from abc import abstractmethod
 from datetime import datetime
 from uuid import uuid1
 
-from phoenix_framework.server.database import DeviceModel, Session, TaskModel, ListenerModel
+from phoenix_framework.server.database import (
+    DeviceModel,
+    ListenerModel,
+    Session,
+    TaskModel,
+)
 from phoenix_framework.server.modules.base import BaseModule
 
 

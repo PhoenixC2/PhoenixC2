@@ -263,7 +263,9 @@ def devices_bp(commander: Commander):
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
         if path is None:
-            return generate_response("danger", "Module path is missing.", "devices", 400)
+            return generate_response(
+                "danger", "Module path is missing.", "devices", 400
+            )
         try:
             data = dict(data)
         except Exception:

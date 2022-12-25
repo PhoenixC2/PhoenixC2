@@ -13,18 +13,22 @@ if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
 
     from .listeners import ListenerModel
+    from .operations import OperationModel
     from .stagers import StagerModel
     from .tasks import TaskModel
 
 
 class DeviceModel(Base):
     """The Devices Model"""
+
     __mapper_args__ = {
         "confirm_deleted_rows": False
-    } # needed to avoid error bc of cascade delete
+    }  # needed to avoid error bc of cascade delete
     __tablename__ = "Devices"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String, default=lambda: str(uuid1()).split("-")[0], unique=True, nullable=False)
+    name: str = Column(
+        String, default=lambda: str(uuid1()).split("-")[0], unique=True, nullable=False
+    )
     hostname: str = Column(String(100))
     address: str = Column(String(100), nullable=False)
     os: str = Column(String(10))
@@ -32,10 +36,14 @@ class DeviceModel(Base):
     user: str = Column(String(100))
     admin: bool = Column(Boolean, default=False)
     infos: dict = Column(MutableDict.as_mutable(JSON), default={})
-    connection_date: datetime = Column(DateTime, default=datetime.now)
+    connection_time: datetime = Column(DateTime, default=datetime.now)
     last_online: datetime = Column(DateTime, default=datetime.now)
     stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
     stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
+    operation_id: int = Column(Integer, ForeignKey("Operations.id"))
+    operation: "OperationModel" = relationship(
+        "OperationModel", back_populates="devices"
+    )
     tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
 
     @property
@@ -45,8 +53,9 @@ class DeviceModel(Base):
     def to_dict(
         self,
         commander: "Commander",
-        show_stager: bool = True,
-        show_tasks: bool = True,
+        show_stager: bool = False,
+        show_operation: bool = False,
+        show_tasks: bool = False,
     ) -> dict:
         data = {
             "id": self.id,
@@ -58,14 +67,14 @@ class DeviceModel(Base):
             "user": self.user,
             "admin": self.admin,
             "infos": self.infos,
-            "connection_date": self.connection_date,
-            "last_online": self.last_online,
-            "stager": self.stager.to_dict(commander, show_listener=False)
+            "stager": self.stager.to_dict(commander)
             if show_stager
             else self.stager.id,
-            "tasks": [task.to_dict(commander, show_device=False) for task in self.tasks]
+            "tasks": [task.to_dict(commander) for task in self.tasks]
             if show_tasks
             else [task.id for task in self.tasks],
+            "connection_time": self.connection_time,
+            "last_online": self.last_online,
         }
         try:
             if commander is None:
@@ -76,6 +85,13 @@ class DeviceModel(Base):
             data["connected"] = False
         else:
             data["connected"] = True
+        if self.operation is not None and show_operation:
+            data["operation"] = self.operation.to_dict()
+        else:
+            data["operation"] = (
+                self.operation.id if self.operation is not None else None
+            )
+        return data
         return data
 
     @classmethod

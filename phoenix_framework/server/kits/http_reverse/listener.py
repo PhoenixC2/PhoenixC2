@@ -10,11 +10,12 @@ from phoenix_framework.server.database import (
     DeviceModel,
     ListenerModel,
     LogEntryModel,
-    StagerModel,
     Session,
+    StagerModel,
     TaskModel,
 )
 from phoenix_framework.server.modules import get_module
+from phoenix_framework.server.utils.features import Feature
 from phoenix_framework.server.utils.options import (
     DefaultListenerPool,
     Option,
@@ -23,7 +24,7 @@ from phoenix_framework.server.utils.options import (
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.ui import log_connection
 from phoenix_framework.server.utils.web import FlaskThread
-from phoenix_framework.server.utils.features import Feature
+
 from ..base_listener import BaseListener
 from .handler import Handler
 

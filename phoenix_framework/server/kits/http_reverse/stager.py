@@ -50,9 +50,7 @@ class PythonPayload(BasePayload):
             autoescape=True,
         )
         template = jinja2_env.get_template("payloads/python.py")
-        output = template.render(
-            stager=stager_db
-        )
+        output = template.render(stager=stager_db)
         if stager_db.encoding == "base64":
             output = f"import base64;exec(base64.b64decode('{base64.b64encode(output.encode()).decode()}'))"
         elif stager_db.encoding == "hex":

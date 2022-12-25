@@ -70,8 +70,10 @@ def add_user():
     # Check if user exists
     if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("danger", "User already exists.", ENDPOINT, 403)
-
-    user = UserModel.add(username, password, admin, disabled, Session)
+    try:
+        user = UserModel.add(username, password, admin, disabled, Session)
+    except ValueError as e:
+        return generate_response("danger", str(e), ENDPOINT, 400)
 
     if request.files.get("profile-picture"):
         profile_picture = request.files["profile-picture"]

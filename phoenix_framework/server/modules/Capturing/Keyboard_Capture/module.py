@@ -1,5 +1,7 @@
 from phoenix_framework.server.modules.base import BaseModule
-from phoenix_framework.server.utils.options import Option, OptionPool, IntegerType
+from phoenix_framework.server.utils.options import IntegerType, Option, OptionPool
+
+
 class Module(BaseModule):
     name = "Keyboard-Capture"
     description = "Capture keyboard input"
@@ -14,7 +16,6 @@ class Module(BaseModule):
             )
         ]
     )
-
 
     def code(cls, device, listener, args):
         return f"""
@@ -36,5 +37,3 @@ def on_press(key):
 
 keyboard.on_press(on_press)
 """
-
-

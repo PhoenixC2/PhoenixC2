@@ -21,9 +21,10 @@ if TYPE_CHECKING:
 
 class StagerModel(Base):
     """The Stagers Model"""
+
     __mapper_args__ = {
         "confirm_deleted_rows": False
-    } # needed to avoid error bc of cascade delete
+    }  # needed to avoid error bc of cascade delete
     __tablename__ = "Stagers"
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
@@ -38,13 +39,15 @@ class StagerModel(Base):
     updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
     listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
-    devices: list["DeviceModel"] = relationship("DeviceModel", back_populates="stager", cascade="all, delete-orphan")
+    devices: list["DeviceModel"] = relationship(
+        "DeviceModel", back_populates="stager", cascade="all, delete-orphan"
+    )
 
     def to_dict(
         self,
         commander: "Commander",
-        show_listener: bool = True,
-        show_devices: bool = True,
+        show_listener: bool = False,
+        show_devices: bool = False,
     ) -> dict:
         return {
             "id": self.id,
@@ -58,12 +61,11 @@ class StagerModel(Base):
             "options": self.options,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "listener": self.listener.to_dict(commander, show_stagers=False)
+            "listener": self.listener.to_dict(commander)
             if show_listener
             else self.listener.id,
             "devices": [
-                device.to_dict(commander, show_stager=False)
-                for device in self.devices
+                device.to_dict(commander, show_stager=False) for device in self.devices
             ]
             if show_devices
             else [device.id for device in self.devices],

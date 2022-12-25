@@ -7,6 +7,10 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from phoenix_framework.server.utils.config import load_config
 from phoenix_framework.server.utils.resources import get_resource
 
+from .association import (
+    user_operation_assignment_table,
+    user_logentry_association_table,
+)
 from .credentials import CredentialModel
 from .devices import DeviceModel
 from .listeners import ListenerModel

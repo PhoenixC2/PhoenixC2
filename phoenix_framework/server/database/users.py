@@ -1,38 +1,27 @@
 """The Users Model"""
 import json
-from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-from uuid import uuid1
 import os
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import uuid1
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-    Text,
-)
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from phoenix_framework.server.utils.resources import get_resource
 
+from .association import (
+    user_operation_assignment_table,
+    user_logentry_association_table,
+    user_operation_owner_table,
+)
 from .base import Base
 
 if TYPE_CHECKING:
     from .logs import LogEntryModel
-
-user_logentry_association_table = Table(
-    "association",
-    Base.metadata,
-    Column("user_id", ForeignKey("Users.id"), primary_key=True),
-    Column("logentry_id", ForeignKey("Logs.id"), primary_key=True),
-)
+    from .operations import OperationModel
 
 
 class UserModel(Base):
@@ -43,7 +32,7 @@ class UserModel(Base):
     id: int = Column(Integer, primary_key=True, nullable=False)
     username: str = Column(String(50))
     password_hash: str = Column(Text)
-    api_key: str = Column(String(30), nullable=False)
+    api_key: str = Column(String(30), nullable=False, default=lambda: str(uuid1()))
     admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(Boolean, default=False)
@@ -57,6 +46,14 @@ class UserModel(Base):
     )  # Logs not seen by user yet
     last_login: datetime = Column(DateTime)
     last_activity: datetime = Column(DateTime, onupdate=datetime.now)
+    assigned_operations: list["OperationModel"] = relationship(
+        "OperationModel",
+        secondary=user_operation_assignment_table,
+        back_populates="assigned_users",
+    )
+    owned_operations: list["OperationModel"] = relationship(
+        "OperationModel", back_populates="owner", secondary=user_operation_owner_table
+    )
 
     def set_password(self, password: str):
         """Hash the Password and save it."""
@@ -70,29 +67,40 @@ class UserModel(Base):
         """Generate a new API key"""
         self.api_key = str(uuid1())
 
-    def to_dict(self, show_logs: bool = True, show_unseen_logs: bool = True) -> dict:
+    def to_dict(
+        self,
+        show_logs: bool = False,
+        show_unseen_logs: bool = False,
+        show_assigned_operations: bool = False,
+        show_owned_operations: bool = False,
+    ) -> dict:
         return {
             "id": self.id,
             "username": self.username,
             "admin": self.admin,
             "status": self.activity_status,
             "disabled": self.disabled,
-            "logs": [
-                log.to_dict(show_user=False, show_unseen_users=False)
-                for log in self.logs
-            ]
+            "logs": [log.to_dict() for log in self.logs]
             if show_logs
             else [log.id for log in self.logs],
-            "unseen_logs": [
-                log.to_dict(show_unseen_users=True) for log in self.unseen_logs
-            ]
+            "unseen_logs": [log.to_dict() for log in self.unseen_logs]
             if show_unseen_logs
             else [log.id for log in self.unseen_logs],
             "last_login": self.last_login,
             "last_activity": self.last_activity,
+            "assigned_operations": [
+                operation.to_dict() for operation in self.assigned_operations
+            ]
+            if show_assigned_operations
+            else [operation.id for operation in self.assigned_operations],
+            "owned_operations": [
+                operation.to_dict() for operation in self.owned_operations
+            ]
+            if show_owned_operations
+            else [operation.id for operation in self.owned_operations],
         }
 
-    def to_json(self, show_logs: bool = True, show_unseen_logs: bool = True) -> str:
+    def to_json(self, show_logs: bool = False, show_unseen_logs: bool = False) -> str:
         return json.dumps(self.to_dict(show_logs, show_unseen_logs), default=str)
 
     def __str__(self) -> str:
@@ -116,13 +124,17 @@ class UserModel(Base):
         cls, username: str, password: str, admin: bool, disabled: bool, session: Session
     ) -> "UserModel":
         """Add a new user"""
+        if len(username) > 50:
+            raise ValueError("Username is too long")
+        if len(password) <= 8:
+            raise ValueError("Password is too short")
+
         user = cls(
             username=username,
             admin=admin,
             disabled=disabled,
         )
         user.set_password(password)
-        user.generate_api_key()
         session.add(user)
         session.commit()
         return user
@@ -140,7 +152,9 @@ class UserModel(Base):
     def delete(self, session: Session) -> None:
         """Delete the user and profile picture and read all logs"""
         if self.profile_picture:
-            os.remove(str(get_resource("data/pictures", self.username, skip_file_check=True)))
+            os.remove(
+                str(get_resource("data/pictures", self.username, skip_file_check=True))
+            )
 
         for log in self.unseen_logs:
             log.seen_by_user(self)
@@ -152,7 +166,9 @@ class UserModel(Base):
         """Set the profile picture and save it"""
 
         if self.profile_picture:
-            os.rm(str(get_resource("data/pictures/", self.username,  skip_file_check=True)))
+            os.rm(
+                str(get_resource("data/pictures/", self.username, skip_file_check=True))
+            )
 
         self.profile_picture = True
         file.save(get_resource("data/pictures/", self.username, skip_file_check=True))

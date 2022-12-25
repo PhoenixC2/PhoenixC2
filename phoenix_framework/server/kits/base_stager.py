@@ -2,8 +2,8 @@ import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import DefaultStagerPool, OptionPool
 from phoenix_framework.server.utils.features import Feature
+from phoenix_framework.server.utils.options import DefaultStagerPool, OptionPool
 
 if TYPE_CHECKING:
     from phoenix_framework.server.commander import Commander
@@ -23,14 +23,8 @@ class BasePayload:
         "injection",
         "external",
     ]
-    supported_code_types: list[str] = [
-        "shellcode",
-        "compiled",
-        "native"
-    ]
-    supported_languages: list[str] = [
-        "python"
-    ]
+    supported_code_types: list[str] = ["shellcode", "compiled", "native"]
+    supported_languages: list[str] = ["python"]
     end_format: str = ""
     compiled: bool = False
     options: OptionPool = OptionPool()

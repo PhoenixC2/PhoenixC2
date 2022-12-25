@@ -5,7 +5,7 @@ import os
 import random
 import string
 
-from flask import Flask, cli, request, abort
+from flask import Flask, abort, cli, request
 
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.utils.config import load_config, save_config

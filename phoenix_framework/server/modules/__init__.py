@@ -1,14 +1,18 @@
 import importlib
 import os
 from typing import TYPE_CHECKING
+
 from phoenix_framework.server.utils.resources import get_resource
+
 if TYPE_CHECKING:
     from .base import BaseModule
 
 
 def get_module(path: str) -> "BaseModule":
     """Get a module by name."""
-    return importlib.import_module(f"phoenix_framework.server.modules.{path.replace('/', '.')}.module").Module()
+    return importlib.import_module(
+        f"phoenix_framework.server.modules.{path.replace('/', '.')}.module"
+    ).Module()
 
 
 def get_all_module_paths():
@@ -27,6 +31,8 @@ def get_all_module_paths():
                 continue
             filepath = os.path.join(root, filename)
             # only show path after modules directory and remove module.py
-            file_paths.append(filepath.split("modules")[1][1:].replace("module.py", "")[:-1])
+            file_paths.append(
+                filepath.split("modules")[1][1:].replace("module.py", "")[:-1]
+            )
 
     return file_paths

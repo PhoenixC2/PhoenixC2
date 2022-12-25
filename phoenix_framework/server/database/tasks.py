@@ -20,8 +20,8 @@ from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.modules import get_module
+from phoenix_framework.server.utils.resources import get_resource
 
 from .base import Base
 from .devices import DeviceModel
@@ -36,7 +36,9 @@ class TaskModel(Base):
 
     __tablename__ = "Tasks"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String(10), unique=True, default=lambda: str(uuid1()).split("-")[0])
+    name: str = Column(
+        String(10), unique=True, default=lambda: str(uuid1()).split("-")[0]
+    )
     description: str = Column(Text)
     type: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default=dict)
@@ -51,7 +53,7 @@ class TaskModel(Base):
     def finished(self) -> bool:
         return self.finished_at is not None
 
-    def to_dict(self, commander: "Commander", show_device: bool = True) -> dict:
+    def to_dict(self, commander: "Commander", show_device: bool = False) -> dict:
         return {
             "id": self.id,
             "name": self.name,
@@ -62,7 +64,7 @@ class TaskModel(Base):
             "finished_at": self.finished_at,
             "success": self.success,
             "output": self.output,
-            "device": self.device.to_dict(commander, show_tasks=False)
+            "device": self.device.to_dict(commander)
             if show_device and self.device is not None
             else self.device_id,
         }
@@ -238,7 +240,7 @@ class TaskModel(Base):
             raise ValueError(
                 f"Execution method '{execution_method}' not supported by module '{module.name}'."
             )
-        
+
         # validate data
         data = module.options.validate_all(data)
 

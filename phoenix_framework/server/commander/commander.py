@@ -1,8 +1,9 @@
 """This is the C2 commander Class which handles the devices & listeners"""
-from typing import Optional
 import subprocess
-from threading import Thread
 from multiprocessing import Process
+from threading import Thread
+from typing import Optional
+
 from phoenix_framework.server.kits.base_handler import BaseHandler
 from phoenix_framework.server.kits.base_listener import BaseListener
 from phoenix_framework.server.plugins.base import BasePlugin
@@ -77,9 +78,13 @@ class Commander:
             if plugin.execution_type == "function":
                 plugin.execute(self, config)
             elif plugin.execution_type == "thread":
-                Thread(target=plugin.execute, args=(self, config), name=plugin.name).start()
+                Thread(
+                    target=plugin.execute, args=(self, config), name=plugin.name
+                ).start()
             elif plugin.execution_type == "process":
-                Process(target=plugin.execute, args=(self, config), name=plugin.name).start()
+                Process(
+                    target=plugin.execute, args=(self, config), name=plugin.name
+                ).start()
             elif plugin.execution_type == "file":
                 subprocess.Popen([plugin.execute])
         except Exception as e:

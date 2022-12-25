@@ -3,10 +3,10 @@ import os
 from flask import Blueprint, jsonify, send_from_directory
 
 import phoenix_framework.server as avl
+from phoenix_framework.server.modules import get_all_module_paths
 from phoenix_framework.server.utils.misc import get_network_interfaces, version
 from phoenix_framework.server.utils.resources import get_resource
 from phoenix_framework.server.utils.web import admin, authorized, generate_response
-from phoenix_framework.server.modules import get_all_module_paths
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
@@ -38,9 +38,12 @@ def get_interfaces():
 def ping():
     return jsonify({"status": "ok"})
 
+
 @misc_bp.route("/modules", methods=["GET"])
 def get_modules():
     return jsonify(get_all_module_paths())
+
+
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])
 @authorized
 def get_downloads(file_name: str):

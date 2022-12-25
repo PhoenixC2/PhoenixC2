@@ -6,9 +6,9 @@ import time
 from phoenix_framework.server.args import parse_args, parser
 from phoenix_framework.server.commander import Commander
 from phoenix_framework.server.commander.services import (
+    load_plugins,
     start_listeners,
     start_web,
-    load_plugins,
 )
 from phoenix_framework.server.utils.admin import check_for_setup, reset_server
 from phoenix_framework.server.utils.config import load_config
