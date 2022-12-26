@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, redirect, render_template, request
 
-from phoenix_framework.server.database import LogEntryModel, Session
-from phoenix_framework.server.utils.web import (admin, authorized,
+from phoenix.server.database import LogEntryModel, Session
+from phoenix.server.utils.web import (admin, authorized,
                                                 generate_response,
                                                 get_current_user)
 

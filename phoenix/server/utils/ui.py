@@ -5,7 +5,7 @@ from pystyle import Add, Box, Colorate, Colors
 from rich.console import Console
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.database import DeviceModel
+    from phoenix.server.database import DeviceModel
 # logo
 logo = Add.Add(
     """
@@ -71,7 +71,7 @@ def ph_print(text: str, force: bool = False):
 
 
 def log_connection(device: "DeviceModel", reconnect: bool = False):
-    from phoenix_framework.server.database import LogEntryModel, Session
+    from phoenix.server.database import LogEntryModel, Session
 
     """Log the new connection to the console and database"""
     if reconnect:

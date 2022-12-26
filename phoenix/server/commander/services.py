@@ -1,12 +1,12 @@
 """Starts the different services"""
 import os
 
-from phoenix_framework.server.database import ListenerModel, Session
-from phoenix_framework.server.plugins import get_plugin
-from phoenix_framework.server.utils.config import load_config
-from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import FlaskThread
-from phoenix_framework.server.web import create_web
+from phoenix.server.database import ListenerModel, Session
+from phoenix.server.plugins import get_plugin
+from phoenix.server.utils.config import load_config
+from phoenix.server.utils.ui import log
+from phoenix.server.utils.web import FlaskThread
+from phoenix.server.web import create_web
 
 from .commander import Commander
 

@@ -2,17 +2,17 @@ import time
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
+from phoenix.server.database import (ListenerModel, LogEntryModel,
                                                Session)
-from phoenix_framework.server.utils.features import Feature
-from phoenix_framework.server.utils.options import OptionPool
-from phoenix_framework.server.utils.ui import log
+from phoenix.server.utils.features import Feature
+from phoenix.server.utils.options import OptionPool
+from phoenix.server.utils.ui import log
 
 from .base_handler import BaseHandler
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 class BaseListener:

@@ -2,8 +2,8 @@ from uuid import uuid1
 
 from flask import Blueprint, jsonify, render_template, request, send_file
 
-from phoenix_framework.server.database import LogEntryModel, Session, UserModel
-from phoenix_framework.server.utils.web import (admin, authorized,
+from phoenix.server.database import LogEntryModel, Session, UserModel
+from phoenix.server.utils.web import (admin, authorized,
                                                 generate_response,
                                                 get_current_user)
 

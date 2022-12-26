@@ -6,22 +6,22 @@ from typing import TYPE_CHECKING
 
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
 
-from phoenix_framework.server.database import (DeviceModel, ListenerModel,
+from phoenix.server.database import (DeviceModel, ListenerModel,
                                                LogEntryModel, Session,
                                                StagerModel, TaskModel)
-from phoenix_framework.server.modules import get_module
-from phoenix_framework.server.utils.features import Feature
-from phoenix_framework.server.utils.options import (DefaultListenerPool,
+from phoenix.server.modules import get_module
+from phoenix.server.utils.features import Feature
+from phoenix.server.utils.options import (DefaultListenerPool,
                                                     Option, StringType)
-from phoenix_framework.server.utils.resources import get_resource
-from phoenix_framework.server.utils.ui import log_connection
-from phoenix_framework.server.utils.web import FlaskThread
+from phoenix.server.utils.resources import get_resource
+from phoenix.server.utils.ui import log_connection
+from phoenix.server.utils.web import FlaskThread
 
 from ..base_listener import BaseListener
 from .handler import Handler
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 class Listener(BaseListener):

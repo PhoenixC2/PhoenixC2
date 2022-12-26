@@ -3,13 +3,13 @@ import logging
 import os
 from argparse import ArgumentParser
 
-from phoenix_framework.server import version
-from phoenix_framework.server.database.base import Base
-from phoenix_framework.server.utils.admin import (recreate_super_user,
+from phoenix.server import version
+from phoenix.server.database.base import Base
+from phoenix.server.utils.admin import (recreate_super_user,
                                                   regenerate_ssl,
                                                   reset_database, reset_server,
                                                   reset_table)
-from phoenix_framework.server.utils.ui import log, logo, ph_print
+from phoenix.server.utils.ui import log, logo, ph_print
 
 parser = ArgumentParser(
     "pfserver",
@@ -84,7 +84,7 @@ def parse_args(args, config: dict) -> dict:
 
     # output args
     if args.version:
-        ph_print("Phoenix Framework C2 Server v" + version)
+        ph_print("PhoenixC2 Server v" + version)
         exit()
     if args.quiet and args.debug:
         log("-q and -d are mutually exclusive.", "error")
@@ -103,7 +103,7 @@ def parse_args(args, config: dict) -> dict:
     if args.test:
         os.environ["PHOENIX_TEST"] = "true"
         log(
-            "Starting Phoenix Framework in test mode. AUTHORIZATION DISABLED!",
+            "Starting PhoenixC2 in test mode. AUTHORIZATION DISABLED!",
             "critical",
         )
 

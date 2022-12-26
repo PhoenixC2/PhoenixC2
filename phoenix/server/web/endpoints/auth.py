@@ -1,9 +1,9 @@
 from flask import (Blueprint, flash, jsonify, redirect, render_template,
                    request, session)
 
-from phoenix_framework.server.database import LogEntryModel, Session, UserModel
-from phoenix_framework.server.utils.ui import log
-from phoenix_framework.server.utils.web import (authorized, generate_response,
+from phoenix.server.database import LogEntryModel, Session, UserModel
+from phoenix.server.utils.ui import log
+from phoenix.server.utils.web import (authorized, generate_response,
                                                 get_current_user)
 
 INVALID_CREDENTIALS = "Invalid username or password."

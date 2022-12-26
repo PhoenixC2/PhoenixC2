@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import OptionPool
+from phoenix.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 class BasePlugin(ABC):

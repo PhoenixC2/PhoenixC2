@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.database import ListenerModel
-from phoenix_framework.server.utils.options import (DefaultListenerPool,
+from phoenix.server.database import ListenerModel
+from phoenix.server.utils.options import (DefaultListenerPool,
                                                     Option, StringType)
 
 from ..base_listener import BaseListener
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 class Listener(BaseListener):

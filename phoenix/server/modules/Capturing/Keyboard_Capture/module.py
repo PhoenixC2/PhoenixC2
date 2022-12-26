@@ -1,5 +1,5 @@
-from phoenix_framework.server.modules.base import BaseModule
-from phoenix_framework.server.utils.options import (IntegerType, Option,
+from phoenix.server.modules.base import BaseModule
+from phoenix.server.utils.options import (IntegerType, Option,
                                                     OptionPool)
 
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 
-from phoenix_framework.server.database import OperationModel, Session
-from phoenix_framework.server.utils.web import (admin, authorized,
+from phoenix.server.database import OperationModel, Session
+from phoenix.server.utils.web import (admin, authorized,
                                                 generate_response,
                                                 get_current_user,
                                                 render_template)

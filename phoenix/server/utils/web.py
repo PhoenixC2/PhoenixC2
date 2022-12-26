@@ -9,8 +9,8 @@ from flask import (Flask, Response, abort, flash, jsonify, redirect, request,
                    session)
 from werkzeug.serving import make_server
 
-from phoenix_framework.server.database import LogEntryModel, Session, UserModel
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix.server.database import LogEntryModel, Session, UserModel
+from phoenix.server.utils.resources import get_resource
 
 
 def get_messages() -> list[LogEntryModel]:

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from phoenix_framework.server.database import (DeviceModel, ListenerModel,
+from phoenix.server.database import (DeviceModel, ListenerModel,
                                                Session, TaskModel)
 
 from ..base_handler import BaseHandler

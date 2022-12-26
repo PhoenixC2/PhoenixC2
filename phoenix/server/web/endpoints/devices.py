@@ -3,11 +3,11 @@ import os
 from flask import (Blueprint, jsonify, render_template, request,
                    send_from_directory)
 
-from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (DeviceModel, LogEntryModel,
+from phoenix.server.commander import Commander
+from phoenix.server.database import (DeviceModel, LogEntryModel,
                                                Session, TaskModel)
-from phoenix_framework.server.utils.resources import get_resource
-from phoenix_framework.server.utils.web import (authorized, generate_response,
+from phoenix.server.utils.resources import get_resource
+from phoenix.server.utils.web import (authorized, generate_response,
                                                 get_current_user)
 
 TASK_CREATED = "Task created."

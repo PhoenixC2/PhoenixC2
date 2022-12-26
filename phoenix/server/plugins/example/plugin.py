@@ -1,7 +1,7 @@
 import time
 
-from phoenix_framework.server.plugins import BasePlugin
-from phoenix_framework.server.utils.options import OptionPool
+from phoenix.server.plugins import BasePlugin
+from phoenix.server.utils.options import OptionPool
 
 
 class Plugin(BasePlugin):

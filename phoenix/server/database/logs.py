@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Session, relationship
 
-from phoenix_framework.server.utils.ui import log as cli_log
+from phoenix.server.utils.ui import log as cli_log
 
 from .association import user_logentry_association_table
 from .base import Base

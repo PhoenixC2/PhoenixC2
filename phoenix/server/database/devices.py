@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
     from .listeners import ListenerModel
     from .operations import OperationModel

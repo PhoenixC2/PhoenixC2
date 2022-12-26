@@ -2,7 +2,7 @@ import importlib
 import os
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix.server.utils.resources import get_resource
 
 if TYPE_CHECKING:
     from .base import BaseModule
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 def get_module(path: str) -> "BaseModule":
     """Get a module by name."""
     return importlib.import_module(
-        f"phoenix_framework.server.modules.{path.replace('/', '.')}.module"
+        f"phoenix.server.modules.{path.replace('/', '.')}.module"
     ).Module()
 
 

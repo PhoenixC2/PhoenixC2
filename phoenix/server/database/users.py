@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix.server.utils.resources import get_resource
 
 from .association import (user_logentry_association_table,
                           user_operation_assignment_table,

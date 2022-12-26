@@ -10,13 +10,13 @@ from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
-from phoenix_framework.server import AVAILABLE_KITS
+from phoenix.server import AVAILABLE_KITS
 
 from .base import Base
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.kits.base_listener import BaseListener
+    from phoenix.server.commander import Commander
+    from phoenix.server.kits.base_listener import BaseListener
 
     from .operations import OperationModel
     from .stagers import StagerModel
@@ -103,7 +103,7 @@ class ListenerModel(Base):
             raise ValueError(f"Listener '{type}' isn't available.")
         try:
             listener = importlib.import_module(
-                "phoenix_framework.server.kits." + type + ".listener"
+                "phoenix.server.kits." + type + ".listener"
             ).Listener
         except ModuleNotFoundError as e:
             raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e

@@ -5,11 +5,11 @@ import subprocess
 
 from sqlalchemy import inspect
 
-from phoenix_framework.server.database import *
-from phoenix_framework.server.database.base import Base
-from phoenix_framework.server.utils.config import load_config
-from phoenix_framework.server.utils.resources import get_resource
-from phoenix_framework.server.utils.ui import log
+from phoenix.server.database import *
+from phoenix.server.database.base import Base
+from phoenix.server.utils.config import load_config
+from phoenix.server.utils.resources import get_resource
+from phoenix.server.utils.ui import log
 
 DIRECTORIES = ["stagers", "downloads", "uploads", "pictures"]
 

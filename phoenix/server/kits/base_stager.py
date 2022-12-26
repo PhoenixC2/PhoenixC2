@@ -2,13 +2,13 @@ import json
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.features import Feature
-from phoenix_framework.server.utils.options import (DefaultStagerPool,
+from phoenix.server.utils.features import Feature
+from phoenix.server.utils.options import (DefaultStagerPool,
                                                     OptionPool)
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.database import StagerModel
+    from phoenix.server.commander import Commander
+    from phoenix.server.database import StagerModel
 
 
 class BasePayload:

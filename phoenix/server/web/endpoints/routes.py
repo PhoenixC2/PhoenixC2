@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template
 
-from phoenix_framework.server.database import (DeviceModel, Session, TaskModel,
+from phoenix.server.database import (DeviceModel, Session, TaskModel,
                                                UserModel)
-from phoenix_framework.server.utils.web import authorized
+from phoenix.server.utils.web import authorized
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 import json
 

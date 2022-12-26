@@ -1,13 +1,13 @@
-"""This is the C2 commander Class which handles the devices & listeners"""
+"""This is the C2 commander class which handles the devices & listeners"""
 import subprocess
 from multiprocessing import Process
 from threading import Thread
 from typing import Optional
 
-from phoenix_framework.server.kits.base_handler import BaseHandler
-from phoenix_framework.server.kits.base_listener import BaseListener
-from phoenix_framework.server.plugins.base import BasePlugin
-from phoenix_framework.server.utils.web import FlaskThread
+from phoenix.server.kits.base_handler import BaseHandler
+from phoenix.server.kits.base_listener import BaseListener
+from phoenix.server.plugins.base import BasePlugin
+from phoenix.server.utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"
 HANDLER_DOES_NOT_EXIST = "Handler doesn't exist"
@@ -15,7 +15,7 @@ LISTENER_DOES_NOT_EXIST = "Listener doesn't exist"
 
 
 class Commander:
-    """This is the Commander which handles the devices & listeners"""
+    """This is the Commander is used as a registry for all devices and listeners"""
 
     def __init__(self):
         self.web_server: FlaskThread

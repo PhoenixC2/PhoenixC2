@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import jinja2
 
-from phoenix_framework.server.utils.options import (AddressType, ChoiceType,
+from phoenix.server.utils.options import (AddressType, ChoiceType,
                                                     DefaultStagerPool,
                                                     IntegerType, Option,
                                                     OptionPool, StringType)
@@ -13,7 +13,7 @@ from phoenix_framework.server.utils.options import (AddressType, ChoiceType,
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.database import StagerModel
+    from phoenix.server.database import StagerModel
 
 
 class PythonPayload(BasePayload):

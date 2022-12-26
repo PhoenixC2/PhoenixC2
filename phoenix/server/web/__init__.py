@@ -7,11 +7,11 @@ import string
 
 from flask import Flask, abort, cli, request
 
-from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.utils.config import load_config, save_config
-from phoenix_framework.server.utils.web import get_messages
-from phoenix_framework.server.web.endpoints import *
-from phoenix_framework.server.web.endpoints.auth import get_current_user
+from phoenix.server.commander import Commander
+from phoenix.server.utils.config import load_config, save_config
+from phoenix.server.utils.web import get_messages
+from phoenix.server.web.endpoints import *
+from phoenix.server.web.endpoints.auth import get_current_user
 
 # disable flask logging
 

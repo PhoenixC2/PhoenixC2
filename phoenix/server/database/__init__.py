@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as Session_Type
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from phoenix_framework.server.utils.config import load_config
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix.server.utils.config import load_config
+from phoenix.server.utils.resources import get_resource
 
 from .association import (user_logentry_association_table,
                           user_operation_assignment_table)

@@ -3,14 +3,14 @@
 import os
 import time
 
-from phoenix_framework.server.args import parse_args, parser
-from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.commander.services import (load_plugins,
+from phoenix.server.args import parse_args, parser
+from phoenix.server.commander import Commander
+from phoenix.server.commander.services import (load_plugins,
                                                          start_listeners,
                                                          start_web)
-from phoenix_framework.server.utils.admin import check_for_setup, reset_server
-from phoenix_framework.server.utils.config import load_config
-from phoenix_framework.server.utils.ui import log
+from phoenix.server.utils.admin import check_for_setup, reset_server
+from phoenix.server.utils.config import load_config
+from phoenix.server.utils.ui import log
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
     config = load_config()
     config = parse_args(args, config)
 
-    log("Welcome to Phoenix Framework.", "success")
+    log("Welcome to PhoenixC2", "success")
 
     if not check_for_setup():
         reset_server()

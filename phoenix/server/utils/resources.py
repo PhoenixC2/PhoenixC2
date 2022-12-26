@@ -15,11 +15,11 @@ def get_resource(
 
     # check if file is given
     if file is not None:
-        resource = files("phoenix_framework.server." + path.replace("/", ".")).joinpath(
+        resource = files("phoenix.server." + path.replace("/", ".")).joinpath(
             file
         )
     else:
-        resource = files("phoenix_framework.server." + path.replace("/", ".")).joinpath(
+        resource = files("phoenix.server." + path.replace("/", ".")).joinpath(
             ""
         )
 

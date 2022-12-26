@@ -2,10 +2,10 @@ import tempfile
 
 from flask import Blueprint, jsonify, render_template, request, send_file
 
-from phoenix_framework.server.commander import Commander
-from phoenix_framework.server.database import (ListenerModel, LogEntryModel,
+from phoenix.server.commander import Commander
+from phoenix.server.database import (ListenerModel, LogEntryModel,
                                                Session, StagerModel)
-from phoenix_framework.server.utils.web import (authorized, generate_response,
+from phoenix.server.utils.web import (authorized, generate_response,
                                                 get_current_user)
 
 INVALID_ID = "Invalid ID."

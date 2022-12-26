@@ -13,7 +13,7 @@ from .base import Base
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
     from .credentials import CredentialModel
     from .devices import DeviceModel

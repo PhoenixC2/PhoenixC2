@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import (DefaultStagerPool, Option,
+from phoenix.server.utils.options import (DefaultStagerPool, Option,
                                                     OptionPool, StringType)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.database import StagerModel
+    from phoenix.server.database import StagerModel
 
 
 class ExamplePayload(BasePayload):

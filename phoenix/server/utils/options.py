@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, MutableSequence
 import bleach
 import requests
 
-from phoenix_framework.server import AVAILABLE_ENCODINGS
-from phoenix_framework.server.database import ListenerModel, Session
-from phoenix_framework.server.database.base import Base
+from phoenix.server import AVAILABLE_ENCODINGS
+from phoenix.server.database import ListenerModel, Session
+from phoenix.server.database.base import Base
 
 from .misc import get_network_interfaces
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 @dataclass

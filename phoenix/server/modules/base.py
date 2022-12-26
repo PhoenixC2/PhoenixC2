@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from phoenix_framework.server.utils.options import OptionPool
+from phoenix.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
-    from phoenix_framework.server.database import DeviceModel, ListenerModel
+    from phoenix.server.commander import Commander
+    from phoenix.server.database import DeviceModel, ListenerModel
 """The base module class"""
 
 

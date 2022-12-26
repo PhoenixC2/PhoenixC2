@@ -12,15 +12,15 @@ from sqlalchemy.orm import Session, relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from phoenix_framework.server.modules import get_module
-from phoenix_framework.server.utils.resources import get_resource
+from phoenix.server.modules import get_module
+from phoenix.server.utils.resources import get_resource
 
 from .base import Base
 from .devices import DeviceModel
 from .logs import LogEntryModel
 
 if TYPE_CHECKING:
-    from phoenix_framework.server.commander import Commander
+    from phoenix.server.commander import Commander
 
 
 class TaskModel(Base):
