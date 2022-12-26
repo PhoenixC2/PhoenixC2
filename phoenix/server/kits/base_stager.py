@@ -98,10 +98,10 @@ class BaseStager:
             bool: If the stager is a path or not.
         """
         # credit to BC-SECURITY/Empire for the using jinja2 for stagers
-        if stager_db.payload_type not in cls.payloads:
+        if stager_db.payload not in cls.payloads:
             raise ValueError("Invalid payload type")
 
-        return cls.payloads[stager_db.payload_type].generate(
+        return cls.payloads[stager_db.payload].generate(
             stager_db, one_liner, recompile
         )
 

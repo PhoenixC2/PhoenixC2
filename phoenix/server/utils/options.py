@@ -4,14 +4,12 @@ import socket
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, MutableSequence
 
-import bleach
 import requests
 
 from phoenix.server import AVAILABLE_ENCODINGS
 from phoenix.server.database import ListenerModel, Session
-from phoenix.server.database.base import Base
 
-from .misc import get_network_interfaces
+from .misc import get_network_interfaces, generate_name
 
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
@@ -195,26 +193,39 @@ class Option:
 
     Args:
         name (str): The name of the option.
+        type (OptionType): The type of the option.
+        real_name (str): The real name of the option.
         description (str): The description of the option.
         required (bool): If the option is required.
         default (any): The default value of the option.
-        type (OptionType): The type of the option.
         editable (bool): If the option is editable.
     """
 
-    name: str
-    type: OptionType
-    _real_name: str = ""
-    description: str = ""
-    required: bool = False
-    default: any = None
-    editable: bool = True
+    def __init__(
+        self,
+        name: str,
+        type: OptionType,
+        description: str = "",
+        required: bool = False,
+        editable: bool = True,
+        default: any = "",
+        real_name: str = "",
+    ) -> None:
+        self.name = name if name else generate_name()
+        self.type = type
+        self._real_name = real_name
+        self.description = description
+        self.required = required 
+        self.editable = editable
+        self._default = default
+
+    @property
+    def default(self) -> any:
+        return self._default() if callable(self._default) else self._default
 
     @property
     def real_name(self) -> str:
-        if not self._real_name:
-            return self.name.lower()
-        return self._real_name
+        return self._real_name if self._real_name else self.name.lower()
 
     def validate_data(self, data: any) -> OptionType.data_type:
         """Raises an exception if data isn't fitting to the requirements"""
@@ -245,7 +256,7 @@ class Option:
             "type": str(self.type),
             "required": self.required,
             "description": self.description,
-            "default": self.default if self.default is not None else "",
+            "default": self.default,
             "editable": self.editable,
         }
         if type(self.type) == ChoiceType:
@@ -305,6 +316,7 @@ class DefaultListenerPool(OptionPool):
                 description="The name of the listener.",
                 type=StringType(),
                 required=True,
+                default=lambda: generate_name(),
             ),
             Option(
                 name="Address",
@@ -334,14 +346,14 @@ class DefaultListenerPool(OptionPool):
             ),
             Option(
                 name="Connection limit",
-                _real_name="limit",
+                real_name="limit",
                 description="How many devices can be connected to the listener at once.",
                 type=IntegerType(),
                 default=5,
             ),
             Option(
                 name="Response timeout",
-                _real_name="response_time",
+                real_name="response_time",
                 description="How long the listener should wait for a response before closing the connection.",
                 type=IntegerType(),
                 default=10,
@@ -361,6 +373,7 @@ class DefaultStagerPool(OptionPool):
                 description="The name of the stager.",
                 type=StringType(),
                 required=True,
+                default=lambda: generate_name(),
             ),
             Option(
                 name="Listener",
@@ -380,7 +393,7 @@ class DefaultStagerPool(OptionPool):
             ),
             Option(
                 name="Random size",
-                _real_name="random_size",
+                real_name="random_size",
                 description="Add random sized strings to the payload to bypass the AV.",
                 type=BooleanType(),
                 default=False,
@@ -399,7 +412,7 @@ class DefaultStagerPool(OptionPool):
             ),
             Option(
                 name="Different address/domain",
-                _real_name="different_address",
+                real_name="different_address",
                 description="Use a different address/domain then specified by the listener to connect to.",
                 type=AddressType(),
                 required=False,
@@ -410,7 +423,7 @@ class DefaultStagerPool(OptionPool):
             Option(
                 name="Payload",
                 description="The payload to use",
-                _real_name="payload_type",
+                real_name="payload",
                 type=ChoiceType(payloads, str),
                 default="python",
                 required=True,

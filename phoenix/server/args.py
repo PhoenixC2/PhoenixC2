@@ -14,7 +14,7 @@ from phoenix.server.utils.ui import log, logo, ph_print
 parser = ArgumentParser(
     "pfserver",
     usage="pfserver [options]",
-    description="Start the PhoenixC2 C2 server.",
+    description="Start the PhoenixC2 server.",
 )
 
 web = parser.add_argument_group("Web Server")
@@ -44,16 +44,10 @@ misc.add_argument(
     "-v", "--version", help="Print the version and exit", action="store_true"
 )
 misc.add_argument(
-    "-l",
-    "--location",
-    help="The location of the framework [/usr/share/PhoenixC2]",
-    default="/usr/share/PhoenixC2/Server",
-)
-misc.add_argument(
     "-c",
     "--config",
-    help="Location of the config file. [/usr/share/PhoenixC2/Server/Data/config.toml]",
-    default="/usr/share/PhoenixC2/Server/Data/config.toml",
+    help="Name of the config file to use. [default.toml]",
+    default="default.toml",
 )
 admin = parser.add_argument_group("Admin")
 admin.add_argument(

@@ -18,6 +18,7 @@ def start_listeners(commander: Commander):
         Session.query(ListenerModel).filter_by(enabled=True).all()
     )
     # Start Listeners
+    listeners_started = 0
     for listener in listeners:
         try:
             # Start Listener
@@ -27,7 +28,8 @@ def start_listeners(commander: Commander):
             exit()
         else:
             log(status, "success")
-    log("All listeners started.", "success")
+            listeners_started += 1
+    log(f"{listeners_started} listeners started.", "success")
     Session.remove()
 
 
@@ -56,4 +58,4 @@ def load_plugins(commander: Commander):
             else:
                 log(f"Plugin '{plugin}' loaded.", "success")
 
-    log("Loaded Plugins.", "success")
+    log(f"Loaded {len(plugins.keys())} plugins.", "success")

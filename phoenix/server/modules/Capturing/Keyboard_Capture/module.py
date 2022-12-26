@@ -10,7 +10,7 @@ class Module(BaseModule):
         [
             Option(
                 name="Max keys",
-                _real_name="max_keys",
+                real_name="max_keys",
                 description="The maximum number of keys to capture before sending the data",
                 type=IntegerType(),
                 default=100,

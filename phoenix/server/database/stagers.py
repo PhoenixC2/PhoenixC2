@@ -30,7 +30,7 @@ class StagerModel(Base):
     __tablename__ = "Stagers"
     id: int = Column(Integer, primary_key=True, nullable=False)
     name: str = Column(String(100))
-    payload_type: str = Column(String(100))
+    payload: str = Column(String(100))
     encoding: str = Column(String(10))
     random_size: bool = Column(Boolean)
     timeout: int = Column(Integer)
@@ -54,7 +54,7 @@ class StagerModel(Base):
         return {
             "id": self.id,
             "name": self.name,
-            "payload_type": self.payload_type,
+            "payload": self.payload,
             "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,
@@ -96,7 +96,7 @@ class StagerModel(Base):
     @property
     def payload_class(self) -> "BasePayload":
         """Returns the payload class."""
-        return self.stager_class.payloads[self.payload_type]
+        return self.stager_class.payloads[self.payload]
 
     @staticmethod
     def get_all_classes() -> list["BaseStager"]:
@@ -137,7 +137,7 @@ class StagerModel(Base):
         for st_value in [
             "name",
             "listener",
-            "payload_type",
+            "payload",
             "encoding",
             "random_size",
             "timeout",
@@ -148,7 +148,7 @@ class StagerModel(Base):
         return cls(
             name=standard[0],
             listener=standard[1],
-            payload_type=standard[2],
+            payload=standard[2],
             encoding=standard[3],
             random_size=standard[4],
             timeout=standard[5],

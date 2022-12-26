@@ -35,7 +35,7 @@ class Listener(BaseListener):
         [
             Option(
                 name="Server Header",
-                _real_name="header",
+                real_name="header",
                 description="The Server Header to return",
                 type=StringType(),
                 default="Werkzeug/2.2.2 Python/3.10.7",
@@ -46,8 +46,11 @@ class Listener(BaseListener):
         Feature(
             name="https",
             description="Encrypted traffic using https",
-            pro=False,
-        )
+        ),
+        Feature(
+            name="Normal Traffic",
+            description="Http is a widely used protocol",
+        ),
     ]
 
     def __init__(self, commander: "Commander", db_entry: ListenerModel):

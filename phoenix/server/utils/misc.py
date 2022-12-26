@@ -28,3 +28,7 @@ def get_platform() -> str:
         return "osx"
     else:
         return "unknown"
+
+def generate_name() -> str:
+    """Generate a random name"""
+    return str(uuid1())[:8]

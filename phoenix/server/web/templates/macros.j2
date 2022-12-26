@@ -56,7 +56,7 @@
         <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
     </div>
     {% else %}
-    {% if option.name != "Listener" %}
+    {% if option.real_name not in ("listener", "payload") %}
     <div class="form-group">
         <label for="{{ option.real_name }}">{{ option.name }}</label>
         {% if option.required %}
@@ -80,13 +80,11 @@
         {% for feature in features %}
         {% if feature.pro %}
         <li class="list-group-item">
-            <i class="material-icons" style="color: green;" >check</i>
-            {{ feature.name }}: {{ feature.description }}
+            ✅ {{ feature.name }}: {{ feature.description }}
         </li>
         {% else %}
         <li class="list-group-item">
-            <i class="material-icons" style="color: red">close</i>
-            {{ feature.name }}: {{ feature.description }}
+            ❌ {{ feature.name }}: {{ feature.description }}
         </li>
         {% endif %}
         {% endfor %}

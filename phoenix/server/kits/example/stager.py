@@ -38,7 +38,7 @@ class Stager(BaseStager):
     payloads = {"example": ExamplePayload}
 
     def generate(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]:
-        if stager_db.payload_type not in self.payloads:
+        if stager_db.payload not in self.payloads:
             raise ValueError("Invalid payload type")
 
-        return self.payloads[stager_db.payload_type].generate(stager_db)
+        return self.payloads[stager_db.payload].generate(stager_db)
