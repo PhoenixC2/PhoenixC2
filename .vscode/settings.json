@@ -5,7 +5,7 @@
             "previewLimit": 50,
             "driver": "SQLite",
             "name": "Database",
-            "database": "${workspaceFolder:Phoenix-Framework}/phoenix_framework/server/data/default.sqlite3"
+            "database": "${workspaceFolder:PhoenixC2}/phoenix_framework/server/data/default.sqlite3"
         }
     ]
 }

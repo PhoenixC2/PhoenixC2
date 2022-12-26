@@ -6,3 +6,5 @@ netifaces
 requests
 tomli
 tomli_w
+bleach
+markdown
