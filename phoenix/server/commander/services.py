@@ -29,7 +29,7 @@ def start_listeners(commander: Commander):
         else:
             log(status, "success")
             listeners_started += 1
-    log(f"{listeners_started} listeners started.", "success")
+    log(f"{listeners_started} listener{'s' if listeners_started != 1 else ''} started.", "success")
     Session.remove()
 
 
@@ -58,4 +58,4 @@ def load_plugins(commander: Commander):
             else:
                 log(f"Plugin '{plugin}' loaded.", "success")
 
-    log(f"Loaded {len(plugins.keys())} plugins.", "success")
+    log(f"Loaded {len(plugins.keys())} plugin{'s' if len(plugins.keys()) != 1 else ''}.", "success")
