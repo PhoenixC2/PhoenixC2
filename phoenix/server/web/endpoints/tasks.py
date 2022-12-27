@@ -1,16 +1,16 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenix.server.commander import Commander
-from phoenix.server.database import LogEntryModel, Session, TaskModel
-from phoenix.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix.server.database import (LogEntryModel, Session, TaskModel,
+                                     UserModel)
+from phoenix.server.utils.web import generate_response
 
 
 def tasks_bp(commander: Commander):
     tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
     @tasks_bp.route("/", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_tasks():
         use_json = request.args.get("json", "") == "true"
         task_query = Session.query(TaskModel)
@@ -21,7 +21,7 @@ def tasks_bp(commander: Commander):
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
 
     @tasks_bp.route("/<string:id>/clear", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_clear_tasks(id: str = "all"):
         count = 0
         for task in (
@@ -35,7 +35,11 @@ def tasks_bp(commander: Commander):
         Session.commit()
         if count > 0:
             LogEntryModel.log(
-                "info", "tasks", f"Cleared {count} tasks.", Session, get_current_user()
+                "info",
+                "tasks",
+                f"Cleared {count} tasks.",
+                Session,
+                UserModel.get_current_user(),
             )
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 

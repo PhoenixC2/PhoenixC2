@@ -3,9 +3,7 @@ from uuid import uuid1
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenix.server.database import LogEntryModel, Session, UserModel
-from phoenix.server.utils.web import (admin, authorized,
-                                                generate_response,
-                                                get_current_user)
+from phoenix.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."
@@ -14,10 +12,10 @@ users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 
 
 @users_bp.route("/", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_users():
     use_json = request.args.get("json", "").lower() == "true"
-    curr_user = get_current_user()
+    curr_user = UserModel.get_current_user()
     user_query = Session.query(UserModel)
     users: list[UserModel] = user_query.all()
     opened_user = user_query.filter_by(id=request.args.get("open")).first()
@@ -26,7 +24,7 @@ def get_users():
         if curr_user.admin:
             for index, user in enumerate(users):
                 if (
-                    user.admin
+                    user.admin_required
                     and curr_user.username != "phoenix"
                     and curr_user.username != user.username
                 ):
@@ -42,7 +40,7 @@ def get_users():
 
 
 @users_bp.route("/<int:user_id>/profile_picture", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_profile_picture(user_id: int):
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:
@@ -51,7 +49,7 @@ def get_profile_picture(user_id: int):
 
 
 @users_bp.route("/add", methods=["POST"])
-@admin
+@UserModel.admin_required
 def add_user():
     use_json = request.args.get("json", "").lower() == "true"
     username = request.form.get("username")
@@ -80,9 +78,9 @@ def add_user():
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin else 'User'} {username} added.",
+        f"{'Admin' if user.admin_required else 'User'} {username} added.",
         Session,
-        get_current_user(),
+        UserModel.get_current_user(),
     )
 
     if use_json:
@@ -93,9 +91,9 @@ def add_user():
 
 
 @users_bp.route("/<int:id>/remove", methods=["DELETE"])
-@admin
+@UserModel.admin_required
 def delete_user(id: int = None):
-    current_user = get_current_user()
+    current_user = UserModel.get_current_user()
 
     # Check if user exists
     user: UserModel = Session.query(UserModel).filter_by(id=id).first()
@@ -119,24 +117,24 @@ def delete_user(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username} deleted.",
+        f"{'Admin' if user.admin_required else 'User'} {user.username} deleted.",
         Session,
         current_user,
     )
     return generate_response(
         "success",
-        f"Deleted {'Admin' if user.admin else 'User'} {user.username}",
+        f"Deleted {'Admin' if user.admin_required else 'User'} {user.username}",
         ENDPOINT,
     )
 
 
 @users_bp.route("/edit", methods=["PUT", "POST"])
 @users_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
-@admin
+@UserModel.admin_required
 def edit_user(id: int = None):
     # Get request data
     form_data = dict(request.form)
-    current_user = get_current_user()
+    current_user = UserModel.get_current_user()
 
     if id is None:
         if form_data.get("id") is None:
@@ -163,7 +161,7 @@ def edit_user(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username} edited.",
+        f"{'Admin' if user.admin_required else 'User'} {user.username} edited.",
         Session,
         current_user,
     )
@@ -171,9 +169,9 @@ def edit_user(id: int = None):
 
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])
-@authorized
+@UserModel.authorized
 def reset_api_key(id: int = None):
-    current_user = get_current_user()
+    current_user = UserModel.get_current_user()
 
     if current_user.id != id and not current_user.admin:
         return generate_response("danger", "Unauthorized", ENDPOINT, 403)
@@ -197,12 +195,12 @@ def reset_api_key(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username}'s API key reset.",
+        f"{'Admin' if user.admin_required else 'User'} {user.username}'s API key reset.",
         Session,
         current_user,
     )
     return generate_response(
         "success",
-        f"Reset {'Admin' if user.admin else 'User'} {user.username}'s API key.",
+        f"Reset {'Admin' if user.admin_required else 'User'} {user.username}'s API key.",
         ENDPOINT,
     )

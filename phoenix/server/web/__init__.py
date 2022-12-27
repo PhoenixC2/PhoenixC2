@@ -8,10 +8,10 @@ import string
 from flask import Flask, abort, cli, request
 
 from phoenix.server.commander import Commander
+from phoenix.server.database import LogEntryModel, Session
 from phoenix.server.utils.config import load_config, save_config
-from phoenix.server.utils.web import get_messages
 from phoenix.server.web.endpoints import *
-from phoenix.server.web.endpoints.auth import get_current_user
+from phoenix.server.database import UserModel
 
 # disable flask logging
 
@@ -41,11 +41,15 @@ def create_web(commander: Commander) -> Flask:
     # context processors for the templates
     @web_server.context_processor
     def inject_user():
-        return dict(user=get_current_user())
+        return dict(user=UserModel.get_current_user())
 
     @web_server.context_processor
     def inject_messages():
-        return dict(messages=get_messages())
+        return dict(messages=[
+        log
+        for log in Session.query(LogEntryModel).all()
+        if UserModel.get_current_user() in log.unseen_users
+    ])
 
     @web_server.context_processor
     def utility_processor():

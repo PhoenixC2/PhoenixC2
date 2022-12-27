@@ -9,7 +9,7 @@ import requests
 from phoenix.server import AVAILABLE_ENCODINGS
 from phoenix.server.database import ListenerModel, Session
 
-from .misc import get_network_interfaces, generate_name
+from .misc import generate_name, get_network_interfaces
 
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
@@ -215,7 +215,7 @@ class Option:
         self.type = type
         self._real_name = real_name
         self.description = description
-        self.required = required 
+        self.required = required
         self.editable = editable
         self._default = default
 

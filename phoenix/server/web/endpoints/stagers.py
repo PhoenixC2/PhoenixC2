@@ -3,10 +3,9 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenix.server.commander import Commander
-from phoenix.server.database import (ListenerModel, LogEntryModel,
-                                               Session, StagerModel)
-from phoenix.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix.server.database import (ListenerModel, LogEntryModel, Session,
+                                     StagerModel, UserModel)
+from phoenix.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."
@@ -18,7 +17,7 @@ def stagers_bp(commander: Commander):
     stagers_bp = Blueprint(ENDPOINT, __name__, url_prefix="/stagers")
 
     @stagers_bp.route("/", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_stagers():
         use_json = request.args.get("json", "") == "true"
         stager_query = Session.query(StagerModel)
@@ -38,7 +37,7 @@ def stagers_bp(commander: Commander):
         )
 
     @stagers_bp.route("/available", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_available():
         stagers = {}
         type = request.args.get("type")
@@ -55,7 +54,7 @@ def stagers_bp(commander: Commander):
             return jsonify(stagers)
 
     @stagers_bp.route("/add", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_add():
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -95,7 +94,7 @@ def stagers_bp(commander: Commander):
             "stagers",
             f"Created stager '{stager.name}' from Listener '{listener.name}'.",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         if use_json:
             return (
@@ -113,7 +112,7 @@ def stagers_bp(commander: Commander):
         )
 
     @stagers_bp.route("/<int:id>/remove", methods=["DELETE"])
-    @authorized
+    @UserModel.authorized
     def delete_remove(id: int):
         # Check if Stager exists
         stager: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
@@ -131,13 +130,13 @@ def stagers_bp(commander: Commander):
             "stagers",
             f"Deleted stager '{stager.name}' from Listener '{listener_name}'",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)
 
     @stagers_bp.route("/edit", methods=["PUT", "POST"])
     @stagers_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
-    @authorized
+    @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data
         form_data = dict(request.form)
@@ -164,7 +163,7 @@ def stagers_bp(commander: Commander):
             "stagers",
             f"Edited stager '{stager.name}'",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         return generate_response("success", f"Edited stager with ID {id}.", ENDPOINT)
 

@@ -3,8 +3,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 from phoenix.server.utils.features import Feature
-from phoenix.server.utils.options import (DefaultStagerPool,
-                                                    OptionPool)
+from phoenix.server.utils.options import DefaultStagerPool, OptionPool
 
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
@@ -101,9 +100,7 @@ class BaseStager:
         if stager_db.payload not in cls.payloads:
             raise ValueError("Invalid payload type")
 
-        return cls.payloads[stager_db.payload].generate(
-            stager_db, one_liner, recompile
-        )
+        return cls.payloads[stager_db.payload].generate(stager_db, one_liner, recompile)
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:

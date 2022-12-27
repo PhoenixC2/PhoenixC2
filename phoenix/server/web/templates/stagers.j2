@@ -122,7 +122,7 @@
     <div class="form-group">
         <label for="payload_type">Payload</label>
         <select class="form-control" id="payload_type-create" name="payload_type" onchange="changePayload('create')">
-            {% set option = stager_type.options.get_option("payload_type") %}
+            {% set option = stager_type.options.get_option("payload") %}
             {% for payload_type in option.options %}
             {% if payload_type == option.default  %}
             <option id="{{payload_type}}-payload_type-create" value="{{ payload_type }}" selected>{{ payload_type }}</option>

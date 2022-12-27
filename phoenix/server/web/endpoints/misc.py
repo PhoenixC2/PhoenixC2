@@ -3,11 +3,11 @@ import os
 from flask import Blueprint, jsonify, send_from_directory
 
 import phoenix.server as avl
+from phoenix.server.database import UserModel
 from phoenix.server.modules import get_all_module_paths
 from phoenix.server.utils.misc import get_network_interfaces, version
 from phoenix.server.utils.resources import get_resource
-from phoenix.server.utils.web import (admin, authorized,
-                                                generate_response)
+from phoenix.server.utils.web import generate_response
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
@@ -18,7 +18,7 @@ def get_phoenix():
 
 
 @misc_bp.route("/available", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_available():
     options = {
         "kits": avl.AVAILABLE_KITS,
@@ -30,7 +30,7 @@ def get_available():
 
 
 @misc_bp.route("/interfaces", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_interfaces():
     return get_network_interfaces()
 
@@ -46,7 +46,7 @@ def get_modules():
 
 
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_downloads(file_name: str):
     if file_name is None:
         return generate_response("danger", "File name is missing.", "devices", 400)
@@ -59,7 +59,7 @@ def get_downloads(file_name: str):
 
 
 @misc_bp.route("/downloads/clear", methods=["POST"])
-@admin
+@UserModel.admin_required
 def post_clear_downloads():
     downloads = get_resource("data/downloads", skip_file_check=True)
     for file in downloads.iterdir():
@@ -68,7 +68,7 @@ def post_clear_downloads():
 
 
 @misc_bp.route("/uploads/clear", methods=["POST"])
-@admin
+@UserModel.admin_required
 def post_clear_uploads():
     uploads = get_resource("data/uploads", skip_file_check=True)
     for file in uploads.iterdir():

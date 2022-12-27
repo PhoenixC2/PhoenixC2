@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from phoenix.server.utils.options import (DefaultStagerPool, Option,
-                                                    OptionPool, StringType)
+                                          OptionPool, StringType)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 

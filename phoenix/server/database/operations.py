@@ -2,24 +2,25 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from flask import request
 from sqlalchemy import Column, DateTime, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 
+from phoenix.server.utils.web import generate_html_from_markdown
+
 from .association import (user_operation_assignment_table,
                           user_operation_owner_table)
 from .base import Base
-
+from .users import UserModel
+from .engine import Session
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
-
     from phoenix.server.commander import Commander
-
+    from sqlalchemy.orm import Session as SessionType
     from .credentials import CredentialModel
     from .devices import DeviceModel
     from .listeners import ListenerModel
     from .logs import LogEntryModel
-    from .users import UserModel
 
 
 class OperationModel(Base):
@@ -32,6 +33,8 @@ class OperationModel(Base):
     expiry: datetime = Column(DateTime)
     description: str = Column(Text)
     subnets: list[str] = Column(MutableList.as_mutable(Text), default=[])
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    updated_at: datetime = Column(DateTime, onupdate=datetime.now)
     owner: "UserModel" = relationship(
         "UserModel",
         back_populates="owned_operations",
@@ -57,8 +60,6 @@ class OperationModel(Base):
         "LogEntryModel",
         back_populates="operation",
     )
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, onupdate=datetime.now)
 
     def to_dict(
         self,
@@ -75,6 +76,8 @@ class OperationModel(Base):
             "expiry": self.expiry,
             "description": self.description,
             "subnets": self.subnets,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
             "owner": self.owner.to_dict() if show_owner else self.owner.id,
             "users": [user.to_dict() for user in self.assigned_users]
             if show_assigned_users
@@ -91,8 +94,7 @@ class OperationModel(Base):
             "logs": [log.to_dict() for log in self.logs]
             if show_logs
             else [log.id for log in self.logs],
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+
         }
 
     def delete(
@@ -134,3 +136,40 @@ class OperationModel(Base):
         operation.session.add(operation)
         operation.session.commit()
         return operation
+
+    def assign_user(self, user: "UserModel") -> None:
+        """Assign a user to the operation."""
+        self.assigned_users.append(user)
+
+    def unassign_user(self, user: "UserModel") -> None:
+        """Unassign a user from the operation."""
+        self.assigned_users.remove(user)
+
+    def edit(self, data: dict) -> None:
+        """Edit the operation."""
+        for key, value in data.items():
+            if key == "name":
+                self.name = value
+            elif key == "description":
+                try:
+                    generate_html_from_markdown(value)
+                except SyntaxError:
+                    raise ValueError("Invalid Markdown")
+                else:
+                    self.description = value
+            elif key == "expiry":
+                self.expiry = value
+            elif key == "subnets":
+                self.subnets = value
+
+    @staticmethod
+    def get_current_operation() -> "OperationModel":
+        """Get the current operation and check if the user is assigned to it."""
+        operation = Session.query(OperationModel).filter_by(
+            id=request.cookies.get("operation")
+        ).first()
+
+        if operation is not None and UserModel.get_current_user() in operation.assigned_users:
+            return operation
+        else:
+            return None

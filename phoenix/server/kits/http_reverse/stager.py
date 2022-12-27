@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 import jinja2
 
 from phoenix.server.utils.options import (AddressType, ChoiceType,
-                                                    DefaultStagerPool,
-                                                    IntegerType, Option,
-                                                    OptionPool, StringType)
+                                          DefaultStagerPool, IntegerType,
+                                          Option, OptionPool, StringType)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 

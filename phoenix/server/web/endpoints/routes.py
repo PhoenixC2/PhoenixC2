@@ -3,9 +3,7 @@ from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template
 
-from phoenix.server.database import (DeviceModel, Session, TaskModel,
-                                               UserModel)
-from phoenix.server.utils.web import authorized
+from phoenix.server.database import DeviceModel, Session, TaskModel, UserModel
 
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
@@ -22,7 +20,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @routes_bp.route("/home")
     @routes_bp.route("/dashboard")
     @routes_bp.route("/")
-    @authorized
+    @UserModel.authorized
     def index():
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         # get count of connections from today

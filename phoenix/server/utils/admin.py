@@ -5,7 +5,7 @@ import subprocess
 
 from sqlalchemy import inspect
 
-from phoenix.server.database import *
+from phoenix.server.database import Session, UserModel, engine
 from phoenix.server.database.base import Base
 from phoenix.server.utils.config import load_config
 from phoenix.server.utils.resources import get_resource
@@ -123,16 +123,8 @@ def reset_database():
 def reset_table(table: str):
     """Reset a table."""
 
-    models = {
-        "users": UserModel,
-        "listeners": ListenerModel,
-        "stagers": StagerModel,
-        "credentials": CredentialModel,
-        "operations": OperationModel,
-        "devices": DeviceModel,
-        "logs": LogEntryModel,
-        "tasks": TaskModel,
-    }
+    # generate models dict from Base
+    models = {model.__tablename__: model for model in Base.__sublasses__()}
     if table not in models:
         log(f"{table} doesn't exist.", "error")
         exit(1)

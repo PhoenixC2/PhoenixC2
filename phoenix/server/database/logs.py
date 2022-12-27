@@ -10,10 +10,7 @@ from phoenix.server.utils.ui import log as cli_log
 from .association import user_logentry_association_table
 from .base import Base
 from .users import UserModel
-
-if TYPE_CHECKING:
-    from .operations import OperationModel
-
+from .operations import OperationModel
 
 class LogEntryModel(Base):
     """The Log Entries Model"""
@@ -24,6 +21,7 @@ class LogEntryModel(Base):
     alert: str = Column(String(10), name="type")
     endpoint = Column(String(50))
     description: str = Column(Text(100))
+    time: datetime = Column(DateTime, default=datetime.now)
     operation_id: int = Column(Integer, ForeignKey("Operations.id"))
     operation: "OperationModel" = relationship("OperationModel", back_populates="logs")
     user_id: int = Column(Integer, ForeignKey("Users.id"))
@@ -35,8 +33,6 @@ class LogEntryModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_logs",
     )  # users who haven't seen this message
-    time: datetime = Column(DateTime, default=datetime.now)
-
     def to_dict(
         self,
         show_user: bool = False,
@@ -48,10 +44,10 @@ class LogEntryModel(Base):
             "alert": self.alert,
             "endpoint": self.endpoint,
             "description": self.description,
+            "time": self.time,
             "unseen_users": [user.to_dict() for user in self.unseen_users]
             if show_unseen_users
             else [user.id for user in self.unseen_users],
-            "time": self.time,
         }
         if self.user is not None and show_user:
             data["user"] = self.user.to_dict()
@@ -103,6 +99,8 @@ class LogEntryModel(Base):
         log = cls.generate_log(
             alert, endpoint, description, session.query(UserModel).all(), user
         )
+        if user is not None:
+            log.operation = OperationModel.get_current_operation()
         session.add(log)
         session.commit()
         return log

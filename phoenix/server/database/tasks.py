@@ -34,10 +34,10 @@ class TaskModel(Base):
     description: str = Column(Text)
     type: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default=dict)
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    finished_at: datetime = Column(DateTime, onupdate=datetime.now)
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
+    created_at: datetime = Column(DateTime, default=datetime.now)
+    finished_at: datetime = Column(DateTime, onupdate=datetime.now)
     device_id: int = Column(Integer, ForeignKey("Devices.id"))
     device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
 
@@ -52,9 +52,9 @@ class TaskModel(Base):
             "description": self.description,
             "type": self.type,
             "args": self.args,
+            "success": self.success,
             "created_at": self.created_at,
             "finished_at": self.finished_at,
-            "success": self.success,
             "output": self.output,
             "device": self.device.to_dict(commander)
             if show_device and self.device is not None

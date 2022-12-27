@@ -1,13 +1,10 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenix.server.commander import Commander
-from phoenix.server.database import (ListenerModel, LogEntryModel,
-                                               Session)
-from phoenix.server.utils.misc import (get_network_interfaces,
-                                                 get_platform)
+from phoenix.server.database import ListenerModel, LogEntryModel, Session, UserModel
+from phoenix.server.utils.misc import get_network_interfaces, get_platform
 from phoenix.server.utils.ui import log
-from phoenix.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
@@ -18,7 +15,7 @@ def listeners_bp(commander: Commander):
     listeners_bp = Blueprint(ENDPOINT, __name__, url_prefix="/listeners")
 
     @listeners_bp.route("/", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
         listener_query = Session.query(ListenerModel)
@@ -38,7 +35,7 @@ def listeners_bp(commander: Commander):
         )
 
     @listeners_bp.route("/available", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_available():
         listeners = {}
         type = request.args.get("type")
@@ -56,7 +53,7 @@ def listeners_bp(commander: Commander):
             return jsonify(listeners)
 
     @listeners_bp.route("/add", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_add():
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -92,7 +89,7 @@ def listeners_bp(commander: Commander):
             "listeners",
             f"Added listener '{listener.name}' ({listener.type})",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         if use_json:
             return (
@@ -110,7 +107,7 @@ def listeners_bp(commander: Commander):
         )
 
     @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])
-    @authorized
+    @UserModel.authorized
     def delete_remove(id: int):
         # Get request data
         stop = request.form.get("stop", "").lower() != "false"
@@ -132,13 +129,13 @@ def listeners_bp(commander: Commander):
             "listeners",
             status,
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         return generate_response("success", status, ENDPOINT)
 
     @listeners_bp.route("/edit", methods=["PUT", "POST"])
     @listeners_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
-    @authorized
+    @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data
         form_data = dict(request.form)
@@ -164,12 +161,12 @@ def listeners_bp(commander: Commander):
             "listeners",
             f"Edited listener '{listener.name}' ({listener.type})",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_start(id: int):
         # Check if listener exists
         listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
@@ -177,7 +174,7 @@ def listeners_bp(commander: Commander):
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
-        log(f"({get_current_user().username}) Starting Listener with ID {id}", "info")
+        log(f"({UserModel.get_current_user().username}) Starting Listener with ID {id}", "info")
 
         try:
             status = listener.start(commander)
@@ -187,7 +184,7 @@ def listeners_bp(commander: Commander):
                 "listeners",
                 status,
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             return generate_response("danger", str(e), ENDPOINT, 400)
         else:
@@ -196,12 +193,12 @@ def listeners_bp(commander: Commander):
                 "listeners",
                 status,
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             return generate_response("success", status, ENDPOINT)
 
     @listeners_bp.route("/<int:id>/stop", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_stop(id: int):
         # Check if listener exists
         listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
@@ -209,7 +206,7 @@ def listeners_bp(commander: Commander):
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
-        log(f"({get_current_user().username}) Stopping Listener with ID {id}", "info")
+        log(f"({UserModel.get_current_user().username}) Stopping Listener with ID {id}", "info")
 
         try:
             listener.stop(commander)
@@ -221,21 +218,21 @@ def listeners_bp(commander: Commander):
                 "listeners",
                 f"Stopped listener '{listener.name}' ({listener.type})",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             return generate_response(
                 "success", f"Stopped Listener with ID {id}", ENDPOINT
             )
 
     @listeners_bp.route("/<int:id>/restart", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_restart(id: int):
         # Check if listener exists
         listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
 
         try:
             log(
-                f"({get_current_user().username}) Restarting listener with ID {id}.",
+                f"({UserModel.get_current_user().username}) Restarting listener with ID {id}.",
                 "info",
             )
             listener.restart(commander)
@@ -245,7 +242,7 @@ def listeners_bp(commander: Commander):
                 "listeners",
                 f"Failed to restart listener '{listener.name}' ({listener.type}): {str(e)}",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
@@ -254,7 +251,7 @@ def listeners_bp(commander: Commander):
                 "listeners",
                 f"Restarted listener '{listener.name}' ({listener.type})",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             return generate_response(
                 "success", f"Restarted listener with ID {id}", ENDPOINT

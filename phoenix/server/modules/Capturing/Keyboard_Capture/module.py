@@ -1,6 +1,5 @@
 from phoenix.server.modules.base import BaseModule
-from phoenix.server.utils.options import (IntegerType, Option,
-                                                    OptionPool)
+from phoenix.server.utils.options import IntegerType, Option, OptionPool
 
 
 class Module(BaseModule):

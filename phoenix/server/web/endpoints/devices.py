@@ -1,14 +1,9 @@
-import os
-
-from flask import (Blueprint, jsonify, render_template, request,
-                   send_from_directory)
+from flask import Blueprint, jsonify, render_template, request
 
 from phoenix.server.commander import Commander
-from phoenix.server.database import (DeviceModel, LogEntryModel,
-                                               Session, TaskModel)
-from phoenix.server.utils.resources import get_resource
-from phoenix.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix.server.database import (DeviceModel, LogEntryModel, Session,
+                                     TaskModel, UserModel)
+from phoenix.server.utils.web import generate_response
 
 TASK_CREATED = "Task created."
 DEVICE_DOES_NOT_EXIST = "Device does not exist."
@@ -18,7 +13,7 @@ def devices_bp(commander: Commander):
     devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
 
     @devices_bp.route("/", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_devices():
         use_json = request.args.get("json", "").lower() == "true"
         device_query = Session.query(DeviceModel)
@@ -31,7 +26,7 @@ def devices_bp(commander: Commander):
         )
 
     @devices_bp.route("/<string:id>/clear", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_clear_devices(id: str = "all"):
         count = 0
         for device in (
@@ -49,12 +44,12 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Cleared {count} devices.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
     @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_reverse_shell(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         address = request.form.get("address")
@@ -77,7 +72,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created reverse shell task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -85,7 +80,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/rce", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_rce(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         cmd = request.form.get("cmd")
@@ -107,7 +102,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created remote command execution task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -115,7 +110,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/info", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_infos(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
 
@@ -136,7 +131,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created get infos task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -144,7 +139,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/dir", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_dir(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         directory = request.args.get("dir")
@@ -166,7 +161,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created list directory contents task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -174,7 +169,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/upload", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_upload(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         target_path = request.args.get("path")
@@ -204,7 +199,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created upload task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -212,7 +207,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/download", methods=["GET"])
-    @authorized
+    @UserModel.authorized
     def get_download(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         target_path = request.args.get("path")
@@ -236,7 +231,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created download task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)
@@ -244,7 +239,7 @@ def devices_bp(commander: Commander):
                 return generate_response("success", TASK_CREATED, "devices")
 
     @devices_bp.route("/<int:id>/module", methods=["POST"])
-    @authorized
+    @UserModel.authorized
     def post_execute_module(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         path = request.form.get("path")
@@ -278,7 +273,7 @@ def devices_bp(commander: Commander):
                 "devices",
                 f"Created module execution task for '{device.name}'.",
                 Session,
-                get_current_user(),
+                UserModel.get_current_user(),
             )
             if use_json:
                 return task.to_dict(commander, False)

@@ -1,5 +1,4 @@
 import platform
-from typing import TYPE_CHECKING
 from uuid import uuid1
 
 import netifaces
@@ -28,6 +27,7 @@ def get_platform() -> str:
         return "osx"
     else:
         return "unknown"
+
 
 def generate_name() -> str:
     """Generate a random name"""

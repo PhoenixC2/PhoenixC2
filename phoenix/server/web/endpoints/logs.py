@@ -1,21 +1,19 @@
 from flask import Blueprint, jsonify, redirect, render_template, request
 
-from phoenix.server.database import LogEntryModel, Session
-from phoenix.server.utils.web import (admin, authorized,
-                                                generate_response,
-                                                get_current_user)
+from phoenix.server.database import LogEntryModel, Session, UserModel
+from phoenix.server.utils.web import generate_response
 
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 
 
 @logs_bp.route("/", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_logs():
     use_json = request.args.get("json", "").lower() == "true"
     logentry_query = Session.query(LogEntryModel)
     logs: list[LogEntryModel] = logentry_query.all()
-    get_current_user().read_all_logs()  # mark all logs as seen
+    UserModel.get_current_user().read_all_logs()  # mark all logs as seen
     Session.commit()
     opened_log = logentry_query.filter_by(id=request.args.get("open")).first()
     if use_json:
@@ -28,10 +26,10 @@ def get_logs():
 
 
 @logs_bp.route("/read", methods=["GET"])
-@authorized
+@UserModel.authorized
 def read_logs():
     use_json = request.args.get("json", "").lower() == "true"
-    user = get_current_user()
+    user = UserModel.get_current_user()
     logs = user.unseen_logs
     user.read_all_logs()
     Session.commit()
@@ -41,7 +39,7 @@ def read_logs():
 
 
 @logs_bp.route("/<string:id>/clear", methods=["POST"])
-@admin
+@UserModel.admin_required
 def post_clear_devices(id: str = "all"):
     count = 0
 
@@ -56,6 +54,10 @@ def post_clear_devices(id: str = "all"):
     Session.commit()
     if count > 0:
         LogEntryModel.log(
-            "info", "logs", f"Cleared {count} logs.", Session, get_current_user()
+            "info",
+            "logs",
+            f"Cleared {count} logs.",
+            Session,
+            UserModel.get_current_user(),
         )
     return generate_response("success", f"Cleared {count} log entries.", "logs")

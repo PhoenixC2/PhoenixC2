@@ -3,18 +3,15 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String)
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from .base import Base
-
+from .operations import OperationModel
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
-
     from .listeners import ListenerModel
-    from .operations import OperationModel
     from .stagers import StagerModel
     from .tasks import TaskModel
 
@@ -41,9 +38,16 @@ class DeviceModel(Base):
     last_online: datetime = Column(DateTime, default=datetime.now)
     stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
     stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
-    operation_id: int = Column(Integer, ForeignKey("Operations.id"))
+    operation_id: int = Column(
+        Integer,
+        ForeignKey("Operations.id"),
+        default=lambda: OperationModel.get_current_operation().id
+        if OperationModel.get_current_operation() is not None
+        else None,
+    )
     operation: "OperationModel" = relationship(
-        "OperationModel", back_populates="devices"
+        "OperationModel",
+        back_populates="devices",
     )
     tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
 
@@ -68,12 +72,12 @@ class DeviceModel(Base):
             "user": self.user,
             "admin": self.admin,
             "infos": self.infos,
+            "connection_time": self.connection_time,
+            "last_online": self.last_online,
             "stager": self.stager.to_dict(commander) if show_stager else self.stager.id,
             "tasks": [task.to_dict(commander) for task in self.tasks]
             if show_tasks
             else [task.id for task in self.tasks],
-            "connection_time": self.connection_time,
-            "last_online": self.last_online,
         }
         try:
             if commander is None:

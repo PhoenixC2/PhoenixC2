@@ -3,8 +3,7 @@ from flask import (Blueprint, flash, jsonify, redirect, render_template,
 
 from phoenix.server.database import LogEntryModel, Session, UserModel
 from phoenix.server.utils.ui import log
-from phoenix.server.utils.web import (authorized, generate_response,
-                                                get_current_user)
+from phoenix.server.utils.web import generate_response
 
 INVALID_CREDENTIALS = "Invalid username or password."
 TEMPLATE = "login.j2"
@@ -24,7 +23,7 @@ def post_login():
     password = request.form.get("password")
 
     if api_key is not None:
-        user = get_current_user()
+        user = UserModel.get_current_user()
         if user is not None:
             LogEntryModel.log("info", "auth", f"Logged in via API key.", Session, user)
             session["id"] = user.id
@@ -47,12 +46,12 @@ def post_login():
             "auth",
             f"Attempted to log in as disabled user {user}.",
             Session,
-            get_current_user(),
+            UserModel.get_current_user(),
         )
         flash("This user is disabled.", "danger")
         return render_template(TEMPLATE, username=username)
     if user.check_password(password):
-        old_user = get_current_user()
+        old_user = UserModel.get_current_user()
 
         if old_user is not None and old_user.username != username:
             session["id"] = user.id
@@ -60,7 +59,7 @@ def post_login():
             LogEntryModel.log(
                 "info",
                 "auth",
-                f"Logged in as {'admin' if user.admin else 'user'}  {user}.",
+                f"Logged in as {'admin' if user.admin_required else 'user'}  {user}.",
                 Session,
                 old_user,
             )
@@ -80,20 +79,20 @@ def post_login():
             LogEntryModel.log(
                 "info",
                 "auth",
-                f"Logged in as {'admin' if user.admin else 'user'} {user}.",
+                f"Logged in as {'admin' if user.admin_required else 'user'} {user}.",
                 Session,
                 user,
             )
             if not use_json:
                 flash(
-                    f"Logged in as {'admin' if user.admin else 'user'} {username}.",
+                    f"Logged in as {'admin' if user.admin_required else 'user'} {username}.",
                     "success",
                 )
                 return redirect("/")
             return jsonify(
                 {
                     "status": "success",
-                    "message": f"Logged in as {username} ({'admin' if user.admin else 'user'}).",
+                    "message": f"Logged in as {username} ({'admin' if user.admin_required else 'user'}).",
                     "api_key": user.api_key,
                 }
             )
@@ -109,9 +108,9 @@ def post_login():
 
 
 @auth_bp.route("/logout")
-@authorized
+@UserModel.authorized
 def logout():
-    user = get_current_user()
+    user = UserModel.get_current_user()
     LogEntryModel.log(
         "info",
         "auth",

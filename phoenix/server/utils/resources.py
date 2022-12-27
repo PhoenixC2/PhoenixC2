@@ -15,13 +15,9 @@ def get_resource(
 
     # check if file is given
     if file is not None:
-        resource = files("phoenix.server." + path.replace("/", ".")).joinpath(
-            file
-        )
+        resource = files("phoenix.server." + path.replace("/", ".")).joinpath(file)
     else:
-        resource = files("phoenix.server." + path.replace("/", ".")).joinpath(
-            ""
-        )
+        resource = files("phoenix.server." + path.replace("/", ".")).joinpath("")
 
     # check if file or directory exists if skip_file_check is False
     if os.path.exists(str(resource)) or skip_file_check:

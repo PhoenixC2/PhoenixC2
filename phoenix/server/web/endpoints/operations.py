@@ -1,10 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, render_template, request
 
-from phoenix.server.database import OperationModel, Session
-from phoenix.server.utils.web import (admin, authorized,
-                                                generate_response,
-                                                get_current_user,
-                                                render_template)
+from phoenix.server.database import OperationModel, Session, UserModel
+from phoenix.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."
@@ -12,11 +9,12 @@ ENDPOINT = "operations"
 
 operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 
+
 @operations_bp.route("/", methods=["GET"])
-@authorized
+@UserModel.authorized
 def get_operations():
     use_json = request.args.get("json", "").lower() == "true"
-    curr_user = get_current_user()
+    curr_user = UserModel.get_current_user()
     operation_query = Session.query(OperationModel)
     operations: list[OperationModel] = operation_query.all()
     opened_operation = operation_query.filter_by(id=request.args.get("open")).first()
@@ -39,7 +37,9 @@ def get_operations():
         opened_operation=opened_operation,
     )
 
+
 @operations_bp.route("/add", methods=["POST"])
-@admin
+@UserModel.admin_required
 def add_operation():
-    
+    # not implemented yet
+    pass

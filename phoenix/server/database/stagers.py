@@ -11,11 +11,11 @@ from sqlalchemy.orm import Session, relationship
 from phoenix.server import AVAILABLE_KITS
 
 from .base import Base
+from .operations import OperationModel
 
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
-    from phoenix.server.kits.base_stager import (BasePayload,
-                                                           BaseStager)
+    from phoenix.server.kits.base_stager import BasePayload, BaseStager
 
     from .devices import DeviceModel
     from .listeners import ListenerModel
