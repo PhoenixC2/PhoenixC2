@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 
 from .base import Base
 from .operations import OperationModel
+from .engine import Session
 if TYPE_CHECKING:
     from phoenix.server.commander import Commander
     from .listeners import ListenerModel
@@ -117,10 +118,10 @@ class DeviceModel(Base):
             stager=stager,
         )
 
-    def delete(self, session):
+    def delete(self):
         """Delete the device and all unfinished tasks"""
-        session.delete(self)
+        Session.delete(self)
         for task in self.tasks:
             if not task.finished:
-                session.delete(task)
-        session.commit()
+                Session.delete(task)
+        Session.commit()

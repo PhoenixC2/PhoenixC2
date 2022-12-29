@@ -66,7 +66,7 @@ def add_user():
     if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("danger", "User already exists.", ENDPOINT, 403)
     try:
-        user = UserModel.add(username, password, admin, disabled, Session)
+        user = UserModel.add(username, password, admin, disabled)
     except ValueError as e:
         return generate_response("danger", str(e), ENDPOINT, 400)
 
@@ -79,7 +79,6 @@ def add_user():
         "success",
         "users",
         f"{'Admin' if user.admin_required else 'User'} {username} added.",
-        Session,
         UserModel.get_current_user(),
     )
 
@@ -112,18 +111,17 @@ def delete_user(id: int = None):
         return generate_response("danger", "Can't delete your own Account.", ENDPOINT)
 
     # Delete user
-    user.delete(Session)
+    user.delete()
 
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin_required else 'User'} {user.username} deleted.",
-        Session,
+        f"{'Admin' if user.admin else 'User'} {user.username} deleted.",
         current_user,
     )
     return generate_response(
         "success",
-        f"Deleted {'Admin' if user.admin_required else 'User'} {user.username}",
+        f"Deleted {'Admin' if user.admin else 'User'} {user.username}",
         ENDPOINT,
     )
 
@@ -162,7 +160,6 @@ def edit_user(id: int = None):
         "success",
         "users",
         f"{'Admin' if user.admin_required else 'User'} {user.username} edited.",
-        Session,
         current_user,
     )
     return generate_response("success", f"Edited user with ID {id}.", ENDPOINT)
@@ -196,7 +193,6 @@ def reset_api_key(id: int = None):
         "success",
         "users",
         f"{'Admin' if user.admin_required else 'User'} {user.username}'s API key reset.",
-        Session,
         current_user,
     )
     return generate_response(

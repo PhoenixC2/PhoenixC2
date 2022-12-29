@@ -85,7 +85,6 @@ class BaseListener:
                             "danger",
                             "devices",
                             f"Device '{handler.name}' disconnected.",
-                            Session,
                         )
                         self.remove_handler(handler)
             except Exception as e:

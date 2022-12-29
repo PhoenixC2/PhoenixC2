@@ -57,7 +57,6 @@ def post_clear_devices(id: str = "all"):
             "info",
             "logs",
             f"Cleared {count} logs.",
-            Session,
             UserModel.get_current_user(),
         )
     return generate_response("success", f"Cleared {count} log entries.", "logs")

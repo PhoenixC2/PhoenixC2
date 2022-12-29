@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
                         String)
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
 
 from phoenix.server import AVAILABLE_KITS
 
 from .base import Base
+from .engine import Session
 from .operations import OperationModel
 
 if TYPE_CHECKING:
@@ -158,9 +159,9 @@ class StagerModel(Base):
         )
 
     @classmethod
-    def add(cls, data: dict, session: Session) -> "StagerModel":
+    def add(cls, data: dict) -> "StagerModel":
         """Add a stager to the database"""
         stager = cls.create_from_data(data)
-        session.add(stager)
-        session.commit()
+        Session.add(stager)
+        Session.commit()
         return stager

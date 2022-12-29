@@ -36,14 +36,13 @@ def devices_bp(commander: Commander):
         ):
             if not device.connected:
                 count += 1
-                device.delete(Session)
+                device.delete()
         Session.commit()
         if count > 0:
             LogEntryModel.log(
                 "info",
                 "devices",
                 f"Cleared {count} devices.",
-                Session,
                 UserModel.get_current_user(),
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
@@ -71,7 +70,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created reverse shell task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -101,7 +99,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created remote command execution task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -130,7 +127,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created get infos task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -160,7 +156,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created list directory contents task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -198,7 +193,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created upload task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -230,7 +224,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created download task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:
@@ -272,7 +265,6 @@ def devices_bp(commander: Commander):
                 "info",
                 "devices",
                 f"Created module execution task for '{device.name}'.",
-                Session,
                 UserModel.get_current_user(),
             )
             if use_json:

@@ -36,7 +36,7 @@ class UserModel(Base):
     username: str = Column(String(50))
     password_hash: str = Column(Text)
     api_key: str = Column(String(30), nullable=False, default=lambda: str(uuid1()))
-    admin_required: bool = Column(Boolean)
+    admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(Boolean, default=False)
     last_login: datetime = Column(DateTime)
@@ -80,7 +80,7 @@ class UserModel(Base):
         return {
             "id": self.id,
             "username": self.username,
-            "admin": self.admin_required,
+            "admin": self.admin,
             "status": self.activity_status,
             "disabled": self.disabled,
             "last_login": self.last_login,
@@ -143,7 +143,6 @@ class UserModel(Base):
             log.seen_by_user(self)
 
         Session.delete(self)
-        Session.commit()
 
     def set_profile_picture(self, file: FileStorage) -> None:
         """Set the profile picture and save it"""
@@ -171,7 +170,7 @@ class UserModel(Base):
 
     @classmethod
     def add(
-        cls, username: str, password: str, admin: bool, disabled: bool, session: Session
+        cls, username: str, password: str, admin: bool, disabled: bool
     ) -> "UserModel":
         """Add a new user"""
         if len(username) > 50:
@@ -185,8 +184,7 @@ class UserModel(Base):
             disabled=disabled,
         )
         user.set_password(password)
-        session.add(user)
-        session.commit()
+        Session.add(user)
         return user
 
     @staticmethod

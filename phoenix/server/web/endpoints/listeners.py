@@ -81,14 +81,13 @@ def listeners_bp(commander: Commander):
         try:
             # has to be added again bc it got filtered out by options.validate_data(data)
             data["type"] = listener_type
-            listener = ListenerModel.add(data, Session)
+            listener = ListenerModel.add(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         LogEntryModel.log(
             "success",
             "listeners",
             f"Added listener '{listener.name}' ({listener.type})",
-            Session,
             UserModel.get_current_user(),
         )
         if use_json:
@@ -118,7 +117,7 @@ def listeners_bp(commander: Commander):
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
         name = listener.name
         type = listener.type
-        listener.delete(stop, commander, Session)
+        listener.delete(stop, commander)
         status = (
             f"Deleted and stopped listener '{name}' ({type})"
             if stop
@@ -128,7 +127,6 @@ def listeners_bp(commander: Commander):
             "success",
             "listeners",
             status,
-            Session,
             UserModel.get_current_user(),
         )
         return generate_response("success", status, ENDPOINT)
@@ -152,7 +150,7 @@ def listeners_bp(commander: Commander):
 
         # Edit listener
         try:
-            listener.edit(form_data, Session)
+            listener.edit(form_data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
@@ -160,7 +158,6 @@ def listeners_bp(commander: Commander):
             "success",
             "listeners",
             f"Edited listener '{listener.name}' ({listener.type})",
-            Session,
             UserModel.get_current_user(),
         )
         return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
@@ -183,7 +180,6 @@ def listeners_bp(commander: Commander):
                 "danger",
                 "listeners",
                 status,
-                Session,
                 UserModel.get_current_user(),
             )
             return generate_response("danger", str(e), ENDPOINT, 400)
@@ -192,7 +188,6 @@ def listeners_bp(commander: Commander):
                 "success",
                 "listeners",
                 status,
-                Session,
                 UserModel.get_current_user(),
             )
             return generate_response("success", status, ENDPOINT)
@@ -217,7 +212,6 @@ def listeners_bp(commander: Commander):
                 "success",
                 "listeners",
                 f"Stopped listener '{listener.name}' ({listener.type})",
-                Session,
                 UserModel.get_current_user(),
             )
             return generate_response(
@@ -241,7 +235,6 @@ def listeners_bp(commander: Commander):
                 "danger",
                 "listeners",
                 f"Failed to restart listener '{listener.name}' ({listener.type}): {str(e)}",
-                Session,
                 UserModel.get_current_user(),
             )
             return generate_response("danger", str(e), ENDPOINT, 500)
@@ -250,7 +243,6 @@ def listeners_bp(commander: Commander):
                 "success",
                 "listeners",
                 f"Restarted listener '{listener.name}' ({listener.type})",
-                Session,
                 UserModel.get_current_user(),
             )
             return generate_response(

@@ -132,7 +132,6 @@ def reset_table(table: str):
     Base.metadata.drop_all(engine, [models[table].__table__])
     Base.metadata.create_all(engine, [models[table].__table__])
     log(f"Reset {table}", "success")
-    Session.remove()
 
 
 def recreate_super_user():
@@ -140,7 +139,7 @@ def recreate_super_user():
     existing_admin: UserModel = Session.query(UserModel).first()
     if existing_admin is not None:
         log("Deleting current admin.", "info")
-        existing_admin.delete(Session)
+        existing_admin.delete()
         log("Deleted current admin.", "success")
     log("Creating new admin", "info")
     password = "".join(
@@ -154,7 +153,7 @@ def recreate_super_user():
     log("Admin user recreated.", "success")
     log(f"Credentials: phoenix:{password}", "info")
     log(f"API Key: '{admin.api_key}'", "info")
-    Session.remove()
+
 
 
 def reset_server(reset: bool = False):

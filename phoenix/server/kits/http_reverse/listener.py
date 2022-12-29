@@ -70,7 +70,6 @@ class Listener(BaseListener):
                     "error",
                     "listeners",
                     f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.",
-                    Session,
                 )
                 return "", 404
             try:
@@ -89,7 +88,6 @@ class Listener(BaseListener):
                         "error",
                         "listeners",
                         f"A Stager is trying to connect to '{self.db_entry.name}' but the stager id is invalid.",
-                        Session,
                     )
                     raise ValueError("Invalid Stager ID")
                 device = DeviceModel.generate_device(
@@ -146,8 +144,7 @@ class Listener(BaseListener):
             if task is None:
                 return "", 404
 
-            task.finish(output, success, Session)
-            Session.commit()
+            task.finish(output, success)
             return "", 200
 
         @self.api.route("/update/<string:name>", methods=["POST"])

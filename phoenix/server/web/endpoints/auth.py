@@ -25,7 +25,7 @@ def post_login():
     if api_key is not None:
         user = UserModel.get_current_user()
         if user is not None:
-            LogEntryModel.log("info", "auth", f"Logged in via API key.", Session, user)
+            LogEntryModel.log("info", "auth", f"Logged in via API key.", user)
             session["id"] = user.id
             session["password"] = user.password_hash
             return generate_response(
@@ -45,7 +45,6 @@ def post_login():
             "info",
             "auth",
             f"Attempted to log in as disabled user {user}.",
-            Session,
             UserModel.get_current_user(),
         )
         flash("This user is disabled.", "danger")
@@ -60,7 +59,6 @@ def post_login():
                 "info",
                 "auth",
                 f"Logged in as {'admin' if user.admin_required else 'user'}  {user}.",
-                Session,
                 old_user,
             )
             if not use_json:
@@ -80,7 +78,6 @@ def post_login():
                 "info",
                 "auth",
                 f"Logged in as {'admin' if user.admin_required else 'user'} {user}.",
-                Session,
                 user,
             )
             if not use_json:
@@ -115,7 +112,6 @@ def logout():
         "info",
         "auth",
         f"{'admin' if user.admin else 'User'} {user} logged out.",
-        Session,
         user,
     )
     session.clear()

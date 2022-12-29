@@ -8,7 +8,7 @@ from uuid import uuid1
 from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
                         String, Text)
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -16,6 +16,7 @@ from phoenix.server.modules import get_module
 from phoenix.server.utils.resources import get_resource
 
 from .base import Base
+from .engine import Session
 from .devices import DeviceModel
 from .logs import LogEntryModel
 
@@ -61,7 +62,7 @@ class TaskModel(Base):
             else self.device_id,
         }
 
-    def finish(self, output: str, success: bool, session: Session):
+    def finish(self, output: str, success: bool):
         """Update the Task to be finished.
         Still has to be committed!"""
         if self.type == "download" and success:
@@ -86,15 +87,14 @@ class TaskModel(Base):
                 "success",
                 "devices",
                 f"Task '{self.name}' finished successfully",
-                session,
             )
         else:
             LogEntryModel.log(
                 "danger",
                 "devices",
                 f"Task '{self.name}' finished with an error",
-                session,
             )
+        Session.commit()
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":

@@ -85,7 +85,7 @@ def stagers_bp(commander: Commander):
 
         # Add stager
         try:
-            stager = StagerModel.add(data, Session)
+            stager = StagerModel.add(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
@@ -93,7 +93,6 @@ def stagers_bp(commander: Commander):
             "success",
             "stagers",
             f"Created stager '{stager.name}' from Listener '{listener.name}'.",
-            Session,
             UserModel.get_current_user(),
         )
         if use_json:
@@ -129,7 +128,6 @@ def stagers_bp(commander: Commander):
             "success",
             "stagers",
             f"Deleted stager '{stager.name}' from Listener '{listener_name}'",
-            Session,
             UserModel.get_current_user(),
         )
         return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)

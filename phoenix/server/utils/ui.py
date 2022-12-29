@@ -83,6 +83,5 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
         "success",
         "devices",
         f"Device '{device.name}' connected to '{device.name}'.",
-        Session,
         log_to_cli=False,
     )

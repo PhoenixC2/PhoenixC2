@@ -41,5 +41,4 @@ def get_operations():
 @operations_bp.route("/add", methods=["POST"])
 @UserModel.admin_required
 def add_operation():
-    # not implemented yet
-    pass
+    OperationModel.add()

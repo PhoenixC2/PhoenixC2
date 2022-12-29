@@ -3,13 +3,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
 
 from phoenix.server.utils.ui import log as cli_log
 
 from .association import user_logentry_association_table
 from .base import Base
 from .users import UserModel
+from .engine import Session
 from .operations import OperationModel
 
 class LogEntryModel(Base):
@@ -89,7 +90,6 @@ class LogEntryModel(Base):
         alert: str,
         endpoint: str,
         description: str,
-        session: Session,
         user: "UserModel" = None,
         log_to_cli: bool = True,
     ) -> "LogEntryModel":
@@ -97,10 +97,10 @@ class LogEntryModel(Base):
         if log_to_cli:
             cli_log(f"({user if user is not None else 'System'}) {description}", alert)
         log = cls.generate_log(
-            alert, endpoint, description, session.query(UserModel).all(), user
+            alert, endpoint, description, Session.query(UserModel).all(), user
         )
         if user is not None:
             log.operation = OperationModel.get_current_operation()
-        session.add(log)
-        session.commit()
+        Session.add(log)
+        Session.commit()
         return log

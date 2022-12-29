@@ -99,22 +99,20 @@ class OperationModel(Base):
 
     def delete(
         self,
-        session: "Session",
         commander: "Commander",
         delete_elements: bool = False,
     ) -> None:
         """Delete the operation from the database."""
         if delete_elements:
             for device in self.devices:
-                device.delete(session)
+                device.delete()
             for listener in self.listeners:
-                listener.delete(True, commander, session)
+                listener.delete(True, commander)
             for log in self.logs:
-                session.delete(log)
+                Session.delete(log)
             for credential in self.credentials:
-                credential.delete(session)
-        session.delete(self)
-        session.commit()
+                Session.delete(credential)
+        Session.delete(self)
 
     @classmethod
     def add(
@@ -133,8 +131,6 @@ class OperationModel(Base):
             subnets=subnets,
             owner=owner,
         )
-        operation.session.add(operation)
-        operation.session.commit()
         return operation
 
     def assign_user(self, user: "UserModel") -> None:

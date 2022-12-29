@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import relationship
+from .engine import Session
 
 from phoenix.server import AVAILABLE_KITS
 
@@ -143,12 +144,12 @@ class ListenerModel(Base):
         time.sleep(2)
         self.start(commander)
 
-    def delete_stagers(self, session: Session):
+    def delete_stagers(self):
         """Delete all stagers"""
         for stager in self.stagers:
-            session.delete(stager)
+            Session.delete(stager)
 
-    def edit(self, data: dict, session: Session):
+    def edit(self, data: dict):
         """Edit the listener"""
         options = (
             self.listener_class.options
@@ -173,7 +174,13 @@ class ListenerModel(Base):
                     self.options[key] = value
                 else:
                     raise KeyError(f"{key} is not a valid key")
-        session.commit()
+
+    def delete(self, stop: bool, commander: "Commander"):
+        """Delete the listener"""
+        if stop and self.is_active(commander):
+            self.stop(commander)
+        self.delete_stagers()
+        Session.delete(self)
 
     def create_object(self, commander: "Commander") -> "BaseListener":
         """Create the Listener Object"""
@@ -201,17 +208,8 @@ class ListenerModel(Base):
     def add(
         cls,
         data: dict,
-        session: Session,
     ) -> "ListenerModel":
         """Add a listener to the database"""
         listener = cls.create_from_data(data)
-        session.add(listener)
+        Session.add(listener)
         return listener
-
-    def delete(self, stop: bool, commander: "Commander", session: Session):
-        """Delete the listener"""
-        if stop and self.is_active(commander):
-            self.stop(commander)
-        self.delete_stagers(session)
-        session.delete(self)
-        session.commit()

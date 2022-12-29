@@ -38,7 +38,6 @@ def tasks_bp(commander: Commander):
                 "info",
                 "tasks",
                 f"Cleared {count} tasks.",
-                Session,
                 UserModel.get_current_user(),
             )
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
