@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="phoenix",
+    name="phoenixc2",
     version="1.0",
     author="Screamz2k",
     description="A C2 Framework for Red Team Operations",
