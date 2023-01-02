@@ -11,7 +11,7 @@ from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import LogEntryModel, Session
 from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.web.endpoints import *
-from phoenixc2.server.database import UserModel
+from phoenixc2.server.database import UserModel, OperationModel
 
 # disable flask logging
 
@@ -45,11 +45,15 @@ def create_web(commander: Commander) -> Flask:
 
     @web_server.context_processor
     def inject_messages():
-        return dict(messages=[
-        log
-        for log in Session.query(LogEntryModel).all()
-        if UserModel.get_current_user() in log.unseen_users
-    ])
+        return dict(
+            messages=[
+                log for log in Session.query(LogEntryModel).all() if UserModel.get_current_user() in log.unseen_users
+            ]
+        )
+
+    @web_server.context_processor
+    def inject_operation():
+        return dict(current_operation=OperationModel.get_current_operation())
 
     @web_server.context_processor
     def utility_processor():

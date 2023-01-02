@@ -82,7 +82,7 @@ class StagerModel(Base):
             raise ValueError(f"Stager '{type}' isn't available.")
         try:
             stager = importlib.import_module(
-                "phoenix.server.kits." + type.replace("-", "_") + ".stager"
+                "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
             ).Stager
         except ModuleNotFoundError as e:
             raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e

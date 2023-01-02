@@ -15,10 +15,12 @@ users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 @UserModel.authorized
 def get_users():
     use_json = request.args.get("json", "").lower() == "true"
+    opened_user = (
+        Session.query(UserModel).filter_by(id=request.args.get("open")).first()
+    )
     curr_user = UserModel.get_current_user()
-    user_query = Session.query(UserModel)
-    users: list[UserModel] = user_query.all()
-    opened_user = user_query.filter_by(id=request.args.get("open")).first()
+    users: list[UserModel] = Session.query(UserModel).all()
+
     if use_json:
         data = [user.to_dict() for user in users]
         if curr_user.admin:
@@ -100,10 +102,10 @@ def delete_user(id: int = None):
     if user is None:
         return generate_response("danger", "User doesn't exist.", ENDPOINT, 400)
 
-    # Check if user is head admin
+    # Check if it's the super user
     if user.id == 1:
         return generate_response(
-            "danger", "Can't delete the head admin.", ENDPOINT, 403
+            "danger", "Can't delete the super user.", ENDPOINT, 403
         )
 
     # Check if user is the operator

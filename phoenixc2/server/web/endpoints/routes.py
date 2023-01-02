@@ -3,15 +3,10 @@ from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template
 
-from phoenixc2.server.database import DeviceModel, Session, TaskModel, UserModel
+from phoenixc2.server.database import DeviceModel, Session, UserModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
-
-import json
-
-json.dumps
-
 
 def routes_bp(commander: "Commander") -> Blueprint:
 

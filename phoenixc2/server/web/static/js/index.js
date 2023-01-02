@@ -82,7 +82,7 @@ function sendEdit() {
 
 function readNotifications() {
     // send data
-    fetch("/logs?json=true", {
+    fetch("/logs/read?json=true", {
         method: "GET"
     }).then(response => response.json())
         .then(data => {

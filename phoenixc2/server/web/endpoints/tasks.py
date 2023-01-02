@@ -13,11 +13,10 @@ def tasks_bp(commander: Commander):
     @UserModel.authorized
     def get_tasks():
         use_json = request.args.get("json", "") == "true"
-        task_query = Session.query(TaskModel)
-        tasks: list[TaskModel] = task_query.all()
+        opened_task = Session.query(TaskModel).filter_by(id=request.args.get("open")).first()
+        tasks: list[TaskModel] = Session.query(TaskModel).all()
         if use_json:
             return jsonify([task.to_dict(commander) for task in tasks])
-        opened_task = task_query.filter_by(id=request.args.get("open")).first()
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
 
     @tasks_bp.route("/<string:id>/clear", methods=["POST"])

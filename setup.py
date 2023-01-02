@@ -39,8 +39,8 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pfserver=phoenix.server.__main__:main",
-            "pfclient=phoenix.client.__main__:main",
+            "pfserver=phoenixc2.server.__main__:main",
+            "pfclient=phoenixc2.client.__main__:main",
         ]
     },
 )

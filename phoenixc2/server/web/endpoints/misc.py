@@ -2,7 +2,7 @@ import os
 
 from flask import Blueprint, jsonify, send_from_directory
 
-import phoenix.server as avl
+import phoenixc2.server as avl
 from phoenixc2.server.database import UserModel
 from phoenixc2.server.modules import get_all_module_paths
 from phoenixc2.server.utils.misc import get_network_interfaces, version

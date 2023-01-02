@@ -17,7 +17,7 @@ port = 3306
 database = "PhoenixFramework"
 
 [logging]
-location = "/Data/phoenix.log"
+location = "/data/phoenix.log"
 enabled = false
 
 [plugins]

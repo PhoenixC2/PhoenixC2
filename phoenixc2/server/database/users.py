@@ -15,9 +15,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.web import generate_response
 
-from .association import (user_logentry_association_table,
-                          user_operation_assignment_table,
-                          user_operation_owner_table)
+from .association import (
+    user_logentry_association_table,
+    user_operation_assignment_table,
+)
 from .base import Base
 from .engine import Session
 
@@ -55,7 +56,7 @@ class UserModel(Base):
         back_populates="assigned_users",
     )
     owned_operations: list["OperationModel"] = relationship(
-        "OperationModel", back_populates="owner", secondary=user_operation_owner_table
+        "OperationModel", back_populates="owner"
     )
 
     def set_password(self, password: str):
@@ -138,10 +139,7 @@ class UserModel(Base):
             os.remove(
                 str(get_resource("data/pictures", self.username, skip_file_check=True))
             )
-
-        for log in self.unseen_logs:
-            log.seen_by_user(self)
-
+        self.read_all_logs()
         Session.delete(self)
 
     def set_profile_picture(self, file: FileStorage) -> None:
@@ -163,10 +161,13 @@ class UserModel(Base):
             else get_resource("web/static/images", "icon.png")
         )
 
-    def read_all_logs(self) -> None:
+    def read_all_logs(self) -> list["LogEntryModel"]:
         """Read all logs"""
+        logs = []
         for log in self.unseen_logs:
             log.seen_by_user(self)
+            logs.append(log)
+        return logs
 
     @classmethod
     def add(
@@ -216,13 +217,13 @@ class UserModel(Base):
             user = UserModel.get_current_user()
             if user is None:
                 return generate_response(
-                    "error", "You have to login.", AUTH_ENDPOINT, 401
+                    "danger", "You have to login.", AUTH_ENDPOINT, 401
                 )
             else:
                 if user.disabled:
                     session.clear()
                     return generate_response(
-                        "error", "Your account is disabled.", AUTH_ENDPOINT, 401
+                        "danger", "Your account is disabled.", AUTH_ENDPOINT, 401
                     )
                 user.last_activity = datetime.now()
                 Session.commit()

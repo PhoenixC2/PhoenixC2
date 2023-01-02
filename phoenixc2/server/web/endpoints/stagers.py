@@ -3,8 +3,13 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (ListenerModel, LogEntryModel, Session,
-                                     StagerModel, UserModel)
+from phoenixc2.server.database import (
+    ListenerModel,
+    LogEntryModel,
+    Session,
+    StagerModel,
+    UserModel,
+)
 from phoenixc2.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
@@ -20,13 +25,14 @@ def stagers_bp(commander: Commander):
     @UserModel.authorized
     def get_stagers():
         use_json = request.args.get("json", "") == "true"
-        stager_query = Session.query(StagerModel)
-        stagers: list[StagerModel] = stager_query.all()
+        opened_stager = (
+            Session.query(StagerModel).filter_by(id=request.args.get("open")).first()
+        )
+        stagers: list[StagerModel] = Session.query(StagerModel).all()
         stager_types = StagerModel.get_all_classes()
         listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         if use_json:
             return jsonify([stager.to_dict(commander) for stager in stagers])
-        opened_stager = stager_query.filter_by(id=request.args.get("open")).first()
         return render_template(
             "stagers.j2",
             stagers=stagers,
@@ -137,6 +143,7 @@ def stagers_bp(commander: Commander):
     @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data
+        use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
         if id is None:
             if form_data.get("id") is None:
@@ -163,7 +170,17 @@ def stagers_bp(commander: Commander):
             Session,
             UserModel.get_current_user(),
         )
-        return generate_response("success", f"Edited stager with ID {id}.", ENDPOINT)
+        if use_json:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Stager edited successfully.",
+                    "stager": stager.to_dict(commander),
+                }
+            )
+        return generate_response(
+            "success", f"Successfully edited stager '{stager.name}'.", ENDPOINT
+        )
 
     @stagers_bp.route("/<int:id>/download", methods=["GET"])
     def get_download(id: int):

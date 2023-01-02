@@ -135,7 +135,7 @@ def reset_table(table: str):
 
 
 def recreate_super_user():
-    """Recreate the head admin."""
+    """Recreate the super user."""
     existing_admin: UserModel = Session.query(UserModel).first()
     if existing_admin is not None:
         log("Deleting current admin.", "info")
@@ -150,7 +150,7 @@ def recreate_super_user():
     admin.set_password(password)
     Session.add(admin)
     Session.commit()
-    log("Admin user recreated.", "success")
+    log("Super user recreated.", "success")
     log(f"Credentials: phoenix:{password}", "info")
     log(f"API Key: '{admin.api_key}'", "info")
 

@@ -1,19 +1,20 @@
 """The Log Entries Model"""
-from datetime import datetime
+import ipaddress
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from flask import request
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, Integer, String, Text, ForeignKey, JSON
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 
 from phoenixc2.server.utils.web import generate_html_from_markdown
 
-from .association import (user_operation_assignment_table,
-                          user_operation_owner_table)
+from .association import user_operation_assignment_table
 from .base import Base
 from .users import UserModel
 from .engine import Session
+
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
     from sqlalchemy.orm import Session as SessionType
@@ -27,18 +28,19 @@ class OperationModel(Base):
     """The Operation Model"""
 
     __tablename__ = "Operations"
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String(100))
-    description = Column(Text)
-    expiry: datetime = Column(DateTime)
-    description: str = Column(Text)
-    subnets: list[str] = Column(MutableList.as_mutable(Text), default=[])
+    id: int = Column(Integer, primary_key=True, nullable=False)
+    name: str = Column(String(100), nullable=False)
+    description: str = Column(Text, default="")
+    expiry: datetime = Column(
+        DateTime, default=lambda: datetime.today() + timedelta(days=30)
+    )
+    subnets: list[str] = Column(MutableList.as_mutable(JSON), default=[])
     created_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, onupdate=datetime.now)
+    owner_id: int = Column(Integer, ForeignKey("Users.id"), nullable=False)
     owner: "UserModel" = relationship(
         "UserModel",
         back_populates="owned_operations",
-        secondary=user_operation_owner_table,
     )
     assigned_users: list["UserModel"] = relationship(
         "UserModel",
@@ -94,7 +96,6 @@ class OperationModel(Base):
             "logs": [log.to_dict() for log in self.logs]
             if show_logs
             else [log.id for log in self.logs],
-
         }
 
     def delete(
@@ -113,6 +114,45 @@ class OperationModel(Base):
             for credential in self.credentials:
                 Session.delete(credential)
         Session.delete(self)
+
+    def assign_user(self, user: "UserModel") -> None:
+        """Assign a user to the operation."""
+        self.assigned_users.append(user)
+
+    def unassign_user(self, user: "UserModel") -> None:
+        """Unassign a user from the operation."""
+        self.assigned_users.remove(user)
+
+    def add_subnet(self, subnet: str) -> None:
+        """Add a subnet to the operation."""
+        try:
+            ipaddress.ip_network(subnet)
+        except ValueError:
+            raise ValueError("Invalid Subnet")
+        else:
+            self.subnets.append(subnet)
+
+    def remove_subnet(self, subnet: str) -> None:
+        """Remove a subnet from the operation."""
+        self.subnets.remove(subnet)
+    def edit(self, data: dict) -> None:
+        """Edit the operation."""
+        for key, value in data.items():
+            if key == "name":
+                self.name = value
+            elif key == "description":
+                try:
+                    generate_html_from_markdown(value)
+                except SyntaxError:
+                    raise ValueError("Invalid Markdown")
+                else:
+                    self.description = value
+            elif key == "expiry":
+                self.expiry = value
+            elif key == "subnets":
+                self.subnets = value
+            else:
+                raise ValueError(f"Invalid Change: {key}")
 
     @classmethod
     def add(
@@ -133,39 +173,19 @@ class OperationModel(Base):
         )
         return operation
 
-    def assign_user(self, user: "UserModel") -> None:
-        """Assign a user to the operation."""
-        self.assigned_users.append(user)
-
-    def unassign_user(self, user: "UserModel") -> None:
-        """Unassign a user from the operation."""
-        self.assigned_users.remove(user)
-
-    def edit(self, data: dict) -> None:
-        """Edit the operation."""
-        for key, value in data.items():
-            if key == "name":
-                self.name = value
-            elif key == "description":
-                try:
-                    generate_html_from_markdown(value)
-                except SyntaxError:
-                    raise ValueError("Invalid Markdown")
-                else:
-                    self.description = value
-            elif key == "expiry":
-                self.expiry = value
-            elif key == "subnets":
-                self.subnets = value
-
     @staticmethod
     def get_current_operation() -> "OperationModel":
         """Get the current operation and check if the user is assigned to it."""
-        operation = Session.query(OperationModel).filter_by(
-            id=request.cookies.get("operation")
-        ).first()
+        operation = (
+            Session.query(OperationModel)
+            .filter_by(id=request.cookies.get("operation"))
+            .first()
+        )
 
-        if operation is not None and UserModel.get_current_user() in operation.assigned_users:
+        if (
+            operation is not None
+            and UserModel.get_current_user() in operation.assigned_users
+        ):
             return operation
         else:
             return None

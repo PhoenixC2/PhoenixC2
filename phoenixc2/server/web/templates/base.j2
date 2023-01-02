@@ -36,7 +36,11 @@
     <div class="sidebar" data-color="orange" data-background-color="black" data-image="/static/images/icon.png">
       <div class="logo">
         <a href="/" class="simple-text logo-normal">
+          {% if current_operation %}
+          PhoenixC2 | {{ current_operation.name }}
+          {% else %}
           PhoenixC2
+          {% endif %}
         </a>
       </div>
       <div class="sidebar-wrapper">

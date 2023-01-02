@@ -1,5 +1,5 @@
 """The association table between different models."""
-from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy import Column, ForeignKey, Table, String
 
 from .base import Base
 
@@ -17,9 +17,3 @@ user_operation_assignment_table = Table(
     Column("user_id", ForeignKey("Users.id"), primary_key=True),
 )
 
-user_operation_owner_table = Table(
-    "operation_user_owner",
-    Base.metadata,
-    Column("operation_id", ForeignKey("Operations.id"), primary_key=True),
-    Column("user_id", ForeignKey("Users.id"), primary_key=True),
-)

@@ -16,11 +16,10 @@ def devices_bp(commander: Commander):
     @UserModel.authorized
     def get_devices():
         use_json = request.args.get("json", "").lower() == "true"
-        device_query = Session.query(DeviceModel)
-        devices: list[DeviceModel] = device_query.all()
+        opened_device = Session.query(DeviceModel).filter_by(id=request.args.get("open")).first()
+        devices: list[DeviceModel] = Session.query(DeviceModel).all()
         if use_json:
             return jsonify([device.to_dict(commander) for device in devices])
-        opened_device = device_query.filter_by(id=request.args.get("open")).first()
         return render_template(
             "devices.j2", devices=devices, opened_device=opened_device
         )

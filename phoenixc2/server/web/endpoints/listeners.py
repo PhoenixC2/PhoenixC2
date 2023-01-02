@@ -18,12 +18,13 @@ def listeners_bp(commander: Commander):
     @UserModel.authorized
     def get_listeners():
         use_json = request.args.get("json", "").lower() == "true"
-        listener_query = Session.query(ListenerModel)
+        opened_listener = (
+            Session.query(ListenerModel).filter_by(id=request.args.get("open")).first()
+        )
         listener_types = ListenerModel.get_all_classes()
-        listeners: list[ListenerModel] = listener_query.all()
+        listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         if use_json:
             return jsonify([listener.to_dict(commander) for listener in listeners])
-        opened_listener = listener_query.filter_by(id=request.args.get("open")).first()
         return render_template(
             "listeners.j2",
             listeners=listeners,
@@ -109,6 +110,7 @@ def listeners_bp(commander: Commander):
     @UserModel.authorized
     def delete_remove(id: int):
         # Get request data
+        use_json = request.args.get("json", "").lower() == "true"
         stop = request.form.get("stop", "").lower() != "false"
 
         # Check if listener exists
@@ -118,7 +120,7 @@ def listeners_bp(commander: Commander):
         name = listener.name
         type = listener.type
         listener.delete(stop, commander)
-        status = (
+        message = (
             f"Deleted and stopped listener '{name}' ({type})"
             if stop
             else f"Deleted listener '{name}' ({type})"
@@ -126,16 +128,25 @@ def listeners_bp(commander: Commander):
         LogEntryModel.log(
             "success",
             "listeners",
-            status,
+            message,
             UserModel.get_current_user(),
         )
-        return generate_response("success", status, ENDPOINT)
+        if use_json:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": message,
+                    "listener": listener.to_dict(commander),
+                }
+            )
+        return generate_response("success", message, ENDPOINT)
 
     @listeners_bp.route("/edit", methods=["PUT", "POST"])
     @listeners_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
     @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data
+        use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
         if id is None:
             if form_data.get("id") is None:
@@ -160,7 +171,17 @@ def listeners_bp(commander: Commander):
             f"Edited listener '{listener.name}' ({listener.type})",
             UserModel.get_current_user(),
         )
-        return generate_response("success", f"Edited listener with ID {id}.", ENDPOINT)
+        if use_json:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Listener edited successfully.",
+                    "listener": listener.to_dict(commander),
+                }
+            )
+        return generate_response(
+            "success", f"Edited Listener {listener.name} ({listener.type}).", ENDPOINT
+        )
 
     @listeners_bp.route("/<int:id>/start", methods=["POST"])
     @UserModel.authorized
@@ -171,7 +192,10 @@ def listeners_bp(commander: Commander):
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
-        log(f"({UserModel.get_current_user().username}) Starting Listener with ID {id}", "info")
+        log(
+            f"({UserModel.get_current_user().username}) Starting Listener with ID {id}",
+            "info",
+        )
 
         try:
             status = listener.start(commander)
@@ -201,7 +225,10 @@ def listeners_bp(commander: Commander):
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
-        log(f"({UserModel.get_current_user().username}) Stopping Listener with ID {id}", "info")
+        log(
+            f"({UserModel.get_current_user().username}) Stopping Listener with ID {id}",
+            "info",
+        )
 
         try:
             listener.stop(commander)
