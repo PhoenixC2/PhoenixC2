@@ -48,10 +48,10 @@ def add_operation():
         OperationModel.add(
             name, description, expiry, subnets, UserModel.get_current_user()
         )
-    except Exception as e:
+        Session.commit()
+    except TypeError as e:
         return generate_response("error", str(e), ENDPOINT)
 
-    Session.commit()
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -75,9 +75,9 @@ def edit_operation(operation_id: int):
 
     try:
         operation.edit(data)
+        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
-    Session.commit()
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -175,9 +175,9 @@ def add_subnet(operation_id: int):
         return generate_response("error", INVALID_ID, ENDPOINT)
     try:
         operation.add_subnet(subnet)
+        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
-    Session.commit()
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -199,9 +199,9 @@ def remove_subnet(operation_id: int):
         return generate_response("error", INVALID_ID, ENDPOINT)
     try:
         operation.remove_subnet(subnet)
+        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
-    Session.commit()
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -210,3 +210,19 @@ def remove_subnet(operation_id: int):
     )
     return generate_response("success", f"Subnet '{subnet}' removed from '{operation.name}'.", ENDPOINT)
 
+
+@operations_bp.route("/<int:operation_id>/change", methods=["POST"])
+@UserModel.admin_required
+def change_operation(operation_id: int):
+    try:
+        operation = OperationModel.change_current_operation(operation_id)
+        Session.commit()
+    except Exception as e:
+        return generate_response("error", str(e), ENDPOINT)
+    LogEntryModel.log(
+        "success",
+        ENDPOINT,
+        f"Operation '{operation.name}' changed successfully.",
+        UserModel.get_current_user(),
+    )
+    return generate_response("success", f"Changed operation to '{operation.name}'.", ENDPOINT)

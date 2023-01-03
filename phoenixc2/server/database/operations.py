@@ -117,11 +117,13 @@ class OperationModel(Base):
 
     def assign_user(self, user: "UserModel") -> None:
         """Assign a user to the operation."""
-        self.assigned_users.append(user)
+        if user not in self.assigned_users:
+            self.assigned_users.append(user)
 
     def unassign_user(self, user: "UserModel") -> None:
         """Unassign a user from the operation."""
-        self.assigned_users.remove(user)
+        if user in self.assigned_users:
+            self.assigned_users.remove(user)
 
     def add_subnet(self, subnet: str) -> None:
         """Add a subnet to the operation."""
@@ -189,3 +191,18 @@ class OperationModel(Base):
             return operation
         else:
             return None
+
+    @staticmethod
+    def change_current_operation(operation_id: int) -> "OperationModel":
+        """Change the current operation."""
+        operation = Session.query(OperationModel).filter_by(id=operation_id).first()
+
+        if operation is not None:
+            raise ValueError("Operation does not exist")
+
+        if UserModel.get_current_user() not in operation.assigned_users:
+            raise ValueError("User not assigned to operation")
+        
+        request.cookies.add("operation", operation_id)
+        return operation
+

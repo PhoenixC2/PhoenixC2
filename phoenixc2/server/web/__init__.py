@@ -86,4 +86,5 @@ def create_web(commander: Commander) -> Flask:
     web_server.register_blueprint(misc_bp, url_prefix="/misc")
     web_server.register_blueprint(tasks_bp(commander), url_prefix="/tasks")
     web_server.register_blueprint(logs_bp, url_prefix="/logs")
+    web_server.register_blueprint(operations_bp, url_prefix="/operations")
     return web_server
