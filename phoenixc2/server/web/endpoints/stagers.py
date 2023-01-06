@@ -138,8 +138,7 @@ def stagers_bp(commander: Commander):
         )
         return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)
 
-    @stagers_bp.route("/edit", methods=["PUT", "POST"])
-    @stagers_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
+    @stagers_bp.route("/<int:id>/edit", methods=["PUT"])
     @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data

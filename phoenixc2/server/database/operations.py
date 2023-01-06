@@ -37,7 +37,14 @@ class OperationModel(Base):
     subnets: list[str] = Column(MutableList.as_mutable(JSON), default=[])
     created_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, onupdate=datetime.now)
-    owner_id: int = Column(Integer, ForeignKey("Users.id"), nullable=False)
+    owner_id: int = Column(
+        Integer,
+        ForeignKey("Users.id"),
+        nullable=False,
+        default=lambda: UserModel.get_current_user().id
+        if UserModel.get_current_user()
+        else None,
+    )
     owner: "UserModel" = relationship(
         "UserModel",
         back_populates="owned_operations",
@@ -73,10 +80,10 @@ class OperationModel(Base):
         show_logs: bool = False,
     ) -> dict:
         return {
-            "id": self.log_id,
-            "type": self.log_type,
-            "expiry": self.expiry,
+            "id": self.id,
+            "name": self.name,
             "description": self.description,
+            "expiry": self.expiry,
             "subnets": self.subnets,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -84,12 +91,12 @@ class OperationModel(Base):
             "users": [user.to_dict() for user in self.assigned_users]
             if show_assigned_users
             else [user.id for user in self.assigned_users],
-            "devices": [device.to_dict() for device in self.assigned_devices]
+            "devices": [device.to_dict() for device in self.devices]
             if show_devices
-            else [device.id for device in self.assigned_devices],
-            "listeners": [listener.to_dict() for listener in self.assigned_listeners]
+            else [device.id for device in self.devices],
+            "listeners": [listener.to_dict() for listener in self.listeners]
             if show_listeners
-            else [listener.id for listener in self.assigned_listeners],
+            else [listener.id for listener in self.listeners],
             "credentials": [credential.to_dict() for credential in self.credentials]
             if show_credentials
             else [credential.id for credential in self.credentials],
@@ -97,6 +104,49 @@ class OperationModel(Base):
             if show_logs
             else [log.id for log in self.logs],
         }
+
+    def assign_user(self, user: "UserModel") -> None:
+        """Assign a user to the operation."""
+        if user not in self.assigned_users:
+            self.assigned_users.append(user)
+
+    def unassign_user(self, user: "UserModel") -> None:
+        """Unassign a user from the operation."""
+        if user in self.assigned_users:
+            self.assigned_users.remove(user)
+
+    def add_subnet(self, subnet: str) -> None:
+        """Add a subnet to the operation."""
+        try:
+            ipaddress.ip_network(subnet)
+        except ValueError:
+            raise ValueError("Invalid subnet")
+        else:
+            self.subnets.append(subnet)
+
+    def remove_subnet(self, subnet: str) -> None:
+        """Remove a subnet from the operation."""
+        self.subnets.remove(subnet)
+
+    def edit(self, data: dict) -> None:
+        """Edit the operation."""
+        for key, value in data.items():
+            if key == "name":
+                self.name = value
+            elif key == "description":
+                try:
+                    generate_html_from_markdown(value)
+                except SyntaxError:
+                    raise ValueError("Invalid markdown")
+                else:
+                    self.description = value
+            elif key == "expiry":
+                try:
+                    self.expiry = datetime.strptime(value, "%Y-%m-%d")
+                except ValueError:
+                    raise ValueError("Invalid expiry date")
+            else:
+                raise ValueError(f"Invalid Change: {key}")
 
     def delete(
         self,
@@ -115,64 +165,23 @@ class OperationModel(Base):
                 Session.delete(credential)
         Session.delete(self)
 
-    def assign_user(self, user: "UserModel") -> None:
-        """Assign a user to the operation."""
-        if user not in self.assigned_users:
-            self.assigned_users.append(user)
-
-    def unassign_user(self, user: "UserModel") -> None:
-        """Unassign a user from the operation."""
-        if user in self.assigned_users:
-            self.assigned_users.remove(user)
-
-    def add_subnet(self, subnet: str) -> None:
-        """Add a subnet to the operation."""
-        try:
-            ipaddress.ip_network(subnet)
-        except ValueError:
-            raise ValueError("Invalid Subnet")
-        else:
-            self.subnets.append(subnet)
-
-    def remove_subnet(self, subnet: str) -> None:
-        """Remove a subnet from the operation."""
-        self.subnets.remove(subnet)
-    def edit(self, data: dict) -> None:
-        """Edit the operation."""
-        for key, value in data.items():
-            if key == "name":
-                self.name = value
-            elif key == "description":
-                try:
-                    generate_html_from_markdown(value)
-                except SyntaxError:
-                    raise ValueError("Invalid Markdown")
-                else:
-                    self.description = value
-            elif key == "expiry":
-                self.expiry = value
-            elif key == "subnets":
-                self.subnets = value
-            else:
-                raise ValueError(f"Invalid Change: {key}")
-
     @classmethod
     def add(
         cls,
         name: str,
         description: str,
-        expiry: datetime,
-        subnets: list[str],
-        owner: "UserModel",
+        expiry: datetime = None,
     ) -> "OperationModel":
         """Add a new operation to the database."""
         operation = cls(
             name=name,
             description=description,
-            expiry=expiry,
-            subnets=subnets,
-            owner=owner,
         )
+        if expiry is not None:
+            try:
+                operation.expiry = datetime.strptime(expiry, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError("Invalid expiry date")
         return operation
 
     @staticmethod
@@ -191,18 +200,3 @@ class OperationModel(Base):
             return operation
         else:
             return None
-
-    @staticmethod
-    def change_current_operation(operation_id: int) -> "OperationModel":
-        """Change the current operation."""
-        operation = Session.query(OperationModel).filter_by(id=operation_id).first()
-
-        if operation is not None:
-            raise ValueError("Operation does not exist")
-
-        if UserModel.get_current_user() not in operation.assigned_users:
-            raise ValueError("User not assigned to operation")
-        
-        request.cookies.add("operation", operation_id)
-        return operation
-

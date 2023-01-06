@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request, make_response
 from phoenixc2.server.database import OperationModel, Session, UserModel, LogEntryModel
 from phoenixc2.server.utils.web import generate_response
-
+from datetime import datetime
 INVALID_ID = "Invalid ID."
 ENDPOINT = "operations"
 
@@ -37,17 +37,14 @@ def add_operation():
     name = request.form.get("name", "")
     description = request.form.get("description", "")
     expiry = request.form.get("expiry", None)
-    subnets = request.form.get("subnets", [])
 
     if not name:
         return generate_response("error", "Name is required.", ENDPOINT)
-    # Convert expiry to datetime
-    if subnets:
-        subnets = subnets.split(",")
     try:
-        OperationModel.add(
-            name, description, expiry, subnets, UserModel.get_current_user()
+        operation = OperationModel.add(
+            name, description, expiry
         )
+        Session.add(operation)
         Session.commit()
     except TypeError as e:
         return generate_response("error", str(e), ENDPOINT)
@@ -61,7 +58,7 @@ def add_operation():
     return generate_response("success", "Operation added successfully.", ENDPOINT)
 
 
-@operations_bp.route("/<int:operation_id>/edit", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/edit", methods=["PUT"])
 @UserModel.admin_required
 def edit_operation(operation_id: int):
     data = request.form
@@ -89,7 +86,7 @@ def edit_operation(operation_id: int):
     return generate_response("success", "Operation edited successfully.", ENDPOINT)
 
 
-@operations_bp.route("/<int:operation_id>/delete", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/remove", methods=["DELETE"])
 @UserModel.admin_required
 def delete_operation(operation_id: int):
     delete_elements = request.form.get("delete_elements", "").lower() == "true"
@@ -211,18 +208,23 @@ def remove_subnet(operation_id: int):
     return generate_response("success", f"Subnet '{subnet}' removed from '{operation.name}'.", ENDPOINT)
 
 
-@operations_bp.route("/<int:operation_id>/change", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/change", methods=["PUT"])
 @UserModel.admin_required
 def change_operation(operation_id: int):
-    try:
-        operation = OperationModel.change_current_operation(operation_id)
-        Session.commit()
-    except Exception as e:
-        return generate_response("error", str(e), ENDPOINT)
+    operation = Session.query(OperationModel).filter_by(id=operation_id).first()
+    current_user = UserModel.get_current_user()
+    if operation is None:
+        return generate_response("error", INVALID_ID, ENDPOINT)
+    if current_user not in operation.assigned_users and current_user != operation.owner:
+        return generate_response("error", "You are not assigned to this operation.", ENDPOINT)
+
     LogEntryModel.log(
         "success",
         ENDPOINT,
         f"Operation '{operation.name}' changed successfully.",
         UserModel.get_current_user(),
     )
-    return generate_response("success", f"Changed operation to '{operation.name}'.", ENDPOINT)
+    response = make_response(generate_response("success", f"Changed operation to '{operation.name}'.", ENDPOINT))
+    # set cookie with unlimited expiration
+    response.set_cookie("operation", str(operation.id), max_age=60 * 60 * 24 * 365 * 10)
+    return response

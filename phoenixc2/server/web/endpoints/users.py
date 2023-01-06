@@ -128,8 +128,7 @@ def delete_user(id: int = None):
     )
 
 
-@users_bp.route("/edit", methods=["PUT", "POST"])
-@users_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
+@users_bp.route("/<int:id>/edit", methods=["PUT"])
 @UserModel.admin_required
 def edit_user(id: int = None):
     # Get request data

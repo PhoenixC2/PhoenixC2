@@ -141,8 +141,7 @@ def listeners_bp(commander: Commander):
             )
         return generate_response("success", message, ENDPOINT)
 
-    @listeners_bp.route("/edit", methods=["PUT", "POST"])
-    @listeners_bp.route("/<int:id>/edit", methods=["PUT", "POST"])
+    @listeners_bp.route("/<int:id>/edit", methods=["PUT"])
     @UserModel.authorized
     def put_edit(id: int = None):
         # Get request data
