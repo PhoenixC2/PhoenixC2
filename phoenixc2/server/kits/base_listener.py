@@ -18,8 +18,9 @@ class BaseListener:
     """This is the base class for all listeners."""
 
     name: str = "BaseListener"
-    description: str = "This is the base class for all listeners."
     author: str = "Unknown"
+    description: str = "This is the base class for all listeners."
+    protocol: str = "tcp"
     # The supported OS for the listener
     os: list[str] = ["linux", "windows", "osx"]
     options = OptionPool()
@@ -105,7 +106,10 @@ class BaseListener:
         """Return a dict with all options of the listener."""
         return {
             "name": cls.name,
+            "author": cls.author,
             "description": cls.description,
+            "protocol": cls.protocol,
             "os": cls.os,
             "options": cls.options.to_dict(commander),
+            "features": [feature.to_dict() for feature in cls.features],
         }

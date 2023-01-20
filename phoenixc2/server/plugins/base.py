@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
-
+import subprocess
+import sys
 from phoenixc2.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
@@ -13,18 +14,18 @@ class BasePlugin(ABC):
     name: str
     description: str
     author: str
-    os = ["linux", "windows", "osx"]
-    options = OptionPool()
+    os: list[str] = ["linux", "windows", "osx"]
+    required_dependencies: list[tuple[str, str]] = [] # (package, version)
     # execution types:
-    # - function - execute the function directly
+    # - direct - execute the code directly
     # - thread - execute the function in a thread
     # - process - execute the function in a process
-    # - file - execute the function as an external file in a external process
-    execution_type: str = "function"
+    # - file - execute the function as an external file in an external process
+    execution_type: str = "direct"
 
     @abstractmethod
-    def execute(self, commander: "Commander", config: dict) -> None:
-        """The main function of the plugin to be executed
+    def execute(self, commander: "Commander", config: dict) -> str|None:
+        """The main code of the plugin to be executed
 
         Execution type:
         - file - return the path to the file to be executed in a external process
@@ -33,12 +34,46 @@ class BasePlugin(ABC):
         pass
 
     @classmethod
-    def to_dict(cls, commander: "Commander") -> dict:
+    def to_dict(cls) -> dict:
         return {
             "name": cls.name,
             "description": cls.description,
             "author": cls.author,
             "os": cls.os,
-            "options": cls.options.to_dict(commander),
+            "required_dependencies": cls.required_dependencies,
             "execution_type": cls.execution_type,
         }
+
+    @classmethod
+    def install_dependencies(cls) -> None:
+        """Install the required dependencies for the plugin."""
+        for package, version in cls.required_dependencies:
+            if not version or version == "latest":
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", f"{package}"]
+                )
+            else:
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", f"{package}=={version}"]
+                )
+    
+    @classmethod
+    def check_dependencies(cls) -> bool:
+        """Check if the required dependencies for the plugin are installed."""
+        for package, version in cls.required_dependencies:
+            try:
+                if not version or version == "latest":
+                    subprocess.check_call(
+                        [sys.executable, "-m", "pip", "show", f"{package}"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                else:
+                    subprocess.check_call(
+                        [sys.executable, "-m", "pip", "show", f"{package}=={version}"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+            except subprocess.CalledProcessError:
+                return False
+        return True

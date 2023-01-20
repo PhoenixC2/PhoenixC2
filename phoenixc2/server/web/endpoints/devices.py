@@ -10,21 +10,28 @@ DEVICE_DOES_NOT_EXIST = "Device does not exist."
 
 
 def devices_bp(commander: Commander):
-    devices_bp = Blueprint("devices", __name__, url_prefix="/devices")
+    blueprint = Blueprint("devices", __name__, url_prefix="/devices")
 
-    @devices_bp.route("/", methods=["GET"])
+    @blueprint.route("/", methods=["GET"])
+    @blueprint.route("/<int:device_id>", methods=["GET"])
     @UserModel.authorized
-    def get_devices():
+    def get_devices(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        opened_device = Session.query(DeviceModel).filter_by(id=request.args.get("open")).first()
+        show_stager = request.args.get("stager", "").lower() == "true"
+        show_operation = request.args.get("operation", "").lower() == "true"
+        show_tasks = request.args.get("tasks", "").lower() == "true"
+
+        opened_device = Session.query(DeviceModel).filter_by(id=device_id).first()
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         if use_json:
-            return jsonify([device.to_dict(commander) for device in devices])
+            if opened_device is not None:
+                return jsonify(opened_device.to_dict(commander, show_stager, show_operation, show_tasks))
+            return jsonify([device.to_dict(commander, show_stager, show_operation, show_tasks) for device in devices])
         return render_template(
             "devices.j2", devices=devices, opened_device=opened_device
         )
 
-    @devices_bp.route("/<string:id>/clear", methods=["POST"])
+    @blueprint.route("/<string:id>/clear", methods=["POST"])
     @UserModel.authorized
     def post_clear_devices(id: str = "all"):
         count = 0
@@ -46,7 +53,7 @@ def devices_bp(commander: Commander):
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
-    @devices_bp.route("/<int:id>/reverse_shell", methods=["POST"])
+    @blueprint.route("/<int:id>/reverse_shell", methods=["POST"])
     @UserModel.authorized
     def post_reverse_shell(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -76,7 +83,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/rce", methods=["POST"])
+    @blueprint.route("/<int:id>/rce", methods=["POST"])
     @UserModel.authorized
     def post_rce(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -105,7 +112,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/info", methods=["GET"])
+    @blueprint.route("/<int:id>/info", methods=["GET"])
     @UserModel.authorized
     def get_infos(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -133,7 +140,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/dir", methods=["GET"])
+    @blueprint.route("/<int:id>/dir", methods=["GET"])
     @UserModel.authorized
     def get_dir(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -162,7 +169,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/upload", methods=["POST"])
+    @blueprint.route("/<int:id>/upload", methods=["POST"])
     @UserModel.authorized
     def post_upload(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -199,7 +206,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/download", methods=["GET"])
+    @blueprint.route("/<int:id>/download", methods=["GET"])
     @UserModel.authorized
     def get_download(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -230,7 +237,7 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @devices_bp.route("/<int:id>/module", methods=["POST"])
+    @blueprint.route("/<int:id>/module", methods=["POST"])
     @UserModel.authorized
     def post_execute_module(id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
@@ -271,4 +278,4 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    return devices_bp
+    return blueprint

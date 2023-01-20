@@ -12,19 +12,28 @@ ENDPOINT = "listeners"
 
 
 def listeners_bp(commander: Commander):
-    listeners_bp = Blueprint(ENDPOINT, __name__, url_prefix="/listeners")
+    blueprint = Blueprint(ENDPOINT, __name__, url_prefix="/listeners")
 
-    @listeners_bp.route("/", methods=["GET"])
+    @blueprint.route("/", methods=["GET"])
+    @blueprint.route("/<int:listener_id>", methods=["GET"])
     @UserModel.authorized
-    def get_listeners():
+    def get_listeners(listener_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
-        opened_listener = (
-            Session.query(ListenerModel).filter_by(id=request.args.get("open")).first()
-        )
+        show_operation = request.args.get("show_operation", "").lower() == "true"
+        show_stagers = request.args.get("show_stagers", "").lower() == "true"
+
+        opened_listener = Session.query(ListenerModel).filter_by(id=listener_id).first()
         listener_types = ListenerModel.get_all_classes()
         listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         if use_json:
-            return jsonify([listener.to_dict(commander) for listener in listeners])
+            if opened_listener is not None:
+                return jsonify(
+                    {
+                        "status": "success",
+                        "listener": opened_listener.to_dict(commander, show_operation, show_stagers),
+                    }
+                )
+            return jsonify({"status": "success", ENDPOINT: [listener.to_dict(commander, show_operation, show_stagers) for listener in listeners]})
         return render_template(
             "listeners.j2",
             listeners=listeners,
@@ -35,7 +44,7 @@ def listeners_bp(commander: Commander):
             platform=get_platform(),
         )
 
-    @listeners_bp.route("/available", methods=["GET"])
+    @blueprint.route("/available", methods=["GET"])
     @UserModel.authorized
     def get_available():
         listeners = {}
@@ -53,7 +62,7 @@ def listeners_bp(commander: Commander):
         else:
             return jsonify(listeners)
 
-    @listeners_bp.route("/add", methods=["POST"])
+    @blueprint.route("/add", methods=["POST"])
     @UserModel.authorized
     def post_add():
         # Get request data
@@ -106,15 +115,17 @@ def listeners_bp(commander: Commander):
             "success", f"Created Listener {name} ({listener_type}).", ENDPOINT
         )
 
-    @listeners_bp.route("/<int:id>/remove", methods=["DELETE"])
+    @blueprint.route("/<int:listener_id>/remove", methods=["DELETE"])
     @UserModel.authorized
-    def delete_remove(id: int):
+    def delete_remove(listener_id: int):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
         stop = request.form.get("stop", "").lower() != "false"
 
         # Check if listener exists
-        listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=listener_id).first()
+        )
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
         name = listener.name
@@ -141,20 +152,22 @@ def listeners_bp(commander: Commander):
             )
         return generate_response("success", message, ENDPOINT)
 
-    @listeners_bp.route("/<int:id>/edit", methods=["PUT"])
+    @blueprint.route("/<int:listener_id>/edit", methods=["PUT"])
     @UserModel.authorized
-    def put_edit(id: int = None):
+    def put_edit(listener_id: int = None):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
-        if id is None:
+        if listener_id is None:
             if form_data.get("id") is None:
                 return generate_response("danger", INVALID_ID, ENDPOINT, 400)
-            id = int(form_data.get("id"))
+            listener_id = int(form_data.get("id"))
             form_data.pop("id")
 
         # Check if listener exists
-        listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=listener_id).first()
+        )
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
@@ -182,17 +195,19 @@ def listeners_bp(commander: Commander):
             "success", f"Edited Listener {listener.name} ({listener.type}).", ENDPOINT
         )
 
-    @listeners_bp.route("/<int:id>/start", methods=["POST"])
+    @blueprint.route("/<int:listener_id>/start", methods=["POST"])
     @UserModel.authorized
-    def post_start(id: int):
+    def post_start(listener_id: int):
         # Check if listener exists
-        listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=listener_id).first()
+        )
 
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         log(
-            f"({UserModel.get_current_user().username}) Starting Listener with ID {id}",
+            f"({UserModel.get_current_user().username}) Starting Listener with ID {listener_id}",
             "info",
         )
 
@@ -215,17 +230,19 @@ def listeners_bp(commander: Commander):
             )
             return generate_response("success", status, ENDPOINT)
 
-    @listeners_bp.route("/<int:id>/stop", methods=["POST"])
+    @blueprint.route("/<int:listener_id>/stop", methods=["POST"])
     @UserModel.authorized
-    def post_stop(id: int):
+    def post_stop(listener_id: int):
         # Check if listener exists
-        listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=listener_id).first()
+        )
 
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
 
         log(
-            f"({UserModel.get_current_user().username}) Stopping Listener with ID {id}",
+            f"({UserModel.get_current_user().username}) Stopping Listener with ID {listener_id}",
             "info",
         )
 
@@ -241,18 +258,20 @@ def listeners_bp(commander: Commander):
                 UserModel.get_current_user(),
             )
             return generate_response(
-                "success", f"Stopped Listener with ID {id}", ENDPOINT
+                "success", f"Stopped Listener with ID {listener_id}", ENDPOINT
             )
 
-    @listeners_bp.route("/<int:id>/restart", methods=["POST"])
+    @blueprint.route("/<int:listener_id>/restart", methods=["POST"])
     @UserModel.authorized
-    def post_restart(id: int):
+    def post_restart(listener_id: int):
         # Check if listener exists
-        listener: ListenerModel = Session.query(ListenerModel).filter_by(id=id).first()
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=listener_id).first()
+        )
 
         try:
             log(
-                f"({UserModel.get_current_user().username}) Restarting listener with ID {id}.",
+                f"({UserModel.get_current_user().username}) Restarting listener with ID {listener_id}.",
                 "info",
             )
             listener.restart(commander)
@@ -272,7 +291,7 @@ def listeners_bp(commander: Commander):
                 UserModel.get_current_user(),
             )
             return generate_response(
-                "success", f"Restarted listener with ID {id}", ENDPOINT
+                "success", f"Restarted listener with ID {listener_id}", ENDPOINT
             )
 
-    return listeners_bp
+    return blueprint

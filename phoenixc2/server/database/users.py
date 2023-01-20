@@ -36,7 +36,9 @@ class UserModel(Base):
     id: int = Column(Integer, primary_key=True, nullable=False)
     username: str = Column(String(50))
     password_hash: str = Column(Text)
-    api_key: str = Column(String(30), nullable=False, default=lambda: str(uuid1()))
+    _api_key: str = Column(
+        String(30), name="api_key", nullable=False, default=lambda: str(uuid1())
+    )
     admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
     profile_picture: str = Column(Boolean, default=False)
@@ -59,6 +61,14 @@ class UserModel(Base):
         "OperationModel", back_populates="owner"
     )
 
+    @property
+    def api_key(self) -> str | None:
+        """Get the API key for the user if the user requesting it is authorized"""
+        curr_user = self.get_current_user()
+        if (curr_user.admin and self.id != 0) or curr_user.id == self.id:
+            return self._api_key
+        return None
+
     def set_password(self, password: str):
         """Hash the Password and save it."""
         self.password_hash = generate_password_hash(password)
@@ -69,8 +79,8 @@ class UserModel(Base):
 
     def generate_api_key(self) -> None:
         """Generate a new API key"""
-        self.api_key = str(uuid1())
-
+        self._api_key = str(uuid1())
+    
     def to_dict(
         self,
         show_logs: bool = False,
@@ -126,7 +136,7 @@ class UserModel(Base):
     def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
-        self.admin_required = data.get("admin", self.admin_required)
+        self.admin = data.get("admin", self.admin)
         self.disabled = data.get("disabled", self.disabled)
         self.profile_picture = data.get("profile_picture", self.profile_picture)
 
@@ -194,7 +204,7 @@ class UserModel(Base):
         if request.headers.get("Api-Key") is not None:
             user = (
                 Session.query(UserModel)
-                .filter_by(api_key=request.headers.get("Api-Key"))
+                .filter_by(_api_key=request.headers.get("Api-Key"))
                 .first()
             )
             if user is not None:

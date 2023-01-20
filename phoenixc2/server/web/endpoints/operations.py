@@ -9,15 +9,23 @@ operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 
 
 @operations_bp.route("/", methods=["GET"])
+@operations_bp.route("/<int:operation_id>", methods=["GET"])
 @UserModel.authorized
-def get_operations():
+def get_operations(operation_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     opened_operation = (
-        Session.query(OperationModel).filter_by(id=request.args.get("open")).first()
+        Session.query(OperationModel).filter_by(id=operation_id).first()
     )
+    operations: list[OperationModel] = Session.query(OperationModel).all()
 
     if use_json:
-        operations: list[OperationModel] = Session.query(OperationModel).all()
+        if opened_operation is not None:
+            return jsonify(
+                {
+                    "status": "success",
+                    "operation": opened_operation.to_dict(),
+                }
+            )
         return jsonify(
             {
                 "status": "success",
@@ -26,7 +34,7 @@ def get_operations():
         )
     return render_template(
         "operations.j2",
-        operations=UserModel.get_current_user().assigned_operations,
+        operations=operations,
         opened_operation=opened_operation,
     )
 

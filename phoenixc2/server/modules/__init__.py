@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 def get_module(path: str) -> "BaseModule":
     """Get a module by name."""
     return importlib.import_module(
-        f"phoenixc.server.modules.{path.replace('/', '.')}.module"
+        f"phoenixc2.server.modules.{path.replace('/', '.')}.module"
     ).Module()
 
 

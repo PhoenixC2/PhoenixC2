@@ -7,9 +7,9 @@ from phoenixc2.server.utils.web import generate_response
 
 
 def tasks_bp(commander: Commander):
-    tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
+    blueprint = Blueprint("tasks", __name__, url_prefix="/tasks")
 
-    @tasks_bp.route("/", methods=["GET"])
+    @blueprint.route("/", methods=["GET"])
     @UserModel.authorized
     def get_tasks():
         use_json = request.args.get("json", "") == "true"
@@ -19,7 +19,7 @@ def tasks_bp(commander: Commander):
             return jsonify([task.to_dict(commander) for task in tasks])
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
 
-    @tasks_bp.route("/<string:id>/clear", methods=["POST"])
+    @blueprint.route("/<string:id>/clear", methods=["POST"])
     @UserModel.authorized
     def post_clear_tasks(id: str = "all"):
         count = 0
@@ -41,4 +41,4 @@ def tasks_bp(commander: Commander):
             )
         return generate_response("success", f"Cleared {count} tasks.", "tasks")
 
-    return tasks_bp
+    return blueprint

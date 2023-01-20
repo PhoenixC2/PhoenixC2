@@ -1,11 +1,11 @@
 import os
 
 from flask import Blueprint, jsonify, send_from_directory
-
+import phoenixc2
 import phoenixc2.server as avl
 from phoenixc2.server.database import UserModel
 from phoenixc2.server.modules import get_all_module_paths
-from phoenixc2.server.utils.misc import get_network_interfaces, version
+from phoenixc2.server.utils.misc import get_network_interfaces
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.web import generate_response
 
@@ -14,7 +14,7 @@ misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
 @misc_bp.route("/version", methods=["GET"])
 def get_phoenix():
-    return jsonify({"version": version})
+    return jsonify({"version": phoenixc2.__version__})
 
 
 @misc_bp.route("/available", methods=["GET"])

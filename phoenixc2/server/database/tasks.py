@@ -5,8 +5,16 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String, Text)
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from werkzeug.datastructures import FileStorage
@@ -16,7 +24,6 @@ from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.resources import get_resource
 
 from .base import Base
-from .engine import Session
 from .devices import DeviceModel
 from .logs import LogEntryModel
 
@@ -62,7 +69,7 @@ class TaskModel(Base):
             else self.device_id,
         }
 
-    def finish(self, output: str, success: bool):
+    def finish(self, output: str | dict, success: bool):
         """Update the Task to be finished.
         Still has to be committed!"""
         if self.type == "download" and success:
@@ -74,10 +81,10 @@ class TaskModel(Base):
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
         elif self.type == "info" and success:
-            self.device.address = output["address"]
-            self.device.hostname = output["hostname"]
-            self.device.username = output["username"]
-            self.device.admin = output["admin"]
+            self.device.address = output.get("address", self.device.address)
+            self.device.hostname = output.get("hostname", self.device.hostname)
+            self.device.user = output.get("username", self.device.user)
+            self.device.admin = output.get("admin", self.device.admin)
         else:
             self.output = output
         self.success = success
@@ -94,7 +101,6 @@ class TaskModel(Base):
                 "devices",
                 f"Task '{self.name}' finished with an error",
             )
-        Session.commit()
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
@@ -199,7 +205,7 @@ class TaskModel(Base):
         return task
 
     @staticmethod
-    def get_info(device_or_id: DeviceModel | int) -> "TaskModel":
+    def get_infos(device_or_id: DeviceModel | int) -> "TaskModel":
         """Create a Get-Info task.
 
         Args:
@@ -253,4 +259,4 @@ class TaskModel(Base):
         if self.type != "module":
             raise ValueError("Task is not a module task.")
         module = get_module(self.args["path"])
-        return module.code(self.device, self.device.stager.listener, self.args)
+        return module.code(self.device, self)

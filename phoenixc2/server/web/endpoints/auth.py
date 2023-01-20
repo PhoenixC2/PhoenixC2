@@ -58,7 +58,7 @@ def post_login():
             LogEntryModel.log(
                 "info",
                 "auth",
-                f"Logged in as {'admin' if user.admin_required else 'user'}  {user}.",
+                f"Logged in as {'admin' if user.admin else 'user'}  {user}.",
                 old_user,
             )
             if not use_json:
@@ -77,19 +77,19 @@ def post_login():
             LogEntryModel.log(
                 "info",
                 "auth",
-                f"Logged in as {'admin' if user.admin_required else 'user'} {user}.",
+                f"Logged in as {'admin' if user.admin else 'user'} {user}.",
                 user,
             )
             if not use_json:
                 flash(
-                    f"Logged in as {'admin' if user.admin_required else 'user'} {username}.",
+                    f"Logged in as {'admin' if user.admin else 'user'} {username}.",
                     "success",
                 )
                 return redirect("/")
             return jsonify(
                 {
                     "status": "success",
-                    "message": f"Logged in as {username} ({'admin' if user.admin_required else 'user'}).",
+                    "message": f"Logged in as {username} ({'admin' if user.admin else 'user'}).",
                     "api_key": user.api_key,
                 }
             )

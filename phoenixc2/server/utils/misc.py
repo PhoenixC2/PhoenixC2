@@ -3,9 +3,6 @@ from uuid import uuid1
 
 import netifaces
 
-version = "0.1"
-
-
 def get_network_interfaces() -> dict[str, str]:
     """Get address of all network interfaces on the host"""
     interfaces = {"all": "0.0.0.0"}

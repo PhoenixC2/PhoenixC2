@@ -32,7 +32,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
         )
         active_users = (
             Session.query(UserModel)
-            .filter(UserModel.last_activity >= datetime.now() - timedelta(minutes=5))
+            .filter(UserModel.activity_status == "active")
             .count()
         )
 

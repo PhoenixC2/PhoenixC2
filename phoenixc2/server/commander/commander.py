@@ -69,13 +69,18 @@ class Commander:
 
     def load_plugin(self, plugin: BasePlugin, config: dict):
         """Load a plugin"""
+        if not plugin.check_dependencies():
+            if input(
+                f"Plugin {plugin.name} has missing dependencies. Would you like to install them? (y/n): "
+            ).lower() == "y":
+                plugin.install_dependencies()
+            else:
+                raise ModuleNotFoundError(f"Plugin {plugin.name} has missing dependencies")
         if plugin.name in self.active_plugins:
             raise KeyError(f"Plugin {plugin.name} already loaded")
 
-        if plugin.execution_type not in ["function", "thread", "process", "file"]:
-            raise ValueError(f"Invalid execution type {plugin.execution_type}")
         try:
-            if plugin.execution_type == "function":
+            if plugin.execution_type == "direct":
                 plugin.execute(self, config)
             elif plugin.execution_type == "thread":
                 Thread(
@@ -86,7 +91,9 @@ class Commander:
                     target=plugin.execute, args=(self, config), name=plugin.name
                 ).start()
             elif plugin.execution_type == "file":
-                subprocess.Popen([plugin.execute])
+                subprocess.Popen([plugin.execute(self, config)])
+            else:
+                raise ValueError(f"Invalid execution type {plugin.execution_type}")
         except Exception as e:
             raise Exception(f"Failed to load plugin '{plugin.name}'") from e
 

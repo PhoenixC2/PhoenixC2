@@ -5,7 +5,7 @@ from phoenixc2.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
-    from phoenixc2.server.database import DeviceModel, ListenerModel
+    from phoenixc2.server.database import DeviceModel, TaskModel
 """The base module class"""
 
 
@@ -41,7 +41,7 @@ class BaseModule(ABC):
     @classmethod
     @abstractmethod
     def code(
-        cls, device: "DeviceModel", listener: "ListenerModel", args: dict
+        cls, device: "DeviceModel", task: "TaskModel"
     ) -> str | bytes:
         """The code to be executed"""
         pass
@@ -56,7 +56,7 @@ class BaseModule(ABC):
             "os": cls.os,
             "options": cls.options.to_dict(commander),
             "admin": cls.admin,
-            "code_type": cls.execution_type,
+            "code_type": cls.code_type,
             "execution_methods": cls.execution_methods,
         }
 

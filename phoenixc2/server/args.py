@@ -3,7 +3,7 @@ import logging
 import os
 from argparse import ArgumentParser
 
-from phoenixc2.server import version
+import phoenixc2
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.admin import (recreate_super_user, regenerate_ssl,
                                         reset_database, reset_server,
@@ -77,7 +77,7 @@ def parse_args(args, config: dict) -> dict:
 
     # output args
     if args.version:
-        ph_print("PhoenixC2 Server v" + version)
+        ph_print("PhoenixC2 Server v" + phoenixc2.__version__)
         exit()
     if args.quiet and args.debug:
         log("-q and -d are mutually exclusive.", "error")

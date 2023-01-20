@@ -8,14 +8,17 @@ logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 
 
 @logs_bp.route("/", methods=["GET"])
+@logs_bp.route("/<int:log_id>", methods=["GET"])
 @UserModel.authorized
-def get_logs():
+def get_logs(log_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
-    opened_log = Session.query(LogEntryModel).filter_by(id=request.args.get("open")).first()
+    opened_log = Session.query(LogEntryModel).filter_by(id=log_id).first()
     logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
     UserModel.get_current_user().read_all_logs()  # mark all logs as seen
     Session.commit()
     if use_json:
+        if opened_log is not None:
+            return jsonify({"status": "success", "log": opened_log.to_dict()})
         return jsonify({"status": "success", ENDPOINT: [log.to_dict() for log in logs]})
     return render_template(
         "logs.j2",
