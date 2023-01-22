@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from phoenixc2.server.database import (DeviceModel, ListenerModel, Session,
-                                     TaskModel)
+                                       TaskModel)
 
 from ..base_handler import BaseHandler
 

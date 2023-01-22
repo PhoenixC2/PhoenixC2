@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import uuid1
 
 from phoenixc2.server.database import (DeviceModel, ListenerModel, Session,
-                                     TaskModel)
+                                       TaskModel)
 from phoenixc2.server.modules.base import BaseModule
 
 

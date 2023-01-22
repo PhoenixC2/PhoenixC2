@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 import subprocess
 import sys
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
 from phoenixc2.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ class BasePlugin(ABC):
     description: str
     author: str
     os: list[str] = ["linux", "windows", "osx"]
-    required_dependencies: list[tuple[str, str]] = [] # (package, version)
+    required_dependencies: list[tuple[str, str]] = []  # (package, version)
     # execution types:
     # - direct - execute the code directly
     # - thread - execute the function in a thread
@@ -24,7 +25,7 @@ class BasePlugin(ABC):
     execution_type: str = "direct"
 
     @abstractmethod
-    def execute(self, commander: "Commander", config: dict) -> str|None:
+    def execute(self, commander: "Commander", config: dict) -> str | None:
         """The main code of the plugin to be executed
 
         Execution type:
@@ -56,7 +57,7 @@ class BasePlugin(ABC):
                 subprocess.check_call(
                     [sys.executable, "-m", "pip", "install", f"{package}=={version}"]
                 )
-    
+
     @classmethod
     def check_dependencies(cls) -> bool:
         """Check if the required dependencies for the plugin are installed."""

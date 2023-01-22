@@ -1,12 +1,13 @@
+import base64
 import ctypes
+import multiprocessing
 import os
 import platform
-import base64
-import multiprocessing
 import socket
 import subprocess as sp
 import threading
 import time
+
 import requests as r
 import urllib3
 

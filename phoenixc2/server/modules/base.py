@@ -40,9 +40,7 @@ class BaseModule(ABC):
 
     @classmethod
     @abstractmethod
-    def code(
-        cls, device: "DeviceModel", task: "TaskModel"
-    ) -> str | bytes:
+    def code(cls, device: "DeviceModel", task: "TaskModel") -> str | bytes:
         """The code to be executed"""
         pass
 

@@ -5,6 +5,7 @@ from phoenixc2.server.plugins import BasePlugin
 
 class Plugin(BasePlugin):
     """Example Plugin"""
+
     name = "example"
     description = "Example Plugin"
     author = "Screamz2k"

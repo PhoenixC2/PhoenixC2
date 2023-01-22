@@ -152,8 +152,7 @@ def recreate_super_user():
     Session.commit()
     log("Super user recreated.", "success")
     log(f"Credentials: phoenix:{password}", "info")
-    log(f"API Key: '{admin.api_key}'", "info")
-
+    log(f"API Key: '{admin._api_key}'", "info")
 
 
 def reset_server(reset: bool = False):
