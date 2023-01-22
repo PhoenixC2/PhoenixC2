@@ -187,12 +187,14 @@ class OperationModel(Base):
     @staticmethod
     def get_current_operation() -> "OperationModel":
         """Get the current operation and check if the user is assigned to it."""
-        operation = (
-            Session.query(OperationModel)
-            .filter_by(id=request.cookies.get("operation"))
-            .first()
-        )
-
+        try:
+            operation = (
+                Session.query(OperationModel)
+                .filter_by(id=request.cookies.get("operation"))
+                .first()
+            )
+        except Exception as e:
+            return None
         if (
             operation is not None
             and UserModel.get_current_user() in operation.assigned_users

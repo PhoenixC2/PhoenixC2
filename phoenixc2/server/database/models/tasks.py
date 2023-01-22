@@ -45,6 +45,10 @@ class TaskModel(Base):
     def finished(self) -> bool:
         return self.finished_at is not None
 
+    @property
+    def operation(self) -> str:
+        return self.device.operation
+
     def to_dict(self, commander: "Commander", show_device: bool = False) -> dict:
         return {
             "id": self.id,

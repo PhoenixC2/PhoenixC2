@@ -35,6 +35,14 @@ class LogEntryModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_logs",
     )  # users who haven't seen this message
+    operation_id = Column(
+        Integer,
+        ForeignKey("Operations.id"),
+        default=lambda: OperationModel.get_current_operation().id
+        if OperationModel.get_current_operation() is not None
+        else None
+    )
+    operation = relationship("OperationModel", back_populates="logs")
 
     def to_dict(
         self,
@@ -101,6 +109,4 @@ class LogEntryModel(Base):
         log = cls.create(
             alert, endpoint, description, Session.query(UserModel).all(), user
         )
-        if user is not None:
-            log.operation = OperationModel.get_current_operation()
         return log

@@ -122,6 +122,5 @@ class DeviceModel(Base):
             user=user,
             admin=admin,
             stager=stager,
-            operation=stager.operation,
         )
 

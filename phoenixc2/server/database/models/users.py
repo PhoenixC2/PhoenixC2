@@ -67,17 +67,18 @@ class UserModel(Base):
             return self._api_key
         return None
 
-    def set_password(self, password: str):
-        """Hash the Password and save it."""
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password: str):
-        """Check if the password is right"""
-        return check_password_hash(self.password_hash, password)
-
-    def generate_api_key(self) -> None:
-        """Generate a new API key"""
-        self._api_key = str(uuid1())
+    @property
+    def activity_status(self) -> str:
+        """Returns the activity based on the last request timestamp"""
+        if self.last_activity is None:
+            return "offline"
+        delta = (datetime.now() - self.last_activity).seconds / 60
+        if delta <= 5:
+            return "online"
+        elif delta <= 20:
+            return "inactive"
+        else:
+            return "offline"
 
     def to_dict(
         self,
@@ -119,18 +120,17 @@ class UserModel(Base):
     def __str__(self) -> str:
         return self.username
 
-    @property
-    def activity_status(self) -> str:
-        """Returns the activity based on the last request timestamp"""
-        if self.last_activity is None:
-            return "offline"
-        delta = (datetime.now() - self.last_activity).seconds / 60
-        if delta <= 5:
-            return "online"
-        elif delta <= 20:
-            return "inactive"
-        else:
-            return "offline"
+    def set_password(self, password: str):
+        """Hash the Password and save it."""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str):
+        """Check if the password is right"""
+        return check_password_hash(self.password_hash, password)
+
+    def generate_api_key(self) -> None:
+        """Generate a new API key"""
+        self._api_key = str(uuid1())
 
     def edit(self, data: dict) -> None:
         """Edit the user"""
@@ -201,11 +201,14 @@ class UserModel(Base):
     def get_current_user() -> "UserModel":
         """Get the current user"""
         if request.headers.get("Api-Key") is not None:
-            user = (
-                Session.query(UserModel)
-                .filter_by(_api_key=request.headers.get("Api-Key"))
-                .first()
-            )
+            try:
+                user = (
+                    Session.query(UserModel)
+                    .filter_by(_api_key=request.headers.get("Api-Key"))
+                    .first()
+                )
+            except Exception:
+                return None
             if user is not None:
                 return user
         return (

@@ -2,8 +2,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
-                        Text)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 if TYPE_CHECKING:
@@ -11,19 +10,26 @@ if TYPE_CHECKING:
 
 from phoenixc2.server.database.base import Base
 
+
 class CredentialModel(Base):
     """The Credentials Model"""
 
     __tablename__ = "Credentials"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    user: str = Column(String(100))
-    admin: bool = Column(Boolean, default=False)
     credential: str = Column(String(100))
     hash: bool = Column(Boolean, default=False)
     notes: str = Column(Text(500))
+    user: str = Column(String(100))
+    admin: bool = Column(Boolean, default=False)
     found_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    operation_id: int = Column(Integer, ForeignKey("Operations.id"))
+    operation_id: int = Column(
+        Integer,
+        ForeignKey("Operations.id"),
+        default=lambda: OperationModel.get_current_operation().id
+        if OperationModel.get_current_operation() is not None
+        else None,
+    )
     operation: "OperationModel" = relationship(
         "OperationModel", back_populates="credentials"
     )
@@ -31,11 +37,11 @@ class CredentialModel(Base):
     def to_dict(self, show_operation: bool = False) -> dict:
         return {
             "id": self.id,
-            "user": self.user,
-            "admin": self.admin,
             "credential": self.credential,
             "hash": self.hash,
             "notes": self.notes,
+            "user": self.user,
+            "admin": self.admin,
             "found_at": self.found_at,
             "updated_at": self.updated_at,
             "operation": self.operation.to_dict()
@@ -46,12 +52,11 @@ class CredentialModel(Base):
     @classmethod
     def create(
         cls,
-        user: str,
         admin: bool,
         credential: str,
         hash: bool,
-        notes: str,
-        operation_id: int,
+        user: str,
+        notes: str = None,
     ) -> "CredentialModel":
         credential = cls(
             user=user,
@@ -59,6 +64,5 @@ class CredentialModel(Base):
             credential=credential,
             hash=hash,
             notes=notes,
-            operation_id=operation_id,
         )
         return credential
