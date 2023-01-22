@@ -96,8 +96,15 @@ class DeviceModel(Base):
 
         return data
 
+    def delete(self):
+        """Delete the device and all unfinished tasks"""
+        Session.delete(self)
+        for task in self.tasks:
+            if not task.finished:
+                Session.delete(task)
+
     @classmethod
-    def generate_device(
+    def create(
         cls,
         hostname: str,
         address: str,
@@ -118,10 +125,3 @@ class DeviceModel(Base):
             operation=stager.operation,
         )
 
-    def delete(self):
-        """Delete the device and all unfinished tasks"""
-        Session.delete(self)
-        for task in self.tasks:
-            if not task.finished:
-                Session.delete(task)
-        Session.commit()

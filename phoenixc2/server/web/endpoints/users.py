@@ -88,7 +88,7 @@ def add_user():
     if Session.query(UserModel).filter_by(username=username).first():
         return generate_response("danger", "User already exists.", ENDPOINT, 403)
     try:
-        user = UserModel.add(username, password, admin, disabled)
+        user = UserModel.create(username, password, admin, disabled)
     except ValueError as e:
         return generate_response("danger", str(e), ENDPOINT, 400)
 

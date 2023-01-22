@@ -61,6 +61,18 @@ class TaskModel(Base):
             else self.device_id,
         }
 
+    def get_module_code(self) -> str:
+        """Get the code of the module.
+
+        Returns:
+        --------
+            str: The code of the module
+        """
+        if self.type != "module":
+            raise ValueError("Task is not a module task.")
+        module = get_module(self.args["path"])
+        return module.code(self.device, self)
+
     def finish(self, output: str | dict, success: bool):
         """Update the Task to be finished.
         Still has to be committed!"""
@@ -240,15 +252,3 @@ class TaskModel(Base):
         task.args["execution_method"] = execution_method
         task.args.update(data)
         return task
-
-    def get_module_code(self) -> str:
-        """Get the code of the module.
-
-        Returns:
-        --------
-            str: The code of the module
-        """
-        if self.type != "module":
-            raise ValueError("Task is not a module task.")
-        module = get_module(self.args["path"])
-        return module.code(self.device, self)

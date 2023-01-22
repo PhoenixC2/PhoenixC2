@@ -4,6 +4,8 @@ import subprocess
 from importlib_resources import files
 from importlib_resources.abc import Traversable
 
+PICTURES = "data/pictures/"
+
 
 def get_resource(
     path: str, file: str = None, skip_file_check: bool = False

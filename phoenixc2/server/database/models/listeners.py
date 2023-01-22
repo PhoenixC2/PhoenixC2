@@ -223,13 +223,3 @@ class ListenerModel(Base):
             enabled=standard[6],
             options=data,
         )
-
-    @classmethod
-    def add(
-        cls,
-        data: dict,
-    ) -> "ListenerModel":
-        """Add a listener to the database"""
-        listener = cls.create_from_data(data)
-        Session.add(listener)
-        return listener

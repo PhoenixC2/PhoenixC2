@@ -166,7 +166,7 @@ class OperationModel(Base):
         Session.delete(self)
 
     @classmethod
-    def add(
+    def create(
         cls,
         name: str,
         description: str,

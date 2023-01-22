@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
-from phoenixc2.server.utils.resources import get_resource
+from phoenixc2.server.utils.resources import get_resource, PICTURES
 from phoenixc2.server.utils.web import generate_response
 
 from .association import (user_logentry_association_table,
@@ -156,16 +156,16 @@ class UserModel(Base):
 
         if self.profile_picture:
             os.rm(
-                str(get_resource("data/pictures/", self.username, skip_file_check=True))
+                str(get_resource(PICTURES, self.username, skip_file_check=True))
             )
 
         self.profile_picture = True
-        file.save(get_resource("data/pictures/", self.username, skip_file_check=True))
+        file.save(get_resource(PICTURES, self.username, skip_file_check=True))
 
     def get_profile_picture(self) -> str:
         """Get the profile picture"""
         return (
-            str(get_resource("data/pictures/", self.username))
+            str(get_resource(PICTURES, self.username))
             if self.profile_picture
             else get_resource("web/static/images", "icon.png")
         )
@@ -179,7 +179,7 @@ class UserModel(Base):
         return logs
 
     @classmethod
-    def add(
+    def create(
         cls, username: str, password: str, admin: bool, disabled: bool
     ) -> "UserModel":
         """Add a new user"""

@@ -70,7 +70,7 @@ class LogEntryModel(Base):
             self.unseen_users.remove(user)
 
     @classmethod
-    def generate_log(
+    def create(
         cls,
         alert: str,
         endpoint: str,
@@ -98,11 +98,9 @@ class LogEntryModel(Base):
         """Log an entry to the database"""
         if log_to_cli:
             cli_log(f"({user if user is not None else 'System'}) {description}", alert)
-        log = cls.generate_log(
+        log = cls.create(
             alert, endpoint, description, Session.query(UserModel).all(), user
         )
         if user is not None:
             log.operation = OperationModel.get_current_operation()
-        Session.add(log)
-        Session.commit()
         return log

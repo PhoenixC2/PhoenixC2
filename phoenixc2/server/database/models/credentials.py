@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 from phoenixc2.server.database.base import Base
 
-
 class CredentialModel(Base):
     """The Credentials Model"""
 
@@ -43,3 +42,23 @@ class CredentialModel(Base):
             if show_operation and self.operation is not None
             else self.operation_id,
         }
+
+    @classmethod
+    def create(
+        cls,
+        user: str,
+        admin: bool,
+        credential: str,
+        hash: bool,
+        notes: str,
+        operation_id: int,
+    ) -> "CredentialModel":
+        credential = cls(
+            user=user,
+            admin=admin,
+            credential=credential,
+            hash=hash,
+            notes=notes,
+            operation_id=operation_id,
+        )
+        return credential

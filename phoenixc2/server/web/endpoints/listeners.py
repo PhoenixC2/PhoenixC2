@@ -102,7 +102,7 @@ def listeners_bp(commander: Commander):
         try:
             # has to be added again bc it got filtered out by options.validate_data(data)
             data["type"] = listener_type
-            listener = ListenerModel.add(data)
+            listener = ListenerModel.create_from_data(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         LogEntryModel.log(

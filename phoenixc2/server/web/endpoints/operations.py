@@ -49,7 +49,7 @@ def add_operation():
     if not name:
         return generate_response("error", "Name is required.", ENDPOINT)
     try:
-        operation = OperationModel.add(name, description, expiry)
+        operation = OperationModel.create(name, description, expiry)
         Session.add(operation)
         Session.commit()
     except TypeError as e:

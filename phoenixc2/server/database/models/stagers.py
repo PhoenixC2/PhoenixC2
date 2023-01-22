@@ -10,7 +10,6 @@ from sqlalchemy.orm import relationship
 
 from phoenixc2.server import AVAILABLE_KITS
 from phoenixc2.server.database.base import Base
-from phoenixc2.server.database.engine import Session
 
 from .operations import OperationModel
 
@@ -161,11 +160,3 @@ class StagerModel(Base):
             different_address=standard[7],
             options=data,
         )
-
-    @classmethod
-    def add(cls, data: dict) -> "StagerModel":
-        """Add a stager to the database"""
-        stager = cls.create_from_data(data)
-        Session.add(stager)
-        Session.commit()
-        return stager
