@@ -6,7 +6,7 @@ import time
 from phoenixc2.server.args import parse_args, parser
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.commander.services import (load_plugins, start_listeners,
-                                               start_web)
+                                                 start_web)
 from phoenixc2.server.utils.admin import check_for_setup, reset_server
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.ui import log

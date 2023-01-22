@@ -4,20 +4,23 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from flask import request
-from sqlalchemy import Column, DateTime, Integer, String, Text, ForeignKey, JSON
+from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String,
+                        Text)
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 
+from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.web import generate_html_from_markdown
 
 from .association import user_operation_assignment_table
-from .base import Base
 from .users import UserModel
-from .engine import Session
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
     from sqlalchemy.orm import Session as SessionType
+
+    from phoenixc2.server.commander import Commander
+
     from .credentials import CredentialModel
     from .devices import DeviceModel
     from .listeners import ListenerModel
@@ -37,10 +40,10 @@ class OperationModel(Base):
     subnets: list[str] = Column(MutableList.as_mutable(JSON), default=[])
     created_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, onupdate=datetime.now)
+
     owner_id: int = Column(
         Integer,
         ForeignKey("Users.id"),
-        nullable=False,
         default=lambda: UserModel.get_current_user().id
         if UserModel.get_current_user()
         else None,
@@ -53,9 +56,6 @@ class OperationModel(Base):
         "UserModel",
         back_populates="assigned_operations",
         secondary=user_operation_assignment_table,
-    )
-    devices: list["DeviceModel"] = relationship(
-        "DeviceModel", back_populates="operation"
     )
     listeners: list["ListenerModel"] = relationship(
         "ListenerModel",

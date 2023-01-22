@@ -1,26 +1,20 @@
 """The Listeners Model"""
-from random import randint
 import importlib
 import time
 from datetime import datetime
+from random import randint
 from typing import TYPE_CHECKING
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    ARRAY,
-)
+
+from sqlalchemy import (ARRAY, JSON, Boolean, Column, DateTime, ForeignKey,
+                        Integer, String)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from .engine import Session
 
 from phoenixc2.server import AVAILABLE_KITS
+from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.misc import generate_name
-from .base import Base
+
 from .operations import OperationModel
 
 if TYPE_CHECKING:
@@ -65,10 +59,12 @@ class ListenerModel(Base):
     def listener_class(self) -> "BaseListener":
         """Get the listener class"""
         return self.get_class_from_type(self.type)
+
     @property
     def url(self) -> str:
         """Get the listener url"""
         return f"{self.listener_class.protocol}://{self.address}:{self.port}/"
+
     def is_active(self, commander: "Commander" = None) -> bool | str:
         """Returns True if listeners is active, else False"""
         try:

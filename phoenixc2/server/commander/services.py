@@ -29,7 +29,10 @@ def start_listeners(commander: Commander):
         else:
             log(status, "success")
             listeners_started += 1
-    log(f"{listeners_started} listener{'s' if listeners_started != 1 else ''} started.", "success")
+    log(
+        f"{listeners_started} listener{'s' if listeners_started != 1 else ''} started.",
+        "success",
+    )
     Session.remove()
 
 
@@ -50,12 +53,15 @@ def load_plugins(commander: Commander):
     for plugin in plugins.keys():
         plugin_config = plugins[plugin]
         if plugin_config["enabled"]:
-            #try:
-            commander.load_plugin(get_plugin(plugin), plugin_config)
-            """except Exception as error:
+            try:
+                commander.load_plugin(get_plugin(plugin), plugin_config)
+            except Exception as error:
                 log(str(error), "danger")
                 os._exit(1)
             else:
-                log(f"Plugin '{plugin}' loaded.", "success")"""
+                log(f"Plugin '{plugin}' loaded.", "success")
 
-    log(f"Loaded {len(plugins.keys())} plugin{'s' if len(plugins.keys()) != 1 else ''}.", "success")
+    log(
+        f"Loaded {len(plugins.keys())} plugin{'s' if len(plugins.keys()) != 1 else ''}.",
+        "success",
+    )

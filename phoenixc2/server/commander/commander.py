@@ -70,12 +70,17 @@ class Commander:
     def load_plugin(self, plugin: BasePlugin, config: dict):
         """Load a plugin"""
         if not plugin.check_dependencies():
-            if input(
-                f"Plugin {plugin.name} has missing dependencies. Would you like to install them? (y/n): "
-            ).lower() == "y":
+            if (
+                input(
+                    f"Plugin {plugin.name} has missing dependencies. Would you like to install them? (y/n): "
+                ).lower()
+                == "y"
+            ):
                 plugin.install_dependencies()
             else:
-                raise ModuleNotFoundError(f"Plugin {plugin.name} has missing dependencies")
+                raise ModuleNotFoundError(
+                    f"Plugin {plugin.name} has missing dependencies"
+                )
         if plugin.name in self.active_plugins:
             raise KeyError(f"Plugin {plugin.name} already loaded")
 

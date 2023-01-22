@@ -9,9 +9,9 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from phoenixc2.server import AVAILABLE_KITS
+from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
 
-from .base import Base
-from .engine import Session
 from .operations import OperationModel
 
 if TYPE_CHECKING:
@@ -45,6 +45,10 @@ class StagerModel(Base):
     devices: list["DeviceModel"] = relationship(
         "DeviceModel", back_populates="stager", cascade="all, delete-orphan"
     )
+    @property
+    def operation(self) -> "OperationModel":
+        """Returns the operation of the stager."""
+        return self.listener.operation
 
     def to_dict(
         self,

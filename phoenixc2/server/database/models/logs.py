@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
+from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.ui import log as cli_log
 
 from .association import user_logentry_association_table
-from .base import Base
-from .users import UserModel
-from .engine import Session
 from .operations import OperationModel
+from .users import UserModel
+
 
 class LogEntryModel(Base):
     """The Log Entries Model"""
@@ -34,6 +35,7 @@ class LogEntryModel(Base):
         secondary=user_logentry_association_table,
         back_populates="unseen_logs",
     )  # users who haven't seen this message
+
     def to_dict(
         self,
         show_user: bool = False,

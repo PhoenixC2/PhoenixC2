@@ -2,13 +2,14 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
+                        Text)
 from sqlalchemy.orm import relationship
 
 if TYPE_CHECKING:
     from .operations import OperationModel
 
-from .base import Base
+from phoenixc2.server.database.base import Base
 
 
 class CredentialModel(Base):

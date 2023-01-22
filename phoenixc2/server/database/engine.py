@@ -1,9 +1,12 @@
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session as SessionType
 from sqlalchemy.orm import scoped_session, sessionmaker
+
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.resources import get_resource
+
 c = load_config()["database"]
 
 if c["type"] == "sqlite":

@@ -5,25 +5,17 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
+from phoenixc2.server.database.base import Base
 from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.resources import get_resource
 
-from .base import Base
 from .devices import DeviceModel
 from .logs import LogEntryModel
 

@@ -6,8 +6,8 @@ from argparse import ArgumentParser
 import phoenixc2
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.admin import (recreate_super_user, regenerate_ssl,
-                                        reset_database, reset_server,
-                                        reset_table)
+                                          reset_database, reset_server,
+                                          reset_table)
 from phoenixc2.server.utils.ui import log, logo, ph_print
 
 parser = ArgumentParser(

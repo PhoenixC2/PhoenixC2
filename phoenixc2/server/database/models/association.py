@@ -1,7 +1,7 @@
 """The association table between different models."""
-from sqlalchemy import Column, ForeignKey, Table, String
+from sqlalchemy import Column, ForeignKey, String, Table
 
-from .base import Base
+from phoenixc2.server.database.base import Base
 
 user_logentry_association_table = Table(
     "user_logentry_association",
@@ -16,4 +16,3 @@ user_operation_assignment_table = Table(
     Column("operation_id", ForeignKey("Operations.id"), primary_key=True),
     Column("user_id", ForeignKey("Users.id"), primary_key=True),
 )
-

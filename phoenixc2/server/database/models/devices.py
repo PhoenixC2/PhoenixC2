@@ -3,15 +3,19 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
+
 from .operations import OperationModel
-from .engine import Session
+
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
+
     from .listeners import ListenerModel
     from .stagers import StagerModel
     from .tasks import TaskModel
@@ -39,18 +43,11 @@ class DeviceModel(Base):
     last_online: datetime = Column(DateTime, default=datetime.now)
     stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
     stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
-    operation_id: int = Column(
-        Integer,
-        ForeignKey("Operations.id"),
-        default=lambda: OperationModel.get_current_operation().id
-        if OperationModel.get_current_operation() is not None
-        else None,
-    )
-    operation: "OperationModel" = relationship(
-        "OperationModel",
-        back_populates="devices",
-    )
     tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
+
+    @property
+    def operation(self) -> "OperationModel":
+        return self.stager.operation
 
     @property
     def connected(self):
@@ -89,12 +86,14 @@ class DeviceModel(Base):
             data["connected"] = False
         else:
             data["connected"] = True
+
         if self.operation is not None and show_operation:
             data["operation"] = self.operation.to_dict()
         else:
             data["operation"] = (
                 self.operation.id if self.operation is not None else None
             )
+
         return data
 
     @classmethod
@@ -116,6 +115,7 @@ class DeviceModel(Base):
             user=user,
             admin=admin,
             stager=stager,
+            operation=stager.operation,
         )
 
     def delete(self):
