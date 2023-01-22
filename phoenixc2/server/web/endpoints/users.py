@@ -11,23 +11,49 @@ ENDPOINT = "users"
 
 users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 
+
 @users_bp.route("/", methods=["GET"])
+@users_bp.route("/<int:user_id>", methods=["GET"])
 @UserModel.authorized
-def get_users():
+def get_users(user_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
-    opened_user = (
-        Session.query(UserModel).filter_by(id=request.args.get("open")).first()
+    show_logs = request.args.get("logs", "").lower() == "true"
+    show_unseen_logs = request.args.get("unseen_logs", "").lower() == "true"
+    show_assigned_operations = (
+        request.args.get("assigned_operations", "").lower() == "true"
     )
-    curr_user = UserModel.get_current_user()
+    show_owned_operations = request.args.get("owned_operations", "").lower() == "true"
+    opened_user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     users: list[UserModel] = Session.query(UserModel).all()
 
     if use_json:
-        data = [user.to_dict() for user in users]
-        if curr_user.admin:
-            for index, user in enumerate(users):
-                data[index]["api_key"] = user.api_key
+        if opened_user is not None:
+            return jsonify(
+                {
+                    "status": "success",
+                    "user": opened_user.to_dict(
+                        show_logs,
+                        show_unseen_logs,
+                        show_assigned_operations,
+                        show_owned_operations,
+                    ),
+                }
+            )
 
-        return jsonify({"status": "success", ENDPOINT: data})
+        return jsonify(
+            {
+                "status": "success",
+                ENDPOINT: [
+                    user.to_dict(
+                        show_logs,
+                        show_unseen_logs,
+                        show_assigned_operations,
+                        show_owned_operations,
+                    )
+                    for user in users
+                ],
+            }
+        )
     return render_template(
         "users.j2",
         users=users,
@@ -35,7 +61,7 @@ def get_users():
     )
 
 
-@users_bp.route("/<int:user_id>/profile_picture", methods=["GET"])
+@users_bp.route("/<int:user_id>/picture", methods=["GET"])
 @UserModel.authorized
 def get_profile_picture(user_id: int):
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
@@ -192,5 +218,7 @@ def reset_api_key(id: int = None):
         current_user,
     )
     if use_json:
-        return jsonify({"status": "success", "message": "API key reset.", "api_key": user.api_key})
+        return jsonify(
+            {"status": "success", "message": "API key reset.", "api_key": user.api_key}
+        )
     return generate_response("success", "API key reset.", ENDPOINT)

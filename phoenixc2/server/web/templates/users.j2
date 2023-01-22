@@ -1,138 +1,190 @@
 {% extends 'base.j2' %}
-{% block title%}Users{% endblock %}
+{% block title %}Users{% endblock %}
 {% block content %}
-<div class="table-responsive">
-<table id="table" class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Status</th>
-            <th>Profile Picture</th>
-            <th>Username</th>
-            <th>Admin</th>
-            <th>Disabled</th>
-            <th>Last Activity</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr class="dark-background">
-            <td id="id-{{ user.id }}">{{ user.id }}</td>
-            {% if user.activity_status == 'online' %}
-            <td id="active-{{ user.id }}"><i title="Online" class="material-icons" style="color: green; margin-top: 4px;">circle</i></td>
-            {% elif user.activity_status == 'inactive' %}
-            <td id="active-{{ user.id }}"><i title="Inactive" class="material-icons" style="color: orange; margin-top: 4px;">circle</i></td>
-            {% else %}
-            <td id="active-{{ user.id }}"><i title="Offline" class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
-            {% endif %}
-            <td id="profile-picture-{{user.id}}"><img src="/users/{{user.id}}/profile_picture" alt="/static/images/icon.png" class="profile-picture"></td>
-            <td id="username-{{user.id}}">{{ user.username }}</td>
-            {% if user.admin %}
-            <td id="admin-{{ user.id }}"><i class="material-icons">done</i></td>
-            {% else %}
-            <td id="admin-{{ user.id }}"><i class="material-icons">close</i></td>
-            {% endif %}
-            {% if user.disabled %}
-            <td id="disabled-{{ user.id }}"><i class="material-icons">done</i></td>
-            {% else %}
-            <td id="disabled-{{ user.id }}"><i class="material-icons">close</i></td>
-            {% endif %}
-            <td id="last-activity-{{ user.id }}">{{ user.last_activity }}</td>
-            <td>
-                <button class="btn btn-warning" onclick="createEdit({{ user.id -1 }})"><i class="material-icons">edit</i></button>
-                <button class="btn btn-danger" onclick="deleteUser({{ user.id }})"><i class="material-icons">delete</i></button>
-            </td>
-        </tr>
-        {% endfor %}
-
-    </tbody>
-
-</table>
-{# Button trigger modal #}
-<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
-    onclick="resetModal()">
-    Create a new user
-</button>
-
-{# Create Modal #}
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="create-modal">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content dark-background">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="create-modal-body">
-                <form id="create-form" action="/users/add" method="POST">
-                    {# centered preview of the profile picture using bootstrap4 #}
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-md-5">
-                            </div>
-                            <div class="col-md-6">
+    <div class="table-responsive">
+        <table id="table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Status</th>
+                    <th>Profile Picture</th>
+                    <th>Username</th>
+                    <th>Admin</th>
+                    <th>Disabled</th>
+                    <th>Last Activity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr class="dark-background">
+                        <td id="id-{{ user.id }}">{{ user.id }}</td>
+                        {% if user.activity_status == 'online' %}
+                            <td id="active-{{ user.id }}">
+                                <i title="Online"
+                                   class="material-icons"
+                                   style="color: green;
+                                          margin-top: 4px">circle</i>
+                            </td>
+                        {% elif user.activity_status == 'inactive' %}
+                            <td id="active-{{ user.id }}">
+                                <i title="Inactive"
+                                   class="material-icons"
+                                   style="color: orange;
+                                          margin-top: 4px">circle</i>
+                            </td>
+                        {% else %}
+                            <td id="active-{{ user.id }}">
+                                <i title="Offline"
+                                   class="material-icons"
+                                   style="color: red;
+                                          margin-top: 4px">circle</i>
+                            </td>
+                        {% endif %}
+                        <td id="profile-picture-{{ user.id }}">
+                            <img src="/users/{{ user.id }}/picture"
+                                 alt="/static/images/icon.png"
+                                 class="profile-picture">
+                        </td>
+                        <td id="username-{{ user.id }}">{{ user.username }}</td>
+                        {% if user.admin %}
+                            <td id="admin-{{ user.id }}">
+                                <i class="material-icons">done</i>
+                            </td>
+                        {% else %}
+                            <td id="admin-{{ user.id }}">
+                                <i class="material-icons">close</i>
+                            </td>
+                        {% endif %}
+                        {% if user.disabled %}
+                            <td id="disabled-{{ user.id }}">
+                                <i class="material-icons">done</i>
+                            </td>
+                        {% else %}
+                            <td id="disabled-{{ user.id }}">
+                                <i class="material-icons">close</i>
+                            </td>
+                        {% endif %}
+                        <td id="last-activity-{{ user.id }}">{{ user.last_activity }}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="createEdit({{ user.id -1 }})">
+                                <i class="material-icons">edit</i>
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteUser({{ user.id }})">
+                                <i class="material-icons">delete</i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {# Button trigger modal #}
+        <button type="button"
+                class="btn btn-warning"
+                data-toggle="modal"
+                data-target="#create-modal"
+                onclick="resetModal()">
+            Create a new user
+        </button>
+        {# Create Modal #}
+        <div class="modal fade"
+             tabindex="-1"
+             role="dialog"
+             aria-labelledby="exampleModalLongTitle"
+             aria-hidden="true"
+             id="create-modal">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content dark-background">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="create-modal-body">
+                        <form id="create-form" action="/users/add" method="POST">
+                            {# centered preview of the profile picture using bootstrap4 #}
+                            <div class="form-group">
                                 <div class="row">
-                                    <div class="col-md-12">
-                                        <img id="profile-picture-preview" src="/static/images/icon.png" alt="profile picture preview" class="profile-picture">
+                                    <div class="col-md-5"></div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <img id="profile-picture-preview"
+                                                     src="/static/images/icon.png"
+                                                     alt="profile picture preview"
+                                                     class="profile-picture">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="username"
+                                       name="username"
+                                       placeholder="Username">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password"
+                                       class="form-control"
+                                       id="password"
+                                       name="password"
+                                       placeholder="Password">
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="admin" name="admin">
+                                    Admin
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           id="disabled"
+                                           name="disabled">
+                                    Disabled
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class"form-group">
+                                <label for="profile-picture">Profile Picture</label>
+                                <input type="file"
+                                       class="form-control"
+                                       id="profile-picture"
+                                       name="profile-picture"
+                                       onchange="previewImage()"
+                                       accept="image/*">
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                    <div class="modal-footer">
+                        <input type='button'
+                               id='create-button'
+                               onclick='sendCreate()'
+                               value='Create'
+                               class='btn btn-success'/>
+                        <input type='reset' value='Reset' class='btn btn-danger' />
                     </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
-                    </div>
-                    <div class="form-check">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" id="admin" name="admin">
-                            Admin
-                            <span class="form-check-sign">
-                                <span class="check"></span>
-                            </span>
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" id="disabled" name="disabled">
-                            Disabled
-                            <span class="form-check-sign">
-                                <span class="check"></span>
-                            </span>
-                        </label>
-                    </div>
-                    <div class"form-group">
-                        <label for="profile-picture">Profile Picture</label>
-                        <input type="file" class="form-control" id="profile-picture" name="profile-picture" onchange="previewImage()" accept="image/*">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />
-                <input type='reset' value='Reset' class='btn btn-danger' />
+                </div>
             </div>
         </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-
-<script src="/static/js/users.js"></script>
-
-<script>
+    {% endblock %}
+    {% block scripts %}
+        <script src="/static/js/users.js"></script>
+        <script>
     let users = [
-        {% for user in users %}
-        {{ to_json(user) }},
-        {% endfor %}
+        {% for user in users %}        {{ to_json(user) }},{% endfor %}
     ];
-</script>
-
-{% endblock %}
+        </script>
+        {% if opened_user %}<script>createEdit({{ opened_user.id - 1 }});</script>{% endif %}
+    {% endblock %}

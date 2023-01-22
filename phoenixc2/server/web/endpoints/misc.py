@@ -1,6 +1,7 @@
 import os
 
 from flask import Blueprint, jsonify, send_from_directory
+
 import phoenixc2
 import phoenixc2.server as avl
 from phoenixc2.server.database import UserModel
@@ -37,12 +38,7 @@ def get_interfaces():
 
 @misc_bp.route("/ping", methods=["GET"])
 def ping():
-    return jsonify({"status": "ok"})
-
-
-@misc_bp.route("/modules", methods=["GET"])
-def get_modules():
-    return jsonify(get_all_module_paths())
+    return jsonify({"status": "success"})
 
 
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])

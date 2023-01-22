@@ -1,7 +1,9 @@
-from flask import Blueprint, jsonify, render_template, request, make_response
-from phoenixc2.server.database import OperationModel, Session, UserModel, LogEntryModel
+from flask import Blueprint, jsonify, make_response, render_template, request
+
+from phoenixc2.server.database import (LogEntryModel, OperationModel, Session,
+                                       UserModel)
 from phoenixc2.server.utils.web import generate_response
-from datetime import datetime
+
 INVALID_ID = "Invalid ID."
 ENDPOINT = "operations"
 
@@ -13,9 +15,7 @@ operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 @UserModel.authorized
 def get_operations(operation_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
-    opened_operation = (
-        Session.query(OperationModel).filter_by(id=operation_id).first()
-    )
+    opened_operation = Session.query(OperationModel).filter_by(id=operation_id).first()
     operations: list[OperationModel] = Session.query(OperationModel).all()
 
     if use_json:
@@ -49,9 +49,7 @@ def add_operation():
     if not name:
         return generate_response("error", "Name is required.", ENDPOINT)
     try:
-        operation = OperationModel.add(
-            name, description, expiry
-        )
+        operation = OperationModel.add(name, description, expiry)
         Session.add(operation)
         Session.commit()
     except TypeError as e:
@@ -118,6 +116,7 @@ def delete_operation(operation_id: int):
     )
     return generate_response("success", message, ENDPOINT)
 
+
 @operations_bp.route("/<int:operation_id>/assign", methods=["POST"])
 @UserModel.admin_required
 def assign_operation(operation_id: int):
@@ -141,7 +140,10 @@ def assign_operation(operation_id: int):
         f"Operation '{operation.name}' assigned to {user.username}.",
         UserModel.get_current_user(),
     )
-    return generate_response("success", f"'{user} assigned to '{operation.name}'.", ENDPOINT)
+    return generate_response(
+        "success", f"'{user} assigned to '{operation.name}'.", ENDPOINT
+    )
+
 
 @operations_bp.route("/<int:operation_id>/unassign", methods=["POST"])
 @UserModel.admin_required
@@ -166,7 +168,10 @@ def unassign_operation(operation_id: int):
         f"Operation '{operation.name}' unassigned from {user.username}.",
         UserModel.get_current_user(),
     )
-    return generate_response("success", f"'{user} unassigned from '{operation.name}'.", ENDPOINT)
+    return generate_response(
+        "success", f"'{user} unassigned from '{operation.name}'.", ENDPOINT
+    )
+
 
 @operations_bp.route("/<int:operation_id>/add_subnet", methods=["POST"])
 @UserModel.admin_required
@@ -189,7 +194,9 @@ def add_subnet(operation_id: int):
         f"Subnet '{subnet}' added to '{operation.name}'.",
         UserModel.get_current_user(),
     )
-    return generate_response("success", f"Subnet '{subnet}' added to '{operation.name}'.", ENDPOINT)
+    return generate_response(
+        "success", f"Subnet '{subnet}' added to '{operation.name}'.", ENDPOINT
+    )
 
 
 @operations_bp.route("/<int:operation_id>/remove_subnet", methods=["POST"])
@@ -213,7 +220,9 @@ def remove_subnet(operation_id: int):
         f"Subnet '{subnet}' removed from '{operation.name}'.",
         UserModel.get_current_user(),
     )
-    return generate_response("success", f"Subnet '{subnet}' removed from '{operation.name}'.", ENDPOINT)
+    return generate_response(
+        "success", f"Subnet '{subnet}' removed from '{operation.name}'.", ENDPOINT
+    )
 
 
 @operations_bp.route("/<int:operation_id>/change", methods=["PUT"])
@@ -224,7 +233,9 @@ def change_operation(operation_id: int):
     if operation is None:
         return generate_response("error", INVALID_ID, ENDPOINT)
     if current_user not in operation.assigned_users and current_user != operation.owner:
-        return generate_response("error", "You are not assigned to this operation.", ENDPOINT)
+        return generate_response(
+            "error", "You are not assigned to this operation.", ENDPOINT
+        )
 
     LogEntryModel.log(
         "success",
@@ -232,7 +243,11 @@ def change_operation(operation_id: int):
         f"Operation '{operation.name}' changed successfully.",
         UserModel.get_current_user(),
     )
-    response = make_response(generate_response("success", f"Changed operation to '{operation.name}'.", ENDPOINT))
+    response = make_response(
+        generate_response(
+            "success", f"Changed operation to '{operation.name}'.", ENDPOINT
+        )
+    )
     # set cookie with unlimited expiration
     response.set_cookie("operation", str(operation.id), max_age=60 * 60 * 24 * 365 * 10)
     return response

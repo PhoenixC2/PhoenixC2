@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import (DeviceModel, LogEntryModel, Session,
-                                     TaskModel, UserModel)
+                                       TaskModel, UserModel)
 from phoenixc2.server.utils.web import generate_response
 
 TASK_CREATED = "Task created."
@@ -25,20 +25,29 @@ def devices_bp(commander: Commander):
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         if use_json:
             if opened_device is not None:
-                return jsonify(opened_device.to_dict(commander, show_stager, show_operation, show_tasks))
-            return jsonify([device.to_dict(commander, show_stager, show_operation, show_tasks) for device in devices])
+                return jsonify(
+                    opened_device.to_dict(
+                        commander, show_stager, show_operation, show_tasks
+                    )
+                )
+            return jsonify(
+                [
+                    device.to_dict(commander, show_stager, show_operation, show_tasks)
+                    for device in devices
+                ]
+            )
         return render_template(
             "devices.j2", devices=devices, opened_device=opened_device
         )
 
-    @blueprint.route("/<string:id>/clear", methods=["POST"])
+    @blueprint.route("/<string:device_id>/clear", methods=["POST"])
     @UserModel.authorized
-    def post_clear_devices(id: str = "all"):
+    def post_clear_devices(device_id: str = "all"):
         count = 0
         for device in (
             Session.query(DeviceModel).all()
-            if id == "all"
-            else Session.query(DeviceModel).filter_by(id=id).all()
+            if device_id == "all"
+            else Session.query(DeviceModel).filter_by(id=device_id).all()
         ):
             if not device.connected:
                 count += 1
@@ -53,15 +62,15 @@ def devices_bp(commander: Commander):
             )
         return generate_response("success", f"Cleared {count} devices.", "devices")
 
-    @blueprint.route("/<int:id>/reverse_shell", methods=["POST"])
+    @blueprint.route("/<int:device_id>/reverse_shell", methods=["POST"])
     @UserModel.authorized
-    def post_reverse_shell(id: int = None):
+    def post_reverse_shell(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         address = request.form.get("address")
         port = request.form.get("port")
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -83,14 +92,14 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/rce", methods=["POST"])
+    @blueprint.route("/<int:device_id>/rce", methods=["POST"])
     @UserModel.authorized
-    def post_rce(id: int = None):
+    def post_rce(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         cmd = request.form.get("cmd")
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -112,13 +121,13 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/info", methods=["GET"])
+    @blueprint.route("/<int:device_id>/info", methods=["GET"])
     @UserModel.authorized
-    def get_infos(id: int = None):
+    def get_infos(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -140,14 +149,14 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/dir", methods=["GET"])
+    @blueprint.route("/<int:device_id>/dir", methods=["GET"])
     @UserModel.authorized
-    def get_dir(id: int = None):
+    def get_dir(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         directory = request.args.get("dir")
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -169,14 +178,14 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/upload", methods=["POST"])
+    @blueprint.route("/<int:device_id>/upload", methods=["POST"])
     @UserModel.authorized
-    def post_upload(id: int = None):
+    def post_upload(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         target_path = request.args.get("path")
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -206,14 +215,14 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/download", methods=["GET"])
+    @blueprint.route("/<int:device_id>/download", methods=["GET"])
     @UserModel.authorized
-    def get_download(id: int = None):
+    def get_download(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         target_path = request.args.get("path")
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
@@ -237,16 +246,16 @@ def devices_bp(commander: Commander):
             else:
                 return generate_response("success", TASK_CREATED, "devices")
 
-    @blueprint.route("/<int:id>/module", methods=["POST"])
+    @blueprint.route("/<int:device_id>/module", methods=["POST"])
     @UserModel.authorized
-    def post_execute_module(id: int = None):
+    def post_execute_module(device_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         path = request.form.get("path")
         execution_method = request.form.get("method")
         data = request.form.get("data", {})
 
         # check if device exists
-        device = Session.query(DeviceModel).filter_by(id=id).first()
+        device = Session.query(DeviceModel).filter_by(id=device_id).first()
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 

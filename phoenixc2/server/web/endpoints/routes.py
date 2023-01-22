@@ -3,10 +3,12 @@ from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template
 
-from phoenixc2.server.database import DeviceModel, Session, UserModel
+from phoenixc2.server.database import (DeviceModel, OperationModel, Session,
+                                       UserModel)
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
+
 
 def routes_bp(commander: "Commander") -> Blueprint:
 
@@ -18,6 +20,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @UserModel.authorized
     def index():
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
+        operations: list[OperationModel] = Session.query(OperationModel).all()
         # get count of connections from today
         connections_today = (
             Session.query(DeviceModel)
@@ -32,13 +35,14 @@ def routes_bp(commander: "Commander") -> Blueprint:
         )
         active_users = (
             Session.query(UserModel)
-            .filter(UserModel.activity_status == "active")
+            .filter(UserModel.last_activity >= datetime.now() - timedelta(minutes=5))
             .count()
         )
 
         return render_template(
             "dashboard.j2",
             devices=devices,
+            operations=operations,
             active_devices=len(commander.active_handlers),
             active_listeners=len(commander.active_listeners),
             active_users=active_users,

@@ -3,13 +3,8 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (
-    ListenerModel,
-    LogEntryModel,
-    Session,
-    StagerModel,
-    UserModel,
-)
+from phoenixc2.server.database import (ListenerModel, LogEntryModel, Session,
+                                       StagerModel, UserModel)
 from phoenixc2.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
@@ -22,17 +17,38 @@ def stagers_bp(commander: Commander):
     stagers_bp = Blueprint(ENDPOINT, __name__, url_prefix="/stagers")
 
     @stagers_bp.route("/", methods=["GET"])
+    @stagers_bp.route("/<int:stager_id>", methods=["GET"])
     @UserModel.authorized
-    def get_stagers():
+    def get_stagers(stager_id: int = None):
         use_json = request.args.get("json", "") == "true"
-        opened_stager = (
-            Session.query(StagerModel).filter_by(id=request.args.get("open")).first()
+        show_listener = request.args.get("listener", "") == "true"
+        show_devices = request.args.get("devices", "") == "true"
+        opened_stager: StagerModel = (
+            Session.query(StagerModel).filter_by(id=stager_id).first()
         )
         stagers: list[StagerModel] = Session.query(StagerModel).all()
         stager_types = StagerModel.get_all_classes()
         listeners: list[ListenerModel] = Session.query(ListenerModel).all()
+
         if use_json:
-            return jsonify([stager.to_dict(commander) for stager in stagers])
+            if opened_stager is not None:
+                return jsonify(
+                    {
+                        "status": "success",
+                        "stager": opened_stager.to_dict(
+                            commander, show_listener, show_devices
+                        ),
+                    }
+                )
+            return jsonify(
+                {
+                    "status": "success",
+                    "stagers": [
+                        stager.to_dict(commander, show_listener, show_devices)
+                        for stager in stagers
+                    ],
+                }
+            )
         return render_template(
             "stagers.j2",
             stagers=stagers,

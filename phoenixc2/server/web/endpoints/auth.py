@@ -18,9 +18,9 @@ def get_login():
 @auth_bp.route("/login", methods=["POST"])
 def post_login():
     use_json = request.args.get("json", "").lower() == "true"
-    api_key = request.headers.get("Api-Key")
-    username = request.form.get("username")
-    password = request.form.get("password")
+    api_key = request.headers.get("Api-Key", None)
+    username = request.form.get("username", None)
+    password = request.form.get("password", None)
 
     if api_key is not None:
         user = UserModel.get_current_user()
@@ -28,10 +28,20 @@ def post_login():
             LogEntryModel.log("info", "auth", f"Logged in via API key.", user)
             session["id"] = user.id
             session["password"] = user.password_hash
-            return generate_response(
-                "success", f"Successfully logged in as {user} using Api-Key"
+            
+            if not use_json:
+                flash(f"Logged in as {user}.", "success")
+                return redirect("/")
+            
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": f"Logged in as {user}.",
+                    "user": user.to_dict(),
+                }
             )
         return generate_response("danger", "Invalid Api-Key.", "login", 400)
+    
     if username is None or password is None:
         return generate_response("danger", "Missing username or password.", "auth", 400)
 
@@ -40,6 +50,7 @@ def post_login():
     if user is None:
         flash(INVALID_CREDENTIALS, "danger")
         return render_template(TEMPLATE, username=username)
+
     if user.disabled:
         LogEntryModel.log(
             "info",
@@ -64,33 +75,37 @@ def post_login():
             if not use_json:
                 flash(f"Changed to {username}.", "success")
                 return redirect("/")
+
             return jsonify(
                 {
                     "status": "success",
                     "message": f"Changed to {username}.",
-                    "api_key": user.api_key,
+                    "user": user.to_dict(),
                 }
             )
         else:
             session["id"] = user.id
             session["password"] = user.password_hash
+
             LogEntryModel.log(
                 "info",
                 "auth",
                 f"Logged in as {'admin' if user.admin else 'user'} {user}.",
                 user,
             )
+
             if not use_json:
                 flash(
                     f"Logged in as {'admin' if user.admin else 'user'} {username}.",
                     "success",
                 )
                 return redirect("/")
+            
             return jsonify(
                 {
                     "status": "success",
                     "message": f"Logged in as {username} ({'admin' if user.admin else 'user'}).",
-                    "api_key": user.api_key,
+                    "user": user.to_dict(),
                 }
             )
     else:

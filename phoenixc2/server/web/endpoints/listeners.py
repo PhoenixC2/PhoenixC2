@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import ListenerModel, LogEntryModel, Session, UserModel
+from phoenixc2.server.database import (ListenerModel, LogEntryModel, Session,
+                                       UserModel)
 from phoenixc2.server.utils.misc import get_network_interfaces, get_platform
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import generate_response
@@ -30,10 +31,20 @@ def listeners_bp(commander: Commander):
                 return jsonify(
                     {
                         "status": "success",
-                        "listener": opened_listener.to_dict(commander, show_operation, show_stagers),
+                        "listener": opened_listener.to_dict(
+                            commander, show_operation, show_stagers
+                        ),
                     }
                 )
-            return jsonify({"status": "success", ENDPOINT: [listener.to_dict(commander, show_operation, show_stagers) for listener in listeners]})
+            return jsonify(
+                {
+                    "status": "success",
+                    ENDPOINT: [
+                        listener.to_dict(commander, show_operation, show_stagers)
+                        for listener in listeners
+                    ],
+                }
+            )
         return render_template(
             "listeners.j2",
             listeners=listeners,
