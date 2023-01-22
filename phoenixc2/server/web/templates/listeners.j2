@@ -1,154 +1,205 @@
 {% extends 'base.j2' %}
 {% from 'macros.j2' import render_options, render_features %}
-{% block title%}Listeners{% endblock %}
+{% block title %}Listeners{% endblock %}
 {% block content %}
-<div class="table-responsive">
-<table id="table" class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Active</th>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Port</th>
-            <th>Type</th>
-            <th>SSL</th>
-            <th>Enabled</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for listener in listeners %}
-        <tr class="dark-background" id="listener-{{ listener.id }}">
-            <td id="id-{{ listener.id }}">{{ listener.id }}</td>
-            {% if listener.is_active(commander) %}
-            <td id="active-{{ listener.id }}"><i title="Active" class="material-icons" style="color: green; margin-top: 4px;">circle</i></td>
-            {% else %}
-            <td id="active-{{ listener.id }}"><i title="Offline" class="material-icons" style="color: red; margin-top: 4px;">circle</i></td>
-            {% endif %}
-            <td id="name-{{ listener.id }}">{{ listener.name }}</td>
-            <td id="address-{{ listener.id }}">{{ listener.address }}</td>
-            <td id="port-{{ listener.id }}">{{ listener.port }}</td>
-            <td id="type-{{ listener.id }}">{{ listener.type }}</td>
-            {% if listener.ssl %}
-            <td id="ssl-{{ listener.id }}"><i class="material-icons">done</i></td>
-            {% else %}
-            <td id="ssl-{{ listener.id }}"><i class="material-icons">close</i></td>
-            {% endif %}
-            {% if listener.enabled %}
-            <td id="enabled-{{ listener.id }}"><i class="material-icons">done</i></td>
-            {% else %}
-            <td id="enabled-{{ listener.id }}"><i class="material-icons">close</i></td>
-            {% endif %}
-            <td>
-                <button class="btn btn-warning" onclick="createEdit({{ listener.id -1 }})"><i class="material-icons">edit</i></button>
-                <button class="btn btn-danger" onclick="deleteListener({{ listener.id }})"><i class="material-icons">delete</i></button>
-                {% if listener.is_active(commander) %}
-                <button class="btn btn-danger" onclick="stopListener({{ listener.id }})"><i class="material-icons">stop</i></button>
-                <button class="btn btn-success" onclick="restartListener({{ listener.id }})"><i class="material-icons">restart_alt</i></button>
-                {% else %}
-                <button class="btn btn-success" onclick="startListener({{ listener.id }})"><i class="material-icons">play_arrow</i></button>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
-{# Button trigger modal #}
-<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#create-modal"
-    onclick="resetModal()">
-    Create a new listener
-</button>
-
-{# Create Modal #}
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="create-modal">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content dark-background">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="create-modal-body">
-                <form id='create-form' action='/listeners/add' method='POST' onsubmit="sendCreate()">
-                    <div class="form-group">
-                        <label for="type">Listener Type</label>
-                        <select class="form-control" id="type" onchange="changeCreateType()">
-                            {% for listener_type in listener_types %}
-                            <option value="{{ listener_type.name }}">{{ listener_type.name }}: {{ listener_type.description }}</option>
-                            {% endfor %}
-                        </select>
-                        <small class="form-text text-muted">Select the type of listener you want to create.</small>
-                    </div>
-                    <div id="create-form-content">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <input type='button' id='create-button' onclick='sendCreate()' value='Create' class='btn btn-success' />
-                <input type='reset' value='Reset' class='btn btn-danger' />
+    <div class="table-responsive">
+        <table id="table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Active</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Port</th>
+                    <th>Type</th>
+                    <th>SSL</th>
+                    <th>Enabled</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for listener in listeners %}
+                    <tr class="dark-background" id="listener-{{ listener.id }}">
+                        <td id="id-{{ listener.id }}">{{ listener.id }}</td>
+                        {% if listener.is_active(commander) %}
+                            <td id="active-{{ listener.id }}">
+                                <i title="Active"
+                                   class="material-icons"
+                                   style="color: green;
+                                          margin-top: 4px">circle</i>
+                            </td>
+                        {% else %}
+                            <td id="active-{{ listener.id }}">
+                                <i title="Offline"
+                                   class="material-icons"
+                                   style="color: red;
+                                          margin-top: 4px">circle</i>
+                            </td>
+                        {% endif %}
+                        <td id="name-{{ listener.id }}">{{ listener.name }}</td>
+                        <td id="address-{{ listener.id }}">{{ listener.address }}</td>
+                        <td id="port-{{ listener.id }}">{{ listener.port }}</td>
+                        <td id="type-{{ listener.id }}">{{ listener.type }}</td>
+                        {% if listener.ssl %}
+                            <td id="ssl-{{ listener.id }}">
+                                <i class="material-icons">done</i>
+                            </td>
+                        {% else %}
+                            <td id="ssl-{{ listener.id }}">
+                                <i class="material-icons">close</i>
+                            </td>
+                        {% endif %}
+                        {% if listener.enabled %}
+                            <td id="enabled-{{ listener.id }}">
+                                <i class="material-icons">done</i>
+                            </td>
+                        {% else %}
+                            <td id="enabled-{{ listener.id }}">
+                                <i class="material-icons">close</i>
+                            </td>
+                        {% endif %}
+                        <td>
+                            <button class="btn btn-warning" onclick="createEdit({{ listener.id -1 }})">
+                                <i class="material-icons">edit</i>
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteListener({{ listener.id }})">
+                                <i class="material-icons">delete</i>
+                            </button>
+                            {% if listener.is_active(commander) %}
+                                <button class="btn btn-danger" onclick="stopListener({{ listener.id }})">
+                                    <i class="material-icons">stop</i>
+                                </button>
+                                <button class="btn btn-success" onclick="restartListener({{ listener.id }})">
+                                    <i class="material-icons">restart_alt</i>
+                                </button>
+                            {% else %}
+                                <button class="btn btn-success" onclick="startListener({{ listener.id }})">
+                                    <i class="material-icons">play_arrow</i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {# Button trigger modal #}
+    <button type="button"
+            class="btn btn-warning"
+            data-toggle="modal"
+            data-target="#create-modal"
+            onclick="resetModal()">
+        Create a new listener
+    </button>
+    {# Create Modal #}
+    <div class="modal fade"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="exampleModalLongTitle"
+         aria-hidden="true"
+         id="create-modal">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-background">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="create-modal-body">
+                    <form id='create-form'
+                          action='/listeners/add'
+                          method='POST'
+                          onsubmit="sendCreate()">
+                        <div class="form-group">
+                            <label for="type">Listener Type</label>
+                            <select class="form-control" id="type" onchange="changeCreateType()">
+                                {% for listener_type in listener_types %}
+                                    <option value="{{ listener_type.name }}">
+                                        {{ listener_type.name }}: {{ listener_type.description }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the type of listener you want to create.</small>
+                        </div>
+                        <div id="create-form-content"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <input type='button'
+                           id='create-button'
+                           onclick='sendCreate()'
+                           value='Create'
+                           class='btn btn-success'/>
+                    <input type='reset' value='Reset' class='btn btn-danger' />
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-{# Edit Modal #}
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
-    aria-hidden="true" id="edit-modal">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content dark-background">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Edit listener</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="edit-modal-body">
-                <form id='edit-form' action='/listeners/edit' method='POST' onsubmit="sendCreate()">
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="edit-button" class="btn btn-success" onclick="sendEdit()">Save changes</button>
+    {# Edit Modal #}
+    <div class="modal fade"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="exampleModalLongTitle"
+         aria-hidden="true"
+         id="edit-modal">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content dark-background">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Edit listener</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="edit-modal-body">
+                    <form id='edit-form'
+                          action='/listeners/edit'
+                          method='POST'
+                          onsubmit="sendCreate()">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button"
+                            id="edit-button"
+                            class="btn btn-success"
+                            onclick="sendEdit()">Save changes</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{# hidden forms for diffrent listener types #}
-{# loop over all listener types #}
-
-{% for listener_type in listener_types %}
-{# create a form for each listener type #}
-<form id="{{ listener_type.name }}-form" style="display: none;" target="/listeners/create">
-    {# check if platform is supported #}
-    {% if platform not in listener_type.os %}
-    <div class="alert alert-danger" role="alert">
-        <strong>Warning!</strong> This listener type is not supported on the platform of the server.
-    </div>
-    {% endif %}
-    {# hidden type field #}
-    <input type="hidden" name="id" id="id-create" value="none">
-    <input type="hidden" name="type" id="type-create" value="{{ listener_type.name }}">
-    {{ render_features(listener_type.features) }}
-    {{ render_options(listener_type.options.options) }}
-    {# show author of the listener #}
-    <p class="text-muted">Created by: {{ listener_type.author }}</p>
-</form>
-{% endfor %}
+    {# hidden forms for diffrent listener types #}
+    {# loop over all listener types #}
+    {% for listener_type in listener_types %}
+        {# create a form for each listener type #}
+        <form id="{{ listener_type.name }}-form"
+              style="display: none"
+              target="/listeners/create">
+            {# check if platform is supported #}
+            {% if platform not in listener_type.os %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Warning!</strong> This listener type is not supported on the platform of the server.
+                </div>
+            {% endif %}
+            {# hidden type field #}
+            <input type="hidden" name="id" id="id-create" value="none">
+            <input type="hidden"
+                   name="type"
+                   id="type-create"
+                   value="{{ listener_type.name }}">
+            {{ render_features(listener_type.features) }}
+            {{ render_options(listener_type.options.options) }}
+            {# show author of the listener #}
+            <p class="text-muted">Created by: {{ listener_type.author }}</p>
+        </form>
+    {% endfor %}
 {% endblock %}
 {% block scripts %}
-<script>
+    <script>
     let listeners = [
-        {% for listener in listeners %}
-        {{ to_json(listener, commander) }},
-        {% endfor %}
+        {% for listener in listeners %}        {{ to_json(listener, commander) }},{% endfor %}
     ];
-</script>
-<script src="/static/js/listeners.js"></script>
-{% if opened_listener %}
-<script>createEdit({{ opened_listener.id -1 }});</script>
-{% endif %}
+    </script>
+    <script src="/static/js/listeners.js"></script>
+    {% if opened_listener %}<script>createEdit({{ opened_listener.id -1 }});</script>{% endif %}
 {% endblock %}

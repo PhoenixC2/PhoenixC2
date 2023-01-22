@@ -8,10 +8,11 @@ import string
 from flask import Flask, abort, cli, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import LogEntryModel, Session
+from phoenixc2.server.database import (LogEntryModel, OperationModel, Session,
+                                       UserModel)
 from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.web.endpoints import *
-from phoenixc2.server.database import UserModel, OperationModel
+from phoenixc2.server.utils.misc import format_datetime
 
 # disable flask logging
 
@@ -47,7 +48,9 @@ def create_web(commander: Commander) -> Flask:
     def inject_messages():
         return dict(
             messages=[
-                log for log in Session.query(LogEntryModel).all() if UserModel.get_current_user() in log.unseen_users
+                log
+                for log in Session.query(LogEntryModel).all()
+                if UserModel.get_current_user() in log.unseen_users
             ]
         )
 
@@ -56,12 +59,16 @@ def create_web(commander: Commander) -> Flask:
         return dict(current_operation=OperationModel.get_current_operation())
 
     @web_server.context_processor
-    def utility_processor():
+    def inject_to_dict():
         # function which converts a database element to a json string to be used in javascript
         def to_json(data, *args, **kwargs):
             return json.dumps(data.to_dict(*args, **kwargs), default=str)
 
         return dict(to_json=to_json)
+
+    @web_server.context_processor
+    def inject_format_datetime():
+        return dict(format_datetime=format_datetime)
 
     @web_server.before_request
     def before_request():
