@@ -57,6 +57,12 @@
                                 <p>Dashboard</p>
                             </a>
                         </li>
+                        <li class="nav-item {% if request.path == "/operations/" %} active{% endif %}">
+                            <a class="nav-link" href="/operations">
+                                <i class="material-icons">public</i>
+                                <p>Operations</p>
+                            </a>
+                        </li>
                         <li class="nav-item {% if request.path == "/devices/" %} active{% endif %}">
                             <a class="nav-link" href="/devices">
                                 <i class="material-icons">dns</i>

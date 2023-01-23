@@ -18,11 +18,12 @@ users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 def get_users(user_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     show_logs = request.args.get("logs", "").lower() == "true"
-    show_unseen_logs = request.args.get("unseen_logs", "").lower() == "true"
+    show_unseen_logs = request.args.get("unseen", "").lower() == "true"
     show_assigned_operations = (
         request.args.get("assigned_operations", "").lower() == "true"
     )
     show_owned_operations = request.args.get("owned_operations", "").lower() == "true"
+    
     opened_user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     users: list[UserModel] = Session.query(UserModel).all()
 
@@ -204,7 +205,7 @@ def reset_api_key(id: int = None):
     # Check if user is head admin
     if user.id == 1 and current_user.id != 1:
         return generate_response(
-            "danger", "Can't reset the head admin's api key.", ENDPOINT, 403
+            "danger", "Can't reset the head admin's wasapi key.", ENDPOINT, 403
         )
 
     # Reset API Key
@@ -214,11 +215,11 @@ def reset_api_key(id: int = None):
     LogEntryModel.log(
         "success",
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username}'s API key reset.",
+        f"{'Admin' if user.admin else 'User'} {user.username}'s API key has been reset.",
         current_user,
     )
     if use_json:
         return jsonify(
-            {"status": "success", "message": "API key reset.", "api_key": user.api_key}
+            {"status": "success", "message": "API key has been reset.", "api_key": user.api_key}
         )
-    return generate_response("success", "API key reset.", ENDPOINT)
+    return generate_response("success", "API key has been reset.", ENDPOINT)

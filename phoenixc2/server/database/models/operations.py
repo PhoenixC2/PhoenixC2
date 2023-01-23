@@ -74,7 +74,6 @@ class OperationModel(Base):
         self,
         show_owner: bool = False,
         show_assigned_users: bool = False,
-        show_devices: bool = False,
         show_listeners: bool = False,
         show_credentials: bool = False,
         show_logs: bool = False,
@@ -91,9 +90,6 @@ class OperationModel(Base):
             "users": [user.to_dict() for user in self.assigned_users]
             if show_assigned_users
             else [user.id for user in self.assigned_users],
-            "devices": [device.to_dict() for device in self.devices]
-            if show_devices
-            else [device.id for device in self.devices],
             "listeners": [listener.to_dict() for listener in self.listeners]
             if show_listeners
             else [listener.id for listener in self.listeners],

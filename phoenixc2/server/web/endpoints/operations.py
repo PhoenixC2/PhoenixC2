@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, make_response, render_template, request
 
-from phoenixc2.server.database import (LogEntryModel, OperationModel, Session,
-                                       UserModel)
+from phoenixc2.server.database import LogEntryModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
@@ -15,7 +14,15 @@ operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 @UserModel.authorized
 def get_operations(operation_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
-    opened_operation = Session.query(OperationModel).filter_by(id=operation_id).first()
+    show_owner = request.args.get("owner", "").lower() == "true"
+    show_assigned_users = request.args.get("assigned", "").lower() == "true"
+    show_listeners = request.args.get("listeners", "").lower() == "true"
+    show_credentials = request.args.get("credentials", "").lower() == "true"
+    show_logs = request.args.get("logs", "").lower() == "true"
+
+    opened_operation: OperationModel = (
+        Session.query(OperationModel).filter_by(id=operation_id).first()
+    )
     operations: list[OperationModel] = Session.query(OperationModel).all()
 
     if use_json:
@@ -23,19 +30,61 @@ def get_operations(operation_id: int = None):
             return jsonify(
                 {
                     "status": "success",
-                    "operation": opened_operation.to_dict(),
+                    "operation": opened_operation.to_dict(
+                        show_owner,
+                        show_assigned_users,
+                        show_listeners,
+                        show_credentials,
+                        show_logs,
+                    ),
                 }
             )
         return jsonify(
             {
                 "status": "success",
-                ENDPOINT: [operation.to_dict() for operation in operations],
+                ENDPOINT: [
+                    operation.to_dict(
+                        show_owner,
+                        show_assigned_users,
+                        show_listeners,
+                        show_credentials,
+                        show_logs,
+                    )
+                    for operation in operations
+                ],
             }
         )
     return render_template(
         "operations.j2",
         operations=operations,
         opened_operation=opened_operation,
+    )
+
+
+@operations_bp.route("/current", methods=["GET"])
+@UserModel.authorized
+def get_current_operation():
+    show_owner = request.args.get("owner", "").lower() == "true"
+    show_assigned_users = request.args.get("assigned", "").lower() == "true"
+    show_listeners = request.args.get("listeners", "").lower() == "true"
+    show_credentials = request.args.get("credentials", "").lower() == "true"
+    show_logs = request.args.get("logs", "").lower() == "true"
+
+    current_operation: OperationModel = OperationModel.get_current_operation()
+    if current_operation is None:
+        return generate_response("error", "No operation is currently selected.", ENDPOINT)
+
+    return jsonify(
+        {
+            "status": "success",
+            "operation": current_operation.to_dict(
+                show_owner,
+                show_assigned_users,
+                show_listeners,
+                show_credentials,
+                show_logs,
+            ),
+        }
     )
 
 

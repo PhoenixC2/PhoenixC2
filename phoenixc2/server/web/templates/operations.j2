@@ -1,1 +1,38 @@
-
+{% extends 'base.j2' %}
+{% from 'macros.j2' import render_user %}
+{% block title %}Operations{% endblock %}
+{% block content %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Owner</th>
+                    <th>Assigned Users</th>
+                    <th>Expiry</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for operation in operations %}
+                    <tr class="dark-background">
+                        <td>{{ operation.id }}</td>
+                        <td>{{ operation.name }}</td>
+                        <td>{{ operation.description }}</td>
+                        <td>{{ render_user(operation.owner) }}</td>
+                        {% if operation.assigned_users|length == 0 %}
+                            <td>None</td>
+                        {% else %}
+                        <td>
+                            {% for user in operation.assigned_users %}{{ render_user(user) }}{% endfor %}
+                        </td>
+                        {% endif %}
+                        <td>{{ format_datetime(operation.expiry) }}</td>
+                        <td>{{ format_datetime(operation.created_at) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endblock %}

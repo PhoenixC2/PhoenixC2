@@ -23,6 +23,7 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "") == "true"
         show_listener = request.args.get("listener", "") == "true"
         show_devices = request.args.get("devices", "") == "true"
+        
         opened_stager: StagerModel = (
             Session.query(StagerModel).filter_by(id=stager_id).first()
         )

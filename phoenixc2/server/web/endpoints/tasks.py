@@ -15,6 +15,7 @@ def tasks_bp(commander: Commander):
     def get_tasks(task_id: int = None):
         use_json = request.args.get("json", "") == "true"
         show_device = request.args.get("device", "") == "true"
+        
         opened_task: TaskModel = Session.query(TaskModel).filter_by(id=task_id).first()
         tasks: list[TaskModel] = Session.query(TaskModel).all()
         if use_json:

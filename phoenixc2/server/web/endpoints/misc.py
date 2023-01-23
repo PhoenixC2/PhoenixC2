@@ -54,15 +54,6 @@ def get_downloads(file_name: str):
     )
 
 
-@misc_bp.route("/downloads/clear", methods=["POST"])
-@UserModel.admin_required
-def post_clear_downloads():
-    downloads = get_resource("data/downloads", skip_file_check=True)
-    for file in downloads.iterdir():
-        os.remove(file)
-    return generate_response("success", "Downloads cleared.", "devices")
-
-
 @misc_bp.route("/uploads/clear", methods=["POST"])
 @UserModel.admin_required
 def post_clear_uploads():
@@ -70,3 +61,12 @@ def post_clear_uploads():
     for file in uploads.iterdir():
         os.remove(file)
     return generate_response("success", "Uploads cleared.", "devices")
+
+
+@misc_bp.route("/downloads/clear", methods=["POST"])
+@UserModel.admin_required
+def post_clear_downloads():
+    downloads = get_resource("data/downloads", skip_file_check=True)
+    for file in downloads.iterdir():
+        os.remove(file)
+    return generate_response("success", "Downloads cleared.", "devices")
