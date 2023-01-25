@@ -72,7 +72,9 @@ def get_current_operation():
 
     current_operation: OperationModel = OperationModel.get_current_operation()
     if current_operation is None:
-        return generate_response("error", "No operation is currently selected.", ENDPOINT)
+        return generate_response(
+            "error", "No operation is currently selected.", ENDPOINT
+        )
 
     return jsonify(
         {

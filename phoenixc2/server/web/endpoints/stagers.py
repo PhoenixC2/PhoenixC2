@@ -3,8 +3,13 @@ import tempfile
 from flask import Blueprint, jsonify, render_template, request, send_file
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (ListenerModel, LogEntryModel, Session,
-                                       StagerModel, UserModel)
+from phoenixc2.server.database import (
+    ListenerModel,
+    LogEntryModel,
+    Session,
+    StagerModel,
+    UserModel,
+)
 from phoenixc2.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
@@ -23,7 +28,7 @@ def stagers_bp(commander: Commander):
         use_json = request.args.get("json", "") == "true"
         show_listener = request.args.get("listener", "") == "true"
         show_devices = request.args.get("devices", "") == "true"
-        
+
         opened_stager: StagerModel = (
             Session.query(StagerModel).filter_by(id=stager_id).first()
         )

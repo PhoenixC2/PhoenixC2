@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (ListenerModel, LogEntryModel, Session,
-                                       UserModel)
+from phoenixc2.server.database import ListenerModel, LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.misc import get_network_interfaces, get_platform
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import generate_response

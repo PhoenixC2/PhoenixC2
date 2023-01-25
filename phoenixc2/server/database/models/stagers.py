@@ -3,8 +3,7 @@ import importlib
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String)
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
@@ -44,6 +43,7 @@ class StagerModel(Base):
     devices: list["DeviceModel"] = relationship(
         "DeviceModel", back_populates="stager", cascade="all, delete-orphan"
     )
+
     @property
     def operation(self) -> "OperationModel":
         """Returns the operation of the stager."""

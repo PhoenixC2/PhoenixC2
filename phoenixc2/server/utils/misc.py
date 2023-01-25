@@ -52,9 +52,7 @@ def format_datetime(date_time: datetime) -> str:
         elif time_difference.days == 1:
             return "yesterday"
         elif time_difference.days < 7:
-            return (
-                f"{time_difference.days} day{'s' if time_difference.days > 1 else ''} ago"
-            )
+            return f"{time_difference.days} day{'s' if time_difference.days > 1 else ''} ago"
         elif time_difference.days <= 31:
             return f"{time_difference.days // 7} week{'s' if time_difference.days // 7 > 1 else ''} ago"
         else:
@@ -76,9 +74,7 @@ def format_datetime(date_time: datetime) -> str:
         elif time_difference.days == 1:
             return "tomorrow"
         elif time_difference.days < 7:
-            return (
-                f"in {time_difference.days} day{'s' if time_difference.days > 1 else ''}"
-            )
+            return f"in {time_difference.days} day{'s' if time_difference.days > 1 else ''}"
         elif time_difference.days <= 31:
             return f"in {time_difference.days // 7} week{'s' if time_difference.days // 7 > 1 else ''}"
         else:

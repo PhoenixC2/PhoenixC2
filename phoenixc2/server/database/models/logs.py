@@ -40,7 +40,7 @@ class LogEntryModel(Base):
         ForeignKey("Operations.id"),
         default=lambda: OperationModel.get_current_operation().id
         if OperationModel.get_current_operation() is not None
-        else None
+        else None,
     )
     operation = relationship("OperationModel", back_populates="logs")
 

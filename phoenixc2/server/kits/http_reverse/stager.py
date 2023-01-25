@@ -5,9 +5,15 @@ from typing import TYPE_CHECKING
 
 import jinja2
 
-from phoenixc2.server.utils.options import (AddressType, ChoiceType,
-                                            DefaultStagerPool, IntegerType,
-                                            Option, OptionPool, StringType)
+from phoenixc2.server.utils.options import (
+    AddressType,
+    ChoiceType,
+    DefaultStagerPool,
+    IntegerType,
+    Option,
+    OptionPool,
+    StringType,
+)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 

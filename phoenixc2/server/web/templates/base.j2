@@ -33,6 +33,7 @@
               href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
         <!-- Material Kit CSS -->
         <link href="/static/css/material-dashboard.css?v=2.1.0" rel="stylesheet" />
+        {% block head %}{% endblock %}
     </head>
     <body class="dark-edition">
         <div class="wrapper ">
@@ -198,7 +199,7 @@
             </div>
         </div>
         <!--   Scripts  -->
-        <script src="/static/js/index.js"></script>
+        <script src="/static/js/default.js"></script>
         <script src="/static/js/core/jquery.min.js"></script>
         <script src="/static/js/core/popper.min.js"></script>
         <script src="/static/js/core/bootstrap-material-design.min.js"></script>

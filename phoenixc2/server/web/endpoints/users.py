@@ -23,7 +23,7 @@ def get_users(user_id: int = None):
         request.args.get("assigned_operations", "").lower() == "true"
     )
     show_owned_operations = request.args.get("owned_operations", "").lower() == "true"
-    
+
     opened_user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     users: list[UserModel] = Session.query(UserModel).all()
 
@@ -69,6 +69,36 @@ def get_profile_picture(user_id: int):
     if user is None:
         return generate_response("error", USER_DOES_NOT_EXIST, ENDPOINT)
     return send_file(user.get_profile_picture(), mimetype="image/png")
+
+
+@users_bp.route("/picture", methods=["POST"])
+@users_bp.route("/<int:user_id>/picture", methods=["DELETE"])
+@UserModel.authorized
+def delete_profile_picture(user_id: int = None):
+    current_user = UserModel.get_current_user()
+    if user_id == 0 and current_user.id != 0:
+        return generate_response(
+            "error", "You can't change the super user's picture.", ENDPOINT
+        )
+
+    if current_user.admin or current_user.id == user_id:
+        user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
+    else:
+        return generate_response(
+            "error", "You can't change other users' pictures.", ENDPOINT
+        )
+
+    if user is None:
+        return generate_response("error", USER_DOES_NOT_EXIST, ENDPOINT)
+
+    if user.profile_picture:
+        user.delete_profile_picture()
+    else:
+        return generate_response(
+            "error", "User doesn't have a profile picture set.", ENDPOINT
+        )
+    Session.commit()
+    return generate_response("success", "Profile picture deleted.", ENDPOINT)
 
 
 @users_bp.route("/add", methods=["POST"])
@@ -220,6 +250,10 @@ def reset_api_key(id: int = None):
     )
     if use_json:
         return jsonify(
-            {"status": "success", "message": "API key has been reset.", "api_key": user.api_key}
+            {
+                "status": "success",
+                "message": "API key has been reset.",
+                "api_key": user.api_key,
+            }
         )
     return generate_response("success", "API key has been reset.", ENDPOINT)

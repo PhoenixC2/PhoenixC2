@@ -1,8 +1,13 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (DeviceModel, LogEntryModel, Session,
-                                       TaskModel, UserModel)
+from phoenixc2.server.database import (
+    DeviceModel,
+    LogEntryModel,
+    Session,
+    TaskModel,
+    UserModel,
+)
 from phoenixc2.server.utils.web import generate_response
 
 TASK_CREATED = "Task created."

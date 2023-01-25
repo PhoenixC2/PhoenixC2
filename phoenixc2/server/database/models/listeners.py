@@ -5,8 +5,16 @@ from datetime import datetime
 from random import randint
 from typing import TYPE_CHECKING
 
-from sqlalchemy import (ARRAY, JSON, Boolean, Column, DateTime, ForeignKey,
-                        Integer, String)
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 

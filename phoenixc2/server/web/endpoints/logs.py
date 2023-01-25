@@ -15,7 +15,7 @@ def get_logs(log_id: int = None):
     show_user = request.args.get("user", "").lower() == "true"
     show_unseen_users = request.args.get("unseen", "").lower() == "true"
     show_operation = request.args.get("operation", "").lower() == "true"
-    
+
     opened_log: LogEntryModel = (
         Session.query(LogEntryModel).filter_by(id=log_id).first()
     )

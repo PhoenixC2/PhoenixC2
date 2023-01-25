@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template
 
-from phoenixc2.server.database import (DeviceModel, OperationModel, Session,
-                                       UserModel)
+from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander

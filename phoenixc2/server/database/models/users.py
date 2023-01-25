@@ -17,8 +17,10 @@ from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.resources import get_resource, PICTURES
 from phoenixc2.server.utils.web import generate_response
 
-from .association import (user_logentry_association_table,
-                          user_operation_assignment_table)
+from .association import (
+    user_logentry_association_table,
+    user_operation_assignment_table,
+)
 
 AUTH_ENDPOINT = "auth/login"
 if TYPE_CHECKING:
@@ -92,8 +94,9 @@ class UserModel(Base):
             "username": self.username,
             "api_key": self.api_key,
             "admin": self.admin,
-            "status": self.activity_status,
             "disabled": self.disabled,
+            "profile_picture": self.profile_picture,
+            "status": self.activity_status,
             "last_login": self.last_login,
             "last_activity": self.last_activity,
             "logs": [log.to_dict() for log in self.logs]
@@ -144,23 +147,9 @@ class UserModel(Base):
 
     def delete(self) -> None:
         """Delete the user and profile picture and read all logs"""
-        if self.profile_picture:
-            os.remove(
-                str(get_resource("data/pictures", self.username, skip_file_check=True))
-            )
+        self.delete_profile_picture()
         self.read_all_logs()
         Session.delete(self)
-
-    def set_profile_picture(self, file: FileStorage) -> None:
-        """Set the profile picture and save it"""
-
-        if self.profile_picture:
-            os.rm(
-                str(get_resource(PICTURES, self.username, skip_file_check=True))
-            )
-
-        self.profile_picture = True
-        file.save(get_resource(PICTURES, self.username, skip_file_check=True))
 
     def get_profile_picture(self) -> str:
         """Get the profile picture"""
@@ -169,6 +158,21 @@ class UserModel(Base):
             if self.profile_picture
             else get_resource("web/static/images", "icon.png")
         )
+
+    def set_profile_picture(self, file: FileStorage) -> None:
+        """Set the profile picture and save it"""
+
+        if self.profile_picture:
+            os.rm(str(get_resource(PICTURES, self.username, skip_file_check=True)))
+
+        self.profile_picture = True
+        file.save(get_resource(PICTURES, self.username, skip_file_check=True))
+
+    def delete_profile_picture(self) -> None:
+        """Delete the profile picture"""
+        if self.profile_picture:
+            os.remove(str(get_resource(PICTURES, self.username, skip_file_check=True)))
+            self.profile_picture = False
 
     def read_all_logs(self) -> list["LogEntryModel"]:
         """Read all logs"""

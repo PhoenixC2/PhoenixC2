@@ -1,6 +1,7 @@
-{% extends 'base.j2' %}
-{% from 'macros.j2' import render_user %}
-{% block title %}Operations{% endblock %}
+{% extends "base.j2" %}
+{% from "macros.j2" import render_user %}
+{% block title %}Operations{% endblock title %}
+{% block head %}<link rel="stylesheet" href="/static/css/simplemde-dark.min.css" />{% endblock head %}
 {% block content %}
     <div class="table-responsive">
         <table class="table table-striped">
@@ -25,9 +26,9 @@
                         {% if operation.assigned_users|length == 0 %}
                             <td>None</td>
                         {% else %}
-                        <td>
-                            {% for user in operation.assigned_users %}{{ render_user(user) }}{% endfor %}
-                        </td>
+                            <td>
+                                {% for user in operation.assigned_users %}{{ render_user(user) }}{% endfor %}
+                            </td>
                         {% endif %}
                         <td>{{ format_datetime(operation.expiry) }}</td>
                         <td>{{ format_datetime(operation.created_at) }}</td>
@@ -35,4 +36,85 @@
                 {% endfor %}
             </tbody>
         </table>
-    {% endblock %}
+    </div>
+    <button type="button"
+            class="btn btn-warning"
+            data-toggle="modal"
+            data-target="#create-modal"
+            onclick="resetModal()">
+        Create a new Operation
+    </button>
+
+    {# Create Modal #}
+        <div class="modal fade"
+             tabindex="-1"
+             role="dialog"
+             aria-labelledby="exampleModalLongTitle"
+             aria-hidden="true"
+             id="create-modal">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content dark-background">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Create a new listener</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="create-modal-body">
+                        <form id="create-form" action="/operations/add" method="POST">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-5"></div>
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <img id="profile-picture-preview"
+                                                     src="/static/images/icon.png"
+                                                     alt="profile picture preview"
+                                                     class="profile-picture">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="name"
+                                       name="name"
+                                       placeholder="Name">
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control"
+                                          id="description"
+                                          name="description"
+                                          placeholder="Description"></textarea>
+                            </div>
+                            <div class"form-group">
+                                <label for="picture">Profile Picture</label>
+                                <input type="file"
+                                       class="form-control"
+                                       id="create-picture"
+                                       name="picture"
+                                       onchange="previewImage()"
+                                       accept="image/*">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <input type='button'
+                               id='create-button'
+                               onclick='sendCreate()'
+                               value='Create'
+                               class='btn btn-success'/>
+                        <input type='reset' value='Reset' class='btn btn-danger' />
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock content %}
+
+<script src="/static/js/libraries/simplemde.min.js">
+    var simplemde = new SimpleMDE({ element: document.getElementById("description") });
+</script>

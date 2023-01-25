@@ -1,7 +1,11 @@
 from typing import TYPE_CHECKING
 
-from phoenixc2.server.utils.options import (DefaultStagerPool, Option,
-                                            OptionPool, StringType)
+from phoenixc2.server.utils.options import (
+    DefaultStagerPool,
+    Option,
+    OptionPool,
+    StringType,
+)
 
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 

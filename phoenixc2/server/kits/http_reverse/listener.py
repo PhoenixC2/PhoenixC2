@@ -6,13 +6,17 @@ from typing import TYPE_CHECKING
 
 from flask import Flask, Response, cli, jsonify, request, send_from_directory
 
-from phoenixc2.server.database import (DeviceModel, ListenerModel,
-                                       LogEntryModel, Session, StagerModel,
-                                       TaskModel)
+from phoenixc2.server.database import (
+    DeviceModel,
+    ListenerModel,
+    LogEntryModel,
+    Session,
+    StagerModel,
+    TaskModel,
+)
 from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.features import Feature
-from phoenixc2.server.utils.options import (DefaultListenerPool, Option,
-                                            StringType)
+from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringType
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.ui import log_connection
 from phoenixc2.server.utils.web import FlaskThread

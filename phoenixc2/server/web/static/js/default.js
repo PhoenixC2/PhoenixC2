@@ -99,3 +99,35 @@ function readNotifications() {
         }
     );
 }
+
+function previewImage() {
+    // get the file input
+    let file_input = document.getElementById('picture');
+
+    // get the preview image
+    let preview = document.getElementById('picture-preview');
+
+    // get the file
+    let file = file_input.files[0];
+
+    // create a FileReader
+    let reader = new FileReader();
+
+    // add an event listener to deal with the file when the reader is complete
+
+    reader.addEventListener("load", function () {
+        // set the src of the preview image to the data url of the file
+        preview.src = reader.result;
+    }, false);
+
+    // if there is a file, read it
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+
+    // if there is no file, set the preview image src to nothing
+    else {
+        preview.src = "";
+    }
+
+}

@@ -2,9 +2,9 @@
 import ipaddress
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
-
+import os
 from flask import request
-from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String,
+from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String, Boolean,
                         Text)
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
@@ -12,8 +12,9 @@ from sqlalchemy.orm import relationship
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.web import generate_html_from_markdown
-
+from phoenixc2.server.utils.resources import get_resource, PICTURES
 from .association import user_operation_assignment_table
+from werkzeug.datastructures import FileStorage
 from .users import UserModel
 
 if TYPE_CHECKING:
@@ -37,6 +38,7 @@ class OperationModel(Base):
     expiry: datetime = Column(
         DateTime, default=lambda: datetime.today() + timedelta(days=30)
     )
+    picture = Column(Boolean, default=False)
     subnets: list[str] = Column(MutableList.as_mutable(JSON), default=[])
     created_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, onupdate=datetime.now)
@@ -83,6 +85,7 @@ class OperationModel(Base):
             "name": self.name,
             "description": self.description,
             "expiry": self.expiry,
+            "picture": self.picture,
             "subnets": self.subnets,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -101,6 +104,47 @@ class OperationModel(Base):
             else [log.id for log in self.logs],
         }
 
+    def delete(
+        self,
+        commander: "Commander",
+        delete_elements: bool = False,
+    ) -> None:
+        """Delete the operation from the database."""
+        self.delete_picture()
+        if delete_elements:
+            for device in self.devices:
+                device.delete()
+            for listener in self.listeners:
+                listener.delete(True, commander)
+            for log in self.logs:
+                Session.delete(log)
+            for credential in self.credentials:
+                Session.delete(credential)
+        Session.delete(self)
+    
+    def get_picture(self) -> str:
+        """Get the picture"""
+        return (
+            str(get_resource(PICTURES, self.name + "-operation"))
+            if self.picture
+            else get_resource("web/static/images", "icon.png")
+        )
+
+    def set_picture(self, file: FileStorage) -> None:
+        """Set the picture and save it"""
+
+        if self.picture:
+            os.rm(str(get_resource(PICTURES, self.name + "-operation", skip_file_check=True)))
+
+        self.picture = True
+        file.save(get_resource(PICTURES, self.name + "-operation", skip_file_check=True))
+
+    def delete_picture(self) -> None:
+        """Delete the profile picture"""
+        if self.picture:
+            os.remove(str(get_resource(PICTURES, self.name + "-operation", skip_file_check=True)))
+            self.picture = False
+        
     def assign_user(self, user: "UserModel") -> None:
         """Assign a user to the operation."""
         if user not in self.assigned_users:
@@ -144,22 +188,7 @@ class OperationModel(Base):
             else:
                 raise ValueError(f"Invalid Change: {key}")
 
-    def delete(
-        self,
-        commander: "Commander",
-        delete_elements: bool = False,
-    ) -> None:
-        """Delete the operation from the database."""
-        if delete_elements:
-            for device in self.devices:
-                device.delete()
-            for listener in self.listeners:
-                listener.delete(True, commander)
-            for log in self.logs:
-                Session.delete(log)
-            for credential in self.credentials:
-                Session.delete(credential)
-        Session.delete(self)
+
 
     @classmethod
     def create(

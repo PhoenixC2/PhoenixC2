@@ -1,7 +1,9 @@
 from .base import Base
 from .engine import Session, engine
-from .models.association import (user_logentry_association_table,
-                                 user_operation_assignment_table)
+from .models.association import (
+    user_logentry_association_table,
+    user_operation_assignment_table,
+)
 from .models.credentials import CredentialModel
 from .models.devices import DeviceModel
 from .models.listeners import ListenerModel

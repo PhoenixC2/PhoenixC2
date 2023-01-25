@@ -8,8 +8,7 @@ import string
 from flask import Flask, abort, cli, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import (LogEntryModel, OperationModel, Session,
-                                       UserModel)
+from phoenixc2.server.database import LogEntryModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.web.endpoints import *
 from phoenixc2.server.utils.misc import format_datetime

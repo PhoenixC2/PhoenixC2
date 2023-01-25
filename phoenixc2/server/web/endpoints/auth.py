@@ -1,5 +1,4 @@
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, session)
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.ui import log
@@ -28,11 +27,11 @@ def post_login():
             LogEntryModel.log("info", "auth", f"Logged in via API key.", user)
             session["id"] = user.id
             session["password"] = user.password_hash
-            
+
             if not use_json:
                 flash(f"Logged in as {user}.", "success")
                 return redirect("/")
-            
+
             return jsonify(
                 {
                     "status": "success",
@@ -41,7 +40,7 @@ def post_login():
                 }
             )
         return generate_response("danger", "Invalid Api-Key.", "login", 400)
-    
+
     if username is None or password is None:
         return generate_response("danger", "Missing username or password.", "auth", 400)
 
@@ -100,7 +99,7 @@ def post_login():
                     "success",
                 )
                 return redirect("/")
-            
+
             return jsonify(
                 {
                     "status": "success",

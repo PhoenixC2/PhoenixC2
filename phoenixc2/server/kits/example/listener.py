@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 
 from phoenixc2.server.database import ListenerModel
-from phoenixc2.server.utils.options import (DefaultListenerPool, Option,
-                                            StringType)
+from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringType
 
 from ..base_listener import BaseListener
 
