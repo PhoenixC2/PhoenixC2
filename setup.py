@@ -34,6 +34,7 @@ setup(
         "importlib-resources",
         "bleach",
         "markdown",
+        "pyOpenSSL",
     ],
     extras_require={"dev": ["black", "isort", "pylint"]},
     python_requires=">=3.6",

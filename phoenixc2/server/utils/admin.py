@@ -4,7 +4,7 @@ import string
 import subprocess
 
 from sqlalchemy import inspect
-
+from OpenSSL import crypto, SSL
 from phoenixc2.server.database import Session, UserModel, engine
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.config import load_config
@@ -78,26 +78,20 @@ def regenerate_ssl():
     if os.path.exists(ssl_key):
         os.remove(ssl_key)
     # quiet mode for openssl
-    subprocess.run(
-        [
-            "openssl",
-            "req",
-            "-x509",
-            "-newkey",
-            "rsa:4096",
-            "-keyout",
-            ssl_key,
-            "-out",
-            ssl_cert,
-            "-days",
-            "365",
-            "-nodes",
-            "-subj",
-            "/CN=US",
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    k = crypto.PKey()
+    k.generate_key(crypto.TYPE_RSA, 4096)
+    # create a self-signed cert
+    cert = crypto.X509()
+    cert.get_subject().C = "US"
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
+    cert.set_issuer(cert.get_subject())
+    cert.set_pubkey(k)
+    cert.sign(k, 'sha512')
+    with open(str(ssl_cert), "wt") as f:
+        f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8"))
+    with open(str(ssl_key), "wt") as f:
+        f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode("utf-8"))
     log("Generated ssl certificates.", "success")
 
 
