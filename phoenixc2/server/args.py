@@ -115,6 +115,8 @@ def parse_args(args, config: dict) -> dict:
         == "y"
     ):
         reset_database()
+    else:
+        log("Database reset aborted.", "info")
     if (
         args.reset_database_table
         and input(
