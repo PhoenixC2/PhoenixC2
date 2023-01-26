@@ -99,7 +99,7 @@ def listeners_bp(commander: Commander):
 
         # Add listener
         try:
-            # has to be added again bc it got filtered out by options.validate_data(data)
+            # has to be added again bc it got filtered out
             data["type"] = listener_type
             listener = ListenerModel.create_from_data(data)
         except Exception as e:

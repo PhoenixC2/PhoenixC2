@@ -1,6 +1,5 @@
 """The Log Entries Model"""
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship

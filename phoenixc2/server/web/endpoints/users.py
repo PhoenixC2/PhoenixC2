@@ -1,4 +1,3 @@
-from uuid import uuid1
 
 from flask import Blueprint, jsonify, render_template, request, send_file
 

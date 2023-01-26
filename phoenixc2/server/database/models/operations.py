@@ -18,12 +18,10 @@ from werkzeug.datastructures import FileStorage
 from .users import UserModel
 
 if TYPE_CHECKING:
-    from sqlalchemy.orm import Session as SessionType
 
     from phoenixc2.server.commander import Commander
 
     from .credentials import CredentialModel
-    from .devices import DeviceModel
     from .listeners import ListenerModel
     from .logs import LogEntryModel
 
@@ -225,7 +223,7 @@ class OperationModel(Base):
                 .filter_by(id=request.cookies.get("operation"))
                 .first()
             )
-        except Exception as e:
+        except Exception:
             return None
         if (
             operation is not None

@@ -8,9 +8,22 @@ import string
 from flask import Flask, abort, cli, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import LogEntryModel, OperationModel, Session, UserModel
+from phoenixc2.server.database import OperationModel, UserModel
 from phoenixc2.server.utils.config import load_config, save_config
-from phoenixc2.server.web.endpoints import *
+from phoenixc2.server.web.endpoints.auth import auth_bp
+from phoenixc2.server.web.endpoints.devices import devices_bp
+from phoenixc2.server.web.endpoints.listeners import listeners_bp
+from phoenixc2.server.web.endpoints.operations import operations_bp
+from phoenixc2.server.web.endpoints.users import users_bp
+from phoenixc2.server.web.endpoints.routes import routes_bp
+from phoenixc2.server.web.endpoints.tasks import tasks_bp
+from phoenixc2.server.web.endpoints.stagers import stagers_bp
+from phoenixc2.server.web.endpoints.modules import modules_bp
+from phoenixc2.server.web.endpoints.loaders import loaders_bp
+from phoenixc2.server.web.endpoints.misc import misc_bp
+from phoenixc2.server.web.endpoints.logs import logs_bp
+
+
 from phoenixc2.server.utils.misc import format_datetime
 from phoenixc2.server.utils.ui import log
 # disable flask logging
@@ -51,7 +64,7 @@ def create_web(commander: Commander) -> Flask:
 
     @web_server.context_processor
     def inject_to_dict():
-        # function which converts a database element to a json string to be used in javascript
+        # converts a database element to a json string to be used in javascript
         def to_json(data, *args, **kwargs):
             return json.dumps(data.to_dict(*args, **kwargs), default=str)
 

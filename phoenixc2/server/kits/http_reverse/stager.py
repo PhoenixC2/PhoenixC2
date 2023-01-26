@@ -7,7 +7,6 @@ import jinja2
 
 from phoenixc2.server.utils.options import (
     AddressType,
-    ChoiceType,
     DefaultStagerPool,
     IntegerType,
     Option,

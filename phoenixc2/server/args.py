@@ -21,7 +21,7 @@ parser = ArgumentParser(
 )
 
 web = parser.add_argument_group("Web Server")
-web.add_argument("-a", "--address", help=f"The address")
+web.add_argument("-a", "--address", help="The address")
 web.add_argument("-p", "--port", help="The port", type=int)
 web.add_argument("-s", "--ssl", help="Use SSL", action="store_true")
 

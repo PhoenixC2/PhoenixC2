@@ -71,7 +71,7 @@ def ph_print(text: str, force: bool = False):
 
 
 def log_connection(device: "DeviceModel", reconnect: bool = False):
-    from phoenixc2.server.database import LogEntryModel, Session
+    from phoenixc2.server.database import LogEntryModel
 
     """Log the new connection to the console and database"""
     if reconnect:

@@ -1,5 +1,5 @@
 """The association table between different models."""
-from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy import Column, ForeignKey, Table
 
 from phoenixc2.server.database.base import Base
 

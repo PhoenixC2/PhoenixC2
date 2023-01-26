@@ -92,7 +92,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -120,7 +126,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -147,7 +159,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -175,7 +193,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -211,7 +235,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -243,7 +273,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 
@@ -283,7 +319,13 @@ def devices_bp(commander: Commander):
             UserModel.get_current_user(),
         )
         if use_json:
-            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": TASK_CREATED,
+                    "task": task.to_dict(commander),
+                }
+            )
         else:
             return generate_response("success", TASK_CREATED, "devices")
 

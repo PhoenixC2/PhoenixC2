@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from importlib_resources import files
 from importlib_resources.abc import Traversable

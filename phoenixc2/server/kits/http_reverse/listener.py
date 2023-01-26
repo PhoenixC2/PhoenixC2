@@ -99,7 +99,7 @@ class Listener(BaseListener):
                 device = DeviceModel.create(
                     hostname, address, os, architecture, user, admin, stager
                 )
-            except Exception as e:
+            except Exception:
                 return "", 404
             Session.add(device)
             Session.commit()

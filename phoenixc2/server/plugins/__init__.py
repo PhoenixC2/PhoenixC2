@@ -1,6 +1,5 @@
 import importlib
 
-from .base import BasePlugin
 
 
 def get_plugin(name):

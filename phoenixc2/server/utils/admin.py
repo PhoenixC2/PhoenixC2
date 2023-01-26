@@ -1,10 +1,9 @@
 import os
 import random
 import string
-import subprocess
 
 from sqlalchemy import inspect
-from OpenSSL import crypto, SSL
+from OpenSSL import crypto
 from phoenixc2.server.database import Session, UserModel, engine
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.config import load_config
@@ -56,7 +55,7 @@ def check_for_ssl():
 
 def check_for_database():
     """Return if the database exists."""
-    config = load_config()
+    load_config()
     # check if all the tables exist
     return all(
         [

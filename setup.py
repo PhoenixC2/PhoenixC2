@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
     name="phoenixc2",
@@ -36,7 +36,7 @@ setup(
         "markdown",
         "pyOpenSSL",
     ],
-    extras_require={"dev": ["black", "isort", "pylint"]},
+    extras_require={"dev": ["black", "isort", "ruff"]},
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [

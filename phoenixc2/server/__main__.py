@@ -53,7 +53,7 @@ def main():
     log("Loading plugins.", "info")
     load_plugins(commander)
 
-    log(f"Press CTRL+C to exit.", "info")
+    log("Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")
     while True:
