@@ -70,6 +70,34 @@ def get_profile_picture(user_id: int):
         return generate_response("error", USER_DOES_NOT_EXIST, ENDPOINT)
     return send_file(user.get_profile_picture(), mimetype="image/png")
 
+@users_bp.route("/picture", methods=["POST"])
+@users_bp.route("/<int:user_id>/picture", methods=["POST"])
+@UserModel.authorized
+def set_profile_picture(user_id: int = None):
+    current_user = UserModel.get_current_user()
+
+    if user_id == 0 and current_user.id != 0:
+        return generate_response(
+            "error", "You can't change the super user's picture.", ENDPOINT
+        )
+    
+    if current_user.admin or current_user.id == user_id:
+        user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
+    else:
+        return generate_response(
+            "error", "You can't change other users' pictures.", ENDPOINT
+        )
+    
+    if user is None:
+        return generate_response("error", USER_DOES_NOT_EXIST, ENDPOINT)
+    
+    if "profile-picture" in request.files:
+        profile_picture = request.files["profile-picture"]
+        user.set_profile_picture(profile_picture)
+    else:
+        return generate_response("error", "No profile picture provided.", ENDPOINT)
+    Session.commit()
+    return generate_response("success", "Profile picture set.", ENDPOINT)
 
 @users_bp.route("/picture", methods=["POST"])
 @users_bp.route("/<int:user_id>/picture", methods=["DELETE"])
@@ -123,7 +151,7 @@ def add_user():
     except ValueError as e:
         return generate_response("danger", str(e), ENDPOINT, 400)
 
-    if request.files.get("profile-picture"):
+    if "profile-picture" in request.files:
         profile_picture = request.files["profile-picture"]
         user.set_profile_picture(profile_picture)
 
@@ -165,6 +193,7 @@ def delete_user(id: int = None):
 
     # Delete user
     user.delete()
+    Session.commit()
 
     LogEntryModel.log(
         "success",
@@ -204,10 +233,11 @@ def edit_user(id: int = None):
     # Edit user
     try:
         user.edit(form_data)
-        Session.commit()
     except Exception as e:
         return generate_response("danger", str(e), ENDPOINT, 500)
 
+    Session.commit()
+    
     LogEntryModel.log(
         "success",
         "users",

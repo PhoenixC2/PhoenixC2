@@ -154,6 +154,8 @@ class OperationModel(Base):
         """Unassign a user from the operation."""
         if user in self.assigned_users:
             self.assigned_users.remove(user)
+        else:
+            raise ValueError(f"User {user.username} is not assigned to this operation.")
 
     def add_subnet(self, subnet: str) -> None:
         """Add a subnet to the operation."""
@@ -166,7 +168,10 @@ class OperationModel(Base):
 
     def remove_subnet(self, subnet: str) -> None:
         """Remove a subnet from the operation."""
-        self.subnets.remove(subnet)
+        if subnet not in self.subnets:
+            self.subnets.remove(subnet)
+        else:
+            raise ValueError(f"Subnet {subnet} is not assigned to this operation.")
 
     def edit(self, data: dict) -> None:
         """Edit the operation."""

@@ -6,7 +6,6 @@ from random import randint
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    ARRAY,
     JSON,
     Boolean,
     Column,
@@ -80,6 +79,8 @@ class ListenerModel(Base):
                 return "Unknown"
             commander.get_active_listener(self.id)
         except KeyError:
+            return False
+        except TypeError:
             return False
         else:
             return True
@@ -180,29 +181,6 @@ class ListenerModel(Base):
             else:
                 self.options[key] = value
 
-    def edit(self, data: dict):
-        """Edit the listener"""
-        options = (
-            self.listener_class.options
-        )  # so we dont have to get the class multiple times
-        for key, value in data.items():
-            option = options.get_option(key)
-            if not option.editable:
-                raise ValueError(f"Option '{key}' is not editable.")
-            if hasattr(self, key):
-                if value == str(getattr(self, key)):
-                    continue
-                value = option.validate_data(value)
-                setattr(self, key, value)
-            else:
-                if key in self.options:
-                    if value == self.options[key]:
-                        continue
-                    value = option.validate_data(value)
-                    self.options[key] = value
-                else:
-                    raise KeyError(f"{key} is not a valid key")
-
     def delete(self, stop: bool, commander: "Commander"):
         """Delete the listener"""
         if stop and self.is_active(commander):
@@ -217,17 +195,14 @@ class ListenerModel(Base):
     @classmethod
     def create_from_data(cls, data: dict):
         """Create the stager using listener validated data"""
-        standard = []
-        # gets standard values present in every listener and remove them to only leave options
-        for st_value in ["name", "type", "address", "port", "ssl", "limit", "enabled"]:
-            standard.append(data.pop(st_value))
         return cls(
-            name=standard[0],
-            type=standard[1],
-            address=standard[2],
-            port=standard[3],
-            ssl=standard[4],
-            limit=standard[5],
-            enabled=standard[6],
+            name=data.pop("name"),
+            type=data.pop("type"),
+            address=data.pop("address"),
+            port=data.pop("port"),
+            ssl=data.pop("ssl"),
+            enabled=data.pop("enabled"),
+            limit=data.pop("limit"),
+            response_time=data.pop("response_time"),
             options=data,
         )

@@ -101,11 +101,12 @@ def add_operation():
         return generate_response("error", "Name is required.", ENDPOINT)
     try:
         operation = OperationModel.create(name, description, expiry)
-        Session.add(operation)
-        Session.commit()
     except TypeError as e:
         return generate_response("error", str(e), ENDPOINT)
 
+    Session.add(operation)
+    Session.commit()
+    
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -129,9 +130,10 @@ def edit_operation(operation_id: int):
 
     try:
         operation.edit(data)
-        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
+
+    Session.commit()
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -210,8 +212,11 @@ def unassign_operation(operation_id: int):
     )
     if operation is None:
         return generate_response("error", INVALID_ID, ENDPOINT)
+    try:
+        operation.unassign_user(user)
+    except Exception as e:
+        return generate_response("error", str(e), ENDPOINT)
 
-    operation.unassign_user(user)
     Session.commit()
     LogEntryModel.log(
         "success",
@@ -236,9 +241,11 @@ def add_subnet(operation_id: int):
         return generate_response("error", INVALID_ID, ENDPOINT)
     try:
         operation.add_subnet(subnet)
-        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
+
+    Session.commit()
+
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -262,9 +269,11 @@ def remove_subnet(operation_id: int):
         return generate_response("error", INVALID_ID, ENDPOINT)
     try:
         operation.remove_subnet(subnet)
-        Session.commit()
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
+    
+    Session.commit()
+    
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -281,8 +290,10 @@ def remove_subnet(operation_id: int):
 def change_operation(operation_id: int):
     operation = Session.query(OperationModel).filter_by(id=operation_id).first()
     current_user = UserModel.get_current_user()
+
     if operation is None:
         return generate_response("error", INVALID_ID, ENDPOINT)
+        
     if current_user not in operation.assigned_users and current_user != operation.owner:
         return generate_response(
             "error", "You are not assigned to this operation.", ENDPOINT

@@ -89,13 +89,6 @@ def stagers_bp(commander: Commander):
         name = request.form.get("name")
         data = dict(request.form)
         try:
-            # check if name is okay
-            if not name:
-                raise ValueError("Name is required.")
-
-            # check if stager name is already taken
-            if Session.query(StagerModel).filter_by(name=name).first():
-                raise ValueError("Stager name is already taken.")
 
             # check if listener exists
             listener: ListenerModel = (
@@ -104,6 +97,14 @@ def stagers_bp(commander: Commander):
 
             if listener is None:
                 raise ValueError("Listener does not exist.")
+
+            # check if name is given
+            if not name:
+                raise ValueError("Name is required.")
+
+            # check if stager name is already taken
+            if Session.query(StagerModel).filter_by(name=name).first():
+                raise ValueError("Stager name is already taken.")
 
             # Check if data is valid and clean it
             stager_class = StagerModel.get_class_from_type(listener.type)
@@ -116,6 +117,9 @@ def stagers_bp(commander: Commander):
             stager = StagerModel.create_from_data(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
+        
+        Session.add(stager)
+        Session.commit()
 
         LogEntryModel.log(
             "success",
@@ -149,8 +153,9 @@ def stagers_bp(commander: Commander):
 
         # set listener name because we need it after the stager is deleted
         listener_name = stager.listener.name
-        Session().delete(stager)
-        Session().commit()
+
+        Session.delete(stager)
+        Session.commit()
 
         LogEntryModel.log(
             "success",
@@ -180,10 +185,11 @@ def stagers_bp(commander: Commander):
         # Edit stager
         try:
             stager.edit(form_data)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
 
+        Session.commit()
+        
         LogEntryModel.log(
             "success",
             "stagers",

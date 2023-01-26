@@ -104,6 +104,8 @@ def listeners_bp(commander: Commander):
             listener = ListenerModel.create_from_data(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
+        Session.add(listener)
+        Session.commit()
         LogEntryModel.log(
             "success",
             "listeners",
@@ -146,6 +148,7 @@ def listeners_bp(commander: Commander):
             if stop
             else f"Deleted listener '{name}' ({type})"
         )
+        Session.commit()
         LogEntryModel.log(
             "success",
             "listeners",
@@ -186,7 +189,7 @@ def listeners_bp(commander: Commander):
             listener.edit(form_data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
-
+        Session.commit()
         LogEntryModel.log(
             "success",
             "listeners",

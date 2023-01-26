@@ -81,21 +81,20 @@ def devices_bp(commander: Commander):
 
         try:
             task = TaskModel.reverse_shell(device, address, port)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created reverse shell task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created reverse shell task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/rce", methods=["POST"])
     @UserModel.authorized
@@ -110,21 +109,20 @@ def devices_bp(commander: Commander):
 
         try:
             task = TaskModel.remote_command_execution(device, cmd)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created remote command execution task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created remote command execution task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/info", methods=["GET"])
     @UserModel.authorized
@@ -138,21 +136,20 @@ def devices_bp(commander: Commander):
 
         try:
             task = TaskModel.get_infos(device)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created get infos task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created get infos task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/dir", methods=["GET"])
     @UserModel.authorized
@@ -167,21 +164,20 @@ def devices_bp(commander: Commander):
 
         try:
             task = TaskModel.list_directory_contents(device, directory)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)})
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created list directory contents task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created list directory contents task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/upload", methods=["POST"])
     @UserModel.authorized
@@ -204,21 +200,20 @@ def devices_bp(commander: Commander):
             )
         try:
             task = TaskModel.upload(device, request.files.get("file"), target_path)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created upload task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created upload task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/download", methods=["GET"])
     @UserModel.authorized
@@ -239,17 +234,18 @@ def devices_bp(commander: Commander):
             Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "/devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created download task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created download task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     @blueprint.route("/<int:device_id>/module", methods=["POST"])
     @UserModel.authorized
@@ -276,20 +272,19 @@ def devices_bp(commander: Commander):
             )
         try:
             task = TaskModel.execute_module(device, path, execution_method, data)
-            Session.add(task)
-            Session.commit()
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
+        Session.add(task)
+        Session.commit()
+        LogEntryModel.log(
+            "info",
+            "devices",
+            f"Created module execution task for '{device.name}'.",
+            UserModel.get_current_user(),
+        )
+        if use_json:
+            return jsonify({"status": "success", "message": TASK_CREATED, "task": task.to_dict(commander)})
         else:
-            LogEntryModel.log(
-                "info",
-                "devices",
-                f"Created module execution task for '{device.name}'.",
-                UserModel.get_current_user(),
-            )
-            if use_json:
-                return task.to_dict(commander, False)
-            else:
-                return generate_response("success", TASK_CREATED, "devices")
+            return generate_response("success", TASK_CREATED, "devices")
 
     return blueprint

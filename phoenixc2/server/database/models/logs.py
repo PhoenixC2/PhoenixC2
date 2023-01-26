@@ -109,4 +109,6 @@ class LogEntryModel(Base):
         log = cls.create(
             alert, endpoint, description, Session.query(UserModel).all(), user
         )
+        Session.add(log)
+        Session.commit()
         return log
