@@ -7,4 +7,4 @@ COPY . .
 
 RUN pip install .
 
-ENTRYPOINT ["pfserver", "-a", "0.0.0.0"]
+ENTRYPOINT ["phserver", "-a", "0.0.0.0"]
