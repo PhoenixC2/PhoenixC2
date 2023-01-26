@@ -147,6 +147,8 @@ class OperationModel(Base):
         
     def assign_user(self, user: "UserModel") -> None:
         """Assign a user to the operation."""
+        if user == self.owner:
+            raise ValueError("Owner cannot be assigned to his own operation.")
         if user not in self.assigned_users:
             self.assigned_users.append(user)
 

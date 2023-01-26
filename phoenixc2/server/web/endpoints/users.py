@@ -76,7 +76,7 @@ def get_profile_picture(user_id: int):
 def set_profile_picture(user_id: int = None):
     current_user = UserModel.get_current_user()
 
-    if user_id == 0 and current_user.id != 0:
+    if user_id == 1 and current_user.id != 1:
         return generate_response(
             "error", "You can't change the super user's picture.", ENDPOINT
         )
@@ -104,7 +104,7 @@ def set_profile_picture(user_id: int = None):
 @UserModel.authorized
 def delete_profile_picture(user_id: int = None):
     current_user = UserModel.get_current_user()
-    if user_id == 0 and current_user.id != 0:
+    if user_id == 1 and current_user.id != 1:
         return generate_response(
             "error", "You can't change the super user's picture.", ENDPOINT
         )
@@ -226,9 +226,9 @@ def edit_user(id: int = None):
     if user is None:
         return generate_response("danger", USER_DOES_NOT_EXIST, ENDPOINT, 400)
 
-    # Check if user is head admin
+    # Check if user is super user
     if user.id == 1 and current_user.id != 1:
-        return generate_response("danger", "Can't edit the head admin.", ENDPOINT, 403)
+        return generate_response("danger", "Can't edit the super user.", ENDPOINT, 403)
 
     # Edit user
     try:
@@ -262,10 +262,10 @@ def reset_api_key(id: int = None):
     if user is None:
         return generate_response("danger", "User doesn't exist.", ENDPOINT, 400)
 
-    # Check if user is head admin
+    # Check if user is the super user
     if user.id == 1 and current_user.id != 1:
         return generate_response(
-            "danger", "Can't reset the head admin's wasapi key.", ENDPOINT, 403
+            "danger", "Can't reset the super user's api key.", ENDPOINT, 403
         )
 
     # Reset API Key

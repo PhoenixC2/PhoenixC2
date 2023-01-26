@@ -34,7 +34,8 @@ def generate_name() -> str:
 
 
 def format_datetime(date_time: datetime) -> str:
-
+    if date_time is None:
+        return ""
     if datetime.now() > date_time:
         time_difference = datetime.now() - date_time
         if time_difference.days > 0:

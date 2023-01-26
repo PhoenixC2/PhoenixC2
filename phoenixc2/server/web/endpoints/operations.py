@@ -184,9 +184,13 @@ def assign_operation(operation_id: int):
     )
     if operation is None:
         return generate_response("error", INVALID_ID, ENDPOINT)
+    try:
+        operation.assign_user(user)
+    except Exception as e:
+        return generate_response("error", str(e), ENDPOINT)
 
-    operation.assign_user(user)
     Session.commit()
+    
     LogEntryModel.log(
         "success",
         ENDPOINT,
