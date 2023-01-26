@@ -142,6 +142,9 @@
                             <th>
                                 Manage
                             </th>
+                            <th>
+                                Set active
+                            </th>
                         </thead>
                         <tbody>
                             {% if not operations|length %}
@@ -180,6 +183,18 @@
                                                 Manage
                                             </button>
                                         </a>
+                                    </td>
+                                    <td>
+                                        {% if user in operation.assigned_users or user == operation.owner %}
+                                            <button class="btn btn-success" onclick="set_active_operation('{{ operation.id }}')">
+                                                Set Active
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-danger" disabled>
+                                                Set Active
+                                            </button>
+                                        {% endif %}
+                                        
                                     </td>
                                 {% endfor %}
                             </tbody>

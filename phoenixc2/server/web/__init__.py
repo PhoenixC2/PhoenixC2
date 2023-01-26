@@ -12,7 +12,7 @@ from phoenixc2.server.database import LogEntryModel, OperationModel, Session, Us
 from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.web.endpoints import *
 from phoenixc2.server.utils.misc import format_datetime
-
+from phoenixc2.server.utils.ui import log
 # disable flask logging
 
 
@@ -31,27 +31,19 @@ def create_web(commander: Commander) -> Flask:
         # check if the secret key is set in the config
         # if not, generate a new one and save it
         secret_key = "".join(
-            random.choice(string.ascii_letters + string.digits) for _ in range(32)
+            random.choice(string.ascii_letters + string.digits) for _ in range(50)
         )
         config["web"]["secret_key"] = secret_key
         save_config(config)
-
+    elif len(secret_key) < 30:
+        log("The session secret key is short. Consider changing it.", "critical")
+        
     web_server.secret_key = secret_key
 
     # context processors for the templates
     @web_server.context_processor
     def inject_user():
         return dict(user=UserModel.get_current_user())
-
-    @web_server.context_processor
-    def inject_messages():
-        return dict(
-            messages=[
-                log
-                for log in Session.query(LogEntryModel).all()
-                if UserModel.get_current_user() in log.unseen_users
-            ]
-        )
 
     @web_server.context_processor
     def inject_operation():

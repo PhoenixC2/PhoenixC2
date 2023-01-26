@@ -53,7 +53,10 @@ def get_logs(log_id: int = None):
 @UserModel.authorized
 def read_logs():
     use_json = request.args.get("json", "").lower() == "true"
-    logs = UserModel.get_current_user().read_all_logs()
+    curr_user = UserModel.get_current_user()
+
+    logs = curr_user.unseen_logs
+    curr_user.unseen_logs.clear()
     Session.commit()
 
     if use_json:

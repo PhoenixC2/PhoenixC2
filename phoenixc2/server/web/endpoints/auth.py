@@ -23,99 +23,31 @@ def post_login():
 
     if api_key is not None:
         user = UserModel.get_current_user()
-        if user is not None:
-            LogEntryModel.log("info", "auth", f"Logged in via API key.", user)
-            session["id"] = user.id
-            session["password"] = user.password_hash
-
-            if not use_json:
-                flash(f"Logged in as {user}.", "success")
-                return redirect("/")
-
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": f"Logged in as {user}.",
-                    "user": user.to_dict(),
-                }
-            )
-        return generate_response("danger", "Invalid Api-Key.", "login", 400)
-
-    if username is None or password is None:
-        return generate_response("danger", "Missing username or password.", "auth", 400)
-
-    user: UserModel = Session.query(UserModel).filter_by(username=username).first()
-
-    if user is None:
-        flash(INVALID_CREDENTIALS, "danger")
-        return render_template(TEMPLATE, username=username)
-
-    if user.disabled:
-        LogEntryModel.log(
-            "info",
-            "auth",
-            f"Attempted to log in as disabled user {user}.",
-            UserModel.get_current_user(),
-        )
-        flash("This user is disabled.", "danger")
-        return render_template(TEMPLATE, username=username)
-    if user.check_password(password):
-        old_user = UserModel.get_current_user()
-
-        if old_user is not None and old_user.username != username:
-            session["id"] = user.id
-            session["password"] = user.password_hash
-            LogEntryModel.log(
-                "info",
-                "auth",
-                f"Logged in as {'admin' if user.admin else 'user'}  {user}.",
-                old_user,
-            )
-            if not use_json:
-                flash(f"Changed to {username}.", "success")
-                return redirect("/")
-
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": f"Changed to {username}.",
-                    "user": user.to_dict(),
-                }
-            )
-        else:
-            session["id"] = user.id
-            session["password"] = user.password_hash
-
-            LogEntryModel.log(
-                "info",
-                "auth",
-                f"Logged in as {'admin' if user.admin else 'user'} {user}.",
-                user,
-            )
-
-            if not use_json:
-                flash(
-                    f"Logged in as {'admin' if user.admin else 'user'} {username}.",
-                    "success",
-                )
-                return redirect("/")
-
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": f"Logged in as {username} ({'admin' if user.admin else 'user'}).",
-                    "user": user.to_dict(),
-                }
-            )
+        message = "Logged in via API key."
     else:
-        log(f"Failed to log in as '{user}'.", "danger")
-        if not use_json:
-            flash(INVALID_CREDENTIALS, "danger")
-            return render_template(TEMPLATE, username=username)
-        return (
-            jsonify({"status": "error", "message": INVALID_CREDENTIALS}),
-            401,
-        )
+        user : UserModel = Session.query(UserModel).filter_by(username=username).first()
+        if user is None or not user.check_password(password):
+            return generate_response(
+                "error",
+                INVALID_CREDENTIALS,
+                "auth/login",
+                401,
+            )
+        message = "Logged in via credentials."
+    
+    session["api_key"] = user._api_key
+
+    LogEntryModel.log(
+        "success",
+        "auth",
+        message,
+        user,
+    )
+
+    if use_json:
+        return jsonify({"status": "success", "message": message, "user": user.to_dict()})
+    else:
+        return generate_response("success", message, "", 200)
 
 
 @auth_bp.route("/logout")

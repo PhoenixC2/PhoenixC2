@@ -34,10 +34,10 @@ class UserModel(Base):
     __tablename__ = "Users"
     id = Column(Integer, primary_key=True)
     id: int = Column(Integer, primary_key=True, nullable=False)
-    username: str = Column(String(50))
+    username: str = Column(String(50), unique=True, nullable=False)
     password_hash: str = Column(Text)
     _api_key: str = Column(
-        String(30), name="api_key", nullable=False, default=lambda: str(uuid1())
+        String(30), name="api_key", nullable=False, unique=True, default=lambda: str(uuid1())
     )
     admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
@@ -173,15 +173,6 @@ class UserModel(Base):
         if self.profile_picture:
             os.remove(str(get_resource(PICTURES, self.username, skip_file_check=True)))
             self.profile_picture = False
-
-    def read_all_logs(self) -> list["LogEntryModel"]:
-        """Read all logs"""
-        logs = []
-        for log in self.unseen_logs:
-            log.seen_by_user(self)
-            logs.append(log)
-        return logs
-
     @classmethod
     def create(
         cls, username: str, password: str, admin: bool, disabled: bool
@@ -217,7 +208,7 @@ class UserModel(Base):
                 return user
         return (
             Session.query(UserModel)
-            .filter_by(password_hash=session.get("password"))
+            .filter_by(_api_key=session.get("api_key"))
             .first()
         )
 
@@ -228,8 +219,8 @@ class UserModel(Base):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if os.getenv("PHOENIX_TEST") == "true":
-                if session.get("password") is None:
-                    session["password"] = Session.query(UserModel).first().password
+                if session.get("api_key") is None:
+                    session["api_key"] = Session.query(UserModel).first()._api_key
             user = UserModel.get_current_user()
             if user is None:
                 return generate_response(
@@ -239,7 +230,7 @@ class UserModel(Base):
                 if user.disabled:
                     session.clear()
                     return generate_response(
-                        "danger", "Your account is disabled.", AUTH_ENDPOINT, 401
+                        "danger", "This account got disabled.", AUTH_ENDPOINT, 401
                     )
                 user.last_activity = datetime.now()
                 Session.commit()
@@ -254,10 +245,15 @@ class UserModel(Base):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if os.getenv("PHOENIX_TEST") == "true":
-                if session.get("password") is None:
-                    session["password"] = Session.query(UserModel).first().password
+                if session.get("api_key") is None:
+                    session["api_key"] = Session.query(UserModel).first()._api_key
             user = UserModel.get_current_user()
             if user is not None:
+                if user.disabled:
+                    session.clear()
+                    return generate_response(
+                        "danger", "This account got disabled.", AUTH_ENDPOINT, 401
+                    )
                 if not user.admin:
                     return generate_response(
                         "error", "You have to be an admin.", AUTH_ENDPOINT, 401
