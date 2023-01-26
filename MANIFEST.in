@@ -1,4 +1,3 @@
-include phoenixc2/pf* 
 recursive-include phoenixc2/server *
 recursive-include phoenixc2/client *
 recursive-exclude phoenixc2/server/data/downloads/ *
