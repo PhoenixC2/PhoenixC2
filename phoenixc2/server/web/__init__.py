@@ -5,8 +5,7 @@ import os
 import random
 import string
 
-from flask import Flask, abort, cli, request, Blueprint
-
+from flask import Flask, abort, cli, request, Blueprint, render_template_string
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import OperationModel, UserModel
 from phoenixc2.server.utils.config import load_config, save_config
@@ -87,11 +86,15 @@ def create_web(commander: Commander) -> Flask:
     @web_server.context_processor
     def inject_format_datetime():
         return dict(format_datetime=format_datetime)
-    
+
     @web_server.context_processor
     def inject_plugins():
         return dict(plugins=commander.injection_plugins)
-    
+
+    @web_server.context_processor
+    def inject_render_template_string():
+        return dict(render_template_string=render_template_string)
+
     @web_server.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie

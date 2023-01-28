@@ -220,6 +220,6 @@
     </script>
     {# inject plugins #}
     {% for plugin in plugins %}
-        {% include plugin %}
+        {{ render_template_string(plugins[plugin]) }}
     {% endfor %}
 </html>
