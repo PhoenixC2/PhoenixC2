@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def routes_bp(commander: "Commander") -> Blueprint:
 
-    routes_bp = Blueprint("routes", __name__, url_prefix="/auth")
+    routes_bp = Blueprint("routes", __name__, url_prefix="/")
 
     @routes_bp.route("/home")
     @routes_bp.route("/dashboard")

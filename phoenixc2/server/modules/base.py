@@ -37,10 +37,14 @@ class BaseModule(ABC):
         "injection",
         "external",
     ]
+    # output methods:
+    # - print: print the output to the console
+    # - file: save the output to a file
+    # - tcp: send the output to a tcp listener
+    output_method: str = "print"
 
-    @classmethod
     @abstractmethod
-    def code(cls, device: "DeviceModel", task: "TaskModel") -> str | bytes:
+    def code(self, device: "DeviceModel", task: "TaskModel") -> str | bytes:
         """The code to be executed"""
         pass
 

@@ -4,6 +4,7 @@ import os
 import time
 
 from phoenixc2.server.args import parse_args, parser
+from phoenixc2.server.web import create_web
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.commander.services import load_plugins, start_listeners, start_web
 from phoenixc2.server.utils.admin import check_for_setup, reset_server
@@ -25,6 +26,15 @@ def main():
 
     # Initialize commander
     commander = Commander()
+
+    # Create web server
+    web_server = create_web(commander)
+
+    commander.web_server = web_server
+    
+    # load plugins
+    log("Loading plugins.", "info")
+    load_plugins(commander)
 
     # Start listeners
     log("Starting listeners.", "info")
@@ -48,10 +58,6 @@ def main():
         f"://{web_config['address']}:{web_config['port']}",
         "info",
     )
-
-    # load plugins
-    log("Loading plugins.", "info")
-    load_plugins(commander)
 
     log("Press CTRL+C to exit.", "info")
     if args.quiet:

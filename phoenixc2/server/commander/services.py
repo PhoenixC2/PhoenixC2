@@ -6,7 +6,7 @@ from phoenixc2.server.plugins import get_plugin
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import FlaskThread
-from phoenixc2.server.web import create_web
+from flask import Flask
 
 from .commander import Commander
 
@@ -38,13 +38,13 @@ def start_listeners(commander: Commander):
 
 def start_web(address: str, port: int, ssl: bool, commander: Commander):
     """Start the web server"""
-    # Create Web App
-    web_server = create_web(commander)
     # Create Thread
-    commander.web_server = FlaskThread(web_server, address, port, ssl, "WebServer")
+    commander.web_thread = FlaskThread(
+        commander.web_server, address, port, ssl, "WebServer"
+    )
     # Start Thread
-    commander.web_server.start()
-    return web_server
+    commander.web_thread.start()
+    return commander.web_server
 
 
 def load_plugins(commander: Commander):

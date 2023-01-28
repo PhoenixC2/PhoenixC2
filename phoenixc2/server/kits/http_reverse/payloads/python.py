@@ -9,7 +9,6 @@ import threading
 import time
 
 import requests as r
-import urllib3
 
 # the comments are only used at the start of the project to show how they work
 # they will be removed in the future

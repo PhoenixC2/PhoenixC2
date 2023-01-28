@@ -3,10 +3,10 @@ import subprocess
 from multiprocessing import Process
 from threading import Thread
 from typing import Optional
-
+from flask import Flask
 from phoenixc2.server.kits.base_handler import BaseHandler
 from phoenixc2.server.kits.base_listener import BaseListener
-from phoenixc2.server.plugins.base import BasePlugin
+from phoenixc2.server.plugins.base import BasePlugin, BlueprintPlugin, ExecutedPlugin, RoutePlugin, InjectedPlugin
 from phoenixc2.server.utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"
@@ -18,10 +18,12 @@ class Commander:
     """This is the Commander is used as a registry for all devices and listeners"""
 
     def __init__(self):
-        self.web_server: FlaskThread
+        self.web_thread: FlaskThread
+        self.web_server: Flask
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
         self.active_plugins: dict[str, BasePlugin] = {}
+        self.injection_plugins: dict[str, InjectedPlugin] = {} # plugins that inject code into the templates
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
         """Get a handler by id"""
@@ -84,25 +86,41 @@ class Commander:
         if plugin.name in self.active_plugins:
             raise KeyError(f"Plugin {plugin.name} already loaded")
 
-        try:
-            if plugin.execution_type == "direct":
-                plugin.execute(self, config)
-            elif plugin.execution_type == "thread":
-                Thread(
-                    target=plugin.execute, args=(self, config), name=plugin.name
-                ).start()
-            elif plugin.execution_type == "process":
-                Process(
-                    target=plugin.execute, args=(self, config), name=plugin.name
-                ).start()
-            elif plugin.execution_type == "file":
-                subprocess.Popen([plugin.execute(self, config)])
-            else:
-                raise ValueError(f"Invalid execution type {plugin.execution_type}")
-        except Exception as e:
-            raise Exception(f"Failed to load plugin '{plugin.name}'") from e
+        if isinstance(plugin, ExecutedPlugin):
+            try:
+                if plugin.execution_type == "direct":
+                    plugin.execute(self, config)
+                elif plugin.execution_type == "thread":
+                    Thread(
+                        target=plugin.execute, args=(self, config), name=plugin.name
+                    ).start()
+                elif plugin.execution_type == "process":
+                    Process(
+                        target=plugin.execute, args=(self, config), name=plugin.name
+                    ).start()
+                elif plugin.execution_type == "file":
+                    subprocess.Popen([plugin.execute(self, config)])
+                else:
+                    raise ValueError(f"Invalid execution type {plugin.execution_type}")
+            except Exception as e:
+                raise Exception(f"Failed to load plugin '{plugin.name}'") from e
 
-        self.active_plugins[plugin.name] = plugin
+        elif isinstance(plugin, BlueprintPlugin):
+            self.web_server.register_blueprint(plugin.execute(self, config))
+
+        elif isinstance(plugin, RoutePlugin):
+            self.web_server.add_url_rule(
+                plugin.rule, plugin.name, plugin.execute
+            )
+        
+        elif isinstance(plugin, InjectedPlugin):
+            self.injection_plugins[plugin.name] = plugin.execute(self, config)
+
+        else:
+            plugin.execute(self, config)
+        
+
+
 
     def unload_plugin(self, plugin_name: str):
         """Unload a plugin"""

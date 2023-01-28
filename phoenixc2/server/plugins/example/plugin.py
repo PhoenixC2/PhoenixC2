@@ -1,9 +1,9 @@
 import time
 
-from phoenixc2.server.plugins import BasePlugin
+from phoenixc2.server.plugins.base import ExecutedPlugin
 
 
-class Plugin(BasePlugin):
+class Plugin(ExecutedPlugin):
     """Example Plugin"""
 
     name = "example"

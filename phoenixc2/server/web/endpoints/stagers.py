@@ -194,7 +194,6 @@ def stagers_bp(commander: Commander):
             "success",
             "stagers",
             f"Edited stager '{stager.name}'",
-            Session,
             UserModel.get_current_user(),
         )
         if use_json:

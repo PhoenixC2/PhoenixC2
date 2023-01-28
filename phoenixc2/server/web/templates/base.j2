@@ -212,10 +212,14 @@
     </body>
     <!-- flash messages -->
     <script>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}showNotification("{{ message }}", "{{ category }}");{% endfor %}
-{% endif %}
-{% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}showNotification("{{ message }}", "{{ category }}");{% endfor %}
+        {% endif %}
+        {% endwith %}
     </script>
+    {# inject plugins #}
+    {% for plugin in plugins %}
+        {% include plugin %}
+    {% endfor %}
 </html>

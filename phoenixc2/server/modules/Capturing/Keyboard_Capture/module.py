@@ -18,7 +18,7 @@ class Module(BaseModule):
         ]
     )
 
-    def code(cls, device, task):
+    def code(self, device, task):
         return f"""
 import keyboard
 import requests

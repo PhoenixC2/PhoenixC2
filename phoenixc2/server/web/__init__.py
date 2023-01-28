@@ -5,7 +5,7 @@ import os
 import random
 import string
 
-from flask import Flask, abort, cli, request
+from flask import Flask, abort, cli, request, Blueprint
 
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import OperationModel, UserModel
@@ -22,15 +22,29 @@ from phoenixc2.server.web.endpoints.modules import modules_bp
 from phoenixc2.server.web.endpoints.loaders import loaders_bp
 from phoenixc2.server.web.endpoints.misc import misc_bp
 from phoenixc2.server.web.endpoints.logs import logs_bp
-
+from phoenixc2.server.utils.ui import log
 
 from phoenixc2.server.utils.misc import format_datetime
-from phoenixc2.server.utils.ui import log
-# disable flask logging
+
+endpoints: dict[str, Blueprint] = {
+    "routes": routes_bp,
+    "stagers": stagers_bp,
+    "listeners": listeners_bp,
+    "devices": devices_bp,
+    "modules": modules_bp,
+    "auth": auth_bp,
+    "users": users_bp,
+    "loaders": loaders_bp,
+    "misc": misc_bp,
+    "tasks": tasks_bp,
+    "logs": logs_bp,
+    "operations": operations_bp,
+}
 
 
 def create_web(commander: Commander) -> Flask:
     web_server = Flask(__name__)
+
     if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(
         "PHOENIX_DEBUG", ""
     ):
@@ -50,7 +64,7 @@ def create_web(commander: Commander) -> Flask:
         save_config(config)
     elif len(secret_key) < 30:
         log("The session secret key is short. Consider changing it.", "critical")
-        
+
     web_server.secret_key = secret_key
 
     # context processors for the templates
@@ -73,7 +87,11 @@ def create_web(commander: Commander) -> Flask:
     @web_server.context_processor
     def inject_format_datetime():
         return dict(format_datetime=format_datetime)
-
+    
+    @web_server.context_processor
+    def inject_plugins():
+        return dict(plugins=commander.injection_plugins)
+    
     @web_server.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie
@@ -86,16 +104,12 @@ def create_web(commander: Commander) -> Flask:
         ):
             return abort(403)
 
-    web_server.register_blueprint(routes_bp(commander), url_prefix="/")
-    web_server.register_blueprint(stagers_bp(commander), url_prefix="/stagers")
-    web_server.register_blueprint(listeners_bp(commander), url_prefix="/listeners")
-    web_server.register_blueprint(devices_bp(commander), url_prefix="/devices")
-    web_server.register_blueprint(modules_bp(commander), url_prefix="/modules")
-    web_server.register_blueprint(auth_bp, url_prefix="/auth")
-    web_server.register_blueprint(users_bp, url_prefix="/users")
-    web_server.register_blueprint(loaders_bp, url_prefix="/loaders")
-    web_server.register_blueprint(misc_bp, url_prefix="/misc")
-    web_server.register_blueprint(tasks_bp(commander), url_prefix="/tasks")
-    web_server.register_blueprint(logs_bp, url_prefix="/logs")
-    web_server.register_blueprint(operations_bp, url_prefix="/operations")
+    # register the blueprints
+    for endpoint in endpoints:
+        # check if endpoint is a function
+        if callable(endpoints[endpoint]):
+            endpoints[endpoint] = endpoints[endpoint](commander)
+        web_server.register_blueprint(
+            endpoints[endpoint], url_prefix=endpoints[endpoint].url_prefix
+        )
     return web_server
