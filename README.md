@@ -1,5 +1,3 @@
-# show thumbnail 
-[![thumbnail](phoenixc2/server/web/static/images/icon.png)]
 # PhoenixC2
 > An Open-Source C2-Framework written in pure Python3.
 
