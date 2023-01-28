@@ -13,7 +13,7 @@ users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 
 @users_bp.route("/", methods=["GET"])
 @users_bp.route("/<int:user_id>", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_users(user_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     show_logs = request.args.get("logs", "").lower() == "true"
@@ -62,7 +62,7 @@ def get_users(user_id: int = None):
 
 
 @users_bp.route("/<int:user_id>/picture", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_profile_picture(user_id: int):
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:
@@ -71,7 +71,7 @@ def get_profile_picture(user_id: int):
 
 @users_bp.route("/picture", methods=["POST"])
 @users_bp.route("/<int:user_id>/picture", methods=["POST"])
-@UserModel.authorized
+@UserModel.authenticated
 def set_profile_picture(user_id: int = None):
     current_user = UserModel.get_current_user()
 
@@ -100,7 +100,7 @@ def set_profile_picture(user_id: int = None):
 
 @users_bp.route("/picture", methods=["POST"])
 @users_bp.route("/<int:user_id>/picture", methods=["DELETE"])
-@UserModel.authorized
+@UserModel.authenticated
 def delete_profile_picture(user_id: int = None):
     current_user = UserModel.get_current_user()
     if user_id == 1 and current_user.id != 1:
@@ -247,7 +247,7 @@ def edit_user(id: int = None):
 
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])
-@UserModel.authorized
+@UserModel.authenticated
 def reset_api_key(id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     current_user = UserModel.get_current_user()

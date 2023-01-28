@@ -16,7 +16,7 @@ def listeners_bp(commander: Commander):
 
     @blueprint.route("/", methods=["GET"])
     @blueprint.route("/<int:listener_id>", methods=["GET"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_listeners(listener_id: int = None):
         use_json = request.args.get("json", "").lower() == "true"
         show_operation = request.args.get("show_operation", "").lower() == "true"
@@ -55,7 +55,7 @@ def listeners_bp(commander: Commander):
         )
 
     @blueprint.route("/available", methods=["GET"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_available():
         listeners = {}
         type = request.args.get("type")
@@ -73,7 +73,7 @@ def listeners_bp(commander: Commander):
             return jsonify(listeners)
 
     @blueprint.route("/add", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_add():
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -128,7 +128,7 @@ def listeners_bp(commander: Commander):
         )
 
     @blueprint.route("/<int:listener_id>/remove", methods=["DELETE"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def delete_remove(listener_id: int):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -166,7 +166,7 @@ def listeners_bp(commander: Commander):
         return generate_response("success", message, ENDPOINT)
 
     @blueprint.route("/<int:listener_id>/edit", methods=["PUT"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def put_edit(listener_id: int = None):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -209,7 +209,7 @@ def listeners_bp(commander: Commander):
         )
 
     @blueprint.route("/<int:listener_id>/start", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_start(listener_id: int):
         # Check if listener exists
         listener: ListenerModel = (
@@ -244,7 +244,7 @@ def listeners_bp(commander: Commander):
             return generate_response("success", status, ENDPOINT)
 
     @blueprint.route("/<int:listener_id>/stop", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_stop(listener_id: int):
         # Check if listener exists
         listener: ListenerModel = (
@@ -275,7 +275,7 @@ def listeners_bp(commander: Commander):
             )
 
     @blueprint.route("/<int:listener_id>/restart", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_restart(listener_id: int):
         # Check if listener exists
         listener: ListenerModel = (

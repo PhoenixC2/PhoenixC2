@@ -9,7 +9,7 @@ logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 
 @logs_bp.route("/", methods=["GET"])
 @logs_bp.route("/<int:log_id>", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_logs(log_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     show_user = request.args.get("user", "").lower() == "true"
@@ -50,7 +50,7 @@ def get_logs(log_id: int = None):
 
 
 @logs_bp.route("/read", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def read_logs():
     use_json = request.args.get("json", "").lower() == "true"
     curr_user = UserModel.get_current_user()

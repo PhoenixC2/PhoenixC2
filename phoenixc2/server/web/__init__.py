@@ -93,6 +93,7 @@ def create_web(commander: Commander) -> Flask:
 
     @web_server.context_processor
     def inject_render_template_string():
+        # used to render plugins
         return dict(render_template_string=render_template_string)
 
     @web_server.before_request

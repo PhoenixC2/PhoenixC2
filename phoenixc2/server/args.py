@@ -40,7 +40,7 @@ misc = parser.add_argument_group("Misc")
 misc.add_argument(
     "-t",
     "--test",
-    help="Start a test version with disabled authorization",
+    help="Start a test version with disabled authentication",
     action="store_true",
 )
 misc.add_argument(
@@ -100,7 +100,7 @@ def parse_args(args, config: dict) -> dict:
     if args.test:
         os.environ["PHOENIX_TEST"] = "true"
         log(
-            "Starting PhoenixC2 in test mode. AUTHORIZATION DISABLED!",
+            "Starting PhoenixC2 in test mode. AUTHENTICATION DISABLED!",
             "critical",
         )
 

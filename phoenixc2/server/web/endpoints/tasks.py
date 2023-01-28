@@ -10,7 +10,7 @@ def tasks_bp(commander: Commander):
 
     @blueprint.route("/", methods=["GET"])
     @blueprint.route("/<int:task_id>", methods=["GET"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_tasks(task_id: int = None):
         use_json = request.args.get("json", "") == "true"
         show_device = request.args.get("device", "") == "true"
@@ -34,7 +34,7 @@ def tasks_bp(commander: Commander):
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
 
     @blueprint.route("/<string:task_id>/clear", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_clear_tasks(task_id: str = "all"):
         count = 0
         for task in (

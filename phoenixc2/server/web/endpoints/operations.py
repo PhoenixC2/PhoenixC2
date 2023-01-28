@@ -11,7 +11,7 @@ operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 
 @operations_bp.route("/", methods=["GET"])
 @operations_bp.route("/<int:operation_id>", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_operations(operation_id: int = None):
     use_json = request.args.get("json", "").lower() == "true"
     show_owner = request.args.get("owner", "").lower() == "true"
@@ -62,7 +62,7 @@ def get_operations(operation_id: int = None):
 
 
 @operations_bp.route("/current", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_current_operation():
     show_owner = request.args.get("owner", "").lower() == "true"
     show_assigned_users = request.args.get("assigned", "").lower() == "true"

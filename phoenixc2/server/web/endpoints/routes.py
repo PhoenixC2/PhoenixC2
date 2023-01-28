@@ -16,7 +16,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @routes_bp.route("/home")
     @routes_bp.route("/dashboard")
     @routes_bp.route("/")
-    @UserModel.authorized
+    @UserModel.authenticated
     def index():
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         operations: list[OperationModel] = Session.query(OperationModel).all()

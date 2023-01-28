@@ -213,7 +213,7 @@ class UserModel(Base):
         )
 
     @staticmethod
-    def authorized(func):
+    def authenticated(func):
         """Check if a user is logged in and redirect to login page if not"""
 
         @wraps(func)

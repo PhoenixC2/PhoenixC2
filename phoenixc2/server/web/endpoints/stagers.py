@@ -23,7 +23,7 @@ def stagers_bp(commander: Commander):
 
     @stagers_bp.route("/", methods=["GET"])
     @stagers_bp.route("/<int:stager_id>", methods=["GET"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_stagers(stager_id: int = None):
         use_json = request.args.get("json", "") == "true"
         show_listener = request.args.get("listener", "") == "true"
@@ -65,7 +65,7 @@ def stagers_bp(commander: Commander):
         )
 
     @stagers_bp.route("/available", methods=["GET"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_available():
         stagers = {}
         type = request.args.get("type")
@@ -82,7 +82,7 @@ def stagers_bp(commander: Commander):
             return jsonify(stagers)
 
     @stagers_bp.route("/add", methods=["POST"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def post_add():
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
@@ -143,7 +143,7 @@ def stagers_bp(commander: Commander):
         )
 
     @stagers_bp.route("/<int:id>/remove", methods=["DELETE"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def delete_remove(id: int):
         # Check if Stager exists
         stager: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
@@ -166,7 +166,7 @@ def stagers_bp(commander: Commander):
         return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)
 
     @stagers_bp.route("/<int:id>/edit", methods=["PUT"])
-    @UserModel.authorized
+    @UserModel.authenticated
     def put_edit(id: int = None):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"

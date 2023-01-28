@@ -52,7 +52,7 @@ def post_login():
 
 
 @auth_bp.route("/logout")
-@UserModel.authorized
+@UserModel.authenticated
 def logout():
     user = UserModel.get_current_user()
     LogEntryModel.log(

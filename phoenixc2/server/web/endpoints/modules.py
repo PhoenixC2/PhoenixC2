@@ -13,7 +13,7 @@ def modules_bp(commander: "Commander"):
 
     @modules_bp.route("/")
     @modules_bp.route("/<string:module_name>")
-    @UserModel.authorized
+    @UserModel.authenticated
     def get_modules(module_name: str = None):
         use_json = request.args.get("json", "").lower() == "true"
 

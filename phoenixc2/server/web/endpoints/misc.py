@@ -18,7 +18,7 @@ def get_phoenix():
 
 
 @misc_bp.route("/available", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_available():
     options = {
         "kits": avl.AVAILABLE_KITS,
@@ -30,7 +30,7 @@ def get_available():
 
 
 @misc_bp.route("/interfaces", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_interfaces():
     return get_network_interfaces()
 
@@ -41,7 +41,7 @@ def ping():
 
 
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])
-@UserModel.authorized
+@UserModel.authenticated
 def get_downloads(file_name: str):
     if file_name is None:
         return generate_response("danger", "File name is missing.", "devices", 400)
