@@ -37,7 +37,11 @@ class UserModel(Base):
     username: str = Column(String(50), unique=True, nullable=False)
     password_hash: str = Column(Text)
     _api_key: str = Column(
-        String(30), name="api_key", nullable=False, unique=True, default=lambda: str(uuid1())
+        String(30),
+        name="api_key",
+        nullable=False,
+        unique=True,
+        default=lambda: str(uuid1()),
     )
     admin: bool = Column(Boolean)
     disabled: bool = Column(Boolean, default=False)
@@ -124,8 +128,9 @@ class UserModel(Base):
         return self.username
 
     def set_password(self, password: str):
-        """Hash the Password and save it."""
+        """Hash the Password and save it and generate a new API key"""
         self.password_hash = generate_password_hash(password)
+        self.generate_api_key()
 
     def check_password(self, password: str):
         """Check if the password is right"""
@@ -138,8 +143,9 @@ class UserModel(Base):
     def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
-        self.admin = data.get("admin", self.admin)
-        self.disabled = data.get("disabled", self.disabled)
+        if self.id != 1: # don't allow editing these values for the admin user
+            self.admin = data.get("admin", self.admin)
+            self.disabled = data.get("disabled", self.disabled)
         self.profile_picture = data.get("profile_picture", self.profile_picture)
 
         if data.get("password", None) is not None:
@@ -173,6 +179,7 @@ class UserModel(Base):
         if self.profile_picture:
             os.remove(str(get_resource(PICTURES, self.username, skip_file_check=True)))
             self.profile_picture = False
+
     @classmethod
     def create(
         cls, username: str, password: str, admin: bool, disabled: bool
@@ -207,9 +214,7 @@ class UserModel(Base):
             if user is not None:
                 return user
         return (
-            Session.query(UserModel)
-            .filter_by(_api_key=session.get("api_key"))
-            .first()
+            Session.query(UserModel).filter_by(_api_key=session.get("api_key")).first()
         )
 
     @staticmethod

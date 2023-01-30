@@ -68,7 +68,7 @@
                             <td>{{ device.user }}</td>
                         {% endif %}
                         <td>{{ format_datetime(device.last_online)}}</td>
-                        <td>{{ format_datetime(device.connection_date) }}</td>
+                        <td>{{ format_datetime(device.connection_time) }}</td>
                         <td>
                             <button type="button" class="btn btn-warning">Manage</button>
                             <button class="btn btn-warning" onclick="createEdit({{ device.id -1 }})">

@@ -9,6 +9,9 @@
                     <th>Status</th>
                     <th>Profile Picture</th>
                     <th>Username</th>
+                    {% if user.admin %}
+                        <th>Api Key</th>
+                    {% endif %}
                     <th>Admin</th>
                     <th>Disabled</th>
                     <th>Last Activity</th>
@@ -47,6 +50,9 @@
                                  class="profile-picture">
                         </td>
                         <td id="username-{{ user.id }}">{{ user.username }}</td>
+                        {% if user.admin %}
+                            <td id="api-key-{{ user.id }}">{{ user.api_key }}</td>
+                        {% endif %}
                         {% if user.admin %}
                             <td id="admin-{{ user.id }}">
                                 <i class="material-icons">done</i>
