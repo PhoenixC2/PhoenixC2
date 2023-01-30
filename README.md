@@ -8,7 +8,7 @@
 - [x] Customizable (Plugins, Modules, Kits)
 - [x] Easy to use
 - [x] Easy to extend
-- [x] Supports diffrent languages (Python, C#, Go, ...)
+- [x] Supports different languages (Python, C#, Go, ...)
 
 
 
