@@ -4,8 +4,16 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 import os
 from flask import request
-from sqlalchemy import (JSON, Column, DateTime, ForeignKey, Integer, String, Boolean,
-                        Text)
+from sqlalchemy import (
+    JSON,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Boolean,
+    Text,
+)
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 
@@ -119,7 +127,7 @@ class OperationModel(Base):
             for credential in self.credentials:
                 Session.delete(credential)
         Session.delete(self)
-    
+
     def get_picture(self) -> str:
         """Get the picture"""
         return (
@@ -132,17 +140,31 @@ class OperationModel(Base):
         """Set the picture and save it"""
 
         if self.picture:
-            os.rm(str(get_resource(PICTURES, self.name + "-operation", skip_file_check=True)))
+            os.rm(
+                str(
+                    get_resource(
+                        PICTURES, self.name + "-operation", skip_file_check=True
+                    )
+                )
+            )
 
         self.picture = True
-        file.save(get_resource(PICTURES, self.name + "-operation", skip_file_check=True))
+        file.save(
+            get_resource(PICTURES, self.name + "-operation", skip_file_check=True)
+        )
 
     def delete_picture(self) -> None:
         """Delete the profile picture"""
         if self.picture:
-            os.remove(str(get_resource(PICTURES, self.name + "-operation", skip_file_check=True)))
+            os.remove(
+                str(
+                    get_resource(
+                        PICTURES, self.name + "-operation", skip_file_check=True
+                    )
+                )
+            )
             self.picture = False
-        
+
     def assign_user(self, user: "UserModel") -> None:
         """Assign a user to the operation."""
         if user == self.owner:
@@ -193,8 +215,6 @@ class OperationModel(Base):
             else:
                 raise ValueError(f"Invalid Change: {key}")
 
-
-
     @classmethod
     def create(
         cls,
@@ -227,7 +247,8 @@ class OperationModel(Base):
             return None
         if (
             operation is not None
-            and UserModel.get_current_user() in operation.assigned_users
+            and UserModel.get_current_user()
+            in operation.assigned_users + [operation.owner]
         ):
             return operation
         else:

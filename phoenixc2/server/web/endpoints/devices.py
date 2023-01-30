@@ -6,6 +6,7 @@ from phoenixc2.server.database import (
     LogEntryModel,
     Session,
     TaskModel,
+    OperationModel,
     UserModel,
 )
 from phoenixc2.server.utils.web import generate_response
@@ -25,9 +26,15 @@ def devices_bp(commander: Commander):
         show_stager = request.args.get("stager", "").lower() == "true"
         show_operation = request.args.get("operation", "").lower() == "true"
         show_tasks = request.args.get("tasks", "").lower() == "true"
+        show_all = request.args.get("all", "").lower() == "true"
 
         opened_device = Session.query(DeviceModel).filter_by(id=device_id).first()
-        devices: list[DeviceModel] = Session.query(DeviceModel).all()
+        if show_all or OperationModel.get_current_operation() is None:
+            devices: list[DeviceModel] = Session.query(DeviceModel).all()
+        else:
+            devices: list[DeviceModel] = Session.query(DeviceModel).filter(
+                DeviceModel.operation == OperationModel.get_current_operation()
+            )
         if use_json:
             if opened_device is not None:
                 return jsonify(

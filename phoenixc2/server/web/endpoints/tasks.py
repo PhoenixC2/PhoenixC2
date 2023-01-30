@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import LogEntryModel, Session, TaskModel, UserModel
+from phoenixc2.server.database import LogEntryModel, Session, TaskModel, UserModel, OperationModel
 from phoenixc2.server.utils.web import generate_response
 
 
@@ -14,9 +14,16 @@ def tasks_bp(commander: Commander):
     def get_tasks(task_id: int = None):
         use_json = request.args.get("json", "") == "true"
         show_device = request.args.get("device", "") == "true"
-
+        show_all = request.args.get("all", "") == "true"
         opened_task: TaskModel = Session.query(TaskModel).filter_by(id=task_id).first()
-        tasks: list[TaskModel] = Session.query(TaskModel).all()
+
+        if show_all or OperationModel.get_current_operation() is None:
+            tasks: list[TaskModel] = Session.query(TaskModel).all()
+        else:
+            tasks: list[TaskModel] = Session.query(TaskModel).filter_by(
+                operation=OperationModel.get_current_operation()
+            ).all()
+            
         if use_json:
             if opened_task is not None:
                 return jsonify(

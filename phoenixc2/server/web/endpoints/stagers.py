@@ -9,6 +9,7 @@ from phoenixc2.server.database import (
     Session,
     StagerModel,
     UserModel,
+    OperationModel
 )
 from phoenixc2.server.utils.web import generate_response
 
@@ -27,12 +28,18 @@ def stagers_bp(commander: Commander):
     def get_stagers(stager_id: int = None):
         use_json = request.args.get("json", "") == "true"
         show_listener = request.args.get("listener", "") == "true"
-        show_devices = request.args.get("devices", "") == "true"
+        show_stagers = request.args.get("stagers", "") == "true"
+        show_all = request.args.get("all", "") == "true"
 
         opened_stager: StagerModel = (
             Session.query(StagerModel).filter_by(id=stager_id).first()
         )
-        stagers: list[StagerModel] = Session.query(StagerModel).all()
+        if show_all or OperationModel.get_current_operation() is None:
+            stagers: list[StagerModel] = Session.query(StagerModel).all()
+        else:
+            stagers: list[StagerModel] = Session.query(StagerModel).filter(
+                StagerModel.operation == OperationModel.get_current_operation()
+            )
         stager_types = StagerModel.get_all_classes()
         listeners: list[ListenerModel] = Session.query(ListenerModel).all()
 
@@ -42,7 +49,7 @@ def stagers_bp(commander: Commander):
                     {
                         "status": "success",
                         "stager": opened_stager.to_dict(
-                            commander, show_listener, show_devices
+                            commander, show_listener, show_stagers
                         ),
                     }
                 )
@@ -50,7 +57,7 @@ def stagers_bp(commander: Commander):
                 {
                     "status": "success",
                     "stagers": [
-                        stager.to_dict(commander, show_listener, show_devices)
+                        stager.to_dict(commander, show_listener, show_stagers)
                         for stager in stagers
                     ],
                 }
@@ -59,7 +66,6 @@ def stagers_bp(commander: Commander):
             "stagers.j2",
             stagers=stagers,
             opened_stager=opened_stager,
-            commander=commander,
             listeners=listeners,
             stager_types=stager_types,
         )

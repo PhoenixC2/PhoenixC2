@@ -66,7 +66,7 @@ class BasePlugin(ABC):
 class BlueprintPlugin(BasePlugin):
     """The Base Web Plugin class.
 
-    Used for plugins which modify the  api.
+    Used for plugins which modify the api.
     """ 
 
     @abstractmethod

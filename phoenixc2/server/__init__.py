@@ -1,4 +1,3 @@
-# Available elements
 AVAILABLE_KITS = [
     "http_reverse",
 ]

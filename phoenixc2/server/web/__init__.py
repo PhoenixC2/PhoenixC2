@@ -76,6 +76,10 @@ def create_web(commander: Commander) -> Flask:
         return dict(current_operation=OperationModel.get_current_operation())
 
     @web_server.context_processor
+    def inject_commander():
+        return dict(commander=commander)
+
+    @web_server.context_processor
     def inject_to_dict():
         # converts a database element to a json string to be used in javascript
         def to_json(data, *args, **kwargs):

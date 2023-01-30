@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, redirect, render_template, request
 
-from phoenixc2.server.database import LogEntryModel, Session, UserModel
+from phoenixc2.server.database import LogEntryModel, Session, UserModel, OperationModel
 from phoenixc2.server.utils.web import generate_response
-
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 
@@ -15,13 +14,18 @@ def get_logs(log_id: int = None):
     show_user = request.args.get("user", "").lower() == "true"
     show_unseen_users = request.args.get("unseen", "").lower() == "true"
     show_operation = request.args.get("operation", "").lower() == "true"
+    show_all = request.args.get("all", "").lower() == "true"
+
 
     opened_log: LogEntryModel = (
         Session.query(LogEntryModel).filter_by(id=log_id).first()
     )
-    logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
-
-    Session.commit()
+    if show_all or OperationModel.get_current_operation() is None:
+        logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
+    else:
+        logs: list[LogEntryModel] = Session.query(LogEntryModel).filter_by(
+            operation=OperationModel.get_current_operation()
+        ).all()
 
     if use_json:
         if opened_log is not None:

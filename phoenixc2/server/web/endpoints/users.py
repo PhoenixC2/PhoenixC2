@@ -211,6 +211,7 @@ def delete_user(id: int = None):
 @UserModel.admin_required
 def edit_user(id: int = None):
     # Get request data
+    use_json = request.args.get("json", "").lower() == "true"
     form_data = dict(request.form)
     current_user = UserModel.get_current_user()
 
@@ -243,7 +244,12 @@ def edit_user(id: int = None):
         f"{'Admin' if user.admin else 'User'} {user.username} edited.",
         current_user,
     )
-    return generate_response("success", f"Edited user with ID {id}.", ENDPOINT)
+    
+    if use_json:
+        return jsonify(
+            {"status": "success", "message": "User edited.", "user": user.to_dict()}
+        )
+    return generate_response("success", "User edited.", ENDPOINT)
 
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])

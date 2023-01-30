@@ -1,7 +1,13 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from phoenixc2.server.commander import Commander
-from phoenixc2.server.database import ListenerModel, LogEntryModel, Session, UserModel
+from phoenixc2.server.database import (
+    ListenerModel,
+    LogEntryModel,
+    Session,
+    UserModel,
+    OperationModel,
+)
 from phoenixc2.server.utils.misc import get_network_interfaces, get_platform
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import generate_response
@@ -21,10 +27,13 @@ def listeners_bp(commander: Commander):
         use_json = request.args.get("json", "").lower() == "true"
         show_operation = request.args.get("show_operation", "").lower() == "true"
         show_stagers = request.args.get("show_stagers", "").lower() == "true"
-
+        show_all = request.args.get("all", "").lower() == "true"
         opened_listener = Session.query(ListenerModel).filter_by(id=listener_id).first()
         listener_types = ListenerModel.get_all_classes()
-        listeners: list[ListenerModel] = Session.query(ListenerModel).all()
+        if show_all or OperationModel.get_current_operation() is None:
+            listeners: list[ListenerModel] = Session.query(ListenerModel).all()
+        else:
+            listeners = OperationModel.get_current_operation().listeners
         if use_json:
             if opened_listener is not None:
                 return jsonify(
@@ -48,7 +57,6 @@ def listeners_bp(commander: Commander):
             "listeners.j2",
             listeners=listeners,
             opened_listener=opened_listener,
-            commander=commander,
             listener_types=listener_types,
             network_interfaces=get_network_interfaces(),
             platform=get_platform(),
