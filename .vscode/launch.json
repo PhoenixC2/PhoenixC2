@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Pfserver Debug",
+            "name": "Phserver Debug",
             "type": "python",
             "request": "launch",
             "program": "phoenixc2/server/__main__.py",
