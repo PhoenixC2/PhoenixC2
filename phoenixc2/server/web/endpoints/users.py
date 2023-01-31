@@ -69,8 +69,8 @@ def get_profile_picture(user_id: int):
         return generate_response("error", USER_DOES_NOT_EXIST, ENDPOINT)
     return send_file(user.get_profile_picture(), mimetype="image/png")
 
-@users_bp.route("/picture", methods=["POST"])
-@users_bp.route("/<int:user_id>/picture", methods=["POST"])
+@users_bp.route("/picture", methods=["POST", "PUT"])
+@users_bp.route("/<int:user_id>/picture", methods=["POST", "PUT"])
 @UserModel.authenticated
 def set_profile_picture(user_id: int = None):
     current_user = UserModel.get_current_user()

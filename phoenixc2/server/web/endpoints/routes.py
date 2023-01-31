@@ -17,7 +17,7 @@ def routes_bp(commander: "Commander") -> Blueprint:
     @routes_bp.route("/dashboard")
     @routes_bp.route("/")
     @UserModel.authenticated
-    def index():
+    def get_index():
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         operations: list[OperationModel] = Session.query(OperationModel).all()
         # get count of connections from today

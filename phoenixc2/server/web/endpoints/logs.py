@@ -55,7 +55,7 @@ def get_logs(log_id: int = None):
 
 @logs_bp.route("/read", methods=["GET"])
 @UserModel.authenticated
-def read_logs():
+def get_read_logs():
     use_json = request.args.get("json", "").lower() == "true"
     curr_user = UserModel.get_current_user()
 
@@ -68,9 +68,9 @@ def read_logs():
     return redirect("/logs")
 
 
-@logs_bp.route("/<string:log_id>/clear", methods=["POST"])
+@logs_bp.route("/<string:log_id>/clear", methods=["DELETE"])
 @UserModel.admin_required
-def post_clear_logs(log_id: str = "all"):
+def delete_clear_logs(log_id: str = "all"):
     count = 0
 
     for log in (

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, make_response, render_template, request
+from flask import Blueprint, jsonify, make_response, render_template, request, send_file
 
 from phoenixc2.server.database import LogEntryModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.web import generate_response
@@ -90,9 +90,65 @@ def get_current_operation():
     )
 
 
+@operations_bp.route("/<int:operation_id>/picture", methods=["GET"])
+@UserModel.authenticated
+def get_picture(operation_id: int):
+    operation: OperationModel = (
+        Session.query(OperationModel).filter_by(id=operation_id).first()
+    )
+    if operation is None:
+        return generate_response("error", INVALID_ID, ENDPOINT)
+
+    return send_file(operation.get_picture(), mimetype="image/png")
+
+
+@operations_bp.route("/<int:operation_id>/picture", methods=["POST", "PUT"])
+@UserModel.admin_required
+def set_picture(operation_id: int):
+    operation: OperationModel = (
+        Session.query(OperationModel).filter_by(id=operation_id).first()
+    )
+    if operation is None:
+        return generate_response("error", INVALID_ID, ENDPOINT)
+    if "picture" not in request.files:
+        return generate_response("error", "No picture provided.", ENDPOINT)
+    operation.set_picture(request.files["picture"])
+    Session.commit()
+    LogEntryModel.log(
+        "success",
+        ENDPOINT,
+        f"Operation '{operation.name}' picture updated successfully.",
+        UserModel.get_current_user(),
+    )
+    return generate_response(
+        "success", "Operation picture updated successfully.", ENDPOINT
+    )
+
+
+@operations_bp.route("/<int:operation_id>/picture", methods=["DELETE"])
+@UserModel.admin_required
+def delete_picture(operation_id: int):
+    operation: OperationModel = (
+        Session.query(OperationModel).filter_by(id=operation_id).first()
+    )
+    if operation is None:
+        return generate_response("error", INVALID_ID, ENDPOINT)
+    operation.delete_picture()
+    Session.commit()
+    LogEntryModel.log(
+        "success",
+        ENDPOINT,
+        f"Operation '{operation.name}' picture deleted successfully.",
+        UserModel.get_current_user(),
+    )
+    return generate_response(
+        "success", "Operation picture deleted successfully.", ENDPOINT
+    )
+
+
 @operations_bp.route("/add", methods=["POST"])
 @UserModel.admin_required
-def add_operation():
+def post_add():
     name = request.form.get("name", "")
     description = request.form.get("description", "")
     expiry = request.form.get("expiry", None)
@@ -103,10 +159,12 @@ def add_operation():
         operation = OperationModel.create(name, description, expiry)
     except TypeError as e:
         return generate_response("error", str(e), ENDPOINT)
-
+    
+    if "picture" in request.files:
+        operation.set_picture(request.files["picture"])
     Session.add(operation)
     Session.commit()
-    
+
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -116,9 +174,34 @@ def add_operation():
     return generate_response("success", "Operation added successfully.", ENDPOINT)
 
 
+@operations_bp.route("/<int:operation_id>/remove", methods=["DELETE"])
+@UserModel.admin_required
+def delete_remove(operation_id: int):
+    delete_elements = request.form.get("delete_elements", "").lower() == "true"
+    operation: OperationModel = (
+        Session.query(OperationModel).filter_by(id=operation_id).first()
+    )
+    if operation is None:
+        return generate_response("error", INVALID_ID, ENDPOINT)
+
+    operation.delete(delete_elements)
+    Session.commit()
+
+    message = f"Operation '{operation.name}' deleted successfully."
+    if delete_elements:
+        message += " All associated elements were deleted."
+    LogEntryModel.log(
+        "success",
+        ENDPOINT,
+        message,
+        UserModel.get_current_user(),
+    )
+    return generate_response("success", message, ENDPOINT)
+
+
 @operations_bp.route("/<int:operation_id>/edit", methods=["PUT"])
 @UserModel.admin_required
-def edit_operation(operation_id: int):
+def put_edit(operation_id: int):
     data = request.form
     use_json = request.args.get("json", "").lower() == "true"
 
@@ -145,34 +228,9 @@ def edit_operation(operation_id: int):
     return generate_response("success", "Operation edited successfully.", ENDPOINT)
 
 
-@operations_bp.route("/<int:operation_id>/remove", methods=["DELETE"])
-@UserModel.admin_required
-def delete_operation(operation_id: int):
-    delete_elements = request.form.get("delete_elements", "").lower() == "true"
-    operation: OperationModel = (
-        Session.query(OperationModel).filter_by(id=operation_id).first()
-    )
-    if operation is None:
-        return generate_response("error", INVALID_ID, ENDPOINT)
-
-    operation.delete(delete_elements)
-    Session.commit()
-
-    message = f"Operation '{operation.name}' deleted successfully."
-    if delete_elements:
-        message += " All associated elements were deleted."
-    LogEntryModel.log(
-        "success",
-        ENDPOINT,
-        message,
-        UserModel.get_current_user(),
-    )
-    return generate_response("success", message, ENDPOINT)
-
-
 @operations_bp.route("/<int:operation_id>/assign", methods=["POST"])
 @UserModel.admin_required
-def assign_operation(operation_id: int):
+def post_assign_user(operation_id: int):
     user_id = request.form.get("user_id", None)
 
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
@@ -190,7 +248,7 @@ def assign_operation(operation_id: int):
         return generate_response("error", str(e), ENDPOINT)
 
     Session.commit()
-    
+
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -202,9 +260,9 @@ def assign_operation(operation_id: int):
     )
 
 
-@operations_bp.route("/<int:operation_id>/unassign", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/unassign", methods=["DELETE"])
 @UserModel.admin_required
-def unassign_operation(operation_id: int):
+def delete_unassign_user(operation_id: int):
     user_id = request.form.get("user_id", None)
 
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
@@ -235,7 +293,7 @@ def unassign_operation(operation_id: int):
 
 @operations_bp.route("/<int:operation_id>/add_subnet", methods=["POST"])
 @UserModel.admin_required
-def add_subnet(operation_id: int):
+def post_add_subnet(operation_id: int):
     subnet = request.form.get("subnet", None)
 
     operation: OperationModel = (
@@ -261,9 +319,9 @@ def add_subnet(operation_id: int):
     )
 
 
-@operations_bp.route("/<int:operation_id>/remove_subnet", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/remove_subnet", methods=["DELETE"])
 @UserModel.admin_required
-def remove_subnet(operation_id: int):
+def delete_remove_subnet(operation_id: int):
     subnet = request.form.get("subnet", None)
 
     operation: OperationModel = (
@@ -275,9 +333,9 @@ def remove_subnet(operation_id: int):
         operation.remove_subnet(subnet)
     except Exception as e:
         return generate_response("error", str(e), ENDPOINT)
-    
+
     Session.commit()
-    
+
     LogEntryModel.log(
         "success",
         ENDPOINT,
@@ -297,7 +355,7 @@ def change_operation(operation_id: int):
 
     if operation is None:
         return generate_response("error", INVALID_ID, ENDPOINT)
-        
+
     if current_user not in operation.assigned_users and current_user != operation.owner:
         return generate_response(
             "error", "You are not assigned to this operation.", ENDPOINT

@@ -40,9 +40,9 @@ def tasks_bp(commander: Commander):
             )
         return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
 
-    @blueprint.route("/<string:task_id>/clear", methods=["POST"])
+    @blueprint.route("/<string:task_id>/clear", methods=["DELETE"])
     @UserModel.authenticated
-    def post_clear_tasks(task_id: str = "all"):
+    def delete_clear_tasks(task_id: str = "all"):
         count = 0
         for task in (
             Session.query(TaskModel).all()

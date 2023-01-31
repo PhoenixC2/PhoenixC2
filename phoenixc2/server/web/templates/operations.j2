@@ -8,6 +8,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Picture</th>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Owner</th>
@@ -20,6 +21,7 @@
                 {% for operation in operations %}
                     <tr class="dark-background">
                         <td>{{ operation.id }}</td>
+                        <td><img src="/operations/{{ operation.id }}/picture" alt="profile picture" class="profile-picture"></td>
                         <td>{{ operation.name }}</td>
                         <td>{{ operation.description }}</td>
                         <td>{{ render_user(operation.owner) }}</td>
