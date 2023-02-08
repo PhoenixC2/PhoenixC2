@@ -99,7 +99,21 @@ def create_web(commander: Commander) -> Flask:
     def inject_render_template_string():
         # used to render plugins
         return dict(render_template_string=render_template_string)
-
+    @web_server.context_processor
+    def inject_icons():
+        return dict(icons={
+            "dashboard": "dashboard",
+            "operations": "public",
+            "devices": "dns",
+            "listeners": "earbuds",
+            "stagers": "code",
+            "loaders": "download",
+            "modules": "extension",
+            "users": "group",
+            "credentials": "vpn_key",
+            "logs": "event_note",
+        }
+        )
     @web_server.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie

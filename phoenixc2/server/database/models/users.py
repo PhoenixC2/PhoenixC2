@@ -143,10 +143,9 @@ class UserModel(Base):
     def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
-        if self.id != 1: # don't allow editing these values for the admin user
-            self.admin = data.get("admin", self.admin)
-            self.disabled = data.get("disabled", self.disabled)
-        self.profile_picture = data.get("profile_picture", self.profile_picture)
+        if self.id != 1:  # don't allow editing these values for the admin user
+            self.admin = data.get("admin", "false") == "true"
+            self.disabled = data.get("disabled", "false") == "true"
 
         if data.get("password", None) is not None:
             self.set_password(data.get("password", None))

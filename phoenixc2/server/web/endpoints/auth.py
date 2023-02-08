@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template, request, session
+from flask import Blueprint, jsonify, render_template, request, session, flash
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.web import generate_response
@@ -26,12 +26,16 @@ def post_login():
     else:
         user: UserModel = Session.query(UserModel).filter_by(username=username).first()
         if user is None or not user.check_password(password):
-            return generate_response(
-                "error",
-                INVALID_CREDENTIALS,
-                "auth/login",
-                401,
-            )
+            if use_json:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": INVALID_CREDENTIALS,
+                        "user": None,
+                    }
+                )
+            flash(INVALID_CREDENTIALS, "danger")
+            return render_template(TEMPLATE, username=username)
         message = "Logged in via credentials."
 
     session["api_key"] = user._api_key

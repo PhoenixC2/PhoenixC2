@@ -1,1 +1,73 @@
-
+{% extends "base.j2" %}
+{% from "macros.j2" import render_user %}
+{% block title %}
+    Logs
+{% endblock title %}
+{% block content %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Alert</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Time</th>
+                    <th>Triggered By</th>
+                    <th>Manage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                    {# set the row class based on the alert level #}
+                    <tr class=" dark-background alert-{{ log.alert }}">
+                        <td>{{ log.id }}</td>
+                        <td>{{ log.alert }}</td>
+                        <td>
+                            <i class="material-icons">{{ icons[log.endpoint] }}</i>
+                        </td>
+                        {% if log.description|length > 90 %}
+                            <td>{{ log.description[:90] }}...</td>
+                        {% else %}
+                            <td>{{ log.description }}</td>
+                        {% endif %}
+                        <td>{{ format_datetime(log.time )}}</td>
+                        {% if log.user %}
+                            <td>{{ render_user(log.user) }}</td>
+                        {% else %}
+                            <td>System</td>
+                        {% endif %}
+                        <td>
+                            <button type="button"
+                                    class="btn btn-warning"
+                                    onclick="clearLog({{ log.id }})">Clear</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button type="button" class="btn btn-warning" onclick="readNotifications()">Mark logs as read</button>
+    <button type="button" class="btn btn-danger" onclick="clearLog('all')">Clear all logs</button>
+{% endblock content %}
+{% block scripts %}
+    <script>
+        function clearLog(id) {
+            fetch("/logs/" + id + "/clear?json=true", {
+                method: "DELETE"
+            }).then(response => response.json())
+                .then(data => {
+                    // show notification
+                    showNotification(data.message, data.status);
+                    // check if success
+                    if (data.status === "success") {
+                        // sleep 1 second
+                        setTimeout(function () {
+                            // reload page
+                            location.reload();
+                        }, 1000);
+                    }
+                });
+        }
+    </script>
+{% endblock scripts %}

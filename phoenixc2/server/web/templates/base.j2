@@ -54,61 +54,61 @@
                     <ul class="nav">
                         <li class="nav-item {% if request.path == "/" %} active{% endif %}">
                             <a class="nav-link" href="/">
-                                <i class="material-icons">dashboard</i>
+                                <i class="material-icons">{{ icons["dashboard"] }}</i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/operations/" %} active{% endif %}">
                             <a class="nav-link" href="/operations">
-                                <i class="material-icons">public</i>
+                                <i class="material-icons">{{ icons["operations"] }}</i>
                                 <p>Operations</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/devices/" %} active{% endif %}">
                             <a class="nav-link" href="/devices">
-                                <i class="material-icons">dns</i>
+                                <i class="material-icons">{{ icons["devices"] }}</i>
                                 <p>Devices</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/listeners/" %} active{% endif %}">
                             <a class="nav-link" href="/listeners">
-                                <i class="material-icons">earbuds</i>
+                                <i class="material-icons">{{ icons["listeners"] }}</i>
                                 <p>Listeners</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/stagers/" %} active{% endif %}">
                             <a class="nav-link" href="/stagers">
-                                <i class="material-icons">code</i>
+                                <i class="material-icons"> {{ icons["stagers"] }}</i>
                                 <p>Stagers</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/loaders/" %} active{% endif %}">
                             <a class="nav-link" href="/loaders">
-                                <i class="material-icons">download</i>
+                                <i class="material-icons"> {{ icons["loaders"] }}</i>
                                 <p>Loaders</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/modules/" %} active{% endif %}">
                             <a class="nav-link" href="/modules">
-                                <i class="material-icons">extension</i>
+                                <i class="material-icons"> {{ icons["modules"] }}</i>
                                 <p>Modules</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/users/" %} active{% endif %}">
                             <a class="nav-link" href="/users">
-                                <i class="material-icons">group</i>
+                                <i class="material-icons"> {{ icons["users"] }}</i>
                                 <p>Users</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/credentials/" %} active{% endif %}">
                             <a class="nav-link" href="/credentials">
-                                <i class="material-icons">vpn_key</i>
+                                <i class="material-icons"> {{ icons["credentials"] }}</i>
                                 <p>Credentials</p>
                             </a>
                         </li>
                         <li class="nav-item {% if request.path == "/logs/" %} active{% endif %}">
                             <a class="nav-link" href="/logs">
-                                <i class="material-icons">event_note</i>
+                                <i class="material-icons"> {{ icons["logs"] }}</i>
                                 <p>Logs</p>
                             </a>
                         </li>
@@ -180,7 +180,6 @@
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right"
                                          aria-labelledby="navbarDropdownProfile">
-                                        <a class="dropdown-item" href="#">Profile</a>
                                         <a class="dropdown-item" href="#">Settings</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="/auth/logout">Log out</a>

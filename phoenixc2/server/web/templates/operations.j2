@@ -10,11 +10,10 @@
                     <th>ID</th>
                     <th>Picture</th>
                     <th>Name</th>
-                    <th>Description</th>
                     <th>Owner</th>
                     <th>Assigned Users</th>
                     <th>Expiry</th>
-                    <th>Created At</th>
+                    <th>Created</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,7 +22,6 @@
                         <td>{{ operation.id }}</td>
                         <td><img src="/operations/{{ operation.id }}/picture" alt="profile picture" class="profile-picture"></td>
                         <td>{{ operation.name }}</td>
-                        <td>{{ operation.description }}</td>
                         <td>{{ render_user(operation.owner) }}</td>
                         {% if operation.assigned_users|length == 0 %}
                             <td>None</td>
