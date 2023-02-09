@@ -179,6 +179,7 @@ def listeners_bp(commander: Commander):
         # Get request data
         use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
+
         if listener_id is None:
             if form_data.get("id") is None:
                 return generate_response("danger", INVALID_ID, ENDPOINT, 400)
@@ -191,12 +192,15 @@ def listeners_bp(commander: Commander):
         )
         if listener is None:
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
-
+        
+        # check if port is the same to avoid validation error
+        if "port" in form_data and form_data.get("port") == str(listener.port):
+            form_data.pop("port")
         # Edit listener
         try:
             listener.edit(form_data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return generate_response("danger", str(e), ENDPOINT, 400)
         Session.commit()
         LogEntryModel.log(
             "success",

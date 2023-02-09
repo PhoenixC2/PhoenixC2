@@ -53,13 +53,14 @@ def tasks_bp(commander: Commander):
                 count += 1
                 Session.delete(task)
         Session.commit()
+        message = f"Cleared {count} task{'s' if count != 1 else ''}."
         if count > 0:
             LogEntryModel.log(
                 "info",
                 "tasks",
-                f"Cleared {count} tasks.",
+                message,
                 UserModel.get_current_user(),
             )
-        return generate_response("success", f"Cleared {count} tasks.", "tasks")
+        return generate_response("success", message, "tasks")
 
     return blueprint

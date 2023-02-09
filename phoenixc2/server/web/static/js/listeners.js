@@ -19,6 +19,34 @@ function deleteListener(id) {
         });
 }
 
+function editListener(){
+    // disable button
+    document.getElementById("edit-button").disabled = true;
+    // get form
+    let form = document.getElementById("edit-form");
+    // get data
+    let data = new FormData(form);
+    // send data 
+    // have to increment the id by 1 because the id is 0 indexed
+    fetch(`/listeners/${edit_listener_id + 1}/edit?json=true`, {
+        method: "PUT",
+        body: data
+    }).then(response => response.json())
+        .then(data => {
+            // show notification
+            showNotification(data.message, data.status);
+            // check if success
+            if (data.status === "success") {
+                // sleep 1 second
+                setTimeout(function () {
+                    // reload page
+                    location.reload();
+                }, 1000);
+            }
+        });
+    // activate button
+    document.getElementById("edit-button").disabled = false;
+}
 function startListener(id) {
     fetch("/listeners/" + id + "/start?json=true", {
         method: "POST"

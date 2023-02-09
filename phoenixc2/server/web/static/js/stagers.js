@@ -19,6 +19,35 @@ function deleteStager(id) {
         });
 }
 
+function editStager(){
+    // disable button
+    document.getElementById("edit-button").disabled = true;
+    // get form
+    let form = document.getElementById("edit-form");
+    // get data
+    let data = new FormData(form);
+    // send data
+    fetch(`/stagers/${edit_stager_id}/edit?json=true`, {
+        method: form.method,
+        body: data
+    }).then(response => response.json())
+        .then(data => {
+            // show notification
+            showNotification(data.message, data.status);
+            // check if success
+            if (data.status === "success") {
+                // sleep 1 second
+                setTimeout(function () {
+                    // reload page
+                    location.reload();
+                }, 1000);
+            }
+        });
+    // activate button
+    document.getElementById("edit-button").disabled = false;
+}
+
+
 function resetModal() {
     // reset modal content
     document.getElementById("create-modal-body").innerHTML = original_modal_content;

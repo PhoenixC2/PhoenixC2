@@ -168,9 +168,8 @@ class ListenerModel(Base):
 
     def edit(self, data: dict):
         """Edit the listener"""
-        options = (
-            self.listener_class.options
-        )  # so we dont have to get the class multiple times
+        options = self.listener_class.options
+        
         data = options.validate_all(data)
         for key, value in data.items():
             option = options.get_option(key)

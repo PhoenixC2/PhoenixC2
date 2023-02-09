@@ -153,7 +153,6 @@ class UserModel(Base):
     def delete(self) -> None:
         """Delete the user and profile picture and read all logs"""
         self.delete_profile_picture()
-        self.read_all_logs()
         Session.delete(self)
 
     def get_profile_picture(self) -> str:

@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel, OperationModel
 from phoenixc2.server.utils.web import generate_response
+
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 
@@ -16,16 +17,17 @@ def get_logs(log_id: int = None):
     show_operation = request.args.get("operation", "").lower() == "true"
     show_all = request.args.get("all", "").lower() == "true"
 
-
     opened_log: LogEntryModel = (
         Session.query(LogEntryModel).filter_by(id=log_id).first()
     )
     if show_all or OperationModel.get_current_operation() is None:
         logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
     else:
-        logs: list[LogEntryModel] = Session.query(LogEntryModel).filter_by(
-            operation=OperationModel.get_current_operation()
-        ).all()
+        logs: list[LogEntryModel] = (
+            Session.query(LogEntryModel)
+            .filter_by(operation=OperationModel.get_current_operation())
+            .all()
+        )
 
     if use_json:
         if opened_log is not None:
@@ -82,11 +84,16 @@ def delete_clear_logs(log_id: str = "all"):
             count += 1
             Session.delete(log)
     Session.commit()
+
+    if Session.query(LogEntryModel).count() != 0:
+        message = f"Cleared {count} log entr{'ies' if count != 1 else 'y'}. Some logs were't seen by all users."
+    else:
+        message = f"Cleared {count} log entr{'ies' if count != 1 else 'y'}."
     if count > 0:
         LogEntryModel.log(
             "info",
             "logs",
-            f"Cleared {count} logs.",
+            message,
             UserModel.get_current_user(),
         )
-    return generate_response("success", f"Cleared {count} log entries.", "logs")
+    return generate_response("success", message, "logs")
