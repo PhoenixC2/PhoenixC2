@@ -32,7 +32,7 @@ class Listener(BaseListener):
     """The Reverse Http Listener Class"""
 
     name = "http-reverse"
-    description = "Reverse HTTP Listener"
+    description = "Listener based on the http protocol that uses a stager to connect back to the server"
     author: str = "Screamz2k"
     protocol: str = "http"
     os = ["linux", "windows", "osx"]

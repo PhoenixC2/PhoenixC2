@@ -21,10 +21,9 @@ def get_phoenix():
 @UserModel.authenticated
 def get_available():
     options = {
-        "kits": avl.AVAILABLE_KITS,
-        "encodings": avl.AVAILABLE_ENCODINGS,
-        "payloads": avl.AVAILABLE_PAYLOADS,
-        "loaders": avl.AVAILABLE_LOADERS,
+        "kits": avl.INSTALLED_KITS,
+        "encodings": avl.INSTALLED_ENCODINGS,
+        "loaders": avl.INSTALLED_LOADERS,
     }
     return jsonify(options)
 

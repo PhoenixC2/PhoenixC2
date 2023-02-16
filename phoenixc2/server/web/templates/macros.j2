@@ -1,6 +1,7 @@
 {% macro render_options(options) -%}
     {% for option in options %}
-        {% if option.type|string == "checkbox" %}
+        {% if not option.render %}
+        {% elif option.type|string == "checkbox" %}
             <div class="form-check">
                 <label class="form-check-label">
                     {% if option.default %}
@@ -96,29 +97,28 @@
                     <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
                 </div>
             {% else %}
-                {% if option.real_name not in ("listener", "payload") %}
-                    <div class="form-group">
-                        <label for="{{ option.real_name }}">{{ option.name }}</label>
-                        {% if option.required %}
-                            <input name="{{ option.real_name }}"
-                                   type="{{ option.type }}"
-                                   class="form-control"
-                                   id="{{ option.real_name }}-create"
-                                   value="{{ option.default if option.default }}"
-                                   required>
-                        {% else %}
-                            <input name="{{ option.real_name }}"
-                                   type="{{ option.type }}"
-                                   class="form-control"
-                                   id="{{ option.real_name }}-create"
-                                   value="{{ option.default if option.default }}">
-                        {% endif %}
-                        <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
-                    </div>
-                {% endif %}
+                <div class="form-group">
+                    <label for="{{ option.real_name }}">{{ option.name }}</label>
+                    {% if option.required %}
+                        <input name="{{ option.real_name }}"
+                                type="{{ option.type }}"
+                                class="form-control"
+                                id="{{ option.real_name }}-create"
+                                value="{{ option.default if option.default }}"
+                                required>
+                    {% else %}
+                        <input name="{{ option.real_name }}"
+                                type="{{ option.type }}"
+                                class="form-control"
+                                id="{{ option.real_name }}-create"
+                                value="{{ option.default if option.default }}">
+                    {% endif %}
+                    <small id="{{ option.real_name }}-description" class="form-text text-muted">{{ option.description }}</small>
+                </div>
             {% endif %}
         {% endfor %}
     {%- endmacro %}
+
     {% macro render_features(features) -%}
         {# show list of features if they are pro or not #}
         <div class="card">
@@ -133,6 +133,7 @@
             </ul>
         </div>
     {%- endmacro %}
+    
     {% macro render_user(user) -%}
         <a href="/users/{{ user.id }}" target="_blank">
             <img class="profile-picture"

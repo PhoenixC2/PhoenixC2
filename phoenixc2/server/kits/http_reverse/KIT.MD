@@ -2,7 +2,7 @@
 
 ## Description
 
-This kit allows you to create a reverse-HTTP stager that will connect back to the C2 server. This kit is useful for situations where you have a compromised host that you can't directly access, but you can access a web server on the same network. This kit will create a reverse-HTTP stager that will connect back to the C2 server and then use the C2 server to connect back to the compromised host.
+This kit allows you to create a reverse-HTTP stager that will connect back to the C2 server. This kit is useful for situations where you have a compromised host that you can't directly access, because the host is behind a firewall or a home network, but the host is able to use http(s).
 
 ## Process
 
@@ -16,6 +16,6 @@ This kit allows you to create a reverse-HTTP stager that will connect back to th
 
 5. The stager will connect back to the C2 server
 
+## Example
 
-
-
+### Create a new listener

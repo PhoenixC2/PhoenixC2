@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from phoenixc2.server import AVAILABLE_KITS
+from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.misc import generate_name
@@ -121,8 +121,8 @@ class ListenerModel(Base):
     def get_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
         type = type.replace("-", "_")
-        if type not in AVAILABLE_KITS:
-            raise ValueError(f"Listener '{type}' isn't available.")
+        if type not in INSTALLED_KITS:
+            raise ValueError(f"Listener '{type}' isn't installed.")
         try:
             listener = importlib.import_module(
                 "phoenixc2.server.kits." + type + ".listener"
@@ -136,7 +136,7 @@ class ListenerModel(Base):
     def get_all_classes() -> list["BaseListener"]:
         """Get all listener classes."""
         return [
-            ListenerModel.get_class_from_type(listener) for listener in AVAILABLE_KITS
+            ListenerModel.get_class_from_type(listener) for listener in INSTALLED_KITS
         ]
 
     def start(self, commander: "Commander") -> str:

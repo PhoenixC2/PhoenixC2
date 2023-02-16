@@ -1,5 +1,5 @@
-AVAILABLE_KITS = [
+INSTALLED_KITS = [
     "http_reverse",
 ]
-AVAILABLE_LOADERS = []
-AVAILABLE_ENCODINGS = ["base64", "url", "hex", "raw"]
+INSTALLED_LOADERS = []
+INSTALLED_ENCODINGS = ["base64", "url", "hex", "raw"]

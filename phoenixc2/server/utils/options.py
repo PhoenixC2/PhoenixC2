@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, MutableSequence
 
 import requests
 
-from phoenixc2.server import AVAILABLE_ENCODINGS
+from phoenixc2.server import INSTALLED_ENCODINGS
 from phoenixc2.server.database import ListenerModel, Session
 
 from .misc import generate_name, get_network_interfaces
@@ -210,6 +210,7 @@ class Option:
         editable: bool = True,
         default: any = "",
         real_name: str = "",
+        render: bool = True,
     ) -> None:
         self.name = name if name else generate_name()
         self.type = type
@@ -218,6 +219,7 @@ class Option:
         self.required = required
         self.editable = editable
         self._default = default
+        self.render = render
 
     @property
     def default(self) -> any:
@@ -384,12 +386,13 @@ class DefaultStagerPool(OptionPool):
                 required=True,
                 default=1,
                 editable=False,
+                render=False
             ),
             Option(
                 name="Encoding",
                 description="The encoding to use.",
-                type=ChoiceType(AVAILABLE_ENCODINGS, "str"),
-                default=AVAILABLE_ENCODINGS[0],
+                type=ChoiceType(INSTALLED_ENCODINGS, "str"),
+                default=INSTALLED_ENCODINGS[0],
             ),
             Option(
                 name="Random size",
@@ -427,5 +430,6 @@ class DefaultStagerPool(OptionPool):
                 type=ChoiceType(payloads, str),
                 default="python",
                 required=True,
+                render=False,
             )
         )

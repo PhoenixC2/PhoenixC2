@@ -186,6 +186,9 @@
                    name="type"
                    id="type-create"
                    value="{{ listener_type.name }}" />
+            {{ listener_type.name }}:
+            {{ listener_type.description }}
+            {# render all features #}
             {{ render_features(listener_type.features) }}
             {{ render_options(listener_type.options.options) }}
             {# show author of the listener #}
