@@ -14,7 +14,7 @@ from phoenixc2.server.web.endpoints.devices import devices_bp
 from phoenixc2.server.web.endpoints.listeners import listeners_bp
 from phoenixc2.server.web.endpoints.operations import operations_bp
 from phoenixc2.server.web.endpoints.users import users_bp
-from phoenixc2.server.web.endpoints.routes import routes_bp
+from phoenixc2.server.web.endpoints.dashboard import dashboard_bp
 from phoenixc2.server.web.endpoints.tasks import tasks_bp
 from phoenixc2.server.web.endpoints.stagers import stagers_bp
 from phoenixc2.server.web.endpoints.modules import modules_bp
@@ -26,7 +26,7 @@ from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.misc import format_datetime
 
 endpoints: dict[str, Blueprint] = {
-    "routes": routes_bp,
+    "routes": dashboard_bp,
     "stagers": stagers_bp,
     "listeners": listeners_bp,
     "devices": devices_bp,

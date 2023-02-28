@@ -5,6 +5,7 @@ from phoenixc2.server.utils.options import IntegerType, Option, OptionPool
 class Module(BaseModule):
     name = "Keyboard-Capture"
     description = "Capture keyboard input"
+    admin = True
     execution_methods = ["thread"]
     options = OptionPool(
         [

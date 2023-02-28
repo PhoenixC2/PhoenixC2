@@ -1,23 +1,25 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from flask import Blueprint, render_template, request
-
+from flask import Blueprint, render_template, request, jsonify
+import phoenixc2
 from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
-
+import phoenixc2.server as avl
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
 
 
-def routes_bp(commander: "Commander") -> Blueprint:
+def dashboard_bp(commander: "Commander") -> Blueprint:
 
-    routes_bp = Blueprint("routes", __name__, url_prefix="/")
+    dashboard_bp = Blueprint("routes", __name__, url_prefix="/")
 
-    @routes_bp.route("/home")
-    @routes_bp.route("/dashboard")
-    @routes_bp.route("/")
+    @dashboard_bp.route("/home")
+    @dashboard_bp.route("/dashboard")
+    @dashboard_bp.route("/info")
+    @dashboard_bp.route("/")
     @UserModel.authenticated
     def get_index():
+        use_json = request.args.get("json", "").lower() == "true"
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         operations: list[OperationModel] = Session.query(OperationModel).all()
         # get count of connections from today
@@ -37,7 +39,22 @@ def routes_bp(commander: "Commander") -> Blueprint:
             .filter(UserModel.last_activity >= datetime.now() - timedelta(minutes=5))
             .count()
         )
-
+        if use_json:
+            return jsonify(
+                {
+                    "version": phoenixc2.__version__,
+                    "devices": len(devices),
+                    "operations": len(operations),
+                    "active_devices": len(commander.active_handlers),
+                    "active_listeners": len(commander.active_listeners),
+                    "active_users": active_users,
+                    "connections_last_hour": connections_last_hour,
+                    "connections_today": connections_today,
+                    "installed_kits": avl.INSTALLED_KITS,
+                    "installed_loaders": avl.INSTALLED_LOADERS,
+                    "installed_encodings": avl.INSTALLED_ENCODINGS,
+                }
+            )
         return render_template(
             "dashboard.j2",
             devices=devices,
@@ -49,4 +66,4 @@ def routes_bp(commander: "Commander") -> Blueprint:
             connections_today=connections_today,
         )
 
-    return routes_bp
+    return dashboard_bp

@@ -247,7 +247,7 @@ def edit_user(id: int = None):
     
     if use_json:
         return jsonify(
-            {"status": "success", "message": "User edited.", "user": user.to_dict()}
+            {"status": "success", "message": "User edited."}
         )
     return generate_response("success", "User edited.", ENDPOINT)
 

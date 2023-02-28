@@ -14,14 +14,11 @@ class BasePayload:
     name = "BasePayload"
     description = "BasePayload"
     author: str = "Screamz2k"
-    supported_target_os: list[str] = []
+    supported_target_os: list[str] = ["linux", "windows", "osx"]
     supported_target_arch: list[str] = []
     supported_execution_methods: list[str] = [
-        "direct",
-        "thread",
         "process",
         "injection",
-        "external",
     ]
     supported_code_types: list[str] = ["shellcode", "compiled", "native"]
     supported_languages: list[str] = ["python"]
@@ -32,15 +29,15 @@ class BasePayload:
 
     @abstractmethod
     def generate(
-        self, stager_db: "StagerModel", one_liner: bool = False
+        self, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
     ) -> "FinalPayload":
         """Generate the payload"""
         ...
 
-    @abstractmethod
-    def is_compiled(self, stager_db: "StagerModel") -> bool:
-        """Return if the payload is compiled"""
-        ...
+    @classmethod
+    def is_compiled(stager_db: "StagerModel") -> bool:
+        """Return if the payload was already compiled"""
+        return False
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:

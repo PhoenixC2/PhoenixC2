@@ -11,23 +11,6 @@ from phoenixc2.server.utils.web import generate_response
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 
-
-@misc_bp.route("/version", methods=["GET"])
-def get_phoenix():
-    return jsonify({"version": phoenixc2.__version__})
-
-
-@misc_bp.route("/available", methods=["GET"])
-@UserModel.authenticated
-def get_available():
-    options = {
-        "kits": avl.INSTALLED_KITS,
-        "encodings": avl.INSTALLED_ENCODINGS,
-        "loaders": avl.INSTALLED_LOADERS,
-    }
-    return jsonify(options)
-
-
 @misc_bp.route("/interfaces", methods=["GET"])
 @UserModel.authenticated
 def get_interfaces():

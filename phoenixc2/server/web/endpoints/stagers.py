@@ -219,6 +219,7 @@ def stagers_bp(commander: Commander):
         # Get Request Data
         use_json = request.args.get("json", "").lower() == "true"
         one_liner = request.args.get("one_liner", "") == "true"
+        recompile = request.args.get("recompile", "") == "true"
 
         # Check if Stager exists
         stager_db: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
@@ -227,7 +228,7 @@ def stagers_bp(commander: Commander):
 
         # Get Stager
         try:
-            final_payload = stager_db.stager_class.generate(stager_db, one_liner)
+            final_payload = stager_db.stager_class.generate(stager_db, one_liner, recompile)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 500)
         else:
