@@ -3,6 +3,7 @@ address = "localhost"
 port = 8080
 ssl = false
 secret_key = ""
+# hide server except cookies is set
 show_cookie = false
 show_cookie_name = "show_server"
 show_cookie_value = "plsshowtheserver"
@@ -21,3 +22,4 @@ location = "/data/phoenix.log"
 enabled = false
 
 [plugins]
+
