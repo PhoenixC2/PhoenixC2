@@ -109,29 +109,20 @@ class StagerModel(Base):
 
     def edit(self, data: dict[str, any]):
         """Edit the stager"""
-        options = (
-            self.stager_class.options
-        )  # so we dont have to get the class multiple times
+        options = self.stager_class.options
+        # so we dont have to get the class multiple times
+        
         for key, value in data.items():
+            option = options.get_option(key)
+
+            value = option.validate_data(value)
+            if not option.editable:
+                raise ValueError(f"Option '{key}' is not editable.")
+
             if hasattr(self, key):
-                if value == str(getattr(self, key)):
-                    continue
-                option = options.get_option(key)
-                if not option.editable:
-                    raise ValueError(f"Option '{key}' is not editable.")
-                value = option.validate_data(value)
                 setattr(self, key, value)
             else:
-                if key in self.options:
-                    if value == self.options[key]:
-                        continue
-                    option = options.get_option(key)
-                    if not option.editable:
-                        raise ValueError(f"Option '{key}' is not editable.")
-                    value = option.validate_data(value)
-                    self.options[key] = value
-                else:
-                    raise KeyError(f"{key} is not a valid key")
+                self.options[key] = value
 
     @classmethod
     def create_from_data(cls, data: dict):

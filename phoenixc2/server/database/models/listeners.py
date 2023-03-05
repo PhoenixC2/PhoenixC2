@@ -169,12 +169,14 @@ class ListenerModel(Base):
     def edit(self, data: dict):
         """Edit the listener"""
         options = self.listener_class.options
-        
-        data = options.validate_all(data)
+
         for key, value in data.items():
             option = options.get_option(key)
+
+            value = option.validate_data(value)
             if not option.editable:
                 raise ValueError(f"Option '{key}' is not editable.")
+            
             if hasattr(self, key):
                 setattr(self, key, value)
             else:

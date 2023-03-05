@@ -51,7 +51,7 @@ def tasks_bp(commander: Commander):
         ):
             if task.finished_at is not None:
                 count += 1
-                Session.delete(task)
+                task.delete()
         Session.commit()
         message = f"Cleared {count} task{'s' if count != 1 else ''}."
         if count > 0:

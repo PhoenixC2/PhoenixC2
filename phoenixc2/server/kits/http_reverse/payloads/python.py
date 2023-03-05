@@ -109,7 +109,7 @@ while i < {{stager.timeout}}:
     for task in tasks:
         try:
             data = {
-                "id": task["id"],
+                "task": task["id"],
                 "success": True
             }
             if task["type"] == "rce":

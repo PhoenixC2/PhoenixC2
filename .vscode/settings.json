@@ -1,0 +1,6 @@
+{
+    "files.exclude": {
+        "**/phoenixc2.egg-info": true,
+        "venv": true
+    }
+}

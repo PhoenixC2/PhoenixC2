@@ -142,11 +142,12 @@ class Listener(BaseListener):
                 return "", 404
 
             data = request.get_json()
-            task_id = data.get("id", "")
+            task_id = data.get("task", "")
             output = data.get("output", "")
             success = data.get("success", "")
 
             task = handler.get_task(task_id)
+
             if task is None:
                 return "", 404
 

@@ -37,7 +37,6 @@ class DeviceModel(Base):
     architecture: str = Column(String(10))
     user: str = Column(String(100))
     admin: bool = Column(Boolean, default=False)
-    infos: dict = Column(MutableDict.as_mutable(JSON), default={})
     connection_time: datetime = Column(DateTime, default=datetime.now)
     last_online: datetime = Column(DateTime, default=datetime.now)
     stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
@@ -68,7 +67,6 @@ class DeviceModel(Base):
             "architecture": self.architecture,
             "user": self.user,
             "admin": self.admin,
-            "infos": self.infos,
             "connection_time": self.connection_time,
             "last_online": self.last_online,
             "stager": self.stager.to_dict(commander) if show_stager else self.stager.id,

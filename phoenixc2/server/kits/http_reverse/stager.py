@@ -2,19 +2,19 @@ import base64
 import os
 import urllib
 from typing import TYPE_CHECKING
-
+import shlex
 import jinja2
 
 from phoenixc2.server.utils.options import (
     AddressType,
-    BooleanType,
     Option,
     OptionPool,
     StringType,
     DefaultStagerPool,
-    IntegerType
+    IntegerType,
 )
 from phoenixc2.server.utils.resources import get_resource
+from werkzeug.utils import secure_filename
 from phoenixc2.server.utils.features import Feature
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
@@ -99,6 +99,52 @@ class GoPayload(BasePayload):
         )
     ]
 
+    @classmethod
+    def is_compiled(stager_db: "StagerModel") -> bool:
+        try:
+            get_resource(
+                "data/stagers/",
+                f"{stager_db.name}.exe",
+            )
+        except FileNotFoundError:
+            return False
+        return True
+
+    @classmethod
+    def generate(
+        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
+    ) -> "FinalPayload":
+
+        if cls.is_compiled(stager_db) or not recompile:
+            return FinalPayload(
+                cls,
+                stager_db,
+                get_resource(
+                    "data/stagers/",
+                    f"{stager_db.name}.exe",
+                ),
+            )
+
+        jinja2_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            autoescape=True,
+        )
+        template = jinja2_env.get_template("payloads/go.go")
+        output = template.render(stager=stager_db)
+
+        # write to file
+        with get_resource(
+            "data/stagers/",
+            f"{stager_db.name}.exe",
+            skip_file_check=True,
+        ).open("w") as f:
+            f.write(output)
+
+        # compile
+        operation_system = shlex.quote(stager_db.options["os"])
+        architecture = shlex.quote(stager_db.options["arch"])
 
 class Stager(BaseStager):
     name = "http-reverse"

@@ -295,10 +295,12 @@ class OptionPool:
         option = self.get_option(real_name)
         return option.validate_data(value)
 
-    def validate_all(self, data: dict) -> dict:
+    def validate_all(self, data: dict, edit: bool = False) -> dict:
         """Validate all options using the data"""
         cleaned_data = {}
         for option in self.options:
+            if option.real_name not in data and edit:
+                continue
             value = data.get(option.real_name, "")
             cleaned_data[option.real_name] = option.validate_data(value)
         return cleaned_data

@@ -65,7 +65,7 @@ admin.add_argument(
 admin.add_argument("--backup-database", help="Backup database to the given location.")
 admin.add_argument("--reset-database", help="Reset the database", action="store_true")
 admin.add_argument(
-    "--reset-database-table",
+    "--reset-table",
     help="Reset a specified database table.",
     choices=[table.lower() for table in Base.metadata.tables.keys()],
 )
@@ -115,13 +115,13 @@ def parse_args(args, config: dict) -> dict:
         else:
             log("Database reset aborted.", "info")
     if (
-        args.reset_database_table
+        args.reset_table
         and input(
-            f"Are you sure, that you want to reset the table {args.reset_database_table} [Y/n]: "
+            f"Are you sure, that you want to reset the table {args.reset_table} [Y/n]: "
         ).lower()
         == "y"
     ):
-        reset_table(args.reset_database_table)
+        reset_table(args.reset_table)
     if args.regenerate_ssl:
         regenerate_ssl()
 

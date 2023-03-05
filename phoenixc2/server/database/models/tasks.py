@@ -40,7 +40,7 @@ class TaskModel(Base):
         String(10), unique=True, default=lambda: str(uuid1()).split("-")[0]
     )
     description: str = Column(Text)
-    type: str = Column(String(10), nullable=False)
+    action: str = Column(String(10), nullable=False)
     args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default=dict)
     success: bool = Column(Boolean)  # success | error
     output: str = Column(Text)
@@ -62,7 +62,7 @@ class TaskModel(Base):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "type": self.type,
+            "action": self.action,
             "args": self.args,
             "success": self.success,
             "created_at": self.created_at,
@@ -80,15 +80,15 @@ class TaskModel(Base):
         --------
             str: The code of the module
         """
-        if self.type != "module":
+        if self.action != "module":
             raise ValueError("Task is not a module task.")
         module = get_module(self.args["path"])
         return module.code(self.device, self)
 
     def finish(self, output: str | dict, success: bool):
-        """Update the Task to be finished.
+        """Update the Task status and output.
         Still has to be committed!"""
-        if self.type == "download" and success:
+        if self.action == "download" and success:
             file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
             with get_resource("data/downloads/", file_name, skip_file_check=True).open(
@@ -96,7 +96,7 @@ class TaskModel(Base):
             ) as f:
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
-        elif self.type == "info" and success:
+        elif self.action == "info" and success:
             self.device.address = output.get("address", self.device.address)
             self.device.hostname = output.get("hostname", self.device.hostname)
             self.device.user = output.get("username", self.device.user)
@@ -153,7 +153,7 @@ class TaskModel(Base):
         ) as f:
             f.write(file_content)
 
-        task.type = "upload"
+        task.action = "upload"
         task.args["target_path"] = target_path
         return task
 
@@ -167,7 +167,7 @@ class TaskModel(Base):
             target_path (str): The path of the file too download
         """
         task = TaskModel.generate_task(device_or_id)
-        task.type = "download"
+        task.action = "download"
         task.args["target_path"] = target_path
         return task
 
@@ -185,7 +185,7 @@ class TaskModel(Base):
             binary (str): The binary to execute
         """
         task = TaskModel.generate_task(device_or_id)
-        task.type = "reverse-shell"
+        task.action = "reverse-shell"
         task.args["address"] = address
         task.args["port"] = port
         return task
@@ -202,7 +202,7 @@ class TaskModel(Base):
             cmd (str): Command to execute
         """
         task = TaskModel.generate_task(device_or_id)
-        task.type = "rce"
+        task.action = "rce"
         task.args["cmd"] = cmd
         return task
 
@@ -218,7 +218,7 @@ class TaskModel(Base):
             dir (str): Path to the dir which should be listed
         """
         task = TaskModel.generate_task(device_or_id)
-        task.type = "dir"
+        task.action = "dir"
         task.args["dir"] = dir
         return task
 
@@ -231,7 +231,7 @@ class TaskModel(Base):
             device (DeviceModel): the device to execute the task
         """
         task = TaskModel.generate_task(device_or_id)
-        task.type = "info"
+        task.action = "info"
         return task
 
     @staticmethod
@@ -261,7 +261,7 @@ class TaskModel(Base):
         data = module.options.validate_all(data)
 
         task = TaskModel.generate_task(device_or_id)
-        task.type = "module"
+        task.action = "module"
         task.args["path"] = path
         task.args["execution_method"] = execution_method
         task.args.update(data)
@@ -269,7 +269,7 @@ class TaskModel(Base):
 
     def delete(self):
         """Delete the task."""
-        if self.type == "upload":
+        if self.action == "upload":
             # delete uploaded file
             try:
                 path = str(get_resource("data/uploads/", self.name))
