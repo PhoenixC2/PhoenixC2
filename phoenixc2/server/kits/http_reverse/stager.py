@@ -15,6 +15,7 @@ from phoenixc2.server.utils.options import (
     IntegerType
 )
 from phoenixc2.server.utils.resources import get_resource
+from phoenixc2.server.utils.features import Feature
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
 if TYPE_CHECKING:
@@ -62,83 +63,48 @@ class PythonPayload(BasePayload):
         return FinalPayload(cls, stager_db, output)
 
 
-class CompiledPythonPayload(PythonPayload):
-    name = "Compiled Python"
-    description = "Compiled Python Executable"
-    supported_target_os = ["windows"]
-    supported_code_types = ["compiled"]
-    supported_languages = ["python"]
+class GoPayload(BasePayload):
+    name = "Golang Payload"
+    description = "Compiled cross-platform Golang Payload"
+    module_execution_methods = []
+    module_code_types = []
+    module_languages = []
     end_format = ".exe"
     compiled = True
     options = OptionPool(
         [
             Option(
-                "UAC",
-                description="Ask for admin rights",
-                real_name="admin",
-                type=BooleanType(),
-                default=False,
+                name="Operating System",
+                description="The operating system to compile for",
+                real_name="os",
+                type=StringType(),
+                default="windows",
+                required=True,
+            ),
+            Option(
+                name="Architecture",
+                description="The architecture to compile for",
+                real_name="arch",
+                type=StringType(),
+                default="amd64",
+                required=True,
             ),
         ]
     )
-
-    @classmethod
-    def is_compiled(cls, stager_db: "StagerModel") -> bool:
-        # TODO: Check if the file is compiled
-        try:
-            get_resource("data/stagers", f"{stager_db.name}.exe")
-        except:
-            return False
-        else:
-            return True
-
-    @classmethod
-    def generate(
-        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
-    ) -> "FinalPayload":
-        payload = super().generate(stager_db, False, recompile)
-
-        # save the payload to a file
-        payload_file = get_resource(
-            "data/stagers", f"{stager_db.name}.py", skip_file_check=True
+    features = [
+        Feature(
+            name="Cross-Platform",
+            description="The payload can be compiled for multiple platforms",
+            pro=True,
         )
-
-        with open(str(payload_file), "w") as f:
-            f.write(payload.output)
-
-        # check if the file is compiled
-        if not recompile and cls.is_compiled(stager_db):
-            return FinalPayload(
-                cls, stager_db, get_resource("data/stagers", f"{stager_db.name}.exe")
-            )
-
-        # compile the file
-        # WARNING: This is a security risk, as it allows arbitrary code execution!!! 
-        # this is only a prototype
-
-        if stager_db.options.get("admin", False):
-            os.system(
-                f"pyinstaller --onefile --noconsole --distpath --clean {payload_file} --name {stager_db.name} --distpath {get_resource('data/stagers')} --uac-admin"
-            )
-        else:
-            print(f"pyinstaller --onefile --noconsole  --clean {payload_file} --name {stager_db.name}.exe --distpath {str(get_resource('data', 'stagers'))}")
-            os.system(
-                f"pyinstaller --onefile --noconsole --target-arch x86_64 --clean {payload_file} --name {stager_db.name}.exe --distpath {str(get_resource('data', 'stagers'))}"
-            )
-        
-        # remove the file
-        os.remove(str(payload_file))
-
-        return FinalPayload(
-            cls, stager_db, get_resource("data/stagers", f"{stager_db.name}.exe").open("rb").read()
-        )
+    ]
 
 
 class Stager(BaseStager):
     name = "http-reverse"
     description = "Reverse HTTP(S) stager"
     author: str = "Screamz2k"
-    payloads = {"python": PythonPayload, "compiled-python": CompiledPythonPayload}
+    payloads = {"python": PythonPayload, "go": GoPayload}
     options = DefaultStagerPool(
         [
             Option(

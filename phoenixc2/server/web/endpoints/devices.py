@@ -221,16 +221,15 @@ def devices_bp(commander: Commander):
         if device is None:
             return generate_response("danger", DEVICE_DOES_NOT_EXIST, "devices", 404)
 
-        # check if file is in request
-        if "file" not in request.files:
-            return generate_response("danger", "The file is missing", "devices", 400)
+        # get file
+        file = request.get_data()
 
         if target_path is None:
             return generate_response(
                 "danger", "Upload path is missing.", "devices", 400
             )
         try:
-            task = TaskModel.upload(device, request.files.get("file"), target_path)
+            task = TaskModel.upload(device, file, target_path)
         except Exception as e:
             return generate_response("danger", str(e), "devices", 500)
         Session.add(task)

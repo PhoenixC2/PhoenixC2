@@ -15,13 +15,13 @@ class BasePayload:
     description = "BasePayload"
     author: str = "Screamz2k"
     supported_target_os: list[str] = ["linux", "windows", "osx"]
-    supported_target_arch: list[str] = []
-    supported_execution_methods: list[str] = [
+    supported_target_arch: list[str] = ["x64", "x86"]
+    module_execution_methods: list[str] = [
         "process",
         "injection",
     ]
-    supported_code_types: list[str] = ["shellcode", "compiled", "native"]
-    supported_languages: list[str] = ["python"]
+    module_code_types: list[str] = ["shellcode", "compiled", "native"]
+    module_languages: list[str] = ["python"]
     end_format: str = ""
     compiled: bool = False
     options: OptionPool = OptionPool()
@@ -47,9 +47,9 @@ class BasePayload:
             "author": cls.author,
             "supported_target_os": cls.supported_target_os,
             "supported_target_arch": cls.supported_target_arch,
-            "supported_execution_methods": cls.supported_execution_methods,
-            "supported_code_types": cls.supported_code_types,
-            "supported_languages": cls.supported_languages,
+            "supported_execution_methods": cls.module_execution_methods,
+            "supported_code_types": cls.module_code_types,
+            "supported_languages": cls.module_languages,
             "end_format": cls.end_format,
             "compiled": cls.compiled,
             "options": cls.options.to_dict(commander),

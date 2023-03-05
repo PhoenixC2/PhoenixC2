@@ -181,14 +181,14 @@ class Listener(BaseListener):
             )
             return "", 200
 
-        @self.api.route("/download/<string:file_name>", methods=["GET"])
-        def download(file_name: str = None):
-            if file_name is None:
+        @self.api.route("/download/<string:task_name>", methods=["GET"])
+        def download(task_name: str = None):
+            if task_name is None:
                 return "", 404
 
             return send_from_directory(
-                get_resource("downloads"),
-                file_name,
+                str(get_resource("data/uploads")),
+                task_name,
                 as_attachment=True,
             )
 

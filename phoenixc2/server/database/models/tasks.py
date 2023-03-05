@@ -1,5 +1,6 @@
 """The Tasks Model"""
 import base64
+import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import uuid1
@@ -16,10 +17,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from phoenixc2.server.database.base import Base
+from phoenixc2.server.database.engine import Session
 from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.resources import get_resource
 
@@ -131,7 +132,7 @@ class TaskModel(Base):
 
     @staticmethod
     def upload(
-        device_or_id: DeviceModel | int, file: FileStorage, target_path: str
+        device_or_id: DeviceModel | int, file_content: bytes, target_path: str
     ) -> "TaskModel":
         """Create a Upload task.
 
@@ -143,14 +144,16 @@ class TaskModel(Base):
         """
         if target_path is None:
             raise TypeError("File path is missing.")
-        file.save(
-            get_resource(
-                "data/uploads", secure_filename(file.name), skip_file_check=True
-            )
-        )
+        
         task = TaskModel.generate_task(device_or_id)
+        task.name = str(uuid1()).split("-")[0]
+
+        with get_resource("data/uploads/", task.name, skip_file_check=True).open(
+            "wb"
+        ) as f:
+            f.write(file_content)
+
         task.type = "upload"
-        task.args["file_name"] = secure_filename(file.name)
         task.args["target_path"] = target_path
         return task
 
@@ -263,3 +266,15 @@ class TaskModel(Base):
         task.args["execution_method"] = execution_method
         task.args.update(data)
         return task
+
+    def delete(self):
+        """Delete the task."""
+        if self.type == "upload":
+            # delete uploaded file
+            try:
+                path = str(get_resource("data/uploads/", self.name))
+            except FileNotFoundError:
+                pass
+            else:
+                os.remove(path)
+        Session.delete(self)
