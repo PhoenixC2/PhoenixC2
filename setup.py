@@ -27,7 +27,7 @@ setup(
         "flask",
         "rich",
         "pystyle",
-        "netifaces",
+        "psutil",
         "requests",
         "tomli",
         "tomli_w",
