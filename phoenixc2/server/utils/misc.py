@@ -1,17 +1,16 @@
 import platform
 from datetime import datetime
 from uuid import uuid1
-
-import netifaces
+from psutil import net_if_addrs
 
 
 def get_network_interfaces() -> dict[str, str]:
     """Get address of all network interfaces on the host"""
     interfaces = {"all": "0.0.0.0"}
-    for interface in netifaces.interfaces():
-        ifaddresses = netifaces.ifaddresses(interface)
-        if ifaddresses.get(2) is not None:  # checks if addr is available
-            interfaces[interface] = ifaddresses[2][0]["addr"]
+    for interface_name, interface_addresses in net_if_addrs().items():
+        for address in interface_addresses:
+            if str(address.family) == 'AddressFamily.AF_INET':
+                interfaces[interface_name] = address.address
     return interfaces
 
 
