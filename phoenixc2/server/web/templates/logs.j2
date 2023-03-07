@@ -9,7 +9,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Alert</th>
+                    <th>Status</th>
                     <th>Endpoint</th>
                     <th>Description</th>
                     <th>Time</th>
@@ -19,11 +19,11 @@
             </thead>
             <tbody>
                 {% for log in logs %}
-                    {# set the row class based on the alert level #}
-                    <tr class=" dark-background alert-{{ log.alert }}">
+                    {# set the row class based on the status #}
+                    <tr class=" dark-background alert-{{ log.status }}">
                         <td>{{ log.id }}</td>
-                        <td>{{ log.alert }}</td>
-                        <td>
+                        <td>{{ log.status }}</td>
+                        <td data-toggle="tooltip" data-placement="top" title="{{ log.endpoint }}">
                             <i class="material-icons">{{ icons[log.endpoint] }}</i>
                         </td>
                         {% if log.description|length > 90 %}

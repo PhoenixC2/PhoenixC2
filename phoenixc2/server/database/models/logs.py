@@ -19,7 +19,7 @@ class LogEntryModel(Base):
     __tablename__ = "Logs"
     id: int = Column(Integer, primary_key=True, nullable=False)
     # info|alert|error|critical|success
-    alert: str = Column(String(10), name="type")
+    status: str = Column(String(10), name="type")
     endpoint = Column(String(50))
     description: str = Column(Text(100))
     time: datetime = Column(DateTime, default=datetime.now)
@@ -51,7 +51,7 @@ class LogEntryModel(Base):
     ) -> dict:
         data = {
             "id": self.id,
-            "alert": self.alert,
+            "status": self.status,
             "endpoint": self.endpoint,
             "description": self.description,
             "time": self.time,
@@ -74,14 +74,14 @@ class LogEntryModel(Base):
     @classmethod
     def create(
         cls,
-        alert: str,
+        status: str,
         endpoint: str,
         description: str,
         unseen_users: list["UserModel"],
         user: "UserModel" = None,
     ) -> "LogEntryModel":
         return cls(
-            alert=alert,
+            status=status,
             endpoint=endpoint,
             description=description,
             user=user,
@@ -91,7 +91,7 @@ class LogEntryModel(Base):
     @classmethod
     def log(
         cls,
-        alert: str,
+        status: str,
         endpoint: str,
         description: str,
         user: "UserModel" = None,
@@ -99,9 +99,9 @@ class LogEntryModel(Base):
     ) -> "LogEntryModel":
         """Log an entry to the database"""
         if log_to_cli:
-            cli_log(f"({user if user is not None else 'System'}) {description}", alert)
+            cli_log(f"({user if user is not None else 'System'}) {description}", status)
         log = cls.create(
-            alert, endpoint, description, Session.query(UserModel).all(), user
+            status, endpoint, description, Session.query(UserModel).all(), user
         )
         Session.add(log)
         Session.commit()

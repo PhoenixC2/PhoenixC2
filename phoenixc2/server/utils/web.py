@@ -9,13 +9,13 @@ from phoenixc2.server.utils.resources import get_resource
 
 
 def generate_response(
-    alert: str, text: str, redirect_location: str = "", response_code: int = 200
+    status: str, text: str, redirect_location: str = "", response_code: int = 200
 ) -> tuple[Response, int | None]:
     """Generate the Endpoint Response"""
     use_json = request.args.get("json", "").lower() == "true"
     if use_json:
-        return jsonify({"status": alert, "message": text}), response_code
-    flash(text, alert)
+        return jsonify({"status": status, "message": text}), response_code
+    flash(text, status)
     return redirect("/" + redirect_location)
 
 

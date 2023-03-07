@@ -44,7 +44,7 @@ class ListenerModel(Base):
     ssl: bool = Column(Boolean, default=True)
     enabled: bool = Column(Boolean, default=True)
     limit: int = Column(Integer, name="limit")
-    response_time: int = Column(Integer, name="response_time", default=10)
+    timeout: int = Column(Integer, default=10)
     options: dict = Column(MutableDict.as_mutable(JSON), default={})
     created_at: datetime = Column(DateTime, default=datetime.now)
     updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -100,7 +100,7 @@ class ListenerModel(Base):
             "ssl": self.ssl,
             "enabled": self.enabled,
             "limit": self.limit,
-            "response_time": self.response_time,
+            "timeout": self.timeout,
             "active": self.is_active(commander),
             "options": self.options,
             "created_at": self.created_at,
@@ -204,6 +204,6 @@ class ListenerModel(Base):
             ssl=data.pop("ssl"),
             enabled=data.pop("enabled"),
             limit=data.pop("limit"),
-            response_time=data.pop("response_time"),
+            timeout=data.pop("timeout"),
             options=data,
         )

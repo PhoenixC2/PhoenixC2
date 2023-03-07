@@ -20,13 +20,13 @@ function deleteListener(id) {
 }
 
 function editListener(){
-    // disable button
     document.getElementById("edit-button").disabled = true;
-    // get form
     let form = document.getElementById("edit-form");
-    // get data
     let data = new FormData(form);
-    // send data 
+
+    // remove id
+    data.delete("id");
+
     // have to increment the id by 1 because the id is 0 indexed
     fetch(`/listeners/${edit_listener_id + 1}/edit?json=true`, {
         method: "PUT",
@@ -138,7 +138,7 @@ function createEdit(id) {
     document.getElementById("ssl-edit").checked = listener.ssl;
     document.getElementById("enabled-edit").checked = listener.enabled;
     document.getElementById("limit-edit").value = listener.limit;
-
+    document.getElementById("timeout-edit").value = listener.timeout;
     // set options
     for (let option_name in listener.options) {
         if (Object.prototype.hasOwnProperty.call(listener.options, option_name)) {

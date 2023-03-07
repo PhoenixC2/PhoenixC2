@@ -152,10 +152,10 @@
                                          aria-labelledby="navbarDropdownMenuLink">
                                         {% for message in user.unseen_logs %}
                                             {% if message.user %}
-                                                <a class="dropdown-item text-{{ message.alert }}"
+                                                <a class="dropdown-item text-{{ message.status }}"
                                                    href="/logs/{{ message.id }}">{{ message.user }}: {{ message.description }}</a>
                                             {% else %}
-                                                <a class="dropdown-item text-{{ message.alert }}"
+                                                <a class="dropdown-item text-{{ message.status }}"
                                                    href="/logs/{{ message.id }}">System: {{ message.description }}</a>
                                             {% endif %}
                                         {% endfor %}

@@ -79,7 +79,6 @@ class Listener(BaseListener):
                 )
                 return "", 404
             try:
-                address = data.get("address")
                 hostname = data.get("hostname", "")
                 os = data.get("os", "")
                 architecture = data.get("architecture", "")
@@ -97,7 +96,7 @@ class Listener(BaseListener):
                     )
                     raise ValueError("Invalid Stager ID")
                 device = DeviceModel.create(
-                    hostname, address, os, architecture, user, admin, stager
+                    hostname, request.remote_addr, os, architecture, user, admin, stager
                 )
             except Exception:
                 return "", 404

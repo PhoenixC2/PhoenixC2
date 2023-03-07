@@ -114,6 +114,7 @@ def stagers_bp(commander: Commander):
 
             # Check if data is valid and clean it
             stager_class = StagerModel.get_class_from_type(listener.type)
+
             data = stager_class.options.validate_all(data)
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)

@@ -67,7 +67,7 @@ def main():
             # print(input("Server > "))
             time.sleep(1)
         except KeyboardInterrupt:
-            log("Exiting", alert="info")
+            log("Exiting", status="info")
             os._exit(0)
 
 

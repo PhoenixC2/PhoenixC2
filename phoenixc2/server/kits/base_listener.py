@@ -75,10 +75,10 @@ class BaseListener:
 
     def refresh_connections(self):
         """Check if the connections are still alive."""
-        while self.db_entry.response_time > 0:
+        while self.db_entry.timeout > 0:
             if self.stopped:
                 break
-            time.sleep(self.db_entry.response_time)
+            time.sleep(self.db_entry.timeout)
             try:
                 for handler in self.handlers:
                     if not handler.alive():

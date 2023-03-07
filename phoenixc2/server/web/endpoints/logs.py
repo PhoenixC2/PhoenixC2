@@ -16,12 +16,24 @@ def get_logs(log_id: int = None):
     show_unseen_users = request.args.get("unseen", "").lower() == "true"
     show_operation = request.args.get("operation", "").lower() == "true"
     show_all = request.args.get("all", "").lower() == "true"
+    status_filter = request.args.get("status", "").lower()
 
     opened_log: LogEntryModel = (
         Session.query(LogEntryModel).filter_by(id=log_id).first()
     )
+
     if show_all or OperationModel.get_current_operation() is None:
         logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
+                    
+        if status_filter:
+            logs: list[LogEntryModel] = (
+                Session.query(LogEntryModel)
+                .filter_by(status=status_filter)
+                .all()
+            )
+        else:
+            logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
+        
     else:
         logs: list[LogEntryModel] = (
             Session.query(LogEntryModel)

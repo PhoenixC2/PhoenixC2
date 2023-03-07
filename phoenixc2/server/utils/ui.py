@@ -45,22 +45,22 @@ logo = Add.Add(
 console = Console()
 
 
-def log(text: str, alert: str = ""):
+def log(text: str, status: str = ""):
     """Log important information to the console"""
     if os.getenv("PHOENIX_LOG", "") == "false":
         return
     style = ""
-    if alert == "info":
+    if status == "info":
         style = "blue"
-    elif alert == "success":
+    elif status == "success":
         style = "green"
-    elif alert == "warning":
+    elif status == "warning":
         style = "yellow"
-    elif alert == "danger":
+    elif status == "danger":
         style = "red"
-    elif alert == "critical":
+    elif status == "critical":
         style = "#ff0000"
-    console.print("[" + alert.upper() + "] " + text, style=style)
+    console.print("[" + status.upper() + "] " + text, style=style)
 
 
 def ph_print(text: str, force: bool = False):

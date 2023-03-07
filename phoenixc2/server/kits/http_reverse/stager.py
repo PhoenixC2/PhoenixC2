@@ -135,16 +135,32 @@ class GoPayload(BasePayload):
         output = template.render(stager=stager_db)
 
         # write to file
-        with get_resource(
-            "data/stagers/",
-            f"{stager_db.name}.exe",
-            skip_file_check=True,
-        ).open("w") as f:
+        go_file = get_resource("data/stagers/", f"{stager_db.name}.go")
+        executable = get_resource(
+            "data/stagers/", f"{stager_db.name}.exe", skip_file_check=True
+        )
+
+        with go_file.open("w") as f:
             f.write(output)
 
         # compile
         operation_system = shlex.quote(stager_db.options["os"])
         architecture = shlex.quote(stager_db.options["arch"])
+
+        os.system(
+            f"GOOS={operation_system} GOARCH={architecture}"
+            + f"go build -o {executable} {go_file}"
+        )
+
+        # remove go file
+        os.rm(str(go_file))
+
+        return FinalPayload(
+            cls,
+            stager_db,
+            executable.open("rb").read(),
+        )
+
 
 class Stager(BaseStager):
     name = "http-reverse"

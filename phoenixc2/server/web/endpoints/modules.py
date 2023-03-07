@@ -26,7 +26,7 @@ def modules_bp(commander: "Commander"):
                         "modules": [module.to_dict(commander) for module in modules],
                     }
                 )
-            return render_template("modules.html", modules=modules, commander=commander)
+            return render_template("modules.j2", modules=modules, commander=commander)
         else:
             try:
                 module = get_module(module_name)
@@ -36,6 +36,6 @@ def modules_bp(commander: "Commander"):
                 return jsonify(
                     {"status": "success", "module": module.to_dict(commander)}
                 )
-            return render_template("module.html", module=module, commander=commander)
+            return render_template("module.j2", module=module, commander=commander)
 
     return modules_bp

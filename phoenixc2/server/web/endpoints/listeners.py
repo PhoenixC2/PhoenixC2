@@ -194,8 +194,9 @@ def listeners_bp(commander: Commander):
             return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
         
         # check if port is the same to avoid validation error
-        if "port" in form_data and form_data.get("port") == str(listener.port):
+        if form_data.get("port", "") == str(listener.port):
             form_data.pop("port")
+
         # Edit listener
         try:
             listener.edit(form_data)

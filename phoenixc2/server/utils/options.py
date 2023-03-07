@@ -357,7 +357,7 @@ class DefaultListenerPool(OptionPool):
             ),
             Option(
                 name="Response timeout",
-                real_name="response_time",
+                real_name="timeout",
                 description="How long the listener should wait for a response before closing the connection.",
                 type=IntegerType(),
                 default=10,
