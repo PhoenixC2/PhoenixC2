@@ -1,5 +1,5 @@
 import os
-import random
+import secrets
 import string
 
 from sqlalchemy import inspect
@@ -136,10 +136,7 @@ def recreate_super_user():
         existing_admin.delete()
         log("Deleted current admin.", "success")
     log("Creating new admin", "info")
-    password = "".join(
-        random.choice(string.ascii_letters + string.digits + string.punctuation)
-        for _ in range(10)
-    )
+    password = secrets.token_urlsafe(10)
     admin = UserModel(id=1, username="phoenix", admin=True)
     admin.set_password(password)
     Session.add(admin)
