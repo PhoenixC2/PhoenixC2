@@ -52,6 +52,12 @@ misc.add_argument(
     help="Name of the config file to use. [default.toml]",
     default="default.toml",
 )
+misc.add_argument(
+    "-e",
+    "--exit",
+    help="Exit after the server has been started(used for testing)",
+    action="store_true"
+)
 admin = parser.add_argument_group("Admin")
 admin.add_argument(
     "-r",

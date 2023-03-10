@@ -62,6 +62,8 @@ def main():
     log("Press CTRL+C to exit.", "info")
     if args.quiet:
         print("Finished startup.")
+    if args.exit:
+        os._exit(0)
     while True:
         try:
             # print(input("Server > "))
