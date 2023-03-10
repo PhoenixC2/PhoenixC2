@@ -16,7 +16,7 @@ class CredentialModel(Base):
 
     __tablename__ = "Credentials"
     id: int = Column(Integer, primary_key=True, nullable=False)
-    credential: str = Column(String(100))
+    value: str = Column(String(100))
     hash: bool = Column(Boolean, default=False)
     notes: str = Column(Text(500))
     user: str = Column(String(100))
@@ -37,7 +37,7 @@ class CredentialModel(Base):
     def to_dict(self, show_operation: bool = False) -> dict:
         return {
             "id": self.id,
-            "credential": self.credential,
+            "value": self.value,
             "hash": self.hash,
             "notes": self.notes,
             "user": self.user,
@@ -52,17 +52,17 @@ class CredentialModel(Base):
     @classmethod
     def create(
         cls,
-        admin: bool,
-        credential: str,
+        value: str,
         hash: bool,
         user: str,
+        admin: bool,
         notes: str = None,
     ) -> "CredentialModel":
-        credential = cls(
+        return cls(
             user=user,
             admin=admin,
-            credential=credential,
+            credential=value,
             hash=hash,
             notes=notes,
+            operation=OperationModel.get_current_operation(),
         )
-        return credential
