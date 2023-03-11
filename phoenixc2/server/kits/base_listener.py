@@ -23,7 +23,7 @@ class BaseListener:
     protocol: str = "tcp"
     # The supported OS for the listener
     os: list[str] = ["linux", "windows", "osx"]
-    options = OptionPool()
+    option_pool = OptionPool()
     features: list[Feature] = []
 
     def __init__(self, commander: "Commander", db_entry: "ListenerModel"):
@@ -110,6 +110,6 @@ class BaseListener:
             "description": cls.description,
             "protocol": cls.protocol,
             "os": cls.os,
-            "options": cls.options.to_dict(commander),
+            "options": cls.option_pool.to_dict(commander),
             "features": [feature.to_dict() for feature in cls.features],
         }

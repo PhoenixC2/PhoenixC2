@@ -3,7 +3,7 @@ from phoenixc2.server.commander import Commander
 import unittest
 import os
 
-class TestDashboard(unittest.TestCase):
+class DashboardTest(unittest.TestCase):
 
     def setUp(self):
         os.environ["PHOENIX_TEST"] = "true"

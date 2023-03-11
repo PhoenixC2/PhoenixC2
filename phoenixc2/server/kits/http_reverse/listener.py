@@ -36,7 +36,7 @@ class Listener(BaseListener):
     author: str = "Screamz2k"
     protocol: str = "http"
     os = ["linux", "windows", "osx"]
-    options = DefaultListenerPool(
+    option_pool = DefaultListenerPool(
         [
             Option(
                 name="Server Header",
@@ -144,13 +144,14 @@ class Listener(BaseListener):
             task_id = data.get("task", "")
             output = data.get("output", "")
             success = data.get("success", "")
+            credentials = data.get("creds", [])
 
             task = handler.get_task(task_id)
 
             if task is None:
                 return "", 404
 
-            task.finish(output, success)
+            task.finish(output, success, credentials)
             Session.commit()
             return "", 200
 

@@ -40,7 +40,7 @@ def get_downloads(file_name: str):
 def post_clear_uploads():
     uploads = get_resource("data/uploads", skip_file_check=True)
     for file in uploads.iterdir():
-        os.remove(file)
+        file.unlink()
     return generate_response("success", "Uploads cleared.", "devices")
 
 
@@ -49,5 +49,5 @@ def post_clear_uploads():
 def post_clear_downloads():
     downloads = get_resource("data/downloads", skip_file_check=True)
     for file in downloads.iterdir():
-        os.remove(file)
+        file.unlink()
     return generate_response("success", "Downloads cleared.", "devices")

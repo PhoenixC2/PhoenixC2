@@ -168,7 +168,7 @@ class ListenerModel(Base):
 
     def edit(self, data: dict):
         """Edit the listener"""
-        options = self.listener_class.options
+        options = self.listener_class.option_pool
 
         for key, value in data.items():
             option = options.get_option(key)

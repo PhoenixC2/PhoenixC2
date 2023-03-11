@@ -175,7 +175,7 @@ class UserModel(Base):
     def delete_profile_picture(self) -> None:
         """Delete the profile picture"""
         if self.profile_picture:
-            os.remove(str(get_resource(PICTURES, self.username, skip_file_check=True)))
+            get_resource(PICTURES, self.username, skip_file_check=True).unlink()
             self.profile_picture = False
 
     @classmethod

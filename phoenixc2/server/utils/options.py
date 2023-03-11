@@ -199,6 +199,7 @@ class Option:
         required (bool): If the option is required.
         default (any): The default value of the option.
         editable (bool): If the option is editable.
+        render (bool): If the option is rendered in the front-end.
     """
 
     def __init__(
@@ -227,10 +228,11 @@ class Option:
 
     @property
     def real_name(self) -> str:
+        """Returns the name used in the database."""
         return self._real_name if self._real_name else self.name.lower()
 
     def validate_data(self, data: any) -> OptionType.data_type:
-        """Raises an exception if data isn't fitting to the requirements"""
+        """Validates the data and if a default value is set it returns it."""
         if not data:
             if self.required and self.default is None:
                 raise ValueError(f"{self.name} is required.")
@@ -307,6 +309,9 @@ class OptionPool:
 
     def to_dict(self, commander: "Commander") -> list:
         return [option.to_dict(commander) for option in self.options]
+
+    def extend(self, option_pool: "OptionPool"):
+        self.options.extend(option_pool.options)
 
 
 class DefaultListenerPool(OptionPool):
@@ -388,7 +393,7 @@ class DefaultStagerPool(OptionPool):
                 required=True,
                 default=1,
                 editable=False,
-                render=False
+                render=False,
             ),
             Option(
                 name="Encoding",
@@ -433,5 +438,6 @@ class DefaultStagerPool(OptionPool):
                 default="python",
                 required=True,
                 render=False,
+                editable=False,
             )
         )

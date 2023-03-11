@@ -85,9 +85,10 @@ class TaskModel(Base):
         module = get_module(self.args["path"])
         return module.code(self.device, self)
 
-    def finish(self, output: str | dict, success: bool, creds: dict = None):
+    def finish(self, output: str | dict, success: bool, creds: dict = [None]):
         """Update the Task status and output.
         Still has to be committed!"""
+
         if self.action == "download" and success:
             file_name = secure_filename(self.args["target_path"].split("/")[-1])
             # save file to downloads folder
@@ -96,13 +97,16 @@ class TaskModel(Base):
             ) as f:
                 f.write(base64.b64decode(output))
             self.output = file_name  # file can then be found using the api
+
         elif self.action == "info" and success:
             self.device.address = output.get("address", self.device.address)
             self.device.hostname = output.get("hostname", self.device.hostname)
             self.device.user = output.get("username", self.device.user)
             self.device.admin = output.get("admin", self.device.admin)
+
         else:
             self.output = output
+            
         self.success = success
         self.finished_at = datetime.now()
 
@@ -295,9 +299,7 @@ class TaskModel(Base):
         if self.action == "upload":
             # delete uploaded file
             try:
-                path = str(get_resource("data/uploads/", self.name))
+                get_resource("data/uploads/", self.name).unlink()
             except FileNotFoundError:
                 pass
-            else:
-                os.remove(path)
         Session.delete(self)

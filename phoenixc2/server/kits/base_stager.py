@@ -1,6 +1,6 @@
 import json
 from abc import abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, BinaryIO
 
 from phoenixc2.server.utils.features import Feature
 from phoenixc2.server.utils.options import DefaultStagerPool, OptionPool
@@ -24,7 +24,7 @@ class BasePayload:
     module_languages: list[str] = ["python"]
     end_format: str = ""
     compiled: bool = False
-    options: OptionPool = OptionPool()
+    option_pool: OptionPool = OptionPool()
     features: list[Feature] = []
 
     @abstractmethod
@@ -52,7 +52,7 @@ class BasePayload:
             "supported_languages": cls.module_languages,
             "end_format": cls.end_format,
             "compiled": cls.compiled,
-            "options": cls.options.to_dict(commander),
+            "options": cls.option_pool.to_dict(commander),
         }
 
 
@@ -60,7 +60,7 @@ class FinalPayload:
     def __init__(
         self, payload: BasePayload, stager_db: "StagerModel", output: bytes | str
     ):
-        self.output: bytes | str = output
+        self.output: str | BinaryIO = output
         self.stager: "StagerModel" = stager_db
         self.payload: BasePayload = payload
 
@@ -73,8 +73,7 @@ class BaseStager:
     name: str = "Base Stager"
     description: str = "This is the base stager"
     author: str = "Unknown"
-    options = DefaultStagerPool()
-    # The payloads that are supported by this stager and if they have to be compiled
+    option_pool = DefaultStagerPool()
     payloads: dict[str, BasePayload] = {}
 
     @classmethod
@@ -105,7 +104,7 @@ class BaseStager:
         return {
             "name": cls.name,
             "description": cls.description,
-            "options": cls.options.to_dict(commander),
+            "options": cls.option_pool.to_dict(commander),
             "payloads": {x: cls.payloads[x].to_dict(commander) for x in cls.payloads},
         }
 

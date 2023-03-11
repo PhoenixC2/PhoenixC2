@@ -73,9 +73,9 @@ def regenerate_ssl():
 
     # check if the ssl certificates exist and delete them
     if os.path.exists(ssl_cert):
-        os.remove(ssl_cert)
+        ssl_cert.unlink()
     if os.path.exists(ssl_key):
-        os.remove(ssl_key)
+        ssl_key.unlink()
     # quiet mode for openssl
     k = crypto.PKey()
     k.generate_key(crypto.TYPE_RSA, 4096)

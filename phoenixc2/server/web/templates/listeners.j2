@@ -190,7 +190,7 @@
             {{ listener_type.description }}
             {# render all features #}
             {{ render_features(listener_type.features) }}
-            {{ render_options(listener_type.options.options) }}
+            {{ render_options(listener_type.option_pool.options) }}
             {# show author of the listener #}
             <p class="text-muted">Created by: {{ listener_type.author }}</p>
         </form>

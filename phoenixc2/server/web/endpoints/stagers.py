@@ -9,7 +9,7 @@ from phoenixc2.server.database import (
     Session,
     StagerModel,
     UserModel,
-    OperationModel
+    OperationModel,
 )
 from phoenixc2.server.utils.web import generate_response
 
@@ -112,10 +112,17 @@ def stagers_bp(commander: Commander):
             if Session.query(StagerModel).filter_by(name=name).first():
                 raise ValueError("Stager name is already taken.")
 
-            # Check if data is valid and clean it
+            # get class for options
             stager_class = StagerModel.get_class_from_type(listener.type)
+            option_pool = stager_class.option_pool
 
-            data = stager_class.options.validate_all(data)
+            # get payload options
+            if "payload" in data and data["payload"] in stager_class.payloads:
+                option_pool.extend(stager_class.payloads[data["payload"]].option_pool)
+
+            # Check if data is valid and clean it
+            data = option_pool.validate_all(data)
+
         except Exception as e:
             return generate_response("danger", str(e), ENDPOINT, 400)
 
@@ -123,8 +130,8 @@ def stagers_bp(commander: Commander):
         try:
             stager = StagerModel.create_from_data(data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
-        
+            return generate_response("danger", str(e), ENDPOINT, 400)
+
         Session.add(stager)
         Session.commit()
 
@@ -161,8 +168,7 @@ def stagers_bp(commander: Commander):
         # set listener name because we need it after the stager is deleted
         listener_name = stager.listener.name
 
-        Session.delete(stager)
-        Session.commit()
+        stager.delete()
 
         LogEntryModel.log(
             "success",
@@ -193,10 +199,10 @@ def stagers_bp(commander: Commander):
         try:
             stager.edit(form_data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return generate_response("danger", str(e), ENDPOINT, 400)
 
         Session.commit()
-        
+
         LogEntryModel.log(
             "success",
             "stagers",
@@ -229,18 +235,21 @@ def stagers_bp(commander: Commander):
 
         # Get Stager
         try:
-            final_payload = stager_db.stager_class.generate(stager_db, one_liner, recompile)
+            final_payload = stager_db.stager_class.generate(
+                stager_db, one_liner, recompile
+            )
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return generate_response("danger", str(e), ENDPOINT, 400)
         else:
-            if use_json:
-                return jsonify({"status": "success", "stager": final_payload.output})
-            elif final_payload.payload.compiled:
+
+            if final_payload.payload.compiled:
                 return send_file(
                     final_payload.output,
                     as_attachment=True,
                     download_name=final_payload.name,
                 )
+            if use_json:
+                return jsonify({"status": "success", "stager": final_payload.output})
             else:
                 tmp = tempfile.TemporaryFile()
                 tmp.write(final_payload.output.encode())

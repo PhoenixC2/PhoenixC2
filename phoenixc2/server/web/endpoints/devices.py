@@ -28,7 +28,7 @@ def devices_bp(commander: Commander):
         show_tasks = request.args.get("tasks", "").lower() == "true"
         show_all = request.args.get("all", "").lower() == "true"
 
-        opened_device = Session.query(DeviceModel).filter_by(id=device_id).first()
+        opened_device: DeviceModel = Session.query(DeviceModel).filter_by(id=device_id).first()
         if show_all or OperationModel.get_current_operation() is None:
             devices: list[DeviceModel] = Session.query(DeviceModel).all()
         else:

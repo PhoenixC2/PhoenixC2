@@ -156,13 +156,7 @@ class OperationModel(Base):
     def delete_picture(self) -> None:
         """Delete the profile picture"""
         if self.picture:
-            os.remove(
-                str(
-                    get_resource(
-                        PICTURES, self.name + "-operation", skip_file_check=True
-                    )
-                )
-            )
+            get_resource(PICTURES, self.name + "-operation", skip_file_check=True).unlink()
             self.picture = False
 
     def assign_user(self, user: "UserModel") -> None:

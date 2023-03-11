@@ -234,7 +234,7 @@ def edit_user(id: int = None):
     try:
         user.edit(form_data)
     except Exception as e:
-        return generate_response("danger", str(e), ENDPOINT, 500)
+        return generate_response("danger", str(e), ENDPOINT, 400)
 
     Session.commit()
     

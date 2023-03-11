@@ -9,7 +9,8 @@ from sqlalchemy.orm import relationship
 
 from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
-
+from phoenixc2.server.database.engine import Session
+from phoenixc2.server.utils.resources import get_resource
 from .operations import OperationModel
 
 if TYPE_CHECKING:
@@ -101,16 +102,13 @@ class StagerModel(Base):
     def payload_class(self) -> "BasePayload":
         """Returns the payload class."""
         return self.stager_class.payloads[self.payload]
-
-    @staticmethod
-    def get_all_classes() -> list["BaseStager"]:
-        """Get all stager classes."""
-        return [StagerModel.get_class_from_type(stager) for stager in INSTALLED_KITS]
-
+    
     def edit(self, data: dict[str, any]):
         """Edit the stager"""
-        options = self.stager_class.options
-        # so we dont have to get the class multiple times
+        options = self.stager_class.option_pool
+
+        # get options from payload class
+        options.extend(self.payload_class.option_pool)
         
         for key, value in data.items():
             option = options.get_option(key)
@@ -123,6 +121,22 @@ class StagerModel(Base):
                 setattr(self, key, value)
             else:
                 self.options[key] = value
+  
+    def delete(self):
+        """Delete the stager and its generated payloads."""
+        Session.delete(self)
+        # delete all payloads who start with the stager name
+        for payload in get_resource("data/stagers").glob(f"{self.name}*"):
+            payload.unlink()
+        
+
+
+    @staticmethod
+    def get_all_classes() -> list["BaseStager"]:
+        """Get all stager classes."""
+        return [StagerModel.get_class_from_type(stager) for stager in INSTALLED_KITS]
+
+
 
     @classmethod
     def create_from_data(cls, data: dict):
