@@ -8,11 +8,11 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Screamz2k/PhoenixC2",
-    license="Apache License 2.0",
+    license="BSD 3-Clause License",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Pentesters",
-        "License :: OSI Approved :: Apache License 2.0",
+        "License :: OSI Approved :: BSD 3-Clause License",
         "Programming Language :: Python :: 3",
     ],
     keywords="Red Team, C2, Pentesting",
