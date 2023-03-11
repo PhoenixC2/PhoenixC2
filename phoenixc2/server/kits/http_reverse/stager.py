@@ -14,7 +14,7 @@ from phoenixc2.server.utils.options import (
     IntegerType,
 )
 from phoenixc2.server.utils.resources import get_resource
-from werkzeug.utils import secure_filename
+
 from phoenixc2.server.utils.features import Feature
 from ..base_stager import BasePayload, BaseStager, FinalPayload
 
@@ -35,7 +35,7 @@ class PythonPayload(BasePayload):
     supported_languages = ["python", "bash"]
     end_format = "py"
     compiled = False
-    options = OptionPool()
+    option_pool = OptionPool()
 
     @classmethod
     def generate(
@@ -71,7 +71,7 @@ class GoPayload(BasePayload):
     module_languages = []
     end_format = ".exe"
     compiled = True
-    options = OptionPool(
+    option_pool = OptionPool(
         [
             Option(
                 name="Operating System",
@@ -100,7 +100,7 @@ class GoPayload(BasePayload):
     ]
 
     @classmethod
-    def is_compiled(stager_db: "StagerModel") -> bool:
+    def is_compiled(cls, stager_db: "StagerModel") -> bool:
         try:
             get_resource(
                 "data/stagers/",
@@ -115,7 +115,7 @@ class GoPayload(BasePayload):
         cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
     ) -> "FinalPayload":
 
-        if cls.is_compiled(stager_db) or not recompile:
+        if cls.is_compiled(stager_db) and not recompile:
             return FinalPayload(
                 cls,
                 stager_db,
@@ -131,11 +131,11 @@ class GoPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/go.go")
+        template = jinja2_env.get_template("payloads/payload.go")
         output = template.render(stager=stager_db)
 
         # write to file
-        go_file = get_resource("data/stagers/", f"{stager_db.name}.go")
+        go_file = get_resource("data/stagers/", f"{stager_db.name}.go", skip_file_check=True)
         executable = get_resource(
             "data/stagers/", f"{stager_db.name}.exe", skip_file_check=True
         )
@@ -147,18 +147,19 @@ class GoPayload(BasePayload):
         operation_system = shlex.quote(stager_db.options["os"])
         architecture = shlex.quote(stager_db.options["arch"])
 
-        os.system(
-            f"GOOS={operation_system} GOARCH={architecture}"
-            + f"go build -o {executable} {go_file}"
+        status_code = os.system(
+            f"GOOS={operation_system} GOARCH={architecture} go build -o {executable} {go_file}"
         )
-
         # remove go file
-        os.rm(str(go_file))
+        go_file.unlink()
+        os.unlink
+        if status_code != 0:
+            raise Exception("Failed to compile")
 
         return FinalPayload(
             cls,
             stager_db,
-            executable.open("rb").read(),
+            executable.open("rb"),
         )
 
 
@@ -167,7 +168,7 @@ class Stager(BaseStager):
     description = "Reverse HTTP(S) stager"
     author: str = "Screamz2k"
     payloads = {"python": PythonPayload, "go": GoPayload}
-    options = DefaultStagerPool(
+    option_pool = DefaultStagerPool(
         [
             Option(
                 name="Sleep Time",
