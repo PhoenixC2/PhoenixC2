@@ -10,6 +10,7 @@ from phoenixc2.server.commander.services import load_plugins, start_listeners, s
 from phoenixc2.server.utils.admin import check_for_setup, reset_server
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.ui import log
+from phoenixc2.server.utils.misc import Status
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
     config = load_config()
     config = parse_args(args, config)
 
-    log("Welcome to PhoenixC2", "success")
+    log("Welcome to PhoenixC2", Status.Success)
 
     if not check_for_setup():
         reset_server()
@@ -33,33 +34,33 @@ def main():
     commander.web_server = web_server
     
     # load plugins
-    log("Loading plugins.", "info")
+    log("Loading plugins.", Status.Info)
     load_plugins(commander)
 
     # Start listeners
-    log("Starting listeners.", "info")
+    log("Starting listeners.", Status.Info)
     start_listeners(commander)
 
     # Start the web server
-    log("Starting web server.", "info")
+    log("Starting web server.", Status.Info)
     try:
         web_config = config["web"]  # shorten code
         start_web(
             web_config["address"], web_config["port"], web_config["ssl"], commander
         )
     except Exception as e:
-        log(str(e), "danger")
+        log(str(e), Status.Danger)
         os._exit(1)
     else:
-        log("Web server started.", "success")
+        log("Web server started.", Status.Success)
 
     log(
         f"Accessible at http{'s' if web_config['ssl'] else ''}"
         f"://{web_config['address']}:{web_config['port']}",
-        "info",
+        Status.Info,
     )
 
-    log("Press CTRL+C to exit.", "info")
+    log("Press CTRL+C to exit.", Status.Info)
     if args.quiet:
         print("Finished startup.")
     if args.exit:
@@ -69,7 +70,7 @@ def main():
             # print(input("Server > "))
             time.sleep(1)
         except KeyboardInterrupt:
-            log("Exiting", status="info")
+            log("Exiting", status=Status.Info)
             os._exit(0)
 
 

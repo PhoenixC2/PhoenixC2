@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, render_template, request, session, flash
+from flask import Blueprint, render_template, request, session, flash
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
-from phoenixc2.server.utils.web import generate_response
+from phoenixc2.server.utils.misc import Status
 
 INVALID_CREDENTIALS = "Invalid username or password."
 TEMPLATE = "login.j2"
@@ -27,43 +27,43 @@ def post_login():
         user: UserModel = Session.query(UserModel).filter_by(username=username).first()
         if user is None or not user.check_password(password):
             if use_json:
-                return jsonify(
+                return (
                     {
-                        "status": "error",
+                        "status": Status.ERROR,
                         "message": INVALID_CREDENTIALS,
                         "user": None,
                     }
                 ), 401
-            flash(INVALID_CREDENTIALS, "danger")
+            flash(INVALID_CREDENTIALS, Status.Danger)
             return render_template(TEMPLATE, username=username), 401
         message = "Logged in via credentials."
 
     session["api_key"] = user._api_key
 
     LogEntryModel.log(
-        "success",
+        Status.Success,
         "auth",
         message,
         user,
     )
 
     if use_json:
-        return jsonify(
-            {"status": "success", "message": message, "user": user.to_dict()}
-        )
-    else:
-        return generate_response("success", message, "", 200)
+        return {"status": Status.Success, "message": message, "user": user.to_dict()}
 
 
 @auth_bp.route("/logout")
 @UserModel.authenticated
 def logout():
+    use_json = request.args.get("json", "").lower() == "true"
     user = UserModel.get_current_user()
     LogEntryModel.log(
-        "info",
+        Status.Info,
         "auth",
         f"{'admin' if user.admin else 'User'} {user} logged out.",
         user,
     )
     session.clear()
-    return generate_response("success", "Logged out.", "auth/login")
+    if use_json:
+        return {"status": Status.Success, "message": "Logged out."}
+    flash("Logged out.", Status.Success)
+    return render_template(TEMPLATE)

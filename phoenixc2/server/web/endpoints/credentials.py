@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, render_template, request
 
 from phoenixc2.server.database import (
     CredentialModel,
@@ -37,23 +37,17 @@ def get_credentials(cred_id: int = None):
 
     if use_json:
         if opened_credential is not None:
-            return jsonify(
-                {
-                    "status": Status.SUCCESS,
-                    "credential": opened_credential.to_dict(
-                        show_operation=show_operation
-                    ),
-                }
-            )
-        return jsonify(
-            {
-                "status": Status.SUCCESS,
-                ENDPOINT: [
-                    credential.to_dict(show_operation=show_operation)
-                    for credential in credentials
-                ],
+            return {
+                "status": Status.Success,
+                "credential": opened_credential.to_dict(show_operation=show_operation),
             }
-        )
+        return {
+            "status": Status.Success,
+            ENDPOINT: [
+                credential.to_dict(show_operation=show_operation)
+                for credential in credentials
+            ],
+        }
     return render_template(
         "credentials.j2",
         credentials=credentials,
@@ -74,18 +68,16 @@ def add_credential():
     Session.add(credential)
     Session.commit()
     LogEntryModel.log(
-        Status.SUCCESS,
+        Status.Success,
         "credentials",
         "Added credential to the database",
         UserModel.get_current_user(),
     )
-    return jsonify(
-        {
-            "status": Status.SUCCESS,
-            "message": "Credential added successfully",
-            "credential": credential.to_dict(),
-        }
-    )
+    return {
+        "status": Status.Success,
+        "message": "Credential added Successfully",
+        "credential": credential.to_dict(),
+    }
 
 
 @credentials_bp.route("/<int:cred_id>/remove", methods=["DELETE"])
@@ -95,21 +87,17 @@ def remove_credential(cred_id: int):
         Session.query(CredentialModel).filter_by(id=cred_id).first()
     )
     if credential is None:
-        return jsonify(
-            {
-                "status": "danger",
-                "message": "Credential does not exist",
-            }
-        )
+        return {
+            "status": "danger",
+            "message": "Credential does not exist",
+        }
 
     Session.delete(credential)
     Session.commit()
     LogEntryModel.log(
-        "success",
+        Status.Success,
         "credentials",
         "Removed credential from the database",
         UserModel.get_current_user(),
     )
-    return jsonify(
-        {"status": Status.SUCCESS, "message": "Credential removed successfully"}
-    )
+    return {"status": Status.Success, "message": "Credential removed Successfully"}

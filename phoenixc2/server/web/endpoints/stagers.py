@@ -1,6 +1,6 @@
 import tempfile
 
-from flask import Blueprint, jsonify, render_template, request, send_file
+from flask import Blueprint, render_template, request, send_file
 
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import (
@@ -11,7 +11,7 @@ from phoenixc2.server.database import (
     UserModel,
     OperationModel,
 )
-from phoenixc2.server.utils.web import generate_response
+from phoenixc2.server.utils.misc import Status
 
 INVALID_ID = "Invalid ID."
 STAGER_DOES_NOT_EXIST = "Stager does not exist."
@@ -45,23 +45,19 @@ def stagers_bp(commander: Commander):
 
         if use_json:
             if opened_stager is not None:
-                return jsonify(
-                    {
-                        "status": "success",
-                        "stager": opened_stager.to_dict(
-                            commander, show_listener, show_stagers
-                        ),
-                    }
-                )
-            return jsonify(
-                {
-                    "status": "success",
-                    "stagers": [
-                        stager.to_dict(commander, show_listener, show_stagers)
-                        for stager in stagers
-                    ],
+                return {
+                    "status": Status.Success,
+                    "stager": opened_stager.to_dict(
+                        commander, show_listener, show_stagers
+                    ),
                 }
-            )
+            return {
+                "status": Status.Success,
+                "stagers": [
+                    stager.to_dict(commander, show_listener, show_stagers)
+                    for stager in stagers
+                ],
+            }
         return render_template(
             "stagers.j2",
             stagers=stagers,
@@ -82,10 +78,10 @@ def stagers_bp(commander: Commander):
             else:
                 stagers[type] = StagerModel.get_class_from_type(type).to_dict(commander)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return {"status": Status.Danger, "message": str(e)}, 400
 
         else:
-            return jsonify(stagers)
+            return stagers
 
     @stagers_bp.route("/add", methods=["POST"])
     @UserModel.authenticated
@@ -124,36 +120,32 @@ def stagers_bp(commander: Commander):
             data = option_pool.validate_all(data)
 
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return {"status": Status.Danger, "message": str(e)}, 400
 
         # Add stager
         try:
             stager = StagerModel.create_from_data(data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return {"status": Status.Danger, "message": str(e)}, 400
 
         Session.add(stager)
         Session.commit()
 
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "stagers",
             f"Created stager '{stager.name}' from Listener '{listener.name}'.",
             UserModel.get_current_user(),
         )
-        if use_json:
-            return (
-                jsonify(
-                    {
-                        "status": "success",
-                        "message": "Stager created successfully.",
-                        "stager": stager.to_dict(commander),
-                    }
-                ),
-                201,
-            )
-        return generate_response(
-            "success", f"Successfully created stager '{name}'.", ENDPOINT
+        return (
+            (
+                {
+                    "status": Status.Success,
+                    "message": "Stager created successfully.",
+                    "stager": stager.to_dict(commander),
+                }
+            ),
+            201,
         )
 
     @stagers_bp.route("/<int:id>/remove", methods=["DELETE"])
@@ -163,7 +155,7 @@ def stagers_bp(commander: Commander):
         stager: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
 
         if stager is None:
-            return generate_response("danger", STAGER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": INVALID_ID}, 400
 
         # set listener name because we need it after the stager is deleted
         listener_name = stager.listener.name
@@ -171,55 +163,48 @@ def stagers_bp(commander: Commander):
         stager.delete()
 
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "stagers",
             f"Deleted stager '{stager.name}' from Listener '{listener_name}'",
             UserModel.get_current_user(),
         )
-        return generate_response("success", f"Deleted Stager with ID {id}.", ENDPOINT)
+        return {"status": Status.Success, "message": "Stager deleted successfully."}
 
     @stagers_bp.route("/<int:id>/edit", methods=["PUT"])
     @UserModel.authenticated
     def put_edit(id: int = None):
         # Get request data
-        use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
         if id is None:
             if form_data.get("id") is None:
-                return generate_response("danger", INVALID_ID, ENDPOINT, 400)
+                return {"status": Status.Danger, "message": INVALID_ID}, 400
             id = int(form_data.get("id"))
             form_data.pop("id")
 
         # Check if stager exists
         stager: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
         if stager is None:
-            return generate_response("danger", STAGER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": INVALID_ID}, 400
 
         # Edit stager
         try:
             stager.edit(form_data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return {"status": Status.Danger, "message": str(e)}, 400
 
         Session.commit()
 
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "stagers",
             f"Edited stager '{stager.name}'",
             UserModel.get_current_user(),
         )
-        if use_json:
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": "Stager edited successfully.",
-                    "stager": stager.to_dict(commander),
-                }
-            )
-        return generate_response(
-            "success", f"Successfully edited stager '{stager.name}'.", ENDPOINT
-        )
+        return {
+            "status": Status.Success,
+            "message": "Stager edited successfully.",
+            "stager": stager.to_dict(commander),
+        }
 
     @stagers_bp.route("/<int:id>/download", methods=["GET"])
     def get_download(id: int):
@@ -231,7 +216,7 @@ def stagers_bp(commander: Commander):
         # Check if Stager exists
         stager_db: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
         if stager_db is None:
-            return generate_response("danger", STAGER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": INVALID_ID}, 400
 
         # Get Stager
         try:
@@ -239,7 +224,7 @@ def stagers_bp(commander: Commander):
                 stager_db, one_liner, recompile
             )
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return {"status": Status.Danger, "message": str(e)}, 400
         else:
 
             if final_payload.payload.compiled:
@@ -249,7 +234,11 @@ def stagers_bp(commander: Commander):
                     download_name=final_payload.name,
                 )
             if use_json:
-                return jsonify({"status": "success", "stager": final_payload.output})
+                return {
+                    "status": Status.Success,
+                    "message": "Stager generated successfully.",
+                    "stager": final_payload.output,
+                }
             else:
                 tmp = tempfile.TemporaryFile()
                 tmp.write(final_payload.output.encode())

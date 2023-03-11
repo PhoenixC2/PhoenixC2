@@ -3,7 +3,6 @@ from datetime import datetime
 from uuid import uuid1
 from psutil import net_if_addrs
 
-
 def get_network_interfaces() -> dict[str, str]:
     """Get address of all network interfaces on the host"""
     interfaces = {"all": "0.0.0.0"}
@@ -79,3 +78,13 @@ def format_datetime(date_time: datetime) -> str:
             return f"in {time_difference.days // 7} week{'s' if time_difference.days // 7 > 1 else ''}"
         else:
             return date_time.strftime("%d/%m/%Y")
+
+class Status():
+    """Indicates the response status of a request or action"""
+    Success = "success"
+    Danger = "danger"
+    Error = "danger" # Alias
+    Warning = "warning"
+    Info = "info"
+    Alert = "alert"
+    Critical = "critical"

@@ -21,6 +21,7 @@ from phoenixc2.server.web.endpoints.modules import modules_bp
 from phoenixc2.server.web.endpoints.loaders import loaders_bp
 from phoenixc2.server.web.endpoints.misc import misc_bp
 from phoenixc2.server.web.endpoints.logs import logs_bp
+from phoenixc2.server.web.endpoints.credentials import credentials_bp
 from phoenixc2.server.utils.ui import log
 
 from phoenixc2.server.utils.misc import format_datetime
@@ -38,6 +39,7 @@ endpoints: dict[str, Blueprint] = {
     "tasks": tasks_bp,
     "logs": logs_bp,
     "operations": operations_bp,
+    "credentials": credentials_bp,
 }
 
 
@@ -99,21 +101,24 @@ def create_web(commander: Commander) -> Flask:
     def inject_render_template_string():
         # used to render plugins
         return dict(render_template_string=render_template_string)
+
     @web_server.context_processor
     def inject_icons():
-        return dict(icons={
-            "dashboard": "dashboard",
-            "operations": "public",
-            "devices": "dns",
-            "listeners": "earbuds",
-            "stagers": "code",
-            "loaders": "download",
-            "modules": "extension",
-            "users": "group",
-            "credentials": "vpn_key",
-            "logs": "event_note",
-        }
+        return dict(
+            icons={
+                "dashboard": "dashboard",
+                "operations": "public",
+                "devices": "dns",
+                "listeners": "earbuds",
+                "stagers": "code",
+                "loaders": "download",
+                "modules": "extension",
+                "users": "group",
+                "credentials": "vpn_key",
+                "logs": "event_note",
+            }
         )
+    
     @web_server.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, render_template, request
 
 from phoenixc2.server.commander import Commander
 from phoenixc2.server.database import (
@@ -8,9 +8,8 @@ from phoenixc2.server.database import (
     UserModel,
     OperationModel,
 )
-from phoenixc2.server.utils.misc import get_network_interfaces, get_platform
+from phoenixc2.server.utils.misc import get_network_interfaces, get_platform, Status
 from phoenixc2.server.utils.ui import log
-from phoenixc2.server.utils.web import generate_response
 
 INVALID_ID = "Invalid ID."
 LISTENER_DOES_NOT_EXIST = "Listener does not exist."
@@ -30,29 +29,26 @@ def listeners_bp(commander: Commander):
         show_all = request.args.get("all", "").lower() == "true"
         opened_listener = Session.query(ListenerModel).filter_by(id=listener_id).first()
         listener_types = ListenerModel.get_all_classes()
+
         if show_all or OperationModel.get_current_operation() is None:
             listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         else:
             listeners = OperationModel.get_current_operation().listeners
         if use_json:
             if opened_listener is not None:
-                return jsonify(
-                    {
-                        "status": "success",
-                        "listener": opened_listener.to_dict(
-                            commander, show_operation, show_stagers
-                        ),
-                    }
-                )
-            return jsonify(
-                {
-                    "status": "success",
-                    ENDPOINT: [
-                        listener.to_dict(commander, show_operation, show_stagers)
-                        for listener in listeners
-                    ],
+                return {
+                    "status": Status.Success,
+                    "listener": opened_listener.to_dict(
+                        commander, show_operation, show_stagers
+                    ),
                 }
-            )
+            return {
+                "status": Status.Success,
+                ENDPOINT: [
+                    listener.to_dict(commander, show_operation, show_stagers)
+                    for listener in listeners
+                ],
+            }
         return render_template(
             "listeners.j2",
             listeners=listeners,
@@ -76,17 +72,15 @@ def listeners_bp(commander: Commander):
                     commander
                 )
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return ({"status": Status.Danger, "message": str(e)}), 400
         else:
-            return jsonify(listeners)
+            return {"status": Status.Success, "listeners": listeners}
 
     @blueprint.route("/add", methods=["POST"])
     @UserModel.authenticated
     def post_add():
         # Get request data
-        use_json = request.args.get("json", "").lower() == "true"
         listener_type = request.form.get("type")
-        name = request.form.get("name")
         is_interface = request.args.get("is_interface", "").lower() == "true"
         data = dict(request.form)
         if is_interface:
@@ -94,16 +88,17 @@ def listeners_bp(commander: Commander):
             if data.get("address", "") in interfaces:
                 data["address"] = interfaces[data["address"]]
             else:
-                return generate_response(
-                    "danger", "Invalid network interface.", ENDPOINT, 400
-                )
+                return {
+                    "status": Status.Danger,
+                    "message": f"Invalid network interface: '{data['address']}'.",
+                }, 400
         try:
             # Check if data is valid and clean it
             data = ListenerModel.get_class_from_type(
                 listener_type
             ).option_pool.validate_all(data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return ({"status": Status.Danger, "message": str(e)}), 400
 
         # Add listener
         try:
@@ -111,35 +106,30 @@ def listeners_bp(commander: Commander):
             data["type"] = listener_type
             listener = ListenerModel.create_from_data(data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return ({"status": Status.Danger, "message": str(e)}), 400
         Session.add(listener)
         Session.commit()
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "listeners",
             f"Added listener '{listener.name}' ({listener.type})",
             UserModel.get_current_user(),
         )
-        if use_json:
-            return (
-                jsonify(
-                    {
-                        "status": "success",
-                        "message": "Listener added successfully.",
-                        "listener": listener.to_dict(commander),
-                    }
-                ),
-                201,
-            )
-        return generate_response(
-            "success", f"Created Listener {name} ({listener_type}).", ENDPOINT
+        return (
+            (
+                {
+                    "status": Status.Success,
+                    "message": "Listener added successfully.",
+                    "listener": listener.to_dict(commander),
+                }
+            ),
+            201,
         )
 
     @blueprint.route("/<int:listener_id>/remove", methods=["DELETE"])
     @UserModel.authenticated
     def delete_remove(listener_id: int):
         # Get request data
-        use_json = request.args.get("json", "").lower() == "true"
         stop = request.form.get("stop", "").lower() != "false"
 
         # Check if listener exists
@@ -147,7 +137,7 @@ def listeners_bp(commander: Commander):
             Session.query(ListenerModel).filter_by(id=listener_id).first()
         )
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
         name = listener.name
         type = listener.type
         listener.delete(stop, commander)
@@ -158,31 +148,26 @@ def listeners_bp(commander: Commander):
         )
         Session.commit()
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "listeners",
             message,
             UserModel.get_current_user(),
         )
-        if use_json:
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": message,
-                    "listener": listener.to_dict(commander),
-                }
-            )
-        return generate_response("success", message, ENDPOINT)
+        return {
+            "status": Status.Success,
+            "message": message,
+            "listener": listener.to_dict(commander),
+        }
 
     @blueprint.route("/<int:listener_id>/edit", methods=["PUT"])
     @UserModel.authenticated
     def put_edit(listener_id: int = None):
         # Get request data
-        use_json = request.args.get("json", "").lower() == "true"
         form_data = dict(request.form)
 
         if listener_id is None:
             if form_data.get("id") is None:
-                return generate_response("danger", INVALID_ID, ENDPOINT, 400)
+                return ({"status": Status.Danger, "message": INVALID_ID}), 400
             listener_id = int(form_data.get("id"))
             form_data.pop("id")
 
@@ -191,8 +176,8 @@ def listeners_bp(commander: Commander):
             Session.query(ListenerModel).filter_by(id=listener_id).first()
         )
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
-        
+            return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
+
         # check if port is the same to avoid validation error
         if form_data.get("port", "") == str(listener.port):
             form_data.pop("port")
@@ -201,25 +186,20 @@ def listeners_bp(commander: Commander):
         try:
             listener.edit(form_data)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return ({"status": Status.Danger, "message": str(e)}), 400
+
         Session.commit()
         LogEntryModel.log(
-            "success",
+            Status.Success,
             "listeners",
             f"Edited listener '{listener.name}' ({listener.type})",
             UserModel.get_current_user(),
         )
-        if use_json:
-            return jsonify(
-                {
-                    "status": "success",
-                    "message": "Listener edited successfully.",
-                    "listener": listener.to_dict(commander),
-                }
-            )
-        return generate_response(
-            "success", f"Edited Listener {listener.name} ({listener.type}).", ENDPOINT
-        )
+        return {
+            "status": Status.Success,
+            "message": "Listener edited successfully.",
+            "listener": listener.to_dict(commander),
+        }
 
     @blueprint.route("/<int:listener_id>/start", methods=["POST"])
     @UserModel.authenticated
@@ -230,31 +210,35 @@ def listeners_bp(commander: Commander):
         )
 
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
 
         log(
             f"({UserModel.get_current_user().username}) Starting Listener with ID {listener_id}",
-            "info",
+            Status.Info,
         )
 
         try:
             status = listener.start(commander)
         except Exception as e:
             LogEntryModel.log(
-                "danger",
+                Status.Danger,
                 "listeners",
                 status,
                 UserModel.get_current_user(),
             )
-            return generate_response("danger", str(e), ENDPOINT, 400)
+            return ({"status": Status.Danger, "message": str(e)}), 400
         else:
             LogEntryModel.log(
-                "success",
+                Status.Success,
                 "listeners",
                 status,
                 UserModel.get_current_user(),
             )
-            return generate_response("success", status, ENDPOINT)
+            return {
+                "status": Status.Success,
+                "message": status,
+                "listener": listener.to_dict(commander),
+            }
 
     @blueprint.route("/<int:listener_id>/stop", methods=["POST"])
     @UserModel.authenticated
@@ -265,7 +249,7 @@ def listeners_bp(commander: Commander):
         )
 
         if listener is None:
-            return generate_response("danger", LISTENER_DOES_NOT_EXIST, ENDPOINT, 400)
+            return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
 
         log(
             f"({UserModel.get_current_user().username}) Stopping Listener with ID {listener_id}",
@@ -275,17 +259,19 @@ def listeners_bp(commander: Commander):
         try:
             listener.stop(commander)
         except Exception as e:
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return ({"status": Status.Danger, "message": str(e)}), 400
         else:
             LogEntryModel.log(
-                "success",
+                Status.Success,
                 "listeners",
                 f"Stopped listener '{listener.name}' ({listener.type})",
                 UserModel.get_current_user(),
             )
-            return generate_response(
-                "success", f"Stopped Listener with ID {listener_id}", ENDPOINT
-            )
+        return {
+            "status": Status.Success,
+            "message": f"Stopped listener '{listener.name}' ({listener.type})",
+            "listener": listener.to_dict(commander),
+        }
 
     @blueprint.route("/<int:listener_id>/restart", methods=["POST"])
     @UserModel.authenticated
@@ -308,16 +294,19 @@ def listeners_bp(commander: Commander):
                 f"Failed to restart listener '{listener.name}' ({listener.type}): {str(e)}",
                 UserModel.get_current_user(),
             )
-            return generate_response("danger", str(e), ENDPOINT, 500)
+            return ({"status": Status.Danger, "message": str(e)}), 400
         else:
             LogEntryModel.log(
-                "success",
+                Status.Success,
                 "listeners",
                 f"Restarted listener '{listener.name}' ({listener.type})",
                 UserModel.get_current_user(),
             )
-            return generate_response(
-                "success", f"Restarted listener with ID {listener_id}", ENDPOINT
-            )
+
+        return {
+            "status": Status.Success,
+            "message": f"Restarted listener '{listener.name}'.",
+            "listener": listener.to_dict(commander),
+        }
 
     return blueprint

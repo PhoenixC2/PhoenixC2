@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from pystyle import Add, Box, Colorate, Colors
 from rich.console import Console
+from .misc import Status
 
 if TYPE_CHECKING:
     from phoenixc2.server.database import DeviceModel
@@ -50,15 +51,15 @@ def log(text: str, status: str = ""):
     if os.getenv("PHOENIX_LOG", "") == "false":
         return
     style = ""
-    if status == "info":
+    if status == Status.Info:
         style = "blue"
-    elif status == "success":
+    elif status == Status.Success:
         style = "green"
-    elif status == "warning":
+    elif status == Status.Warning:
         style = "yellow"
-    elif status == "danger":
+    elif status == Status.Warning:
         style = "red"
-    elif status == "critical":
+    elif status == Status.Critical:
         style = "#ff0000"
     console.print("[" + status.upper() + "] " + text, style=style)
 
@@ -80,7 +81,7 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
         status = f"New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]"
     ph_print(status)
     LogEntryModel.log(
-        "success",
+        Status.Success,
         "devices",
         f"Device '{device.name}' connected to '{device.name}'.",
         log_to_cli=False,

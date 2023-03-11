@@ -9,15 +9,16 @@ from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.ui import log
+from phoenixc2.server.utils.misc import Status
 
 DIRECTORIES = ["stagers", "downloads", "uploads", "pictures"]
 
 
 def generate_database():
     """Create the database."""
-    log("Creating database", "info")
+    log("Creating database", Status.Info)
     Base.metadata.create_all(engine)
-    log("Created the database.", "success")
+    log("Created the database.", Status.Success)
 
 
 def backup_database():
@@ -67,7 +68,7 @@ def check_for_database():
 
 def regenerate_ssl():
     """Generate the ssl certificates."""
-    log("Generating ssl certificates", "info")
+    log("Generating ssl certificates", Status.Info)
     ssl_cert = get_resource("data", "ssl.pem", skip_file_check=True)
     ssl_key = get_resource("data", "ssl.key", skip_file_check=True)
 
@@ -91,7 +92,7 @@ def regenerate_ssl():
         f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("utf-8"))
     with open(str(ssl_key), "wt") as f:
         f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, k).decode("utf-8"))
-    log("Generated ssl certificates.", "success")
+    log("Generated ssl certificates.", Status.Success)
 
 
 def reset_directories():
@@ -104,7 +105,7 @@ def reset_directories():
             os.makedirs(dir)
 
     if has_to_create:
-        log("Created directories.", "success")
+        log("Created directories.", Status.Success)
 
 
 def reset_database():
@@ -120,30 +121,30 @@ def reset_table(table: str):
     models = {model.__tablename__.lower(): model for model in Base.__subclasses__()}
     
     if table not in models:
-        log(f"{table} doesn't exist.", "error")
+        log(f"{table} doesn't exist.", Status.Danger)
         exit(1)
-    log(f"Resetting {table}", "info")
+    log(f"Resetting {table}", Status.Info)
     Base.metadata.drop_all(engine, [models[table].__table__])
     Base.metadata.create_all(engine, [models[table].__table__])
-    log(f"Reset {table}", "success")
+    log(f"Reset {table}", Status.Success)
 
 
 def recreate_super_user():
     """Recreate the super user."""
     existing_admin: UserModel = Session.query(UserModel).first()
     if existing_admin is not None:
-        log("Deleting current admin.", "info")
+        log("Deleting current admin.", Status.Info)
         existing_admin.delete()
-        log("Deleted current admin.", "success")
-    log("Creating new admin", "info")
+        log("Deleted current admin.", Status.Success)
+    log("Creating new admin", Status.Info)
     password = secrets.token_urlsafe(10)
     admin = UserModel(id=1, username="phoenix", admin=True)
     admin.set_password(password)
     Session.add(admin)
     Session.commit()
-    log("Super user recreated.", "success")
-    log(f"Credentials: phoenix:{password}", "info")
-    log(f"API Key: '{admin._api_key}'", "info")
+    log("Super user recreated.", Status.Success)
+    log(f"Credentials: phoenix:{password}", Status.Info)
+    log(f"API Key: '{admin._api_key}'", Status.Info)
 
 
 def reset_server(reset: bool = False):
@@ -151,7 +152,7 @@ def reset_server(reset: bool = False):
     if reset:
         log("Resetting server", "critical")
     else:
-        log("Setting up the server.", "info")
+        log("Setting up the server.", Status.Info)
     if not check_for_directories() or reset:
         reset_directories()
     if not check_for_ssl() or reset:
@@ -162,9 +163,9 @@ def reset_server(reset: bool = False):
         recreate_super_user()
 
     if reset:
-        log("Reset finished.", "success")
+        log("Reset finished.", Status.Success)
     else:
-        log("Setup finished.", "success")
+        log("Setup finished.", Status.Success)
 
 
 def check_for_setup():

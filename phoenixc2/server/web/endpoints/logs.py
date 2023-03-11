@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, redirect, render_template, request
+from flask import Blueprint, redirect, render_template, request
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel, OperationModel
-from phoenixc2.server.utils.web import generate_response
+from phoenixc2.server.utils.misc import Status
 
 ENDPOINT = "logs"
 logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
@@ -24,16 +24,14 @@ def get_logs(log_id: int = None):
 
     if show_all or OperationModel.get_current_operation() is None:
         logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
-                    
+
         if status_filter:
             logs: list[LogEntryModel] = (
-                Session.query(LogEntryModel)
-                .filter_by(status=status_filter)
-                .all()
+                Session.query(LogEntryModel).filter_by(status=status_filter).all()
             )
         else:
             logs: list[LogEntryModel] = Session.query(LogEntryModel).all()
-        
+
     else:
         logs: list[LogEntryModel] = (
             Session.query(LogEntryModel)
@@ -43,23 +41,17 @@ def get_logs(log_id: int = None):
 
     if use_json:
         if opened_log is not None:
-            return jsonify(
-                {
-                    "status": "success",
-                    "log": opened_log.to_dict(
-                        show_user, show_unseen_users, show_operation
-                    ),
-                }
-            )
-        return jsonify(
-            {
-                "status": "success",
-                ENDPOINT: [
-                    log.to_dict(show_user, show_unseen_users, show_operation)
-                    for log in logs
-                ],
+            return {
+                "status": Status.Success,
+                "log": opened_log.to_dict(show_user, show_unseen_users, show_operation),
             }
-        )
+        return {
+            "status": Status.Success,
+            ENDPOINT: [
+                log.to_dict(show_user, show_unseen_users, show_operation)
+                for log in logs
+            ],
+        }
     return render_template(
         "logs.j2",
         logs=logs,
@@ -70,16 +62,13 @@ def get_logs(log_id: int = None):
 @logs_bp.route("/read", methods=["GET"])
 @UserModel.authenticated
 def get_read_logs():
-    use_json = request.args.get("json", "").lower() == "true"
     curr_user = UserModel.get_current_user()
 
     logs = curr_user.unseen_logs
     curr_user.unseen_logs.clear()
     Session.commit()
 
-    if use_json:
-        return jsonify({"status": "success", ENDPOINT: [log.to_dict() for log in logs]})
-    return redirect("/logs")
+    return {"status": Status.Success, ENDPOINT: [log.to_dict() for log in logs]}
 
 
 @logs_bp.route("/<string:log_id>/clear", methods=["DELETE"])
@@ -103,9 +92,9 @@ def delete_clear_logs(log_id: str = "all"):
         message = f"Cleared {count} log entr{'ies' if count != 1 else 'y'}."
     if count > 0:
         LogEntryModel.log(
-            "info",
+            Status.Info,
             "logs",
             message,
             UserModel.get_current_user(),
         )
-    return generate_response("success", message, "logs")
+    return {"status": Status.Success, "message": message}

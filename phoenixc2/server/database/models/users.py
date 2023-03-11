@@ -6,7 +6,7 @@ from functools import wraps
 from typing import TYPE_CHECKING
 from uuid import uuid1
 
-from flask import request, session
+from flask import request, session, flash, redirect
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 from werkzeug.datastructures import FileStorage
@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.resources import get_resource, PICTURES
-from phoenixc2.server.utils.web import generate_response
+from phoenixc2.server.utils.misc import Status
 
 from .association import (
     user_logentry_association_table,
@@ -23,6 +23,7 @@ from .association import (
 )
 
 AUTH_ENDPOINT = "auth/login"
+
 if TYPE_CHECKING:
     from .logs import LogEntryModel
     from .operations import OperationModel
@@ -221,20 +222,27 @@ class UserModel(Base):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
+            use_json = request.args.get("json", "false").lower() == "true"
+
             if os.getenv("PHOENIX_TEST") == "true":
                 if session.get("api_key") is None:
                     session["api_key"] = Session.query(UserModel).first()._api_key
             user = UserModel.get_current_user()
             if user is None:
-                return generate_response(
-                    "danger", "You have to login.", AUTH_ENDPOINT, 401
-                )
+                if use_json:
+                    return {"status": Status.Danger, "message": "You have to login."}
+                flash("You have to login.", Status.Danger)
+                return redirect(AUTH_ENDPOINT)
             else:
                 if user.disabled:
                     session.clear()
-                    return generate_response(
-                        "danger", "This account got disabled.", AUTH_ENDPOINT, 401
-                    )
+                    if use_json:
+                        return {
+                            "status": Status.Danger,
+                            "message": "This account got disabled.",
+                        }
+                    flash("This account got disabled.", Status.Danger)
+                    return redirect(AUTH_ENDPOINT)
                 user.last_activity = datetime.now()
                 Session.commit()
                 return func(*args, **kwargs)
@@ -247,6 +255,7 @@ class UserModel(Base):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
+            use_json = request.args.get("json", "false").lower() == "true"
             if os.getenv("PHOENIX_TEST") == "true":
                 if session.get("api_key") is None:
                     session["api_key"] = Session.query(UserModel).first()._api_key
@@ -254,18 +263,27 @@ class UserModel(Base):
             if user is not None:
                 if user.disabled:
                     session.clear()
-                    return generate_response(
-                        "danger", "This account got disabled.", AUTH_ENDPOINT, 401
-                    )
+                    if use_json:
+                        return {
+                            "status": Status.Danger,
+                            "message": "This account got disabled.",
+                        }
+                    flash("This account got disabled.", Status.Danger)
+                    return redirect(AUTH_ENDPOINT)
                 if not user.admin:
-                    return generate_response(
-                        "error", "You have to be an admin.", AUTH_ENDPOINT, 401
-                    )
+                    if use_json:
+                        return {
+                            "status": Status.Danger,
+                            "message": "You don't have the permission to do this.",
+                        }
+                    flash("You don't have the permission to do this.", Status.Danger)
+                    return redirect(AUTH_ENDPOINT)
                 else:
                     return func(*args, **kwargs)
             else:
-                return generate_response(
-                    "error", "You have to login.", AUTH_ENDPOINT, 401
-                )
+                if use_json:
+                    return {"status": Status.Danger, "message": "You have to login."}
+                flash("You have to login.", Status.Danger)
+                return redirect(AUTH_ENDPOINT)
 
         return wrapper

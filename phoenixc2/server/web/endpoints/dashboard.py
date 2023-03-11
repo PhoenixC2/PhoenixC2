@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request
 import phoenixc2
 from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
+from phoenixc2.server.utils.misc import Status
 import phoenixc2.server as avl
+
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
 
@@ -40,21 +42,20 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
             .count()
         )
         if use_json:
-            return jsonify(
-                {
-                    "version": phoenixc2.__version__,
-                    "devices": len(devices),
-                    "operations": len(operations),
-                    "active_devices": len(commander.active_handlers),
-                    "active_listeners": len(commander.active_listeners),
-                    "active_users": active_users,
-                    "connections_last_hour": connections_last_hour,
-                    "connections_today": connections_today,
-                    "installed_kits": avl.INSTALLED_KITS,
-                    "installed_loaders": avl.INSTALLED_LOADERS,
-                    "installed_encodings": avl.INSTALLED_ENCODINGS,
-                }
-            )
+            return {
+                "status": Status.Success,
+                "version": phoenixc2.__version__,
+                "devices": len(devices),
+                "operations": len(operations),
+                "active_devices": len(commander.active_handlers),
+                "active_listeners": len(commander.active_listeners),
+                "active_users": active_users,
+                "connections_last_hour": connections_last_hour,
+                "connections_today": connections_today,
+                "installed_kits": avl.INSTALLED_KITS,
+                "installed_loaders": avl.INSTALLED_LOADERS,
+                "installed_encodings": avl.INSTALLED_ENCODINGS,
+            }
         return render_template(
             "dashboard.j2",
             devices=devices,

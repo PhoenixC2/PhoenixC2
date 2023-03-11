@@ -1,15 +1,12 @@
-import os
+from flask import Blueprint, send_from_directory
 
-from flask import Blueprint, jsonify, send_from_directory
-
-import phoenixc2
-import phoenixc2.server as avl
 from phoenixc2.server.database import UserModel
 from phoenixc2.server.utils.misc import get_network_interfaces
 from phoenixc2.server.utils.resources import get_resource
-from phoenixc2.server.utils.web import generate_response
+from phoenixc2.server.utils.misc import Status
 
 misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
+
 
 @misc_bp.route("/interfaces", methods=["GET"])
 @UserModel.authenticated
@@ -17,16 +14,11 @@ def get_interfaces():
     return get_network_interfaces()
 
 
-@misc_bp.route("/ping", methods=["GET"])
-def ping():
-    return jsonify({"status": "success"})
-
-
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])
 @UserModel.authenticated
 def get_downloads(file_name: str):
     if file_name is None:
-        return generate_response("danger", "File name is missing.", "devices", 400)
+        return {"status": Status.ERROR, "message": "No file specified."}
 
     return send_from_directory(
         str(get_resource("data/downloads", skip_file_check=True)),
@@ -41,7 +33,7 @@ def post_clear_uploads():
     uploads = get_resource("data/uploads", skip_file_check=True)
     for file in uploads.iterdir():
         file.unlink()
-    return generate_response("success", "Uploads cleared.", "devices")
+    return {"status": Status.SUCCESS, "message": "Uploads cleared."}
 
 
 @misc_bp.route("/downloads/clear", methods=["POST"])
@@ -50,4 +42,4 @@ def post_clear_downloads():
     downloads = get_resource("data/downloads", skip_file_check=True)
     for file in downloads.iterdir():
         file.unlink()
-    return generate_response("success", "Downloads cleared.", "devices")
+    return {"status": Status.SUCCESS, "message": "Downloads cleared."}

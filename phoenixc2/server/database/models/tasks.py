@@ -23,7 +23,7 @@ from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.resources import get_resource
-
+from phoenixc2.server.utils.misc import Status
 from .devices import DeviceModel
 from .logs import LogEntryModel
 from .credentials import CredentialModel
@@ -64,7 +64,7 @@ class TaskModel(Base):
             "description": self.description,
             "action": self.action,
             "args": self.args,
-            "success": self.success,
+            Status.Success: self.success,
             "created_at": self.created_at,
             "finished_at": self.finished_at,
             "output": self.output,
@@ -121,11 +121,16 @@ class TaskModel(Base):
                     cred["admin"])
                 created_cred.operation = self.operation
             except Exception as e:
-                pass
+                LogEntryModel.log(
+                    "danger",
+                    "credentials",
+                    f"Failed to add new credential to the database: {e}",
+                )
+                continue
 
             Session.add(created_cred)
             LogEntryModel.log(
-                "success",
+                Status.Success,
                 "credentials",
                 "New credential added to the database",
             )
@@ -134,7 +139,7 @@ class TaskModel(Base):
 
         if success:
             LogEntryModel.log(
-                "success",
+                Status.Success,
                 "devices",
                 f"Task '{self.name}' finished successfully",
             )

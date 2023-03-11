@@ -6,7 +6,7 @@ from phoenixc2.server.plugins import get_plugin
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import FlaskThread
-from flask import Flask
+from phoenixc2.server.utils.misc import Status
 
 from .commander import Commander
 
@@ -24,14 +24,14 @@ def start_listeners(commander: Commander):
             # Start Listener
             status = listener.start(commander)
         except Exception as error:
-            log(str(error), "danger")
+            log(str(error), Status.Danger)
             exit()
         else:
-            log(status, "success")
+            log(status, Status.Success)
             listeners_started += 1
     log(
         f"{listeners_started} listener{'s' if listeners_started != 1 else ''} started.",
-        "success",
+        Status.Success,
     )
     Session.remove()
 
@@ -56,12 +56,12 @@ def load_plugins(commander: Commander):
             try:
                 commander.load_plugin(get_plugin(plugin), plugin_config)
             except Exception as error:
-                log(str(error), "danger")
+                log(str(error), Status.Danger)
                 os._exit(1)
             else:
-                log(f"Plugin '{plugin}' loaded.", "success")
+                log(f"Plugin '{plugin}' loaded.", Status.Success)
 
     log(
         f"Loaded {len(plugins.keys())} plugin{'s' if len(plugins.keys()) != 1 else ''}.",
-        "success",
+        Status.Success,
     )
