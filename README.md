@@ -1,4 +1,4 @@
-# PhoenixC2 (Not finished)
+# PhoenixC2
 > An Open-Source C2-Framework written in pure Python3.
 
 ## Features
