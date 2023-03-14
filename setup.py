@@ -23,7 +23,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "sqlalchemy==1.4.45",
+        "sqlalchemy==2.0.6",
         "flask",
         "rich",
         "pystyle",
