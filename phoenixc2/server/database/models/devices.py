@@ -48,7 +48,8 @@ class DeviceModel(Base):
         return self.stager.operation
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
+        """Check if the device is connected"""
         return (datetime.now() - self.last_online).seconds < 10
 
     def to_dict(

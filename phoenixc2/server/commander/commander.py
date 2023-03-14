@@ -119,12 +119,3 @@ class Commander:
         else:
             plugin.execute(self, config)
         
-
-
-
-    def unload_plugin(self, plugin_name: str):
-        """Unload a plugin"""
-        try:
-            self.active_plugins.pop(plugin_name)
-        except KeyError as e:
-            raise KeyError(f"Plugin {plugin_name} not loaded") from e

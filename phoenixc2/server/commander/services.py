@@ -37,7 +37,7 @@ def start_listeners(commander: Commander):
 
 
 def start_web(address: str, port: int, ssl: bool, commander: Commander):
-    """Start the web server"""
+    """Start the web server in a thread and return the Flask object"""
     # Create Thread
     commander.web_thread = FlaskThread(
         commander.web_server, address, port, ssl, "WebServer"
@@ -49,6 +49,7 @@ def start_web(address: str, port: int, ssl: bool, commander: Commander):
 
 def load_plugins(commander: Commander):
     """Load all plugins which are specified in the config"""
+    
     plugins = load_config()["plugins"]
     for plugin in plugins.keys():
         plugin_config = plugins[plugin]

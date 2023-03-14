@@ -116,9 +116,10 @@ def create_web(commander: Commander) -> Flask:
                 "users": "group",
                 "credentials": "vpn_key",
                 "logs": "event_note",
+                "auth": "lock",
             }
         )
-    
+
     @web_server.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie

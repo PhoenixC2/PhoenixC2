@@ -73,7 +73,7 @@ class ListenerModel(Base):
         return f"{self.listener_class.protocol}://{self.address}:{self.port}/"
 
     def is_active(self, commander: "Commander" = None) -> bool | str:
-        """Returns True if listeners is active, else False"""
+        """Returns if listener is active"""
         try:
             if commander is None:
                 return "Unknown"

@@ -97,7 +97,7 @@ class LogEntryModel(Base):
         user: "UserModel" = None,
         log_to_cli: bool = True,
     ) -> "LogEntryModel":
-        """Log an entry to the database"""
+        """Log an entry to the database and CLI"""
         if log_to_cli:
             cli_log(f"({user if user is not None else 'System'}) {description}", status)
         log = cls.create(

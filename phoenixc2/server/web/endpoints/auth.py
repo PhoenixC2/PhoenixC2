@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, flash
+from flask import Blueprint, render_template, request, session, flash, redirect
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
@@ -49,6 +49,8 @@ def post_login():
 
     if use_json:
         return {"status": Status.Success, "message": message, "user": user.to_dict()}
+    flash(message, Status.Success)
+    return redirect("/")
 
 
 @auth_bp.route("/logout")

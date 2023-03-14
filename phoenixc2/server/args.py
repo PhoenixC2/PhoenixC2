@@ -15,8 +15,8 @@ from phoenixc2.server.utils.admin import (
 from phoenixc2.server.utils.ui import log, logo, ph_print
 
 parser = ArgumentParser(
-    "pfserver",
-    usage="pfserver [options]",
+    "phserver",
+    usage="phserver [options]",
     description="Start the PhoenixC2 server.",
 )
 
