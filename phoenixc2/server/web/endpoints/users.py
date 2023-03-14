@@ -157,7 +157,7 @@ def add_user():
     except ValueError as e:
         return {"status": Status.Danger, "message": str(e)}, 400
 
-    if "profile-picture" in request.files:
+    if "profile-picture" in request.files and request.stream:
         profile_picture = request.files["profile-picture"]
         user.set_profile_picture(profile_picture)
 

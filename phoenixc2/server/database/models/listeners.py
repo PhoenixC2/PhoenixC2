@@ -3,19 +3,18 @@ import importlib
 import time
 from datetime import datetime
 from random import randint
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import (
     JSON,
     Boolean,
-    Column,
     DateTime,
     ForeignKey,
     Integer,
     String,
 )
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
@@ -36,29 +35,31 @@ class ListenerModel(Base):
 
     __tablename__ = "Listeners"
 
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String(100), default=lambda: generate_name())
-    type: str = Column(String(100))
-    address: str = Column(String(15), default="0.0.0.0")
-    port: int = Column(Integer, default=lambda: randint(1024, 65535))
-    ssl: bool = Column(Boolean, default=True)
-    enabled: bool = Column(Boolean, default=True)
-    limit: int = Column(Integer, name="limit")
-    timeout: int = Column(Integer, default=10)
-    options: dict = Column(MutableDict.as_mutable(JSON), default={})
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    operation_id: int = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), default=lambda: generate_name())
+    type: Mapped[str] = mapped_column(String(100))
+    address: Mapped[str] = mapped_column(String(15), default="0.0.0.0")
+    port: Mapped[int] = mapped_column(Integer, default=lambda: randint(1024, 65535))
+    ssl: Mapped[bool] = mapped_column(Boolean, default=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    limit: Mapped[int] = mapped_column(Integer, name="limit")
+    timeout: Mapped[int] = mapped_column(Integer, default=10)
+    options: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
+    operation_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("Operations.id"),
         default=lambda: OperationModel.get_current_operation().id
         if OperationModel.get_current_operation() is not None
         else None,
     )
-    operation: "OperationModel" = relationship(
+    operation: Mapped["OperationModel"] = relationship(
         "OperationModel", back_populates="listeners"
     )
-    stagers: list["StagerModel"] = relationship(
+    stagers: Mapped[List["StagerModel"]] = relationship(
         "StagerModel", back_populates="listener", cascade="all, delete-orphan"
     )
 

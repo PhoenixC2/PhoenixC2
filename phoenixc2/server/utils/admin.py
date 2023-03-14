@@ -1,6 +1,5 @@
 import os
 import secrets
-import string
 
 from sqlalchemy import inspect
 from OpenSSL import crypto

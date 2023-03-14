@@ -1,14 +1,12 @@
 """The Tasks Model"""
 import base64
-import os
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid1
 
 from sqlalchemy import (
     JSON,
     Boolean,
-    Column,
     DateTime,
     ForeignKey,
     Integer,
@@ -16,7 +14,7 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 from werkzeug.utils import secure_filename
 
 from phoenixc2.server.database.base import Base
@@ -36,19 +34,23 @@ class TaskModel(Base):
     """The Tasks Model."""
 
     __tablename__ = "Tasks"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(
         String(10), unique=True, default=lambda: str(uuid1()).split("-")[0]
     )
-    description: str = Column(Text)
-    action: str = Column(String(10), nullable=False)
-    args: dict[str, any] = Column(MutableDict.as_mutable(JSON), default=dict)
-    success: bool = Column(Boolean)  # success | error
-    output: str = Column(Text)
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    finished_at: datetime = Column(DateTime, onupdate=datetime.now)
-    device_id: int = Column(Integer, ForeignKey("Devices.id"))
-    device: "DeviceModel" = relationship("DeviceModel", back_populates="tasks")
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    action: Mapped[str] = mapped_column(String(10))
+    args: Mapped[Optional[dict]] = mapped_column(
+        MutableDict.as_mutable(JSON), default=dict
+    )
+    success: Mapped[Optional[bool]] = mapped_column(Boolean)
+    output: Mapped[Optional[str]] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, onupdate=datetime.now
+    )
+    device_id: Mapped[int] = mapped_column(Integer, ForeignKey("Devices.id"))
+    device: Mapped["DeviceModel"] = relationship("DeviceModel", back_populates="tasks")
 
     @property
     def finished(self) -> bool:

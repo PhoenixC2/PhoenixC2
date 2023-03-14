@@ -3,12 +3,12 @@ import json
 import os
 from datetime import datetime
 from functools import wraps
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 from uuid import uuid1
 
 from flask import request, session, flash, redirect
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 from werkzeug.datastructures import FileStorage
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -22,7 +22,7 @@ from .association import (
     user_operation_assignment_table,
 )
 
-AUTH_ENDPOINT = "auth/login"
+AUTH_ENDPOINT = "/auth/login"
 
 if TYPE_CHECKING:
     from .logs import LogEntryModel
@@ -33,36 +33,37 @@ class UserModel(Base):
     """The Users Model"""
 
     __tablename__ = "Users"
-    id = Column(Integer, primary_key=True)
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    username: str = Column(String(50), unique=True, nullable=False)
-    password_hash: str = Column(Text)
-    _api_key: str = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(Text)
+    _api_key: Mapped[str] = mapped_column(
         String(30),
         name="api_key",
         nullable=False,
         unique=True,
         default=lambda: str(uuid1()),
     )
-    admin: bool = Column(Boolean)
-    disabled: bool = Column(Boolean, default=False)
-    profile_picture: str = Column(Boolean, default=False)
-    last_login: datetime = Column(DateTime)
-    last_activity: datetime = Column(DateTime, onupdate=datetime.now)
-    logs: list["LogEntryModel"] = relationship(
+    admin: Mapped[bool] = mapped_column(Boolean)
+    disabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    profile_picture: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    last_activity: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, onupdate=datetime.now
+    )
+    logs: Mapped[List["LogEntryModel"]] = relationship(
         "LogEntryModel", back_populates="user"
     )  # Logs triggered by user
-    unseen_logs: list["LogEntryModel"] = relationship(
+    unseen_logs: Mapped[List["LogEntryModel"]] = relationship(
         "LogEntryModel",
         secondary=user_logentry_association_table,
         back_populates="unseen_users",
     )  # Logs not seen by user yet
-    assigned_operations: list["OperationModel"] = relationship(
+    assigned_operations: Mapped[List["OperationModel"]] = relationship(
         "OperationModel",
         secondary=user_operation_assignment_table,
         back_populates="assigned_users",
     )
-    owned_operations: list["OperationModel"] = relationship(
+    owned_operations: Mapped[List["OperationModel"]] = relationship(
         "OperationModel", back_populates="owner"
     )
 
@@ -166,7 +167,6 @@ class UserModel(Base):
 
     def set_profile_picture(self, file: FileStorage) -> None:
         """Set the profile picture and save it"""
-
         if self.profile_picture:
             os.rm(str(get_resource(PICTURES, self.username, skip_file_check=True)))
 

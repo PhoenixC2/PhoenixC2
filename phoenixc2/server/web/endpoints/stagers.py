@@ -19,7 +19,6 @@ ENDPOINT = "stagers"
 
 
 def stagers_bp(commander: Commander):
-
     stagers_bp = Blueprint(ENDPOINT, __name__, url_prefix="/stagers")
 
     @stagers_bp.route("/", methods=["GET"])
@@ -91,7 +90,6 @@ def stagers_bp(commander: Commander):
         name = request.form.get("name")
         data = dict(request.form)
         try:
-
             # check if listener exists
             listener: ListenerModel = (
                 Session.query(ListenerModel).filter_by(id=data.get("listener")).first()
@@ -226,7 +224,6 @@ def stagers_bp(commander: Commander):
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
         else:
-
             if final_payload.payload.compiled:
                 return send_file(
                     final_payload.output,

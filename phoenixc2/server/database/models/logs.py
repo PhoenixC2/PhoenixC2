@@ -1,8 +1,8 @@
 """The Log Entries Model"""
 from datetime import datetime
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from typing import List, Optional
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -17,31 +17,27 @@ class LogEntryModel(Base):
     """The Log Entries Model"""
 
     __tablename__ = "Logs"
-    id: int = Column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # info|alert|error|critical|success
-    status: str = Column(String(10), name="type")
-    endpoint = Column(String(50))
-    description: str = Column(Text(100))
-    time: datetime = Column(DateTime, default=datetime.now)
-    operation_id: int = Column(Integer, ForeignKey("Operations.id"))
-    operation: "OperationModel" = relationship("OperationModel", back_populates="logs")
-    user_id: int = Column(Integer, ForeignKey("Users.id"))
-    user: "UserModel" = relationship(
+    status: Mapped[str] = mapped_column(String(10))
+    endpoint: Mapped[Optional[str]] = mapped_column(String(50))
+    description: Mapped[Optional[str]] = mapped_column(Text(100))
+    time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    operation_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("Operations.id")
+    )
+    operation: Mapped["OperationModel"] = relationship(
+        "OperationModel", back_populates="logs"
+    )
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("Users.id"))
+    user: Mapped["UserModel"] = relationship(
         "UserModel", back_populates="logs"
     )  # user who triggered the log creation
-    unseen_users: list["UserModel"] = relationship(
+    unseen_users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         secondary=user_logentry_association_table,
         back_populates="unseen_logs",
     )  # users who haven't seen this message
-    operation_id = Column(
-        Integer,
-        ForeignKey("Operations.id"),
-        default=lambda: OperationModel.get_current_operation().id
-        if OperationModel.get_current_operation() is not None
-        else None,
-    )
-    operation = relationship("OperationModel", back_populates="logs")
 
     def to_dict(
         self,

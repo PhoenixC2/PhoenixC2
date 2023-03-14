@@ -1,11 +1,11 @@
 """The Stagers Model"""
 import importlib
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
@@ -28,20 +28,24 @@ class StagerModel(Base):
         "confirm_deleted_rows": False
     }  # needed to avoid error bc of cascade delete
     __tablename__ = "Stagers"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String(100))
-    payload: str = Column(String(100))
-    encoding: str = Column(String(10))
-    random_size: bool = Column(Boolean)
-    timeout: int = Column(Integer)
-    delay: int = Column(Integer)
-    different_address = Column(String(100))
-    options: dict = Column(MutableDict.as_mutable(JSON), default={})
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    listener_id: int = Column(Integer, ForeignKey("Listeners.id"))
-    listener: "ListenerModel" = relationship("ListenerModel", back_populates="stagers")
-    devices: list["DeviceModel"] = relationship(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100))
+    payload: Mapped[str] = mapped_column(String(100))
+    encoding: Mapped[str] = mapped_column(String(10))
+    random_size: Mapped[bool] = mapped_column(Boolean)
+    timeout: Mapped[int] = mapped_column(Integer)
+    delay: Mapped[int] = mapped_column(Integer)
+    different_address: Mapped[str] = mapped_column(String(100))
+    options: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
+    listener_id: Mapped[int] = mapped_column(Integer, ForeignKey("Listeners.id"))
+    listener: Mapped["ListenerModel"] = relationship(
+        "ListenerModel", back_populates="stagers"
+    )
+    devices: Mapped[List["DeviceModel"]] = relationship(
         "DeviceModel", back_populates="stager", cascade="all, delete-orphan"
     )
 

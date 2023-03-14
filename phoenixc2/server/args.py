@@ -84,7 +84,6 @@ admin.add_argument(
 
 
 def parse_args(args, config: dict) -> dict:
-
     # output args
     if args.version:
         ph_print("PhoenixC2 Server v" + phoenixc2.__version__)

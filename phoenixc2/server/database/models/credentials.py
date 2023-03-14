@@ -1,8 +1,8 @@
 """The Credentials Model"""
 from datetime import datetime
-
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from typing import Optional
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from .operations import OperationModel
 
@@ -13,22 +13,24 @@ class CredentialModel(Base):
     """The Credentials Model"""
 
     __tablename__ = "Credentials"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    value: str = Column(String(100))
-    hash: bool = Column(Boolean, default=False)
-    notes: str = Column(Text(500))
-    user: str = Column(String(100))
-    admin: bool = Column(Boolean, default=False)
-    found_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    operation_id: int = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    value: Mapped[str] = mapped_column(String(100))
+    hash: Mapped[bool] = mapped_column(Boolean, default=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text(500))
+    user: Mapped[str] = mapped_column(String(100))
+    admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    found_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
+    operation_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("Operations.id"),
         default=lambda: OperationModel.get_current_operation().id
         if OperationModel.get_current_operation() is not None
         else None,
     )
-    operation: "OperationModel" = relationship(
+    operation: Mapped["OperationModel"] = relationship(
         "OperationModel", back_populates="credentials"
     )
 

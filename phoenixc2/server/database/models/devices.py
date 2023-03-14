@@ -1,11 +1,10 @@
 """The Devices Model"""
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from uuid import uuid1
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -27,21 +26,27 @@ class DeviceModel(Base):
         "confirm_deleted_rows": False
     }  # needed to avoid error bc of cascade delete
     __tablename__ = "Devices"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(
-        String, default=lambda: str(uuid1()).split("-")[0], unique=True, nullable=False
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(
+        String, default=lambda: str(uuid1()).split("-")[0], unique=True
     )
-    hostname: str = Column(String(100))
-    address: str = Column(String(100), nullable=False)
-    os: str = Column(String(10))
-    architecture: str = Column(String(10))
-    user: str = Column(String(100))
-    admin: bool = Column(Boolean, default=False)
-    connection_time: datetime = Column(DateTime, default=datetime.now)
-    last_online: datetime = Column(DateTime, default=datetime.now)
-    stager_id: int = Column(Integer, ForeignKey("Stagers.id"), nullable=False)
-    stager: "StagerModel" = relationship("StagerModel", back_populates="devices")
-    tasks: list["TaskModel"] = relationship("TaskModel", back_populates="device")
+    hostname: Mapped[str] = mapped_column(String(100))
+    address: Mapped[str] = mapped_column(String(100))
+    os: Mapped[str] = mapped_column(String(10))
+    architecture: Mapped[str] = mapped_column(String(10))
+    user: Mapped[str] = mapped_column(String(100))
+    admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    connection_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    last_online: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    stager_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("Stagers.id"), nullable=False
+    )
+    stager: Mapped["StagerModel"] = relationship(
+        "StagerModel", back_populates="devices"
+    )
+    tasks: Mapped[List["TaskModel"]] = relationship(
+        "TaskModel", back_populates="device"
+    )
 
     @property
     def operation(self) -> "OperationModel":

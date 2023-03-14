@@ -1,12 +1,11 @@
 """The Log Entries Model"""
 import ipaddress
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 import os
 from flask import request
 from sqlalchemy import (
     JSON,
-    Column,
     DateTime,
     ForeignKey,
     Integer,
@@ -15,7 +14,7 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -26,7 +25,6 @@ from werkzeug.datastructures import FileStorage
 from .users import UserModel
 
 if TYPE_CHECKING:
-
     from phoenixc2.server.commander import Commander
 
     from .credentials import CredentialModel
@@ -38,42 +36,44 @@ class OperationModel(Base):
     """The Operation Model"""
 
     __tablename__ = "Operations"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    name: str = Column(String(100), nullable=False)
-    description: str = Column(Text, default="")
-    expiry: datetime = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    expiry: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.today() + timedelta(days=30)
     )
-    picture = Column(Boolean, default=False)
-    subnets: list[str] = Column(MutableList.as_mutable(JSON), default=[])
-    created_at: datetime = Column(DateTime, default=datetime.now)
-    updated_at: datetime = Column(DateTime, onupdate=datetime.now)
+    picture: Mapped[Optional[bool]] = mapped_column(Boolean)
+    subnets: Mapped[List[str]] = mapped_column(MutableList.as_mutable(JSON), default=[])
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
 
-    owner_id: int = Column(
+    owner_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("Users.id"),
         default=lambda: UserModel.get_current_user().id
         if UserModel.get_current_user()
         else None,
     )
-    owner: "UserModel" = relationship(
+    owner: Mapped["UserModel"] = relationship(
         "UserModel",
         back_populates="owned_operations",
     )
-    assigned_users: list["UserModel"] = relationship(
+    assigned_users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         back_populates="assigned_operations",
         secondary=user_operation_assignment_table,
     )
-    listeners: list["ListenerModel"] = relationship(
+    listeners: Mapped[List["ListenerModel"]] = relationship(
         "ListenerModel",
         back_populates="operation",
     )
-    credentials: list["CredentialModel"] = relationship(
+    credentials: Mapped[List["CredentialModel"]] = relationship(
         "CredentialModel",
         back_populates="operation",
     )
-    logs: list["LogEntryModel"] = relationship(
+    logs: Mapped[List["LogEntryModel"]] = relationship(
         "LogEntryModel",
         back_populates="operation",
     )
@@ -140,13 +140,7 @@ class OperationModel(Base):
         """Set the picture and save it"""
 
         if self.picture:
-            os.rm(
-                str(
-                    get_resource(
-                        PICTURES, self.name + "-operation", skip_file_check=True
-                    )
-                )
-            )
+            get_resource(PICTURES, self.name + "-operation").unlink()
 
         self.picture = True
         file.save(
@@ -156,9 +150,7 @@ class OperationModel(Base):
     def delete_picture(self) -> None:
         """Delete the profile picture"""
         if self.picture:
-            get_resource(
-                PICTURES, self.name + "-operation", skip_file_check=True
-            ).unlink()
+            get_resource(PICTURES, self.name + "-operation").unlink()
             self.picture = False
 
     def assign_user(self, user: "UserModel") -> None:

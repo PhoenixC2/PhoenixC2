@@ -47,7 +47,7 @@ class PythonPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/python.py")
+        template = jinja2_env.get_template("payloads/python.j2")
         output = template.render(stager=stager_db)
         if stager_db.encoding == "base64":
             output = f"import base64;exec(base64.b64decode('{base64.b64encode(output.encode()).decode()}'))"
@@ -114,7 +114,6 @@ class GoPayload(BasePayload):
     def generate(
         cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
     ) -> "FinalPayload":
-
         if cls.is_compiled(stager_db) and not recompile:
             return FinalPayload(
                 cls,
@@ -131,7 +130,7 @@ class GoPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/payload.go")
+        template = jinja2_env.get_template("payloads/go.j2")
         output = template.render(stager=stager_db)
 
         # write to file
