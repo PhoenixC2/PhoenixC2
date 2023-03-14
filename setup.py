@@ -36,7 +36,7 @@ setup(
         "markdown",
         "pyOpenSSL",
     ],
-    extras_require={"dev": ["black", "isort", "ruff"]},
+    extras_require={"dev": ["black", "isort", "ruff", "pre-commit"]},
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
