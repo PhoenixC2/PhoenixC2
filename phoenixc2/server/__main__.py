@@ -32,7 +32,7 @@ def main():
     web_server = create_web(commander)
 
     commander.web_server = web_server
-    
+
     # load plugins
     log("Loading plugins.", Status.Info)
     load_plugins(commander)

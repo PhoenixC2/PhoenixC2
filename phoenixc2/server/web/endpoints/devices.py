@@ -42,17 +42,15 @@ def devices_bp(commander: Commander):
                 return {
                     "status": Status.Success,
                     "device": opened_device.to_dict(
-                    commander, show_stager, show_operation, show_tasks
+                        commander, show_stager, show_operation, show_tasks
                     ),
                 }
             return {
                 "status": Status.Success,
                 "devices": [
-                    device.to_dict(
-                        commander, show_stager, show_operation, show_tasks
-                    )
+                    device.to_dict(commander, show_stager, show_operation, show_tasks)
                     for device in devices
-                ]
+                ],
             }
 
         return render_template(

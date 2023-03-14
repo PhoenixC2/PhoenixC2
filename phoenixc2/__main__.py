@@ -7,11 +7,11 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "server":
         from .server.__main__ import main
+
         sys.argv.pop(1)
         sys.exit(main())
     elif sys.argv[1] == "client":
         from .client.__main__ import main
+
         sys.argv.pop(1)
         sys.exit(main())
-
-    

@@ -3,6 +3,7 @@ from phoenixc2.server.commander import Commander
 import unittest
 import os
 
+
 class StagerTest(unittest.TestCase):
     def setUp(self):
         os.environ["PHOENIX_TEST"] = "true"
@@ -23,6 +24,7 @@ class StagerTest(unittest.TestCase):
         response = self.client.get("/stagers/1?json=true", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, True)
+
 
 if __name__ == "__main__":
     unittest.main()

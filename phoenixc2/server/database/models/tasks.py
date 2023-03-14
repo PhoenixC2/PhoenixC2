@@ -27,6 +27,7 @@ from phoenixc2.server.utils.misc import Status
 from .devices import DeviceModel
 from .logs import LogEntryModel
 from .credentials import CredentialModel
+
 if TYPE_CHECKING:
     from phoenixc2.server.commander import Commander
 
@@ -106,7 +107,7 @@ class TaskModel(Base):
 
         else:
             self.output = output
-            
+
         self.success = success
         self.finished_at = datetime.now()
 
@@ -115,10 +116,8 @@ class TaskModel(Base):
         for cred in creds:
             try:
                 created_cred = CredentialModel.create(
-                    cred["value"],
-                    cred["hash"],
-                    cred["user"],
-                    cred["admin"])
+                    cred["value"], cred["hash"], cred["user"], cred["admin"]
+                )
                 created_cred.operation = self.operation
             except Exception as e:
                 LogEntryModel.log(
@@ -134,8 +133,6 @@ class TaskModel(Base):
                 "credentials",
                 "New credential added to the database",
             )
-            
-                                                  
 
         if success:
             LogEntryModel.log(
@@ -176,7 +173,7 @@ class TaskModel(Base):
         """
         if target_path is None:
             raise TypeError("File path is missing.")
-        
+
         task = TaskModel.generate_task(device_or_id)
         task.name = str(uuid1()).split("-")[0]
 

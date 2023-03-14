@@ -135,7 +135,9 @@ class GoPayload(BasePayload):
         output = template.render(stager=stager_db)
 
         # write to file
-        go_file = get_resource("data/stagers/", f"{stager_db.name}.go", skip_file_check=True)
+        go_file = get_resource(
+            "data/stagers/", f"{stager_db.name}.go", skip_file_check=True
+        )
         executable = get_resource(
             "data/stagers/", f"{stager_db.name}.exe", skip_file_check=True
         )

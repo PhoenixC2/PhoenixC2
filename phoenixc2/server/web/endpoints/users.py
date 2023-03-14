@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, send_file
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
+
 INVALID_ID = "Invalid ID."
 USER_DOES_NOT_EXIST = "User does not exist."
 ENDPOINT = "users"
@@ -61,7 +62,7 @@ def get_profile_picture(user_id: int):
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:
         return {"status": "error", "message": USER_DOES_NOT_EXIST}, 400
-    
+
     return send_file(user.get_profile_picture(), mimetype="image/png")
 
 
@@ -122,7 +123,10 @@ def delete_profile_picture(user_id: int = None):
     if user.profile_picture:
         user.delete_profile_picture()
     else:
-        return {"status": Status.Danger, "message": "No profile picture to delete."}, 400
+        return {
+            "status": Status.Danger,
+            "message": "No profile picture to delete.",
+        }, 400
     Session.commit()
     return {"status": Status.Success, "message": "Profile picture deleted."}
 
@@ -140,7 +144,7 @@ def add_user():
             "status": Status.Danger,
             "message": "Username and password are required.",
         }, 400
-    
+
     # Check if user exists
     if Session.query(UserModel).filter_by(username=username).first():
         return {
@@ -165,7 +169,7 @@ def add_user():
         UserModel.get_current_user(),
     )
 
-    return {"status": Status.Success, "message": "User added.", "user": user.to_dict()} 
+    return {"status": Status.Success, "message": "User added.", "user": user.to_dict()}
 
 
 @users_bp.route("/<int:id>/remove", methods=["DELETE"])
@@ -219,7 +223,7 @@ def edit_user(id: int = None):
                 "status": Status.Danger,
                 "message": INVALID_ID,
             }, 400
-        
+
         id = int(form_data.get("id"))
         form_data.pop("id")
 
@@ -287,7 +291,7 @@ def reset_api_key(id: int = None):
         current_user,
     )
     return {
-            "status": Status.Success,
-            "message": "API key has been reset.",
-            "api_key": user.api_key,
-        }
+        "status": Status.Success,
+        "message": "API key has been reset.",
+        "api_key": user.api_key,
+    }

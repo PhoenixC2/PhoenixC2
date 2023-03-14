@@ -3,12 +3,13 @@ from datetime import datetime
 from uuid import uuid1
 from psutil import net_if_addrs
 
+
 def get_network_interfaces() -> dict[str, str]:
     """Get address of all network interfaces on the host"""
     interfaces = {"all": "0.0.0.0"}
     for interface_name, interface_addresses in net_if_addrs().items():
         for address in interface_addresses:
-            if str(address.family) == 'AddressFamily.AF_INET':
+            if str(address.family) == "AddressFamily.AF_INET":
                 interfaces[interface_name] = address.address
     return interfaces
 
@@ -79,11 +80,13 @@ def format_datetime(date_time: datetime) -> str:
         else:
             return date_time.strftime("%d/%m/%Y")
 
-class Status():
+
+class Status:
     """Indicates the response status of a request or action"""
+
     Success = "success"
     Danger = "danger"
-    Error = "danger" # Alias
+    Error = "danger"  # Alias
     Warning = "warning"
     Info = "info"
     Alert = "alert"

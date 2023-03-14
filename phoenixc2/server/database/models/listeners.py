@@ -176,7 +176,7 @@ class ListenerModel(Base):
             value = option.validate_data(value)
             if not option.editable:
                 raise ValueError(f"Option '{key}' is not editable.")
-            
+
             if hasattr(self, key):
                 setattr(self, key, value)
             else:

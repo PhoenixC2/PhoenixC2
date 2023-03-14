@@ -66,4 +66,5 @@ def tasks_bp(commander: Commander):
                 UserModel.get_current_user(),
             )
         return {"status": Status.Success, "message": message}
+
     return blueprint

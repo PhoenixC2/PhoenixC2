@@ -36,6 +36,7 @@ class FlaskThread(threading.Thread):
         @app.teardown_request
         def remove(*args, **kwargs):
             Session.remove()
+
         self.app = app
         self.name = name
         if ssl:

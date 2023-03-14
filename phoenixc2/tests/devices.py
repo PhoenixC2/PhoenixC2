@@ -3,6 +3,7 @@ from phoenixc2.server.commander import Commander
 import unittest
 import os
 
+
 class DevicesTest(unittest.TestCase):
     def setUp(self):
         os.environ["PHOENIX_TEST"] = "true"
@@ -13,6 +14,7 @@ class DevicesTest(unittest.TestCase):
         response = self.client.get("/devices?json=true", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, True)
+
 
 if __name__ == "__main__":
     unittest.main()

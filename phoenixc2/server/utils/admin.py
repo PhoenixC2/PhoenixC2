@@ -119,7 +119,7 @@ def reset_table(table: str):
 
     # generate models dict from Base
     models = {model.__tablename__.lower(): model for model in Base.__subclasses__()}
-    
+
     if table not in models:
         log(f"{table} doesn't exist.", Status.Danger)
         exit(1)

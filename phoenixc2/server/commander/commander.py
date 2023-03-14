@@ -6,7 +6,13 @@ from typing import Optional
 from flask import Flask
 from phoenixc2.server.kits.base_handler import BaseHandler
 from phoenixc2.server.kits.base_listener import BaseListener
-from phoenixc2.server.plugins.base import BasePlugin, BlueprintPlugin, ExecutedPlugin, RoutePlugin, InjectedPlugin
+from phoenixc2.server.plugins.base import (
+    BasePlugin,
+    BlueprintPlugin,
+    ExecutedPlugin,
+    RoutePlugin,
+    InjectedPlugin,
+)
 from phoenixc2.server.utils.web import FlaskThread
 
 INVALID_ID = "Invalid ID"
@@ -23,7 +29,9 @@ class Commander:
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
         self.active_plugins: dict[str, BasePlugin] = {}
-        self.injection_plugins: dict[str, InjectedPlugin] = {} # plugins that inject code into the templates
+        self.injection_plugins: dict[
+            str, InjectedPlugin
+        ] = {}  # plugins that inject code into the templates
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
         """Get a handler by id"""
@@ -109,13 +117,10 @@ class Commander:
             self.web_server.register_blueprint(plugin.execute(self, config))
 
         elif isinstance(plugin, RoutePlugin):
-            self.web_server.add_url_rule(
-                plugin.rule, plugin.name, plugin.execute
-            )
-        
+            self.web_server.add_url_rule(plugin.rule, plugin.name, plugin.execute)
+
         elif isinstance(plugin, InjectedPlugin):
             self.injection_plugins[plugin.name] = plugin.execute(self, config)
 
         else:
             plugin.execute(self, config)
-        

@@ -56,7 +56,7 @@ misc.add_argument(
     "-e",
     "--exit",
     help="Exit after the server has been started(used for testing)",
-    action="store_true"
+    action="store_true",
 )
 admin = parser.add_argument_group("Admin")
 admin.add_argument(
@@ -116,7 +116,10 @@ def parse_args(args, config: dict) -> dict:
     if args.recreate_super_user:
         recreate_super_user()
     if args.reset_database:
-        if input("Are you sure, that you want to reset the database [Y/n]: ").lower() == "y":
+        if (
+            input("Are you sure, that you want to reset the database [Y/n]: ").lower()
+            == "y"
+        ):
             reset_database()
         else:
             log("Database reset aborted.", "info")

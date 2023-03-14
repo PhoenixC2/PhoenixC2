@@ -1,7 +1,6 @@
 import importlib
 
 
-
 def get_plugin(name):
     """Get a plugin by name."""
     try:

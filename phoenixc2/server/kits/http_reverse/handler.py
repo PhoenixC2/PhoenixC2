@@ -1,4 +1,3 @@
-
 from phoenixc2.server.database import DeviceModel, ListenerModel
 
 from ..base_handler import BaseHandler

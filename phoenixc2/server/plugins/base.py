@@ -67,32 +67,36 @@ class BlueprintPlugin(BasePlugin):
     """The Base Web Plugin class.
 
     Used for plugins which modify the api.
-    """ 
+    """
 
     @abstractmethod
     def execute(self, commander: "Commander", config: dict) -> Blueprint:
         """Returns the blueprint to be added to the web api."""
         pass
 
+
 class RoutePlugin(BasePlugin):
     """The Base Template Plugin class.
 
     Used for plugins which add own routes to the web api.
     """
-    commander: "Commander" = None 
+
+    commander: "Commander" = None
     # has to be set because you can't pass the commander to the execute function
-    rule: str # the rule to be added to the web api
+    rule: str  # the rule to be added to the web api
 
     @abstractmethod
     def execute():
         """Returns the function to be added to the route."""
         pass
 
+
 class InjectedPlugin(BasePlugin):
     """The Base Injected Plugin class.
 
     Used for plugins which inject code into existing templates, like html, js, css, etc.
     """
+
     # the name of the template to be modified
     # * - all templates
     # - list of templates
@@ -103,11 +107,13 @@ class InjectedPlugin(BasePlugin):
         """Returns the code to be injected into the template."""
         pass
 
+
 class ExecutedPlugin(BasePlugin):
     """The Base Executed Plugin class.
-    
+
     Used for plugins that are executed on the server, like a service or a script.
     """
+
     # execution types:
     # - direct - execute the code directly
     # - thread - execute the function in a thread
