@@ -2,13 +2,14 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from flask import Blueprint, render_template, request
+
 import phoenixc2
+import phoenixc2.server as avl
 from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
-import phoenixc2.server as avl
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 def dashboard_bp(commander: "Commander") -> Blueprint:

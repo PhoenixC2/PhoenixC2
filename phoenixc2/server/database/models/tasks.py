@@ -4,30 +4,23 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid1
 
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from werkzeug.utils import secure_filename
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.modules import get_module
-from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.misc import Status
+from phoenixc2.server.utils.resources import get_resource
+
+from .credentials import CredentialModel
 from .devices import DeviceModel
 from .logs import LogEntryModel
-from .credentials import CredentialModel
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 class TaskModel(Base):

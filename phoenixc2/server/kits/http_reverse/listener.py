@@ -25,7 +25,7 @@ from ..base_listener import BaseListener
 from .handler import Handler
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 class Listener(BaseListener):

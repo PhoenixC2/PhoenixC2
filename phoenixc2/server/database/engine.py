@@ -10,11 +10,14 @@ from phoenixc2.server.utils.resources import get_resource
 c = load_config()["database"]
 
 if c["type"] == "sqlite":
-    conn_string = (
-        "sqlite:///"
-        + str(get_resource("data", c["sqlite_name"], skip_file_check=True))
-        + ".sqlite3"
-    )
+    if c["sqlite_name"] == "memory":
+        conn_string = "sqlite:///:memory:"
+    else:
+        conn_string = (
+            "sqlite:///"
+            + str(get_resource("data", c["sqlite_name"], skip_file_check=True))
+            + ".sqlite3"
+        )
 
 else:
     conn_string = (

@@ -5,26 +5,26 @@ import os
 import random
 import string
 
-from flask import Flask, abort, cli, request, Blueprint, render_template_string
-from phoenixc2.server.commander import Commander
+from flask import Blueprint, Flask, abort, cli, render_template_string, request
+
+from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import OperationModel, UserModel
 from phoenixc2.server.utils.config import load_config, save_config
+from phoenixc2.server.utils.misc import format_datetime
+from phoenixc2.server.utils.ui import log
 from phoenixc2.server.web.endpoints.auth import auth_bp
+from phoenixc2.server.web.endpoints.credentials import credentials_bp
+from phoenixc2.server.web.endpoints.dashboard import dashboard_bp
 from phoenixc2.server.web.endpoints.devices import devices_bp
 from phoenixc2.server.web.endpoints.listeners import listeners_bp
-from phoenixc2.server.web.endpoints.operations import operations_bp
-from phoenixc2.server.web.endpoints.users import users_bp
-from phoenixc2.server.web.endpoints.dashboard import dashboard_bp
-from phoenixc2.server.web.endpoints.tasks import tasks_bp
-from phoenixc2.server.web.endpoints.stagers import stagers_bp
-from phoenixc2.server.web.endpoints.modules import modules_bp
 from phoenixc2.server.web.endpoints.loaders import loaders_bp
-from phoenixc2.server.web.endpoints.misc import misc_bp
 from phoenixc2.server.web.endpoints.logs import logs_bp
-from phoenixc2.server.web.endpoints.credentials import credentials_bp
-from phoenixc2.server.utils.ui import log
-
-from phoenixc2.server.utils.misc import format_datetime
+from phoenixc2.server.web.endpoints.misc import misc_bp
+from phoenixc2.server.web.endpoints.modules import modules_bp
+from phoenixc2.server.web.endpoints.operations import operations_bp
+from phoenixc2.server.web.endpoints.stagers import stagers_bp
+from phoenixc2.server.web.endpoints.tasks import tasks_bp
+from phoenixc2.server.web.endpoints.users import users_bp
 
 endpoints: dict[str, Blueprint] = {
     "routes": dashboard_bp,

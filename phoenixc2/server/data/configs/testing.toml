@@ -1,0 +1,12 @@
+[web]
+address = "localhost"
+port = 8080
+ssl = false
+secret_key = ""
+show_cookie = false
+show_cookie_name = "show_server"
+show_cookie_value = "plsshowtheserver"
+
+[database]
+type = "sqlite"
+sqlite_name = "memory"

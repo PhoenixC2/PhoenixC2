@@ -11,7 +11,7 @@ from .base_handler import BaseHandler
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 class BaseListener:

@@ -2,10 +2,11 @@ import subprocess
 import sys
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
 from flask import Blueprint
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 class BasePlugin(ABC):

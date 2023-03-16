@@ -6,7 +6,7 @@ from phoenixc2.server.utils.features import Feature
 from phoenixc2.server.utils.options import DefaultStagerPool, OptionPool
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
     from phoenixc2.server.database import StagerModel
 
 

@@ -12,7 +12,7 @@ from phoenixc2.server.database import ListenerModel, Session
 from .misc import generate_name, get_network_interfaces
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 @dataclass

@@ -1,6 +1,7 @@
-from phoenixc2.server.web import create_web
-from phoenixc2.server.commander import Commander
 import unittest
+
+from phoenixc2.server.commander.commander import Commander
+from phoenixc2.server.web import create_web
 
 
 class TestAuth(unittest.TestCase):

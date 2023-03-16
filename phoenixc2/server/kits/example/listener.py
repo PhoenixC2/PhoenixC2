@@ -6,7 +6,7 @@ from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringTy
 from ..base_listener import BaseListener
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
 
 class Listener(BaseListener):

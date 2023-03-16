@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING, List
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.resources import get_resource
+
 from .operations import OperationModel
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
     from phoenixc2.server.kits.base_stager import BasePayload, BaseStager
 
     from .devices import DeviceModel

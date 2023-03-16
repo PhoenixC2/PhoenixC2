@@ -1,4 +1,4 @@
-from phoenixc2.server.commander import Commander
+from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import ListenerModel
 from phoenixc2.server.kits.base_listener import BaseListener
 from phoenixc2.server.utils.misc import generate_name
@@ -21,4 +21,4 @@ def generate_listener(
     --------
         ListenerModel: The listener model
     """
-    return ListenerModel(name=generate_name(), type=type.name, options=options)
+    return ListenerModel.create_from_data()

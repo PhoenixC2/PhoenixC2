@@ -5,16 +5,9 @@ from datetime import datetime
 from random import randint
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-)
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from phoenixc2.server import INSTALLED_KITS
 from phoenixc2.server.database.base import Base
@@ -24,7 +17,7 @@ from phoenixc2.server.utils.misc import generate_name
 from .operations import OperationModel
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
     from phoenixc2.server.kits.base_listener import BaseListener
 
     from .stagers import StagerModel

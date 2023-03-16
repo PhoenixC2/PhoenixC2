@@ -1,31 +1,25 @@
 """The Log Entries Model"""
 import ipaddress
+import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, List, Optional
-import os
+
 from flask import request
-from sqlalchemy import (
-    JSON,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Boolean,
-    Text,
-)
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from werkzeug.datastructures import FileStorage
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
+from phoenixc2.server.utils.resources import PICTURES, get_resource
 from phoenixc2.server.utils.web import generate_html_from_markdown
-from phoenixc2.server.utils.resources import get_resource, PICTURES
+
 from .association import user_operation_assignment_table
-from werkzeug.datastructures import FileStorage
 from .users import UserModel
 
 if TYPE_CHECKING:
-    from phoenixc2.server.commander import Commander
+    from phoenixc2.server.commander.commander import Commander
 
     from .credentials import CredentialModel
     from .listeners import ListenerModel
