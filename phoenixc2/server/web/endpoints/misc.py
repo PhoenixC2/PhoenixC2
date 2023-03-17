@@ -30,7 +30,7 @@ def get_downloads(file_name: str):
 @misc_bp.route("/uploads/clear", methods=["POST"])
 @UserModel.admin_required
 def post_clear_uploads():
-    uploads = get_resource("data/uploads", skip_file_check=True)
+    uploads = get_resource("data", "uploads")
     files = list(uploads.iterdir())
 
     for file in files:
@@ -41,7 +41,7 @@ def post_clear_uploads():
 @misc_bp.route("/downloads/clear", methods=["POST"])
 @UserModel.admin_required
 def post_clear_downloads():
-    downloads = get_resource("data/downloads", skip_file_check=True)
+    downloads = get_resource("data", "downloads")
     files = list(downloads.iterdir())
     for file in files:
         file.unlink()

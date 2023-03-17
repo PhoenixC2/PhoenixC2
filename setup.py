@@ -31,7 +31,6 @@ setup(
         "requests",
         "tomli",
         "tomli_w",
-        "importlib-resources",
         "bleach",
         "markdown",
         "pyOpenSSL",

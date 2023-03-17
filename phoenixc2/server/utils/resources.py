@@ -1,26 +1,19 @@
-import os
-
-from importlib_resources import files
-from importlib_resources.abc import Traversable
+from importlib.resources import path
 
 PICTURES = "data/pictures/"
 
 
-def get_resource(
-    path: str, file: str = None, skip_file_check: bool = False
-) -> Traversable:
+def get_resource(root: str, path_after: str = "", skip_file_check: bool = False):
     """Get the resource from a path."""
     # remove the first slash if it exists
-    if path[-1] == "/":
-        path = path[:-1]
+    if root[-1] == "/":
+        root = root[:-1]
 
     # check if file is given
-    if file is not None:
-        resource = files("phoenixc2.server." + path.replace("/", ".")).joinpath(file)
-    else:
-        resource = files("phoenixc2.server." + path.replace("/", ".")).joinpath("")
-    # check if file or directory exists if skip_file_check is False
-    if os.path.exists(str(resource)) or skip_file_check:
+    resource = path("phoenixc2.server." + root.replace("/", "."), path_after)
+
+    # check if file exists
+    if resource.exists() or skip_file_check:
         return resource
     else:
-        raise FileNotFoundError(f"Resource '{file}' does not exist.")
+        raise FileNotFoundError()
