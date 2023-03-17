@@ -95,7 +95,7 @@ class Listener(BaseListener):
                         f"A Stager is trying to connect to '{self.db_entry.name}' but the stager id is invalid.",
                     )
                     raise ValueError("Invalid Stager ID")
-                device = DeviceModel.create(
+                device = DeviceModel.register(
                     hostname, request.remote_addr, os, architecture, user, admin, stager
                 )
             except Exception:

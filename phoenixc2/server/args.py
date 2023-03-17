@@ -92,7 +92,7 @@ def parse_args(args, config: dict) -> dict:
         log("-q and -d are mutually exclusive.", "error")
         exit()
     if args.quiet:
-        os.environ["PHOENIX_LOG"] = "false"
+        os.environ["PHOENIX_PRINT"] = "false"
         log("Starting PhoenixC2 in quiet mode.", "info")
     if args.debug:
         os.environ["PHOENIX_DEBUG"] = str(args.debug)

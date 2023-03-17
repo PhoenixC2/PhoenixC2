@@ -19,7 +19,6 @@ def get_resource(
         resource = files("phoenixc2.server." + path.replace("/", ".")).joinpath(file)
     else:
         resource = files("phoenixc2.server." + path.replace("/", ".")).joinpath("")
-
     # check if file or directory exists if skip_file_check is False
     if os.path.exists(str(resource)) or skip_file_check:
         return resource

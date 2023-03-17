@@ -107,7 +107,7 @@ class DeviceModel(Base):
                 Session.delete(task)
 
     @classmethod
-    def create(
+    def register(
         cls,
         hostname: str,
         address: str,

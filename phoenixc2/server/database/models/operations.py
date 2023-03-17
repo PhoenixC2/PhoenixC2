@@ -1,6 +1,5 @@
 """The Log Entries Model"""
 import ipaddress
-import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, List, Optional
 
@@ -43,7 +42,7 @@ class OperationModel(Base):
         DateTime, default=datetime.now, onupdate=datetime.now
     )
 
-    owner_id: Mapped[int] = mapped_column(
+    owner_id: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey("Users.id"),
         default=lambda: UserModel.get_current_user().id

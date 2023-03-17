@@ -11,7 +11,7 @@ misc_bp = Blueprint("misc", __name__, url_prefix="/misc")
 @misc_bp.route("/interfaces", methods=["GET"])
 @UserModel.authenticated
 def get_interfaces():
-    return get_network_interfaces()
+    return {"status": Status.Success, "interfaces": get_network_interfaces()}
 
 
 @misc_bp.route("/downloads/<string:file_name>", methods=["GET"])
@@ -33,7 +33,7 @@ def post_clear_uploads():
     uploads = get_resource("data/uploads", skip_file_check=True)
     for file in uploads.iterdir():
         file.unlink()
-    return {"status": Status.SUCCESS, "message": "Uploads cleared."}
+    return {"status": Status.Success, "message": "Uploads cleared."}
 
 
 @misc_bp.route("/downloads/clear", methods=["POST"])
@@ -42,4 +42,4 @@ def post_clear_downloads():
     downloads = get_resource("data/downloads", skip_file_check=True)
     for file in downloads.iterdir():
         file.unlink()
-    return {"status": Status.SUCCESS, "message": "Downloads cleared."}
+    return {"status": Status.Success, "message": "Downloads cleared."}

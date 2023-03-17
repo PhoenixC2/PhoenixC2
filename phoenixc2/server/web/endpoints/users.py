@@ -63,7 +63,7 @@ def get_profile_picture(user_id: int):
     if user is None:
         return {"status": "error", "message": USER_DOES_NOT_EXIST}, 400
 
-    return send_file(user.get_profile_picture(), mimetype="image/png")
+    return send_file(user.get_profile_picture())
 
 
 @users_bp.route("/picture", methods=["POST", "PUT"])
@@ -169,7 +169,11 @@ def add_user():
         UserModel.get_current_user(),
     )
 
-    return {"status": Status.Success, "message": "User added.", "user": user.to_dict()}
+    return {
+        "status": Status.Success,
+        "message": "User added.",
+        "user": user.to_dict(),
+    }, 201
 
 
 @users_bp.route("/<int:id>/remove", methods=["DELETE"])

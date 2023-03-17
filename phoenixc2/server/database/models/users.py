@@ -168,7 +168,7 @@ class UserModel(Base):
     def set_profile_picture(self, file: FileStorage) -> None:
         """Set the profile picture and save it"""
         if self.profile_picture:
-            os.rm(str(get_resource(PICTURES, self.username, skip_file_check=True)))
+            get_resource(PICTURES, self.username, skip_file_check=True).unlink()
 
         self.profile_picture = True
         file.save(get_resource(PICTURES, self.username, skip_file_check=True))

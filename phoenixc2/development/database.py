@@ -1,15 +1,13 @@
 """Test Database in the memory"""
-
-from sqlalchemy import Engine, create_engine
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
-
-from phoenixc2.server.database.base import Base
+from .testing import change_to_testing_config
 
 
-def create_memory_database() -> tuple[Engine, Session]:
-    """Create a database in memory and return the engine and session"""
-    engine = create_engine("sqlite:///:memory:", echo=True)
+def change_to_memory_database():
+    """Switch to in-memory database and create tables"""
+    change_to_testing_config()
+    from phoenixc2.server.database.base import Base
+    from phoenixc2.server.database.engine import engine
+    from phoenixc2.server.utils.admin import recreate_super_user
+
     Base.metadata.create_all(engine)
-
-    session_factory = sessionmaker(bind=engine)
-    return engine, scoped_session(session_factory)
+    recreate_super_user()

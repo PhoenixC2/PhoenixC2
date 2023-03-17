@@ -22,7 +22,7 @@ def modules_bp(commander: "Commander"):
             modules = [get_module(module) for module in get_all_module_paths()]
             if use_json:
                 return {
-                    "status": Status.SUCCESS,
+                    "status": Status.Success,
                     "modules": [module.to_dict(commander) for module in modules],
                 }
             return render_template("modules.j2", modules=modules, commander=commander)
@@ -30,9 +30,9 @@ def modules_bp(commander: "Commander"):
             try:
                 module = get_module(module_name)
             except ImportError:
-                return {"status": Status.Danger, "message": "Module not found."}
-            if use_json:
-                return {"status": Status.Success, "module": module.to_dict(commander)}
-            return render_template("module.j2", module=module, commander=commander)
+                return {"status": Status.Danger, "message": "Module not found."}, 400
+        if use_json:
+            return {"status": Status.Success, "module": module.to_dict(commander)}
+        return render_template("module.j2", module=module, commander=commander)
 
     return modules_bp
