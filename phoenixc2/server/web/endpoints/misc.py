@@ -31,7 +31,8 @@ def get_downloads(file_name: str):
 @UserModel.admin_required
 def post_clear_uploads():
     uploads = get_resource("data/uploads", skip_file_check=True)
-    files = uploads.iterdir()
+    files = list(uploads.iterdir())
+
     for file in files:
         file.unlink()
     return {"status": Status.Success, "message": "Uploads cleared."}
@@ -41,7 +42,7 @@ def post_clear_uploads():
 @UserModel.admin_required
 def post_clear_downloads():
     downloads = get_resource("data/downloads", skip_file_check=True)
-    files = downloads.iterdir()
+    files = list(downloads.iterdir())
     for file in files:
         file.unlink()
     return {"status": Status.Success, "message": "Downloads cleared."}
