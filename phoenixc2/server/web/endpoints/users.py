@@ -291,7 +291,8 @@ def reset_api_key(id: int = None):
     LogEntryModel.log(
         Status.Success,
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username}'s API key has been reset.",
+        f"{'Admin' if user.admin else 'User'} "
+        f"{user.username}'s API key has been reset.",
         current_user,
     )
     return {

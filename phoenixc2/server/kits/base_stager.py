@@ -85,8 +85,8 @@ class BaseStager:
         Args:
         -----
             stager_db (StagerModel): The stager database entry.
-            one_liner (bool, optional): If the stager should be generated as a one-liner. Defaults to False.
-            recompile (bool, optional): If the stager should be recompiled. Defaults to False.
+            one_liner (bool, optional): If the stager should be generated as a one-liner
+            recompile (bool, optional): If the stager should be recompiled
         Returns:
         ------
             bytes | str: The stager or the stager path.

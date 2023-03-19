@@ -86,7 +86,6 @@ def stagers_bp(commander: Commander):
     @UserModel.authenticated
     def post_add():
         # Get request data
-        use_json = request.args.get("json", "").lower() == "true"
         name = request.form.get("name")
         data = dict(request.form)
         try:

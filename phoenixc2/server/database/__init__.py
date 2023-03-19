@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 from .base import Base
 from .engine import Session, engine
 from .models.association import (

@@ -76,9 +76,15 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
 
     """Log the new connection to the console and database"""
     if reconnect:
-        status = f"Device '{device.hostname}' ({device.address}) reconnected to the server. [{device.name}]"
+        status = (
+            f"Device '{device.hostname}' ({device.address}) "
+            f"reconnected to the server. [{device.name}]"
+        )
     else:
-        status = f"New device '{device.hostname}' ({device.address}) connected to the server. [{device.name}]"
+        status = (
+            f"New device '{device.hostname}' ({device.address}) "
+            f"connected to the server. [{device.name}]"
+        )
     ph_print(status)
     LogEntryModel.log(
         Status.Success,

@@ -11,7 +11,7 @@ def get_resource(
 
     Args:
         root (str): The root path.
-        path_after (str, optional): The path after the root path. Defaults to "" which returns the root path.
+        path_after (str, optional): The path after the root path."
         skip_file_check (bool, optional): Skip the file check. Defaults to False.
 
     Returns:

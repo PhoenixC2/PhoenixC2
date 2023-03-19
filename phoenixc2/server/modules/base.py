@@ -64,5 +64,5 @@ class BaseModule(ABC):
 
     @classmethod
     def finish(cls, data: str | bytes) -> str:
-        """This function is called when the module is finished which returns the final output"""
+        """This function is used to process the output of the module"""
         return data

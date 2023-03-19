@@ -63,6 +63,7 @@ def load_plugins(commander: Commander):
                 log(f"Plugin '{plugin}' loaded.", Status.Success)
 
     log(
-        f"Loaded {len(plugins.keys())} plugin{'s' if len(plugins.keys()) != 1 else ''}.",
+        f"Loaded {len(plugins.keys())} plugin"
+        f"{'s' if len(plugins.keys()) != 1 else ''}.",
         Status.Success,
     )

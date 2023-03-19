@@ -32,7 +32,10 @@ class Listener(BaseListener):
     """The Reverse Http Listener Class"""
 
     name = "http-reverse"
-    description = "Listener based on the http protocol that uses a stager to connect back to the server"
+    description = (
+        "Listener based on the http protocol"
+        "that uses a stager to connect back to the server"
+    )
     author: str = "Screamz2k"
     protocol: str = "http"
     os = ["linux", "windows", "osx"]
@@ -75,7 +78,8 @@ class Listener(BaseListener):
                 LogEntryModel.log(
                     "error",
                     "listeners",
-                    f"A Stager is trying to connect to '{self.db_entry.name}' but the listeners limit is reached.",
+                    f"A Stager is trying to connect to '{self.db_entry.name}'"
+                    "but the listeners limit is reached.",
                 )
                 return "", 404
             try:
@@ -92,7 +96,8 @@ class Listener(BaseListener):
                     LogEntryModel.log(
                         "error",
                         "listeners",
-                        f"A Stager is trying to connect to '{self.db_entry.name}' but the stager id is invalid.",
+                        f"A Stager is trying to connect to '{self.db_entry.name}'"
+                        "but the stager id is invalid.",
                     )
                     raise ValueError("Invalid Stager ID")
                 device = DeviceModel.register(

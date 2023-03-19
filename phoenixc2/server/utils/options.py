@@ -171,14 +171,16 @@ class TableType(OptionType):
             object = Session.query(self.model).filter_by(id=id_or_name).first()
             if object not in self.choices:
                 raise ValueError(
-                    f"There's no element with the id ({id_or_name}) in the available choices for '{name}'.)"
+                    f"There's no element with the id ({id_or_name}) "
+                    f"in the available choices for '{name}'.)"
                 )
             return object
         else:
             object = Session.query(self.model).filter_by(name=id_or_name).first()
             if object not in self.choices:
                 raise ValueError(
-                    f"There's no element with the name '{id_or_name}' in the available choices for '{name}'.)"
+                    f"There's no element with the name '{id_or_name}' "
+                    f"in the available choices for '{name}'.)"
                 )
             return object
 
@@ -356,14 +358,16 @@ class DefaultListenerPool(OptionPool):
             Option(
                 name="Connection limit",
                 real_name="limit",
-                description="How many devices can be connected to the listener at once.",
+                description="How many devices can be connected "
+                "to the listener at once.",
                 type=IntegerType(),
                 default=5,
             ),
             Option(
                 name="Response timeout",
                 real_name="timeout",
-                description="How long the listener should wait for a response before closing the connection.",
+                description="How long the listener should wait for a"
+                "response before closing the connection.",
                 type=IntegerType(),
                 default=10,
             ),
@@ -410,7 +414,8 @@ class DefaultStagerPool(OptionPool):
             ),
             Option(
                 name="Timeout",
-                description="How often the stager should try to connect, before it will exit.",
+                description="How often the stager should try to connect, "
+                "before it will exit.",
                 type=IntegerType(),
                 default=200,
             ),
@@ -423,7 +428,8 @@ class DefaultStagerPool(OptionPool):
             Option(
                 name="Different address/domain",
                 real_name="different_address",
-                description="Use a different address/domain then specified by the listener to connect to.",
+                description="Use a different address/domain then specified "
+                "by the listener to connect to.",
                 type=AddressType(),
                 required=False,
             ),

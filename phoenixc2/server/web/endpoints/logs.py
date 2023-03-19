@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request
+from flask import Blueprint, render_template, request
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel, OperationModel
 from phoenixc2.server.utils.misc import Status
@@ -87,7 +87,10 @@ def delete_clear_logs(log_id: str = "all"):
     Session.commit()
 
     if Session.query(LogEntryModel).count() != 0:
-        message = f"Cleared {count} log entr{'ies' if count != 1 else 'y'}. Some logs were't seen by all users."
+        message = (
+            f"Cleared {count} log entr{'ies' if count != 1 else 'y'}. "
+            "Some logs were't seen by all users."
+        )
     else:
         message = f"Cleared {count} log entr{'ies' if count != 1 else 'y'}."
     if count > 0:

@@ -143,7 +143,7 @@ class StagerModel(Base):
     def create_from_data(cls, data: dict):
         """Create the stager using custom validated data"""
         standard = []
-        # gets standard values present in every stager and remove them to only leave options
+        # gets standard keys and store the rest in options
         for st_value in [
             "name",
             "listener",

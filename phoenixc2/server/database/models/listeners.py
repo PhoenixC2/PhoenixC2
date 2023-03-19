@@ -138,7 +138,7 @@ class ListenerModel(Base):
         listener_obj = self.create_object(commander)
         listener_obj.start()
         commander.add_active_listener(listener_obj)
-        return f"Started listener '{self.name}' ({self.type}) on {self.address}:{self.port} ({self.id})"
+        return f"Started listener '{self.name}' ({self.type}) on {self.url} ({self.id})"
 
     def stop(self, commander: "Commander"):
         """Stop the listener"""

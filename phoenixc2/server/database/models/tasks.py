@@ -278,7 +278,8 @@ class TaskModel(Base):
 
         if execution_method not in module.execution_methods:
             raise ValueError(
-                f"Execution method '{execution_method}' not supported by module '{module.name}'."
+                f"Execution method '{execution_method}'"
+                f"not supported by module '{module.name}'."
             )
 
         # validate data

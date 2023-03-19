@@ -50,13 +50,14 @@ class PythonPayload(BasePayload):
         template = jinja2_env.get_template("payloads/python.j2")
         output = template.render(stager=stager_db)
         if stager_db.encoding == "base64":
-            output = f"import base64;exec(base64.b64decode('{base64.b64encode(output.encode()).decode()}'))"
+            payload = base64.b64encode(output.encode()).decode()
+            output = f"import base64;exec(base64.b64decode('{payload}'))"
         elif stager_db.encoding == "hex":
-            output = (
-                f"import codecs;exec(codecs.decode('{output.encode().hex()}', 'hex'))"
-            )
+            payload = output.encode().hex()
+            output = f"import codecs;exec(codecs.decode('{payload}', 'hex'))"
         elif stager_db.encoding == "url":
-            output = f"import urllib.parse;exec(urllib.parse.unquote('{urllib.parse.quote(output)}'))"
+            payload = urllib.parse.quote(output)
+            output = f"import urllib.parse;exec(urllib.parse.unquote('{payload}'))"
 
         if one_liner:
             output = 'python -c "' + output + '"'
@@ -149,7 +150,8 @@ class GoPayload(BasePayload):
         architecture = shlex.quote(stager_db.options["arch"])
 
         status_code = os.system(
-            f"GOOS={operation_system} GOARCH={architecture} go build -o {executable} {go_file}"
+            f"GOOS={operation_system} GOARCH={architecture} go build"
+            f"-o {executable} {go_file}"
         )
         # remove go file
         go_file.unlink()
@@ -184,7 +186,8 @@ class Stager(BaseStager):
                 real_name="user-agent",
                 description="The User-Agent to use.",
                 type=StringType(),
-                default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+                default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
             ),
             Option(
                 name="Proxy address",

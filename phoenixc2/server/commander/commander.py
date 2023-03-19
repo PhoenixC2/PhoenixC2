@@ -82,7 +82,8 @@ class Commander:
         if not plugin.check_dependencies():
             if (
                 input(
-                    f"Plugin {plugin.name} has missing dependencies. Would you like to install them? (y/n): "
+                    f"Plugin {plugin.name} has missing dependencies."
+                    "Would you like to install them? (y/n): "
                 ).lower()
                 == "y"
             ):

@@ -213,7 +213,8 @@ def listeners_bp(commander: Commander):
             return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
 
         log(
-            f"({UserModel.get_current_user().username}) Starting Listener with ID {listener_id}",
+            f"({UserModel.get_current_user().username}) "
+            f"Starting Listener with ID {listener_id}",
             Status.Info,
         )
 
@@ -252,7 +253,8 @@ def listeners_bp(commander: Commander):
             return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
 
         log(
-            f"({UserModel.get_current_user().username}) Stopping Listener with ID {listener_id}",
+            f"({UserModel.get_current_user().username})"
+            f"Stopping Listener with ID {listener_id}",
             "info",
         )
 
@@ -283,7 +285,8 @@ def listeners_bp(commander: Commander):
 
         try:
             log(
-                f"({UserModel.get_current_user().username}) Restarting listener with ID {listener_id}.",
+                f"({UserModel.get_current_user().username}) "
+                f"Restarting listener with ID {listener_id}.",
                 "info",
             )
             listener.restart(commander)
@@ -291,7 +294,8 @@ def listeners_bp(commander: Commander):
             LogEntryModel.log(
                 "danger",
                 "listeners",
-                f"Failed to restart listener '{listener.name}' ({listener.type}): {str(e)}",
+                f"Failed to restart listener '{listener.name}' "
+                f"({listener.type}): {str(e)}",
                 UserModel.get_current_user(),
             )
             return ({"status": Status.Danger, "message": str(e)}), 400
