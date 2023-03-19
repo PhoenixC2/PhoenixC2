@@ -131,7 +131,7 @@ class StagerModel(Base):
         """Delete the stager and its generated payloads."""
         Session.delete(self)
         # delete all payloads who start with the stager name
-        for payload in get_resource("data/stagers").glob(f"{self.name}*"):
+        for payload in get_resource("data", "stagers").glob(f"{self.name}*"):
             payload.unlink()
 
     @staticmethod
