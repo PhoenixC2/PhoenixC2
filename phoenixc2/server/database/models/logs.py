@@ -102,3 +102,9 @@ class LogEntryModel(Base):
         Session.add(log)
         Session.commit()
         return log
+
+    def __repr__(self) -> str:
+        return (
+            f"<LogEntry(id={self.id}, status={self.status}, "
+            f"description={self.description})>"
+        )

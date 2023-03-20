@@ -166,3 +166,6 @@ class StagerModel(Base):
             different_address=standard[7],
             options=data,
         )
+
+    def __repr__(self) -> str:
+        return f"<StagerModel(id={self.id}, name={self.name})>"

@@ -112,3 +112,7 @@ class BaseStager:
     def to_json(cls, commander: "Commander") -> str:
         """Return a json of the stager."""
         return json.dumps(cls.to_dict(commander), default=str)
+
+    @classmethod
+    def __repr__(cls) -> str:
+        return f"<Stager(name={cls.name}>"

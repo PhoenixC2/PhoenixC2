@@ -201,3 +201,6 @@ class ListenerModel(Base):
             timeout=data.pop("timeout"),
             options=data,
         )
+
+    def __repr__(self) -> str:
+        return f"<ListenerModel(id={self.id}, name={self.name}, type={self.type})>"

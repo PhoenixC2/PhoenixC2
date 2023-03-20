@@ -9,7 +9,7 @@ from phoenixc2.server.modules.base import BaseModule
 class BaseHandler:
     """The Base Handler Class for all Devices"""
 
-    def __str__(self) -> TaskModel:
+    def __repr__(self) -> TaskModel:
         return str(self.addr)
 
     def __init__(self, db_entry: DeviceModel, listener: ListenerModel):

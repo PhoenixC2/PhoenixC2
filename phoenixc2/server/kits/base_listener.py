@@ -113,3 +113,7 @@ class BaseListener:
             "options": cls.option_pool.to_dict(commander),
             "features": [feature.to_dict() for feature in cls.features],
         }
+
+    @classmethod
+    def __repr__(cls) -> str:
+        return f"<Listener(name={cls.name}, address={cls.address}, port={cls.port})>"

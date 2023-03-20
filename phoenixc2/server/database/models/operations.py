@@ -234,3 +234,6 @@ class OperationModel(Base):
             return operation
         else:
             return None
+
+    def __repr__(self) -> str:
+        return f"<OperationModel(id={self.id}, name={self.name})>"

@@ -276,6 +276,9 @@ class Option:
                 ]
         return data
 
+    def __repr__(self) -> str:
+        return f"<Option(name={self.name}, type={self.type})>"
+
 
 @dataclass
 class OptionPool:

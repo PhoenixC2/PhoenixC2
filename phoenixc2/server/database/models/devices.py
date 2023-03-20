@@ -126,3 +126,6 @@ class DeviceModel(Base):
             admin=admin,
             stager=stager,
         )
+
+    def __repr__(self) -> str:
+        return f"<DeviceModel(id={self.id}, name={self.name})>"

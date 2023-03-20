@@ -66,3 +66,9 @@ class CredentialModel(Base):
             notes=notes,
             operation=OperationModel.get_current_operation(),
         )
+
+    def __repr__(self) -> str:
+        return (
+            f"<CredentialModel(value={self.value},"
+            f"hash={self.hash},user={self.user})>"
+        )

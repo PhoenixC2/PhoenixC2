@@ -9,7 +9,7 @@ def get_network_interfaces() -> dict[str, str]:
     interfaces = {"all": "0.0.0.0"}
     for interface_name, interface_addresses in net_if_addrs().items():
         for address in interface_addresses:
-            if str(address.family) == "AddressFamily.AF_INET":
+            if str(address.family) == "2":
                 interfaces[interface_name] = address.address
     return interfaces
 

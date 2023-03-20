@@ -301,3 +301,6 @@ class TaskModel(Base):
             except FileNotFoundError:
                 pass
         Session.delete(self)
+
+    def __repr__(self) -> str:
+        return f"<TaskModel(id={self.id}, action={self.action}, device={self.device})>"
