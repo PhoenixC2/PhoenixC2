@@ -7,4 +7,6 @@ COPY . .
 
 RUN pip install .
 
-ENTRYPOINT ["phserver", "-a", "0.0.0.0"]
+ENTRYPOINT ["python", "-m", "phoenixc2"]
+
+CMD ["server"]
