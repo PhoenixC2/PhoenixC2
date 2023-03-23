@@ -1,8 +1,6 @@
 name: Push to docker hub
 
 on:
-  push:
-    branches: [main]
   release:
       types: [published]
     
