@@ -5,7 +5,7 @@ on:
       types: [published]
     
 jobs:
-  push:
+  deploy:
     if: ${{ github.repository == 'screamz2k/PhoenixC2' }}
     runs-on: ubuntu-latest
     steps:
