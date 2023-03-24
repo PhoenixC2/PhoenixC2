@@ -29,7 +29,6 @@ setup(
         "pystyle",
         "psutil",
         "requests",
-        "tomli",
         "tomli_w",
         "bleach",
         "markdown",

@@ -1,6 +1,6 @@
 import os
 
-import tomli
+import tomllib
 import tomli_w
 
 from .resources import get_resource
@@ -14,7 +14,7 @@ def load_config() -> dict:
         raise FileNotFoundError(f"Config file '{name}' does not exist.")
 
     with config.open("rb") as f:
-        return tomli.load(f)
+        return tomllib.load(f)
 
 
 def save_config(config: dict, name: str = None) -> None:
