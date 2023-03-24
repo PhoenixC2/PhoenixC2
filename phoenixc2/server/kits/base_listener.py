@@ -1,5 +1,5 @@
 import time
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import TYPE_CHECKING
 
 from phoenixc2.server.database import ListenerModel, LogEntryModel, Session
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
 
 
-class BaseListener:
+class BaseListener(ABC):
     """This is the base class for all listeners."""
 
     name: str = "BaseListener"
@@ -65,14 +65,6 @@ class BaseListener:
                 if handler.name == id_or_name:
                     return handler
 
-    @abstractmethod
-    def status(self) -> bool:
-        """Get status of the listener.
-
-        Returns:
-            bool: True if listener is running, False if not"""
-        ...
-
     def refresh_connections(self):
         """Check if the connections are still alive."""
         while self.db_entry.timeout > 0:
@@ -90,6 +82,14 @@ class BaseListener:
                         self.remove_handler(handler)
             except Exception as e:
                 log(str(e), "danger")
+
+    @abstractmethod
+    def status(self) -> bool:
+        """Get status of the listener.
+
+        Returns:
+            bool: True if listener is running, False if not"""
+        ...
 
     @abstractmethod
     def start(self):

@@ -1,5 +1,5 @@
 import json
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import TYPE_CHECKING, BinaryIO
 
 from phoenixc2.server.utils.features import Feature
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from phoenixc2.server.database import StagerModel
 
 
-class BasePayload:
+class BasePayload(ABC):
     name = "BasePayload"
     description = "BasePayload"
     author: str = "Screamz2k"
@@ -69,7 +69,7 @@ class FinalPayload:
         return self.stager.name + "." + self.payload.end_format
 
 
-class BaseStager:
+class BaseStager(ABC):
     name: str = "Base Stager"
     description: str = "This is the base stager"
     author: str = "Unknown"

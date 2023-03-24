@@ -168,4 +168,7 @@ class StagerModel(Base):
         )
 
     def __repr__(self) -> str:
-        return f"<StagerModel(id={self.id}, name={self.name})>"
+        return (
+            f"<StagerModel(id={self.id}, name={self.name},"
+            f"listener={self.listener.name}, payload={self.payload})>"
+        )
