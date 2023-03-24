@@ -101,3 +101,30 @@ def remove_credential(cred_id: int):
         UserModel.get_current_user(),
     )
     return {"status": Status.Success, "message": "Credential removed Successfully"}
+
+
+@credentials_bp.route("/<int:cred_id>/edit", methods=["PUT"])
+@UserModel.authenticated
+def edit_credential(cred_id: int):
+    credential = Session.query(CredentialModel).filter_by(id=cred_id).first()
+
+    if credential is None:
+        return {
+            "status": "danger",
+            "message": "Credential does not exist",
+        }, 400
+
+    credential.edit(request.form)
+    Session.commit()
+    LogEntryModel.log(
+        Status.Success,
+        "credentials",
+        "Edited credential in the database",
+        UserModel.get_current_user(),
+    )
+
+    return {
+        "status": Status.Success,
+        "message": "Credential edited Successfully",
+        "credential": credential.to_dict(),
+    }
