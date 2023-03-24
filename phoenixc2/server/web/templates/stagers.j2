@@ -184,16 +184,16 @@
                     name="payload_type"
                     onchange="changePayload('create')">
                 {% set option = stager_type.option_pool.get_option("payload") %}
-                {% for payload_type in option.options %}
+                {% for payload_type in option.type.choices %}
                     {% if payload_type == option.default  %}
                         <option id="{{ payload_type }}-payload_type-create"
-                                value="{{ payload_type }}"
+                                value="{{ stager_type.name }}-{{ payload_type }}"
                                 selected>
                             {{ payload_type }}
                         </option>
                     {% else %}
                         <option id="{{ payload_type }}-payload_type-create"
-                                value="{{ payload_type }}">
+                                value="{{ stager_type.name }}-{{ payload_type }}">
                             {{ payload_type }}
                         </option>
                     {% endif %}
@@ -207,15 +207,15 @@
             Created by: {{ stager_type.author }}
         </p>
     </form>
-    {# divs for the payload_types which will be injected into the create/edit modal #}
-    {% for payload_type in stager_type.payload_types %}
+    {# divs for the payload types which will be injected into the create/edit modal #}
+    {% for payload_type in stager_type.payloads %}
         <div id="{{ stager_type.name }}-{{ payload_type }}-payload_type"
              style="display: none">
             {# hidden type field #}
-            {{ render_options(stager_type.payload_types[payload_type].options.options) if stager_type.payload_types[payload_type].options.options }}
+            {{ render_options(stager_type.payloads[payload_type].option_pool.options) if stager_type.payloads[payload_type].option_pool.options }}
             {# show author of the payload_type #}
             <p class="text-muted">
-                Created by: {{ stager_type.payload_types[payload_type].author }}
+                Created by: {{ stager_type.payloads[payload_type].author }}
             </p>
         </div>
     {% endfor %}
@@ -224,7 +224,7 @@
 {% block scripts %}
     <script>
     let stagers = [
-        {% for stager in stagers %}        {{ to_json(stager, commander, True) }},{% endfor %}
+        {% for stager in stagers %}{{ to_json(stager, commander, True) }}, {% endfor %}
     ];
     let stager_types = {
         {% for stager_type in stager_types %}

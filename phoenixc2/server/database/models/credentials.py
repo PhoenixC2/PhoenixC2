@@ -67,6 +67,13 @@ class CredentialModel(Base):
             operation=OperationModel.get_current_operation(),
         )
 
+    def edit(self, data: dict) -> None:
+        self.value = data.get("value", self.value)
+        self.hash = str(data.get("hash", self.hash)).lower() == "true"
+        self.user = data.get("user", self.user)
+        self.admin = str(data.get("admin", self.admin)).lower() == "true"
+        self.notes = data.get("notes", self.notes)
+
     def __repr__(self) -> str:
         return (
             f"<CredentialModel(value={self.value},"
