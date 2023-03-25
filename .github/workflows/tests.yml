@@ -43,7 +43,9 @@ jobs:
         run: poetry install --no-interaction
         
       - name: Test with unittest
-        run: python -m unittest phoenixc2/tests/*
+        run: |
+          source .venv/bin/activate
+          python -m unittest phoenixc2/tests/*
         
       - name: Linting
         run: ruff .
