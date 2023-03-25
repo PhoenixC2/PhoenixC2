@@ -54,7 +54,6 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
                 "connections_today": connections_today,
                 "installed_kits": avl.INSTALLED_KITS,
                 "installed_loaders": avl.INSTALLED_LOADERS,
-                "installed_encodings": avl.INSTALLED_ENCODINGS,
             }
         return render_template(
             "dashboard.j2",

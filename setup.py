@@ -34,7 +34,11 @@ setup(
         "markdown",
         "pyOpenSSL",
     ],
-    extras_require={"dev": ["black", "isort", "ruff", "pre-commit"]},
+    extras_require={
+        "dev": ["black", "isort", "ruff", "pre-commit"],
+        "mysql": ["mysqlclient"],
+        "postgresql": ["psycopg2"],
+    },
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [

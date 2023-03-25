@@ -32,7 +32,6 @@ class StagerModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100))
     payload: Mapped[str] = mapped_column(String(100))
-    encoding: Mapped[str] = mapped_column(String(10))
     random_size: Mapped[bool] = mapped_column(Boolean)
     timeout: Mapped[int] = mapped_column(Integer)
     delay: Mapped[int] = mapped_column(Integer)
@@ -65,7 +64,6 @@ class StagerModel(Base):
             "id": self.id,
             "name": self.name,
             "payload": self.payload,
-            "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,
             "delay": self.delay,
@@ -148,7 +146,6 @@ class StagerModel(Base):
             "name",
             "listener",
             "payload",
-            "encoding",
             "random_size",
             "timeout",
             "delay",
@@ -159,11 +156,10 @@ class StagerModel(Base):
             name=standard[0],
             listener=standard[1],
             payload=standard[2],
-            encoding=standard[3],
-            random_size=standard[4],
-            timeout=standard[5],
-            delay=standard[6],
-            different_address=standard[7],
+            random_size=standard[3],
+            timeout=standard[4],
+            delay=standard[5],
+            different_address=standard[6],
             options=data,
         )
 

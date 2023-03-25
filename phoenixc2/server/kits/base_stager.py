@@ -1,72 +1,13 @@
 import json
-from abc import abstractmethod, ABC
-from typing import TYPE_CHECKING, BinaryIO
+from abc import ABC
+from typing import TYPE_CHECKING
 
-from phoenixc2.server.utils.features import Feature
-from phoenixc2.server.utils.options import DefaultStagerPool, OptionPool
+from phoenixc2.server.utils.options import DefaultStagerPool
+from .base_payload import BasePayload, FinalPayload
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
     from phoenixc2.server.database import StagerModel
-
-
-class BasePayload(ABC):
-    name = "BasePayload"
-    description = "BasePayload"
-    author: str = "Screamz2k"
-    supported_target_os: list[str] = ["linux", "windows", "osx"]
-    supported_target_arch: list[str] = ["x64", "x86"]
-    module_execution_methods: list[str] = [
-        "process",
-        "injection",
-    ]
-    module_code_types: list[str] = ["shellcode", "compiled", "native"]
-    module_languages: list[str] = ["python"]
-    end_format: str = ""
-    compiled: bool = False
-    option_pool: OptionPool = OptionPool()
-    features: list[Feature] = []
-
-    @abstractmethod
-    def generate(
-        self, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
-    ) -> "FinalPayload":
-        """Generate the payload"""
-        ...
-
-    @classmethod
-    def is_compiled(stager_db: "StagerModel") -> bool:
-        """Return if the payload was already compiled"""
-        return False
-
-    @classmethod
-    def to_dict(cls, commander: "Commander") -> dict:
-        return {
-            "name": cls.name,
-            "description": cls.description,
-            "author": cls.author,
-            "supported_target_os": cls.supported_target_os,
-            "supported_target_arch": cls.supported_target_arch,
-            "supported_execution_methods": cls.module_execution_methods,
-            "supported_code_types": cls.module_code_types,
-            "supported_languages": cls.module_languages,
-            "end_format": cls.end_format,
-            "compiled": cls.compiled,
-            "options": cls.option_pool.to_dict(commander),
-        }
-
-
-class FinalPayload:
-    def __init__(
-        self, payload: BasePayload, stager_db: "StagerModel", output: bytes | str
-    ):
-        self.output: str | BinaryIO = output
-        self.stager: "StagerModel" = stager_db
-        self.payload: BasePayload = payload
-
-    @property
-    def name(self) -> str:
-        return self.stager.name + "." + self.payload.end_format
 
 
 class BaseStager(ABC):
@@ -78,14 +19,13 @@ class BaseStager(ABC):
 
     @classmethod
     def generate(
-        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
+        cls, stager_db: "StagerModel", recompile: bool = False
     ) -> FinalPayload:
         """Generate a stager based on the stager_db entry.
 
         Args:
         -----
             stager_db (StagerModel): The stager database entry.
-            one_liner (bool, optional): If the stager should be generated as a one-liner
             recompile (bool, optional): If the stager should be recompiled
         Returns:
         ------
@@ -96,7 +36,7 @@ class BaseStager(ABC):
         if stager_db.payload not in cls.payloads:
             raise ValueError("Invalid payload type")
 
-        return cls.payloads[stager_db.payload].generate(stager_db, one_liner, recompile)
+        return cls.payloads[stager_db.payload].generate(stager_db, recompile)
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:

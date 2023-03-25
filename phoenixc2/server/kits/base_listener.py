@@ -6,6 +6,7 @@ from phoenixc2.server.database import ListenerModel, LogEntryModel, Session
 from phoenixc2.server.utils.features import Feature
 from phoenixc2.server.utils.options import OptionPool
 from phoenixc2.server.utils.ui import log
+from phoenixc2.server.utils.misc import Status
 
 from .base_handler import BaseHandler
 
@@ -75,7 +76,7 @@ class BaseListener(ABC):
                 for handler in self.handlers:
                     if not handler.alive():
                         LogEntryModel.log(
-                            "danger",
+                            Status.Warning,
                             "devices",
                             f"Device '{handler.name}' disconnected.",
                         )

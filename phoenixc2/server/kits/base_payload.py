@@ -1,0 +1,76 @@
+from typing import BinaryIO, TYPE_CHECKING
+from abc import ABC, abstractmethod
+
+from phoenixc2.server.utils.options import OptionPool
+from phoenixc2.server.utils.features import Feature
+
+if TYPE_CHECKING:
+    from phoenixc2.server.commander.commander import Commander
+    from phoenixc2.server.database import StagerModel
+
+
+class BasePayload(ABC):
+    name = "BasePayload"
+    description = "BasePayload"
+    author: str = "Screamz2k"
+    supported_target_os: list[str] = ["linux", "windows", "osx"]
+    supported_target_arch: list[str] = ["*"]
+    module_execution_methods: list[str] = [
+        "process",
+        "injection",
+    ]
+    module_code_types: list[str] = ["shellcode", "compiled", "native"]
+    module_languages: list[str] = ["python"]
+    language = "python"
+    end_format: str = ""
+    compiled: bool = False
+    option_pool: OptionPool = OptionPool()
+    features: list[Feature] = []
+
+    @abstractmethod
+    def generate(
+        self, stager_db: "StagerModel", recompile: bool = False
+    ) -> "FinalPayload":
+        """Generate the payload"""
+        ...
+
+    @classmethod
+    def is_compiled(stager_db: "StagerModel") -> bool:
+        """Return if the payload was already compiled"""
+        return False
+
+    @classmethod
+    def to_dict(cls, commander: "Commander") -> dict:
+        return {
+            "name": cls.name,
+            "description": cls.description,
+            "author": cls.author,
+            "supported_target_os": cls.supported_target_os,
+            "supported_target_arch": cls.supported_target_arch,
+            "supported_execution_methods": cls.module_execution_methods,
+            "supported_code_types": cls.module_code_types,
+            "supported_languages": cls.module_languages,
+            "language": cls.language,
+            "end_format": cls.end_format,
+            "compiled": cls.compiled,
+            "options": cls.option_pool.to_dict(commander),
+        }
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} language={self.language}>"
+
+
+class FinalPayload:
+    def __init__(
+        self, payload: BasePayload, stager_db: "StagerModel", output: bytes | str
+    ):
+        self.output: str | BinaryIO = output
+        self.stager: "StagerModel" = stager_db
+        self.payload: BasePayload = payload
+
+    @property
+    def name(self) -> str:
+        return self.stager.name + "." + self.payload.end_format
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} name={self.name} output={len(self.output)}>"
