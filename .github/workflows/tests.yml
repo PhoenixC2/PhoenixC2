@@ -41,6 +41,9 @@ jobs:
 
       - name: Install package
         run: poetry install --no-interaction
+      
+      - name: Run setup
+        run: poetry run phserver --exit
         
       - name: Test with unittest
         run: |
