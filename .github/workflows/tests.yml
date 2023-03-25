@@ -51,5 +51,7 @@ jobs:
           python -m unittest phoenixc2/tests/*
         
       - name: Linting
-        run: ruff .
+        run: |
+          poetry run ruff .
+          
 
