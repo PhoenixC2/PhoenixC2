@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, MutableSequence
 
 import requests
 
-from phoenixc2.server import INSTALLED_ENCODINGS
 from phoenixc2.server.database import ListenerModel, Session
 
 from .misc import generate_name, get_network_interfaces
@@ -401,12 +400,6 @@ class DefaultStagerPool(OptionPool):
                 default=1,
                 editable=False,
                 render=False,
-            ),
-            Option(
-                name="Encoding",
-                description="The encoding to use.",
-                type=ChoiceType(INSTALLED_ENCODINGS, "str"),
-                default=INSTALLED_ENCODINGS[0],
             ),
             Option(
                 name="Random size",

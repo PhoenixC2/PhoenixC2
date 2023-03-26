@@ -1,6 +1,4 @@
-import base64
 import os
-import urllib
 from typing import TYPE_CHECKING
 import shlex
 import jinja2
@@ -16,7 +14,8 @@ from phoenixc2.server.utils.options import (
 from phoenixc2.server.utils.resources import get_resource
 
 from phoenixc2.server.utils.features import Feature
-from ..base_stager import BasePayload, BaseStager, FinalPayload
+from ..base_stager import BaseStager
+from ..base_payload import BasePayload, FinalPayload
 
 if TYPE_CHECKING:
     from phoenixc2.server.database import StagerModel
@@ -33,13 +32,14 @@ class PythonPayload(BasePayload):
     ]
     supported_code_types = ["shellcode", "compiled", "native"]
     supported_languages = ["python", "bash"]
+    language = "python"
     end_format = "py"
     compiled = False
     option_pool = OptionPool()
 
     @classmethod
     def generate(
-        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
+        cls, stager_db: "StagerModel", recompile: bool = False
     ) -> "FinalPayload":
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
@@ -49,18 +49,7 @@ class PythonPayload(BasePayload):
         )
         template = jinja2_env.get_template("payloads/python.j2")
         output = template.render(stager=stager_db)
-        if stager_db.encoding == "base64":
-            payload = base64.b64encode(output.encode()).decode()
-            output = f"import base64;exec(base64.b64decode('{payload}'))"
-        elif stager_db.encoding == "hex":
-            payload = output.encode().hex()
-            output = f"import codecs;exec(codecs.decode('{payload}', 'hex'))"
-        elif stager_db.encoding == "url":
-            payload = urllib.parse.quote(output)
-            output = f"import urllib.parse;exec(urllib.parse.unquote('{payload}'))"
 
-        if one_liner:
-            output = 'python -c "' + output + '"'
         return FinalPayload(cls, stager_db, output)
 
 
@@ -70,6 +59,7 @@ class GoPayload(BasePayload):
     module_execution_methods = []
     module_code_types = []
     module_languages = []
+    language = "go"
     end_format = ".exe"
     compiled = True
     option_pool = OptionPool(
@@ -113,7 +103,7 @@ class GoPayload(BasePayload):
 
     @classmethod
     def generate(
-        cls, stager_db: "StagerModel", one_liner: bool = False, recompile: bool = False
+        cls, stager_db: "StagerModel", recompile: bool = False
     ) -> "FinalPayload":
         if cls.is_compiled(stager_db) and not recompile:
             return FinalPayload(

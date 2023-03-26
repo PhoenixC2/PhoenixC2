@@ -41,14 +41,10 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item"
                                target="_blank"
-                               href="/stagers/{{ stager.id }}/download?one_liner=false">Download</a>
+                               href="/stagers/{{ stager.id }}/download">Download</a>
                             <a class="dropdown-item"
-                               target="_blank"
-                               href="/stagers/{{ stager.id }}/download?one_liner=true">Download as command</a>
-                            <a class="dropdown-item"
-                               onclick="copyToClipboard({{ stager.id }}, false)"
+                               onclick="copyToClipboard({{ stager.id }})"
                                href="#">Copy to clipboard (https)</a>
-                            <a class="dropdown-item" copyToClipboard({{ stager.id }}, true) href="#">Copy to clipboard as command (https)</a>
                             {% if stager.payload_class.is_compiled and stager.payload_class.compiled %}
                                 <a class="dropdown-item" href="#">Recompile</a>
                             {% endif %}

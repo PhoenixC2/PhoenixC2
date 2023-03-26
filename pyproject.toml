@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "phoenixc2"
+version = "1.0"
+description = "A C2 Framework for Red Team Operations"
+authors = ["Screamz2k"]
+readme = "README.md"
+license = "LICENSE"
+packages = [
+    { include = "phoenixc2" }
+]
+keywords = ["pentesting", "c2", "redteam", "hacking"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Framework :: Flask",
+    'Natural Language :: English',
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+]
+exclude = [
+    "phoenixc2/server/data/downloads/*",
+    "phoenixc2/server/data/uploads/*",
+    "phoenixc2/server/data/stagers/*",
+    "phoenixc2/server/data/*.sqlite3",
+    "phoenixc2/server/data/ssl*",
+    "*.py[co]",
+    "__pycache__",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+sqlalchemy = "==2.0.7"
+flask = "*"
+rich = "*"
+pystyle = "*"
+psutil = "*"
+requests = "*"
+tomli_w = "*"
+bleach = "*"
+markdown = "*"
+pyOpenSSL = "*"
+mysqlclient = {version = "*", optional = true}
+psycopg2 = {version = "*", optional = true}
+
+[tool.poetry.dev-dependencies]
+black = "*"
+isort = "*"
+ruff = "*"
+pre-commit = "*"
+
+[tool.poetry.extras]
+mysql = ["mysqlclient"]
+postgresql = ["psycopg2"]
+
+[tool.poetry.scripts]
+phserver = "phoenixc2.server.__main__:main"
+phclient = "phoenixc2.client.__main__:main"
+
+[tool.poetry.urls]
+homepage = "https://github.com/Screamz2k/PhoenixC2"
+documentation = "https://screamz2k.gitbook.io/phoenixc2/"
+repository = "https://github.com/Screamz2k/PhoenixC2"

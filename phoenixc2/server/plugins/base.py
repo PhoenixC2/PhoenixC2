@@ -77,7 +77,7 @@ class BlueprintPlugin(BasePlugin):
 
 
 class RoutePlugin(BasePlugin):
-    """The Base Template Plugin class.
+    """The Base Route Plugin class.
 
     Used for plugins which add own routes to the web api.
     """

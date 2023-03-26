@@ -27,6 +27,7 @@ AUTH_ENDPOINT = "/auth/login"
 if TYPE_CHECKING:
     from .logs import LogEntryModel
     from .operations import OperationModel
+    from .bypass_chains import BypassChainModel
 
 
 class UserModel(Base):
@@ -65,6 +66,9 @@ class UserModel(Base):
     )
     owned_operations: Mapped[List["OperationModel"]] = relationship(
         "OperationModel", back_populates="owner"
+    )
+    created_bypass_chains: Mapped[List["BypassChainModel"]] = relationship(
+        "BypassChainModel", back_populates="creator"
     )
 
     @property
@@ -121,6 +125,9 @@ class UserModel(Base):
             ]
             if show_owned_operations
             else [operation.id for operation in self.owned_operations],
+            "bypass_chains": [
+                bypass_chain.id for bypass_chain in self.created_bypass_chains
+            ],
         }
 
     def to_json(self, show_logs: bool = False, show_unseen_logs: bool = False) -> str:

@@ -20,7 +20,7 @@ def get_all_module_paths():
     file_paths = []
 
     # Walk the tree.
-    for root, directories, files in os.walk(str(get_resource("modules", ""))):
+    for root, _, files in os.walk(str(get_resource("modules", ""))):
         for filename in files:
             # check that the root is not __pycache__ or the parent directory
             if (

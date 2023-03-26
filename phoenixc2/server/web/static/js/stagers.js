@@ -92,7 +92,6 @@ function createEdit(id) {
     document.getElementById("id-edit").value = stager.id;
     document.getElementById("name-edit").value = stager.name;
     document.getElementById(stager.payload_type + "-payload_type-edit").selected = true;
-    document.getElementById("encoding-edit").value = stager.encoding;
     document.getElementById("random_size-edit").checked = stager.random_size;
     document.getElementById("timeout-edit").value = stager.timeout;
     document.getElementById("delay-edit").value = stager.delay;
@@ -120,11 +119,8 @@ function createEdit(id) {
 
 }
 
-function copyToClipboard(id, one_liner) {
+function copyToClipboard(id) {
     let url = "/stagers/" + id + "/download?json=true";
-    if (one_liner) {
-        url += "&one_liner=true";
-    }
     fetch(url, {
         method: "GET"
     }).then(response => response.json())

@@ -7,7 +7,7 @@ from phoenixc2.server.utils.options import (
     StringType,
 )
 
-from ..base_stager import BasePayload, BaseStager, FinalPayload
+from ..base_stager import BasePayload, BaseStager
 
 if TYPE_CHECKING:
     from phoenixc2.server.database import StagerModel
@@ -20,8 +20,7 @@ class ExamplePayload(BasePayload):
     compiled = False
     options = OptionPool()
 
-    @staticmethod
-    def generate(stager_db: "StagerModel") -> FinalPayload:
+    def generate(self, stager_db, recompile=False):
         print("Generating example payload")
 
 

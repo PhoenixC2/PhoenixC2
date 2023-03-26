@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from datetime import datetime
 from uuid import uuid1
 
@@ -6,7 +6,7 @@ from phoenixc2.server.database import DeviceModel, ListenerModel, Session, TaskM
 from phoenixc2.server.modules.base import BaseModule
 
 
-class BaseHandler:
+class BaseHandler(ABC):
     """The Base Handler Class for all Devices"""
 
     def __repr__(self) -> TaskModel:

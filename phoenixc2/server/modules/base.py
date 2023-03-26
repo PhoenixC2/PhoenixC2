@@ -6,7 +6,6 @@ from phoenixc2.server.utils.options import OptionPool
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
     from phoenixc2.server.database import DeviceModel, TaskModel
-"""The base module class"""
 
 
 class BaseModule(ABC):

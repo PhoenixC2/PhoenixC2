@@ -16,7 +16,7 @@ from .operations import OperationModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.kits.base_stager import BasePayload, BaseStager
+    from phoenixc2.server.kits.base_stager import BasePayload, BaseStager, FinalPayload
 
     from .devices import DeviceModel
     from .listeners import ListenerModel
@@ -32,7 +32,6 @@ class StagerModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100))
     payload: Mapped[str] = mapped_column(String(100))
-    encoding: Mapped[str] = mapped_column(String(10))
     random_size: Mapped[bool] = mapped_column(Boolean)
     timeout: Mapped[int] = mapped_column(Integer)
     delay: Mapped[int] = mapped_column(Integer)
@@ -55,6 +54,16 @@ class StagerModel(Base):
         """Returns the operation of the stager."""
         return self.listener.operation
 
+    @property
+    def stager_class(self) -> "BaseStager":
+        """Returns the stager class."""
+        return self.get_class_from_type(self.listener.type)
+
+    @property
+    def payload_class(self) -> "BasePayload":
+        """Returns the payload class."""
+        return self.stager_class.payloads[self.payload]
+
     def to_dict(
         self,
         commander: "Commander",
@@ -65,7 +74,6 @@ class StagerModel(Base):
             "id": self.id,
             "name": self.name,
             "payload": self.payload,
-            "encoding": self.encoding,
             "random_size": self.random_size,
             "timeout": self.timeout,
             "delay": self.delay,
@@ -82,31 +90,6 @@ class StagerModel(Base):
             if show_devices
             else [device.id for device in self.devices],
         }
-
-    @staticmethod
-    def get_class_from_type(type: str) -> "BaseStager":
-        """Return the stager class based on its type."""
-        type = type.replace("-", "_")
-        if type not in INSTALLED_KITS:
-            raise ValueError(f"Stager '{type}' isn't installed.")
-        try:
-            stager = importlib.import_module(
-                "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
-            ).Stager
-        except ModuleNotFoundError as e:
-            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
-        else:
-            return stager
-
-    @property
-    def stager_class(self) -> "BaseStager":
-        """Returns the stager class."""
-        return self.get_class_from_type(self.listener.type)
-
-    @property
-    def payload_class(self) -> "BasePayload":
-        """Returns the payload class."""
-        return self.stager_class.payloads[self.payload]
 
     def edit(self, data: dict[str, any]):
         """Edit the stager"""
@@ -134,6 +117,25 @@ class StagerModel(Base):
         for payload in get_resource("data", "stagers").glob(f"{self.name}*"):
             payload.unlink()
 
+    def generate_payload(self, recompile: bool = False) -> "FinalPayload":
+        """Generate the payload"""
+        return self.stager_class.generate(self, recompile)
+
+    @staticmethod
+    def get_class_from_type(type: str) -> "BaseStager":
+        """Return the stager class based on its type."""
+        type = type.replace("-", "_")
+        if type not in INSTALLED_KITS:
+            raise ValueError(f"Stager '{type}' isn't installed.")
+        try:
+            stager = importlib.import_module(
+                "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
+            ).Stager
+        except ModuleNotFoundError as e:
+            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
+        else:
+            return stager
+
     @staticmethod
     def get_all_classes() -> list["BaseStager"]:
         """Get all stager classes."""
@@ -148,7 +150,6 @@ class StagerModel(Base):
             "name",
             "listener",
             "payload",
-            "encoding",
             "random_size",
             "timeout",
             "delay",
@@ -159,13 +160,15 @@ class StagerModel(Base):
             name=standard[0],
             listener=standard[1],
             payload=standard[2],
-            encoding=standard[3],
-            random_size=standard[4],
-            timeout=standard[5],
-            delay=standard[6],
-            different_address=standard[7],
+            random_size=standard[3],
+            timeout=standard[4],
+            delay=standard[5],
+            different_address=standard[6],
             options=data,
         )
 
     def __repr__(self) -> str:
-        return f"<StagerModel(id={self.id}, name={self.name})>"
+        return (
+            f"<StagerModel(id={self.id}, name={self.name},"
+            f"listener={self.listener.name}, payload={self.payload})>"
+        )
