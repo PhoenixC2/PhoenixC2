@@ -216,7 +216,7 @@ def stagers_bp(commander: Commander):
 
         # Get Stager
         try:
-            final_payload = stager_db.stager_class.generate(stager_db, recompile)
+            final_payload = stager_db.generate_payload(recompile)
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
         else:

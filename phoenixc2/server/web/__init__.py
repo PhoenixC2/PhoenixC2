@@ -25,6 +25,7 @@ from phoenixc2.server.web.endpoints.operations import operations_bp
 from phoenixc2.server.web.endpoints.stagers import stagers_bp
 from phoenixc2.server.web.endpoints.tasks import tasks_bp
 from phoenixc2.server.web.endpoints.users import users_bp
+from phoenixc2.server.web.endpoints.bypasses import bypasses_bp
 
 endpoints: dict[str, Blueprint] = {
     "routes": dashboard_bp,
@@ -40,6 +41,7 @@ endpoints: dict[str, Blueprint] = {
     "logs": logs_bp,
     "operations": operations_bp,
     "credentials": credentials_bp,
+    "bypasses": bypasses_bp,
 }
 
 
@@ -140,4 +142,5 @@ def create_web(commander: Commander) -> Flask:
         web_server.register_blueprint(
             endpoints[endpoint], url_prefix=endpoints[endpoint].url_prefix
         )
+    log(f"Registered {len(endpoints)} endpoints", "info")
     return web_server

@@ -14,6 +14,7 @@ from .users import UserModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.kits.base_payload import FinalPayload
+    from phoenixc2.server.commander.commander import Commander
 
 
 class BypassChainModel(Base):
@@ -21,7 +22,7 @@ class BypassChainModel(Base):
 
     __tablename__ = "BypassChains"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name = mapped_column(String(20))
+    name = mapped_column(String(20), unique=True)
     description: Mapped[Optional[str]] = mapped_column(String(100))
     # format: [(bypass_category, bypass_name, bypass_options)]
     bypasses: Mapped[Optional[List[Tuple[str, str, Dict[str, any]]]]] = mapped_column(
@@ -43,44 +44,45 @@ class BypassChainModel(Base):
         DateTime, default=datetime.now, onupdate=datetime.now
     )
 
-    def to_dict(self) -> dict:
-        """Returns the model as a dictionary."""
+    def to_dict(self, commander: "Commander", show_creator: bool = False) -> dict:
         return {
             "id": self.id,
             "name": self.name,
-            "bypasses": [bypass.to_dict() for bypass in self.get_bypasses()],
+            "description": self.description,
+            "creator": self.creator.to_dict()
+            if show_creator
+            else self.creator.id
+            if self.creator is not None
+            else None,
+            "bypasses": [bypass.to_dict(commander) for bypass in self.get_bypasses()],
         }
 
     def get_bypasses(self) -> List[BaseBypass]:
         """Returns the bypasses for the chain."""
         return [get_bypass(category, name) for category, name, _ in self.bypasses]
 
-    def create(self, data: dict) -> None:
-        """Creates a bypass chain."""
-        self.name = data["name"]
-        self.description = data["description"]
-        self.creator = UserModel.get_current_user()
+    def edit(self, data: dict) -> None:
+        """Edits the bypass chain."""
+        self.name = data.get("name", self.name)
+        self.description = data.get("description", self.description)
 
-    def add_bypass(self, category: str, bypass: str, options: dict = None) -> None:
-        """Adds a bypass to the chain."""
+    def add_bypass(self, category: str, name: str, options: dict = None) -> None:
+        """Adds a bypass to the chain using the bypass category and name."""
 
         if self.bypasses:
             last_bypass = self.bypasses[-1]
             if get_bypass(last_bypass[0], last_bypass[1]).final:
                 raise ValueError("Cannot add a bypass to a final bypass.")
-        self.bypasses.append((category, bypass, options or {}))
+        self.bypasses.append((category, name, options or {}))
 
-    def remove_bypass(self, index: int) -> None:
+    def remove_bypass(self, index: int) -> BaseBypass:
         """Removes a bypass from the chain."""
-        if index >= len(self.bypasses):
-            raise IndexError("Index out of range.")
-        self.bypasses.pop(index)
+        return self.bypasses.pop(index)
 
     def move_bypass(self, index: int, new_index: int) -> None:
         """Moves a bypass in the chain."""
-        if index >= len(self.bypasses) or new_index >= len(self.bypasses):
-            raise IndexError("Index out of range.")
-        self.bypasses.insert(new_index, self.bypasses.pop(index))
+        bypass = self.bypasses.pop(index)
+        self.bypasses.insert(new_index, bypass)
 
     def update_bypass(self, index: int, options: dict) -> None:
         """Updates the options for a bypass."""
@@ -101,3 +103,14 @@ class BypassChainModel(Base):
             f"<BypassChainModel(id={self.id}, name={self.name},"
             f" bypasses={len(self.bypasses)})>"
         )
+
+    @classmethod
+    def create(cls, data: dict) -> "BypassChainModel":
+        """Creates a bypass chain."""
+        if "name" not in data:
+            raise ValueError("Name is required.")
+        chain = cls()
+        chain.name = data["name"]
+        chain.description = data.get("description", "")
+        chain.creator = UserModel.get_current_user()
+        return chain

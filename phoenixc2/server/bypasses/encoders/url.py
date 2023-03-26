@@ -15,8 +15,6 @@ class Bypass(BaseBypass):
         if final_payload.payload.compiled:
             raise Exception("Cannot encode compiled payloads")
 
-        self.generate_body(final_payload, args)
-
         if final_payload.payload.language == "python":
             self.python_wrapper(final_payload, args)
 

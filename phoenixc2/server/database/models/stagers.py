@@ -16,7 +16,7 @@ from .operations import OperationModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.kits.base_stager import BasePayload, BaseStager
+    from phoenixc2.server.kits.base_stager import BasePayload, BaseStager, FinalPayload
 
     from .devices import DeviceModel
     from .listeners import ListenerModel
@@ -54,6 +54,16 @@ class StagerModel(Base):
         """Returns the operation of the stager."""
         return self.listener.operation
 
+    @property
+    def stager_class(self) -> "BaseStager":
+        """Returns the stager class."""
+        return self.get_class_from_type(self.listener.type)
+
+    @property
+    def payload_class(self) -> "BasePayload":
+        """Returns the payload class."""
+        return self.stager_class.payloads[self.payload]
+
     def to_dict(
         self,
         commander: "Commander",
@@ -81,31 +91,6 @@ class StagerModel(Base):
             else [device.id for device in self.devices],
         }
 
-    @staticmethod
-    def get_class_from_type(type: str) -> "BaseStager":
-        """Return the stager class based on its type."""
-        type = type.replace("-", "_")
-        if type not in INSTALLED_KITS:
-            raise ValueError(f"Stager '{type}' isn't installed.")
-        try:
-            stager = importlib.import_module(
-                "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
-            ).Stager
-        except ModuleNotFoundError as e:
-            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
-        else:
-            return stager
-
-    @property
-    def stager_class(self) -> "BaseStager":
-        """Returns the stager class."""
-        return self.get_class_from_type(self.listener.type)
-
-    @property
-    def payload_class(self) -> "BasePayload":
-        """Returns the payload class."""
-        return self.stager_class.payloads[self.payload]
-
     def edit(self, data: dict[str, any]):
         """Edit the stager"""
         options = self.stager_class.option_pool
@@ -131,6 +116,25 @@ class StagerModel(Base):
         # delete all payloads who start with the stager name
         for payload in get_resource("data", "stagers").glob(f"{self.name}*"):
             payload.unlink()
+
+    def generate_payload(self, recompile: bool = False) -> "FinalPayload":
+        """Generate the payload"""
+        return self.stager_class.generate(self, recompile)
+
+    @staticmethod
+    def get_class_from_type(type: str) -> "BaseStager":
+        """Return the stager class based on its type."""
+        type = type.replace("-", "_")
+        if type not in INSTALLED_KITS:
+            raise ValueError(f"Stager '{type}' isn't installed.")
+        try:
+            stager = importlib.import_module(
+                "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
+            ).Stager
+        except ModuleNotFoundError as e:
+            raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
+        else:
+            return stager
 
     @staticmethod
     def get_all_classes() -> list["BaseStager"]:

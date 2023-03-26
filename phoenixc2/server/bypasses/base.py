@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from phoenixc2.server.kits.base_payload import FinalPayload
+    from phoenixc2.server.commander.commander import Commander
 
 from phoenixc2.server.utils.options import OptionPool
 
@@ -62,13 +63,13 @@ class BaseBypass(abc.ABC):
     ) -> "FinalPayload":
         pass
 
-    def to_dict(self) -> dict:
+    def to_dict(self, commander: "Commander") -> dict:
         """Returns the bypass as a dictionary."""
         return {
             "name": self.name,
             "description": self.description,
             "os": self.os,
-            "options": self.option_pool.to_dict(),
+            "options": self.option_pool.to_dict(commander),
             "final": self.final,
         }
 
