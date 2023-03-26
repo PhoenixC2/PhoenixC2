@@ -1,5 +1,5 @@
 import unittest
-from phoenixc2.development.database import change_to_memory_database
+from phoenixc2.development.database import change_to_memory_database, generate_listener
 
 
 class StagerTest(unittest.TestCase):
@@ -13,6 +13,7 @@ class StagerTest(unittest.TestCase):
         recreate_super_user()
         cls.app = create_web(Commander())
         cls.client = cls.app.test_client()
+        cls.listener = generate_listener()
 
     def test_get_stagers_json(self):
         response = self.client.get("/stagers?json=true", follow_redirects=True)
@@ -24,44 +25,28 @@ class StagerTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, False)
 
-    def test_get_listener(self):
+    def test_get_single_stager(self):
         response = self.client.get("/stagers/1?json=true", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, True)
 
     def test_stager_simulation(self):
-        # Create a listener
-        post_data = {
-            "type": "http-reverse",
-            "name": "test",
-        }
-        response = self.client.post(
-            "/listeners/add", data=post_data, follow_redirects=True
-        )
-        self.assertEqual(response.status_code, 201, "Failed to create listener")
-        listener = response.json["listener"]
-        self.assertEqual(listener["name"], "test", "Wrong listener name")
-        self.assertEqual(listener["type"], "http-reverse", "Wrong listener type")
-
         # Create a stager
-        post_data = {
+        data = {
             "name": "test",
             "listener": 1,
+            "payload": "python",
         }
-        response = self.client.post(
-            "/stagers/add", data=post_data, follow_redirects=True
-        )
+        response = self.client.post("/stagers/add", data=data, follow_redirects=True)
         self.assertEqual(response.status_code, 201, "Failed to create stager")
         stager = response.json["stager"]
         self.assertEqual(stager["name"], "test", "Wrong stager name")
 
         # Edit a stager
-        post_data = {
+        data = {
             "name": "testchange",
         }
-        response = self.client.put(
-            "/stagers/1/edit", data=post_data, follow_redirects=True
-        )
+        response = self.client.put("/stagers/1/edit", data=data, follow_redirects=True)
         self.assertEqual(response.status_code, 200, "Failed to edit stager")
 
         # Download a stager

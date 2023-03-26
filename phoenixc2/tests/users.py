@@ -12,25 +12,25 @@ class UserTest(unittest.TestCase):
         cls.app = create_web(Commander())
         cls.client = cls.app.test_client()
 
-    def test_get_listeners_json(self):
+    def test_get_users_json(self):
         response = self.client.get("/users?json=true", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, True)
 
-    def test_get_listeners(self):
+    def test_get_users(self):
         response = self.client.get("/users", follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.is_json, False)
 
     def test_user_simulation(self):
         # Create a user
-        post_data = {
+        data = {
             "username": "test",
             "password": "testtest123",
             "admin": True,
             "disabled": False,
         }
-        response = self.client.post("/users/add", data=post_data, follow_redirects=True)
+        response = self.client.post("/users/add", data=data, follow_redirects=True)
         self.assertTrue(response.is_json)
         self.assertEqual(response.status_code, 201, response.json["message"])
 
@@ -39,10 +39,8 @@ class UserTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Update the user
-        post_data = {"username": "testchanged"}
-        response = self.client.put(
-            "/users/1/edit", data=post_data, follow_redirects=True
-        )
+        data = {"username": "testchanged"}
+        response = self.client.put("/users/1/edit", data=data, follow_redirects=True)
         self.assertTrue(response.is_json)
         self.assertEqual(response.status_code, 200, response.json["message"])
 

@@ -23,29 +23,29 @@ class ListenerTest(unittest.TestCase):
         self.assertFalse(response.is_json)
 
     def test_listener_simulation(self):
-        post_data = {
+        data = {
             "type": "http-reverse",
             "name": "test",
         }
-        response = self.client.post(
-            "/listeners/add", data=post_data, follow_redirects=True
-        )
+        response = self.client.post("/listeners/add", data=data, follow_redirects=True)
         self.assertTrue(response.is_json)
         self.assertEqual(response.status_code, 201, response.json["message"])
         listener = response.json["listener"]
         self.assertEqual(listener["name"], "test", "Wrong listener name")
         self.assertEqual(listener["type"], "http-reverse", "Wrong listener type")
 
-        post_data = {
+        data = {
             "name": "testchange",
         }
         response = self.client.put(
-            "/listeners/1/edit", data=post_data, follow_redirects=True
+            "/listeners/1/edit", data=data, follow_redirects=True
         )
         self.assertTrue(response.is_json)
         self.assertEqual(response.status_code, 200, response.json["message"])
 
-        response = self.client.delete("/listeners/1/remove", follow_redirects=True)
+        response = self.client.delete(
+            f"/listeners/{listener['id']}/remove", follow_redirects=True
+        )
         self.assertEqual(response.status_code, 200, response.json["message"])
 
 

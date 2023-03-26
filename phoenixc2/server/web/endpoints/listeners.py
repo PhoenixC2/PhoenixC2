@@ -83,6 +83,7 @@ def listeners_bp(commander: Commander):
         listener_type = request.form.get("type")
         is_interface = request.args.get("is_interface", "").lower() == "true"
         data = dict(request.form)
+
         if is_interface:
             interfaces = get_network_interfaces()
             if data.get("address", "") in interfaces:
