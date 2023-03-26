@@ -44,6 +44,7 @@ def generate_listener(
     options["type"] = type
     listener = ListenerModel.create_from_data(options)
     Session.add(listener)
+    Session.commit()
     return listener
 
 
@@ -69,11 +70,11 @@ def generate_stager(
     if listener is None:
         listener = generate_listener()
     options["name"] = name
-    options["listener"] = listener.name
+    options["listener"] = listener.id
     options = StagerModel.get_class_from_type("http-reverse").option_pool.validate_all(
         options
     )
     stager = StagerModel.create_from_data(options)
     Session.add(stager)
-    Session.add(listener)
+    Session.commit()
     return stager
