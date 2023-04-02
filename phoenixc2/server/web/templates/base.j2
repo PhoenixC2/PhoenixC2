@@ -209,16 +209,23 @@
         <script src="/static/js/material-dashboard.js?v=2.1.0"></script>
         {% block scripts %}{% endblock %}
     </body>
-    <!-- flash messages -->
+    {# flash messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
     <script>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}showNotification("{{ message }}", "{{ category }}");{% endfor %}
-        {% endif %}
-        {% endwith %}
+    {% for category, message in messages %}showNotification("{{ message }}", "{{ category }}");{% endfor %}
     </script>
-    {# inject plugins #}
+    {% endif %}
+    {% endwith %}
+
     {% for plugin in plugins %}
-        {{ render_template_string(plugins[plugin]) }}
+    <div>
+        <!-- {{ plugin.name }} -->
+        {% if not plugins.routes  or request.path[1:] in plugin.routes%}
+        {# render unsafe html #}
+        {{ plugins[plugin] }}
+        {% endif %}
+    </div>
     {% endfor %}
 </html>

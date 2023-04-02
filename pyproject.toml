@@ -61,3 +61,9 @@ phclient = "phoenixc2.client.__main__:main"
 homepage = "https://github.com/Screamz2k/PhoenixC2"
 documentation = "https://screamz2k.gitbook.io/phoenixc2/"
 repository = "https://github.com/Screamz2k/PhoenixC2"
+
+[tool.ruff]
+extend-exclude = [
+    "*.payload.py",
+    "phoenixc2/server/data",
+]

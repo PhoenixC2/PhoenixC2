@@ -2,9 +2,7 @@
 import json
 import logging
 import os
-import random
-import string
-
+import secrets
 from flask import Blueprint, Flask, abort, cli, render_template_string, request
 
 from phoenixc2.server.commander.commander import Commander
@@ -60,9 +58,7 @@ def create_web(commander: Commander) -> Flask:
     if secret_key == "":
         # check if the secret key is set in the config
         # if not, generate a new one and save it
-        secret_key = "".join(
-            random.choice(string.ascii_letters + string.digits) for _ in range(50)
-        )
+        secret_key = secrets.token_urlsafe(32)
         config["web"]["secret_key"] = secret_key
         save_config(config)
     elif len(secret_key) < 30:
@@ -97,6 +93,8 @@ def create_web(commander: Commander) -> Flask:
 
     @web_server.context_processor
     def inject_plugins():
+        for plugin in commander.injection_plugins:
+            print(commander.injection_plugins[plugin])
         return dict(plugins=commander.injection_plugins)
 
     @web_server.context_processor

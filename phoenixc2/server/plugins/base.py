@@ -63,6 +63,12 @@ class BasePlugin(ABC):
                 return False
         return True
 
+    @staticmethod
+    @abstractmethod
+    def execute(commander: "Commander", config: dict) -> any:
+        """The function to be executed by the plugin."""
+        pass
+
 
 class BlueprintPlugin(BasePlugin):
     """The Base Web Plugin class.
@@ -70,8 +76,9 @@ class BlueprintPlugin(BasePlugin):
     Used for plugins which modify the api.
     """
 
+    @staticmethod
     @abstractmethod
-    def execute(self, commander: "Commander", config: dict) -> Blueprint:
+    def execute(commander, config) -> Blueprint:
         """Returns the blueprint to be added to the web api."""
         pass
 
@@ -86,9 +93,10 @@ class RoutePlugin(BasePlugin):
     # has to be set because you can't pass the commander to the execute function
     rule: str  # the rule to be added to the web api
 
+    @staticmethod
     @abstractmethod
     def execute():
-        """Returns the function to be added to the route."""
+        """The function to be added to the route."""
         pass
 
 
@@ -98,13 +106,14 @@ class InjectedPlugin(BasePlugin):
     Used for plugins which inject code into existing templates, like html, js, css, etc.
     """
 
-    # the name of the template to be modified
-    # * - all templates
-    # - list of templates
-    templates: list[str] = ["*"]
+    # the name of the routes where the code will be injected
+    # - empty - inject the code into all routes
+    # - list of routes
+    routes: list[str] = []
 
+    @staticmethod
     @abstractmethod
-    def execute(self, commander: "Commander", config: dict) -> str:
+    def execute(commander, config) -> str:
         """Returns the code to be injected into the template."""
         pass
 
@@ -119,11 +128,11 @@ class ExecutedPlugin(BasePlugin):
     # - direct - execute the code directly
     # - thread - execute the function in a thread
     # - process - execute the function in a process
-    # - file - execute the function as an external file in an external process
     execution_type: str = "direct"
 
+    @staticmethod
     @abstractmethod
-    def execute(self, commander: "Commander", config: dict) -> str | None:
+    def execute(commander, config) -> str | None:
         """The main code of the plugin to be executed
 
         Execution type:
@@ -131,3 +140,12 @@ class ExecutedPlugin(BasePlugin):
         - everything else - write the code to be executed in the function
         """
         pass
+
+
+class PolyPlugin(BasePlugin):
+    """The Base Poly Plugin class.
+
+    Used for multiple plugin types in one package.
+    """
+
+    plugins: list[BasePlugin] = []
