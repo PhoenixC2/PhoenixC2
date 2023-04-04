@@ -24,7 +24,8 @@ def main():
 
     if not check_for_setup():
         reset_server()
-
+    if args.exit:
+        os._exit(0)
     # Initialize commander
     commander = Commander()
 
@@ -63,8 +64,6 @@ def main():
     log("Press CTRL+C to exit.", Status.Info)
     if args.quiet:
         print("Finished startup.")
-    if args.exit:
-        os._exit(0)
     while True:
         try:
             # print(input("Server > "))

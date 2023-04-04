@@ -10,19 +10,22 @@
 - [x] Easy to extend
 - [x] Supports different languages (Python, Go, ...)
 
+## Disclaimer
+This project is still in **development** and **not** ready for actual use.
 
 ## Installation
 
 ### Requirements
-- =< Python3.10
+- =< Python3.11
 - Go
 
-### Install
+### Installation
 
 ```bash
 git clone https://github.com/screamz2k/PhoenixC2.git
 cd PhoenixC2
-python3 -m pip install .
+python3 -m pip install poetry
+poetry install
 ```
 
 ## Usage
@@ -32,32 +35,22 @@ python3 -m pip install .
 #### Host
 
 ```bash
-# via entrypoint
-phserver
-# via module
-python3 -m phoenixc2.server
-# or
-python3 -m phoenixc2 server
+poetry run phserver
 ```
 
 The Web-Interface is available at `http://localhost:8080` by default.
 
 ### Start the client
 ```bash
-# via entrypoint
-phclient
-# via module
-python3 -m phoenixc2.client
-# or
-python3 -m phoenixc2 client
+poetry run phclient
 ```
 
 #### Docker
 ```bash
 # server
-docker run --network host screamz2k/phoenixc2 server
+docker run --network host screamz2k/phoenixc2 phserver
 # client
-docker run --network host screamz2k/phoenixc2 client
+docker run --network host screamz2k/phoenixc2 phclient
 ```
 
 ## LICENSE
