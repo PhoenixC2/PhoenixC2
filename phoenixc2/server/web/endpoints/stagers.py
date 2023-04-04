@@ -1,5 +1,3 @@
-import tempfile
-
 from flask import Blueprint, render_template, request, send_file
 
 from phoenixc2.server.commander.commander import Commander
@@ -220,24 +218,16 @@ def stagers_bp(commander: Commander):
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
         else:
-            if final_payload.payload.compiled:
+            if final_payload.payload.compiled or not use_json:
                 return send_file(
-                    final_payload.output,
+                    final_payload.as_file,
                     as_attachment=True,
                     download_name=final_payload.name,
                 )
-            if use_json:
-                return {
-                    "status": Status.Success,
-                    "message": "Stager generated successfully.",
-                    "stager": final_payload.output,
-                }
-            else:
-                tmp = tempfile.TemporaryFile()
-                tmp.write(final_payload.output.encode())
-                tmp.seek(0)
-                return send_file(
-                    tmp, as_attachment=True, download_name=final_payload.name
-                )
+            return {
+                "status": Status.Success,
+                "message": "Stager generated successfully.",
+                "stager": final_payload.output,
+            }
 
     return stagers_bp

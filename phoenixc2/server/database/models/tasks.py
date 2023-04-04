@@ -21,6 +21,7 @@ from .logs import LogEntryModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
+    from phoenixc2.server.modules.base import BaseModule
 
 
 class TaskModel(Base):
@@ -42,7 +43,7 @@ class TaskModel(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime, onupdate=datetime.now
     )
-    device_id: Mapped[int] = mapped_column(Integer, ForeignKey("Devices.id"))
+    device_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("Devices.id"))
     device: Mapped["DeviceModel"] = relationship("DeviceModel", back_populates="tasks")
 
     @property
@@ -69,19 +70,14 @@ class TaskModel(Base):
             else self.device_id,
         }
 
-    def get_module_code(self) -> str:
-        """Get the code of the module.
-
-        Returns:
-        --------
-            str: The code of the module
-        """
+    def get_module(self) -> "BaseModule":
+        """Get the module class for this task."""
         if self.action != "module":
             raise ValueError("Task is not a module task.")
         module = get_module(self.args["path"])
-        return module.code(self.device, self)
+        return module
 
-    def finish(self, output: str | dict, success: bool, creds: dict = [None]):
+    def finish(self, output: str | dict, success: bool, credentials: dict = [None]):
         """Update the Task status and output.
         Still has to be committed!"""
 
@@ -99,7 +95,9 @@ class TaskModel(Base):
             self.device.hostname = output.get("hostname", self.device.hostname)
             self.device.user = output.get("username", self.device.user)
             self.device.admin = output.get("admin", self.device.admin)
-
+        elif self.action == "module" and success:
+            module = self.get_module()
+            self.output = module.finish(self, output)
         else:
             self.output = output
 
@@ -108,15 +106,18 @@ class TaskModel(Base):
 
         # save credentials
 
-        for cred in creds:
+        for credential in credentials:
             try:
                 created_cred = CredentialModel.create(
-                    cred["value"], cred["hash"], cred["user"], cred["admin"]
+                    credential["value"],
+                    credential["hash"],
+                    credential["user"],
+                    credential["admin"],
                 )
                 created_cred.operation = self.operation
             except Exception as e:
                 LogEntryModel.log(
-                    "danger",
+                    Status.Danger,
                     "credentials",
                     f"Failed to add new credential to the database: {e}",
                 )
@@ -137,18 +138,31 @@ class TaskModel(Base):
             )
         else:
             LogEntryModel.log(
-                "danger",
+                Status.Danger,
                 "devices",
                 f"Task '{self.name}' finished with an error",
             )
 
+    def delete(self):
+        """Delete the task."""
+        if self.action == "upload":
+            # delete uploaded file
+            try:
+                get_resource("data/uploads/", self.name).unlink()
+            except FileNotFoundError:
+                pass
+        Session.delete(self)
+
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel()
-        if type(device_or_id) == DeviceModel:
+        if isinstance(device_or_id, DeviceModel):
             task.device = device_or_id
         else:
-            task.device_id = int(device_or_id)
+            device = Session.query(DeviceModel).filter_by(id=device_or_id).first()
+            if device is None:
+                raise ValueError("Device not found.")
+            task.device = device
         task.args = {}
         return task
 
@@ -260,7 +274,10 @@ class TaskModel(Base):
 
     @staticmethod
     def execute_module(
-        device_or_id: DeviceModel | int, path: str, execution_method: str, data: dict
+        device_or_id: DeviceModel | int | str,
+        path: str,
+        execution_method: str,
+        data: dict,
     ) -> "TaskModel":
         """Create a Execute-Module task.
 
@@ -271,10 +288,8 @@ class TaskModel(Base):
             execution_method (str): The execution method of the module
             data (dict): The data for the module
         """
-        try:
-            module = get_module(path)
-        except ModuleNotFoundError as e:
-            raise ModuleNotFoundError(f"Module '{path}' not found.") from e
+
+        module = get_module(path)
 
         if execution_method not in module.execution_methods:
             raise ValueError(
@@ -291,16 +306,6 @@ class TaskModel(Base):
         task.args["execution_method"] = execution_method
         task.args.update(data)
         return task
-
-    def delete(self):
-        """Delete the task."""
-        if self.action == "upload":
-            # delete uploaded file
-            try:
-                get_resource("data/uploads/", self.name).unlink()
-            except FileNotFoundError:
-                pass
-        Session.delete(self)
 
     def __repr__(self) -> str:
         return f"<TaskModel(id={self.id}, action={self.action}, device={self.device})>"

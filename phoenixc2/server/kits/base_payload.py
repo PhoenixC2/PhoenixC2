@@ -1,6 +1,7 @@
-from typing import BinaryIO, TYPE_CHECKING
+from typing import TYPE_CHECKING, BinaryIO
 from abc import ABC, abstractmethod
-
+from tempfile import TemporaryFile
+from pathlib import Path
 from phoenixc2.server.utils.options import OptionPool
 from phoenixc2.server.utils.features import Feature
 
@@ -16,8 +17,12 @@ class BasePayload(ABC):
     supported_target_os: list[str] = ["linux", "windows", "osx"]
     supported_target_arch: list[str] = ["*"]
     module_execution_methods: list[str] = [
+        "command",
+        "direct",
+        "thread",
         "process",
         "injection",
+        "external",
     ]
     module_code_types: list[str] = ["shellcode", "compiled", "native"]
     module_languages: list[str] = ["python"]
@@ -35,7 +40,7 @@ class BasePayload(ABC):
         ...
 
     @classmethod
-    def is_compiled(stager_db: "StagerModel") -> bool:
+    def already_compiled(cls, stager_db: "StagerModel") -> bool:
         """Return if the payload was already compiled"""
         return False
 
@@ -61,16 +66,41 @@ class BasePayload(ABC):
 
 
 class FinalPayload:
-    def __init__(
-        self, payload: BasePayload, stager_db: "StagerModel", output: bytes | str
-    ):
-        self.output: str | BinaryIO = output
+    payload: BasePayload
+    stager: "StagerModel"
+    output: bytes | str
+
+    def __init__(self, payload: BasePayload, stager_db: "StagerModel"):
         self.stager: "StagerModel" = stager_db
         self.payload: BasePayload = payload
 
     @property
     def name(self) -> str:
         return self.stager.name + "." + self.payload.end_format
+
+    @property
+    def as_file(self) -> BinaryIO:
+        # check if the output is string or bytes and create temporary file
+        file = TemporaryFile()
+        if isinstance(self.output, str):
+            file.write(self.output.encode())
+        else:
+            file.write(self.output)
+        file.seek(0)
+        return file
+
+    def set_output_from_path(self, path: str | Path) -> None:
+        """Set the output from a file path"""
+        with open(str(path), "rb") as file:
+            self.output = file.read()
+
+    def set_output_from_file(self, file: BinaryIO) -> None:
+        """Set the output from a file object"""
+        self.output = file.read()
+
+    def set_output_from_content(self, content: bytes | str) -> None:
+        """Set the output from a string or bytes"""
+        self.output = content
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} name={self.name} output={len(self.output)}>"

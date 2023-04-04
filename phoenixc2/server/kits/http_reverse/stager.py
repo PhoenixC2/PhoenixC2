@@ -47,18 +47,21 @@ class PythonPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/python.j2")
-        output = template.render(stager=stager_db)
+        template = jinja2_env.get_template("payloads/python.payload.py")
 
-        return FinalPayload(cls, stager_db, output)
+        final_payload = FinalPayload(cls, stager_db)
+        final_payload.set_output_from_content(template.render(stager=stager_db))
+        return final_payload
 
 
 class GoPayload(BasePayload):
     name = "Golang Payload"
     description = "Compiled cross-platform Golang Payload"
-    module_execution_methods = []
+    module_execution_methods = [
+        "command",
+    ]
     module_code_types = []
-    module_languages = []
+    module_languages = ["bash"]
     language = "go"
     end_format = ".exe"
     compiled = True
@@ -91,7 +94,7 @@ class GoPayload(BasePayload):
     ]
 
     @classmethod
-    def is_compiled(cls, stager_db: "StagerModel") -> bool:
+    def already_compiled(cls, stager_db: "StagerModel") -> bool:
         try:
             get_resource(
                 "data/stagers/",
@@ -105,14 +108,16 @@ class GoPayload(BasePayload):
     def generate(
         cls, stager_db: "StagerModel", recompile: bool = False
     ) -> "FinalPayload":
-        if cls.is_compiled(stager_db) and not recompile:
-            return FinalPayload(
+        if cls.already_compiled(stager_db) and not recompile:
+            final_payload = FinalPayload(
                 cls,
                 stager_db,
+            )
+            final_payload.set_output_from_path(
                 get_resource(
                     "data/stagers/",
                     f"{stager_db.name}.exe",
-                ),
+                )
             )
 
         jinja2_env = jinja2.Environment(
@@ -121,7 +126,7 @@ class GoPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/go.j2")
+        template = jinja2_env.get_template("payloads/go.go")
         output = template.render(stager=stager_db)
 
         # write to file
@@ -141,7 +146,7 @@ class GoPayload(BasePayload):
 
         status_code = os.system(
             f"GOOS={operation_system} GOARCH={architecture} go build"
-            f"-o {executable} {go_file}"
+            f" -o {executable} {go_file}"
         )
         # remove go file
         go_file.unlink()
@@ -149,11 +154,12 @@ class GoPayload(BasePayload):
         if status_code != 0:
             raise Exception("Failed to compile")
 
-        return FinalPayload(
+        final_payload = FinalPayload(
             cls,
             stager_db,
-            executable.open("rb"),
         )
+        final_payload.set_output_from_path(executable)
+        return final_payload
 
 
 class Stager(BaseStager):
