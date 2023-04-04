@@ -14,7 +14,6 @@ from phoenixc2.server.database import (
     StagerModel,
     TaskModel,
 )
-from phoenixc2.server.modules import get_module
 from phoenixc2.server.utils.features import Feature
 from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringType
 from phoenixc2.server.utils.resources import get_resource
@@ -111,14 +110,14 @@ class Listener(BaseListener):
             self.add_handler(Handler(device, self))
             return jsonify({"name": device.name})
 
-        @self.api.route("/tasks/<string:name>")
-        def get_tasks(name: str = None):
-            if name is None:
+        @self.api.route("/tasks/<string:device_name>")
+        def get_tasks(device_name: str = None):
+            if device_name is None:
                 return "", 400
-            handler = self.get_handler(name)
+            handler = self.get_handler(device_name)
             if handler is None:
                 device: DeviceModel = (
-                    Session.query(DeviceModel).filter_by(name=name).first()
+                    Session.query(DeviceModel).filter_by(name=device_name).first()
                 )
                 if device is not None:
                     handler = Handler(device, self)
@@ -136,12 +135,12 @@ class Listener(BaseListener):
                 ]
             )
 
-        @self.api.route("/finish/<string:name>", methods=["POST"])
-        def finish_task(name: str = None):
-            if name is None:
+        @self.api.route("/finish/<string:device_name>", methods=["POST"])
+        def finish_task(device_name: str = None):
+            if device_name is None:
                 return "", 404
 
-            handler = self.get_handler(name)
+            handler = self.get_handler(device_name)
             if handler is None:
                 return "", 404
 
@@ -160,13 +159,13 @@ class Listener(BaseListener):
             Session.commit()
             return "", 200
 
-        @self.api.route("/update/<string:name>", methods=["POST"])
-        def update_task_output(name: str = None):
+        @self.api.route("/update/<string:device_name>", methods=["POST"])
+        def update_task_output(device_name: str = None):
             """Update the output of a task in the database"""
-            if name is None:
+            if device_name is None:
                 return "", 404
 
-            handler = self.get_handler(name)
+            handler = self.get_handler(device_name)
             if handler is None:
                 return "", 404
 
@@ -183,7 +182,7 @@ class Listener(BaseListener):
             LogEntryModel.log(
                 "info",
                 "listeners",
-                f"Updated output of task {task_id} for device {name}",
+                f"Updated output of task {task_id} for device {device_name}",
             )
             return "", 200
 
@@ -198,33 +197,31 @@ class Listener(BaseListener):
                 as_attachment=True,
             )
 
-        @self.api.route("/module/", methods=["GET"])
-        def get_module_info():
-            path = request.args.get("path", "")
-            if path is None:
-                return "", 404
-            try:
-                module = get_module(path)
-            except Exception:
-                return "", 404
-            if module is None:
-                return "", 404
-
-            return jsonify(module.to_dict(self.commander))
-
-        @self.api.route("/module/download", methods=["GET"])
-        def download_module_content():
-            task_name = request.args.get("name", "")
-
+        @self.api.route("/module/<string:task_name>", methods=["GET"])
+        def get_module_info(task_name: str = None):
             task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
 
             if task is None:
                 return "", 404
-
             try:
-                return task.get_module_code()
-            except ValueError:
+                module = task.get_module()
+            except Exception:
                 return "", 404
+
+            return jsonify(module.to_dict(self.commander))
+
+        @self.api.route("/module/download/<string:task_name>", methods=["GET"])
+        def download_module_content(task_name: str = None):
+            task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
+
+            if task is None:
+                return "", 404
+            try:
+                module = task.get_module()
+            except Exception:
+                return "", 404
+
+            return module.code(task)
 
         @self.api.after_request
         def change_headers(r: Response):

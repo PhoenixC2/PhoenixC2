@@ -5,7 +5,7 @@ from phoenixc2.server.utils.options import OptionPool
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.database import DeviceModel, TaskModel
+    from phoenixc2.server.database import TaskModel
 
 
 class BaseModule(ABC):
@@ -24,26 +24,24 @@ class BaseModule(ABC):
     # - compiled: a compiled binary
     code_type: str = "native"
     # execution methods:
+    # - command: execute a command
     # - direct: normal code & shellcode
     # - thread: normal code
     # - process: normal code
     # - injection: inject shellcode into a process
     # - external: create a file save the binary content to it and execute it externally
     execution_methods: list[str] = [
+        "command",
         "direct",
         "thread",
         "process",
         "injection",
         "external",
     ]
-    # output methods:
-    # - print: print the output to the console
-    # - file: save the output to a file
-    # - tcp: send the output to a tcp listener
-    output_method: str = "print"
 
+    @staticmethod
     @abstractmethod
-    def code(self, device: "DeviceModel", task: "TaskModel") -> str | bytes:
+    def code(task: "TaskModel") -> str | bytes:
         """The code to be executed"""
         pass
 
@@ -62,6 +60,6 @@ class BaseModule(ABC):
         }
 
     @classmethod
-    def finish(cls, data: str | bytes) -> str:
+    def finish(cls, task: "TaskModel", data: str | bytes) -> str | bytes:
         """This function is used to process the output of the module"""
         return data
