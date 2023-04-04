@@ -10,9 +10,12 @@ if TYPE_CHECKING:
 
 def get_module(path: str) -> "BaseModule":
     """Get a module by name."""
-    return importlib.import_module(
-        f"phoenixc2.server.modules.{path.replace('/', '.')}.module"
-    ).Module()
+    try:
+        return importlib.import_module(
+            f"phoenixc2.server.modules.{path.replace('/', '.')}.module"
+        ).Module
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(f"Module '{path}' not found")
 
 
 def get_all_module_paths():

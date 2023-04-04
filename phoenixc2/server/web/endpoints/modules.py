@@ -17,14 +17,19 @@ def modules_bp(commander: "Commander"):
     @UserModel.authenticated
     def get_modules(module_name: str = None):
         use_json = request.args.get("json", "").lower() == "true"
+        full = request.args.get("full", "").lower() == "true"
 
+        modules = get_all_module_paths()
         if module_name is None:
-            modules = [get_module(module) for module in get_all_module_paths()]
             if use_json:
-                return {
-                    "status": Status.Success,
-                    "modules": [module.to_dict(commander) for module in modules],
-                }
+                if full:
+                    return {
+                        "status": Status.Success,
+                        "modules": [
+                            get_module(module).to_dict(commander) for module in modules
+                        ],
+                    }
+                return {"status": Status.Success, "modules": modules}
             return render_template("modules.j2", modules=modules, commander=commander)
         else:
             try:

@@ -57,7 +57,7 @@ def log(text: str, status: str = ""):
         style = "green"
     elif status == Status.Warning:
         style = "yellow"
-    elif status == Status.Warning:
+    elif status == Status.Danger:
         style = "red"
     elif status == Status.Critical:
         style = "#ff0000"

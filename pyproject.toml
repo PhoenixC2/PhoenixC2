@@ -65,5 +65,19 @@ repository = "https://github.com/Screamz2k/PhoenixC2"
 [tool.ruff]
 extend-exclude = [
     "*.payload.py",
-    "phoenixc2/server/data",
+    "phoenixc2/server/data/",
 ]
+
+[tool.black]
+extend-exclude = '''
+(
+.*payload.py
+| phoenixc2/server/data*
+)
+'''
+force-exclude = '''
+(
+.*payload.py
+| phoenixc2/server/data*
+)
+'''

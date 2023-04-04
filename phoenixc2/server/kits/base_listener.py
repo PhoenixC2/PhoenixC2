@@ -76,7 +76,7 @@ class BaseListener(ABC):
                 for handler in self.handlers:
                     if not handler.alive():
                         LogEntryModel.log(
-                            Status.Warning,
+                            Status.Critical,
                             "devices",
                             f"Device '{handler.name}' disconnected.",
                         )

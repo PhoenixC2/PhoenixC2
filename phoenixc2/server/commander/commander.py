@@ -12,6 +12,7 @@ from phoenixc2.server.plugins.base import (
     ExecutedPlugin,
     RoutePlugin,
     InjectedPlugin,
+    PolyPlugin,
 )
 from phoenixc2.server.utils.web import FlaskThread
 
@@ -29,9 +30,7 @@ class Commander:
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
         self.active_plugins: dict[str, BasePlugin] = {}
-        self.injection_plugins: dict[
-            str, InjectedPlugin
-        ] = {}  # plugins that inject code into the templates
+        self.injection_plugins: dict[InjectedPlugin, str] = {}  # plugin : output
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
         """Get a handler by id"""
@@ -95,7 +94,7 @@ class Commander:
         if plugin.name in self.active_plugins:
             raise KeyError(f"Plugin {plugin.name} already loaded")
 
-        if isinstance(plugin, ExecutedPlugin):
+        if issubclass(plugin, ExecutedPlugin):
             try:
                 if plugin.execution_type == "direct":
                     plugin.execute(self, config)
@@ -114,14 +113,20 @@ class Commander:
             except Exception as e:
                 raise Exception(f"Failed to load plugin '{plugin.name}'") from e
 
-        elif isinstance(plugin, BlueprintPlugin):
+        elif issubclass(plugin, BlueprintPlugin):
             self.web_server.register_blueprint(plugin.execute(self, config))
 
-        elif isinstance(plugin, RoutePlugin):
+        elif issubclass(plugin, RoutePlugin):
             self.web_server.add_url_rule(plugin.rule, plugin.name, plugin.execute)
 
-        elif isinstance(plugin, InjectedPlugin):
-            self.injection_plugins[plugin.name] = plugin.execute(self, config)
+        elif issubclass(plugin, InjectedPlugin):
+            self.injection_plugins[plugin] = plugin.execute(self, config)
 
+        elif issubclass(plugin, PolyPlugin):
+            # Loads all plugins which are specified by the poly-plugin
+            for sub_plugin in plugin.plugins:
+                self.load_plugin(sub_plugin, config)
         else:
             plugin.execute(self, config)
+
+        self.active_plugins[plugin.name] = plugin

