@@ -1,5 +1,17 @@
-# PhoenixC2
-> An Open-Source C2-Framework written in pure Python3.
+<p align="center">
+    <img align="center" src="https://github.com/screamz2k/PhoenixC2/pages/images/logo.png" width="100px" height="100px" alt="PhoenixC2" />
+    <h1 align="center">PhoenixC2</h1>
+    <p align="center"> An Open-Source C2-Framework written in pure Python3.</p>
+</p>
+<p align="center">
+    <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/tests.yml/badge.svg"/>
+    <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/docker.yml/badge.svg"/>
+    <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/pypi-publish.yml/badge.svg"/>
+</p>
+
+## Disclaimer
+This project is still in **development** and **not** ready for professional use.
+This framework is intended for educational and research purposes only. The author and its affiliates do not endorse or condone any illegal or malicious activity conducted with this framework. Users of this framework are solely responsible for ensuring that their use of this framework is in compliance with all applicable laws and regulations.
 
 ## Features
 - [x] Modern Web-Interface
@@ -10,16 +22,13 @@
 - [x] Easy to extend
 - [x] Supports different languages (Python, Go, ...)
 
-## Disclaimer
-This project is still in **development** and **not** ready for actual use.
-
 ## Installation
-
+Installation from source.
 ### Requirements
-- =< Python3.11
-- Go
+- Python3.11 =< 
+- Go 1.15 =< 
 
-### Installation
+### Command Line
 
 ```bash
 git clone https://github.com/screamz2k/PhoenixC2.git
@@ -30,28 +39,31 @@ poetry install
 
 ## Usage
 
-### Start the server
+### Local
 
-#### Host
+#### Start the server
 
 ```bash
 poetry run phserver
 ```
-
-The Web-Interface is available at `http://localhost:8080` by default.
+The Web-Interface is available at [http://localhost:8080](http://localhost:8080) by default.
 
 ### Start the client
-```bash
-poetry run phclient
-```
+The client is **not** yet available.
 
-#### Docker
+## Docker
+
 ```bash
 # server
 docker run --network host screamz2k/phoenixc2 phserver
-# client
-docker run --network host screamz2k/phoenixc2 phclient
 ```
 
+
+## Documentation
+The documentation is available [here](https://screamz2k.gitbook.io/phoenixc2/)
+
+## Contributing
+Contributions are welcome! Please read the [contribution guidelines](https://github.com/screamz2k/PhoenixC2/.github/CONTRIBUTING.md) first.
+
 ## LICENSE
-View license [here](LICENSE)
+View license [here](https://github.com/screamz2k/PhoenixC2/LICENSE)

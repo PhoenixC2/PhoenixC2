@@ -53,5 +53,3 @@ jobs:
       - name: Linting
         run: |
           poetry run ruff .
-          
-

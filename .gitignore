@@ -6,7 +6,6 @@ downloads/
 uploads/
 stagers/
 pictures/
-venv
-build
 *.egg-info
 .idea
+dist
