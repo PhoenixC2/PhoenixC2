@@ -72,20 +72,21 @@ def ph_print(text: str, force: bool = False):
 
 
 def log_connection(device: "DeviceModel", reconnect: bool = False):
+    """Log the new connection to the console and database"""
     from phoenixc2.server.database import LogEntryModel
 
     """Log the new connection to the console and database"""
     if reconnect:
-        status = (
+        message = (
             f"Device '{device.hostname}' ({device.address}) "
             f"reconnected to the server. [{device.name}]"
         )
     else:
-        status = (
+        message = (
             f"New device '{device.hostname}' ({device.address}) "
             f"connected to the server. [{device.name}]"
         )
-    ph_print(status)
+    ph_print(message)
     LogEntryModel.log(
         Status.Success,
         "devices",

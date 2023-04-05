@@ -58,11 +58,13 @@ func system_info() []byte {
 		hostname = "unknown"
 	}
 
-	username := "unknown"
+	
 
 	user, err := user.Current()
-
-	if err == nil {
+	var username string
+	if err != nil {
+		username = "unknown"
+	} else {
 		username = user.Username
 	}
 	// Get the IP address of the current machine
@@ -81,7 +83,7 @@ func system_info() []byte {
 		"hostname":     hostname,
 		"os":           runtime.GOOS,
 		"architecture": runtime.GOARCH,
-		"username":     username,
+		"user":     username,
 		"admin":        false,
 		"stager":       STAGER,
 	})
