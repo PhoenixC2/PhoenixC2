@@ -11,6 +11,7 @@ name: Upload to Pypi
 on:
   release:
     types: [published]
+  push:
 
 jobs:
   publish:
@@ -34,6 +35,11 @@ jobs:
     - name: Configure credentials
       run: poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
     
+    - name: Configure test credentials
+      run: |
+      poetry config repositories.test-pypi https://test.pypi.org/legacy/
+      poetry config pypi-token.test-pypi ${{ secrets.TEST_PYPI_API_TOKEN }}
+    
     - name: Publish package
-      run: poetry publish --build
+      run: poetry publish --build -r test-pypi
     
