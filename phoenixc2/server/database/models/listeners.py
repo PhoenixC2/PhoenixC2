@@ -9,7 +9,7 @@ from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from phoenixc2.server import INSTALLED_KITS
+from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.misc import generate_name
@@ -115,7 +115,7 @@ class ListenerModel(Base):
     def get_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
         type = type.replace("-", "_")
-        if type not in INSTALLED_KITS:
+        if type not in get_all_kits():
             raise ValueError(f"Listener '{type}' isn't installed.")
         try:
             listener = importlib.import_module(
@@ -130,7 +130,7 @@ class ListenerModel(Base):
     def get_all_classes() -> list["BaseListener"]:
         """Get all listener classes."""
         return [
-            ListenerModel.get_class_from_type(listener) for listener in INSTALLED_KITS
+            ListenerModel.get_class_from_type(listener) for listener in get_all_kits()
         ]
 
     def start(self, commander: "Commander") -> str:

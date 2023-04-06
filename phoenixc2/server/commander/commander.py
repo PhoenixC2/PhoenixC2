@@ -1,8 +1,7 @@
 """This is the C2 commander class which handles the devices & listeners"""
-import subprocess
 from multiprocessing import Process
 from threading import Thread
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from flask import Flask
 from phoenixc2.server.kits.base_handler import BaseHandler
 from phoenixc2.server.kits.base_listener import BaseListener
@@ -13,9 +12,14 @@ from phoenixc2.server.plugins.base import (
     RoutePlugin,
     InjectedPlugin,
     PolyPlugin,
+    ConnectionEventPlugin,
 )
 from phoenixc2.server.utils.web import FlaskThread
+from phoenixc2.server.utils.misc import Status
+from phoenixc2.server.utils.ui import log_connection, log
 
+if TYPE_CHECKING:
+    from phoenixc2.server.database import DeviceModel
 INVALID_ID = "Invalid ID"
 HANDLER_DOES_NOT_EXIST = "Handler doesn't exist"
 LISTENER_DOES_NOT_EXIST = "Listener doesn't exist"
@@ -31,6 +35,7 @@ class Commander:
         self.active_handlers: dict[int, BaseHandler] = {}
         self.active_plugins: dict[str, BasePlugin] = {}
         self.injection_plugins: dict[InjectedPlugin, str] = {}  # plugin : output
+        self.connection_event_plugins: list[tuple[ConnectionEventPlugin, dict]] = []
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
         """Get a handler by id"""
@@ -106,8 +111,6 @@ class Commander:
                     Process(
                         target=plugin.execute, args=(self, config), name=plugin.name
                     ).start()
-                elif plugin.execution_type == "file":
-                    subprocess.Popen([plugin.execute(self, config)])
                 else:
                     raise ValueError(f"Invalid execution type {plugin.execution_type}")
             except Exception as e:
@@ -122,11 +125,28 @@ class Commander:
         elif issubclass(plugin, InjectedPlugin):
             self.injection_plugins[plugin] = plugin.execute(self, config)
 
+        elif issubclass(plugin, ConnectionEventPlugin):
+            self.connection_event_plugins.append((plugin, config))
+
         elif issubclass(plugin, PolyPlugin):
             # Loads all plugins which are specified by the poly-plugin
             for sub_plugin in plugin.plugins:
                 self.load_plugin(sub_plugin, config)
+
         else:
             plugin.execute(self, config)
 
         self.active_plugins[plugin.name] = plugin
+
+    def new_connection(self, device: "DeviceModel", reconnect: bool = False):
+        """Called when a new device connects"""
+        log_connection(device, reconnect)
+
+        for plugin, config in self.connection_event_plugins:
+            try:
+                plugin.execute(device, config)
+            except Exception as e:
+                log(
+                    f"Failed to execute connection event plugin {plugin.name}: {e}",
+                    Status.Danger,
+                )

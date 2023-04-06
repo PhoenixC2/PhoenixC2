@@ -2,11 +2,12 @@ import subprocess
 import sys
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
-
+import importlib
 from flask import Blueprint
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
+    from phoenixc2.server.database import DeviceModel
 
 
 class BasePlugin(ABC):
@@ -48,17 +49,17 @@ class BasePlugin(ABC):
         for package, version in cls.required_dependencies:
             try:
                 if not version or version == "latest":
-                    subprocess.check_call(
-                        [sys.executable, "-m", "pip", "show", f"{package}"],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
+                    try:
+                        importlib.import_module(package)
+                    except ImportError:
+                        return False
                 else:
-                    subprocess.check_call(
-                        [sys.executable, "-m", "pip", "show", f"{package}=={version}"],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
+                    try:
+                        importlib.import_module(package)
+                    except ImportError:
+                        return False
+                    if importlib.metadata.version(package) != version:
+                        return False
             except subprocess.CalledProcessError:
                 return False
         return True
@@ -66,7 +67,7 @@ class BasePlugin(ABC):
     @staticmethod
     @abstractmethod
     def execute(commander: "Commander", config: dict) -> any:
-        """The function to be executed by the plugin."""
+        """Base execute function for most plugin types."""
         pass
 
 
@@ -149,3 +150,16 @@ class PolyPlugin(BasePlugin):
     """
 
     plugins: list[BasePlugin] = []
+
+
+class ConnectionEventPlugin(BasePlugin):
+    """The Base Connection Event Plugin class.
+
+    Used for plugins that are executed when a connection is established.
+    """
+
+    @staticmethod
+    @abstractmethod
+    def execute(device: "DeviceModel", config: dict) -> None:
+        """Executed when a connection is established."""
+        pass

@@ -26,4 +26,4 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: screamz2k/phoenixc2:latest
+          tags: screamz2k/phoenixc2:${{ env.RELEASE_VERSION }}

@@ -17,7 +17,6 @@ from phoenixc2.server.database import (
 from phoenixc2.server.utils.features import Feature
 from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringType
 from phoenixc2.server.utils.resources import get_resource
-from phoenixc2.server.utils.ui import log_connection
 from phoenixc2.server.utils.web import FlaskThread
 
 from ..base_listener import BaseListener
@@ -106,7 +105,7 @@ class Listener(BaseListener):
                 return "", 404
             Session.add(device)
             Session.commit()
-            log_connection(device)
+            self.commander.new_connection(device)
             self.add_handler(Handler(device, self))
             return jsonify({"name": device.name})
 
@@ -122,7 +121,7 @@ class Listener(BaseListener):
                 if device is not None:
                     handler = Handler(device, self)
                     self.add_handler(handler)
-                    log_connection(device, reconnect=True)
+                    self.commander.new_connection(device, reconnect=True)
                 else:
                     return "", 404
             handler.db_entry.last_online = datetime.now()  # update last online
