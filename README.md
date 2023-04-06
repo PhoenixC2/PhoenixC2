@@ -22,12 +22,12 @@ This framework is intended for educational and research purposes only. The autho
 - [x] Supports different languages (Python, Go, ...)
 
 ### Planned Features
-- [] Finished Web-Interface
-- [] CLI-Interface
-- [] Multi-Language Loaders
-- [] More standard modules/kits/plugins
-- [] Better documentation
-- [] More tests
+- [ ] Finished Web-Interface
+- [ ] CLI-Interface
+- [ ] Multi-Language Loaders
+- [ ] More standard modules/kits/plugins
+- [ ] Better documentation
+- [ ] More tests
 
 ## Installation
 Installation from source.
