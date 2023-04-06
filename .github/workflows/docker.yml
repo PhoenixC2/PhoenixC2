@@ -23,16 +23,9 @@ jobs:
           username: screamz2k
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - 
-        name: Extract metadata for the Docker image
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      - 
         name: Build and push the Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: screamz2k/phoenixc2:latest
