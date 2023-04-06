@@ -7,7 +7,7 @@ from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from phoenixc2.server import INSTALLED_KITS
+from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.resources import get_resource
@@ -125,7 +125,7 @@ class StagerModel(Base):
     def get_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
         type = type.replace("-", "_")
-        if type not in INSTALLED_KITS:
+        if type not in get_all_kits():
             raise ValueError(f"Stager '{type}' isn't installed.")
         try:
             stager = importlib.import_module(
@@ -139,7 +139,7 @@ class StagerModel(Base):
     @staticmethod
     def get_all_classes() -> list["BaseStager"]:
         """Get all stager classes."""
-        return [StagerModel.get_class_from_type(stager) for stager in INSTALLED_KITS]
+        return [StagerModel.get_class_from_type(stager) for stager in get_all_kits()]
 
     @classmethod
     def create_from_data(cls, data: dict):

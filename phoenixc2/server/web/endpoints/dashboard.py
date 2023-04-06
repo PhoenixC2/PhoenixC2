@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from flask import Blueprint, render_template, request
 
 import phoenixc2
-import phoenixc2.server as avl
+from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database import DeviceModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
 
@@ -52,8 +52,8 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
                 "active_users": active_users,
                 "connections_last_hour": connections_last_hour,
                 "connections_today": connections_today,
-                "installed_kits": avl.INSTALLED_KITS,
-                "installed_loaders": avl.INSTALLED_LOADERS,
+                "installed_kits": get_all_kits(),
+                "installed_loaders": [],
             }
         return render_template(
             "dashboard.j2",
