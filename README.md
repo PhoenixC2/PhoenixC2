@@ -15,12 +15,19 @@ This framework is intended for educational and research purposes only. The autho
 
 ## Features
 - [x] Modern Web-Interface
-- [x] CLI-Interface
 - [x] Built for Teams and Organizations (Multi-User)
 - [x] Customizable (Plugins, Modules, Kits)
 - [x] Easy to use
 - [x] Easy to extend
 - [x] Supports different languages (Python, Go, ...)
+
+### Planned Features
+- [] Finished Web-Interface
+- [] CLI-Interface
+- [] Multi-Language Loaders
+- [] More standard modules/kits/plugins
+- [] Better documentation
+- [] More tests
 
 ## Installation
 Installation from source.
