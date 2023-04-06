@@ -1,5 +1,5 @@
 <p align="center">
-    <img align="center" src="https://github.com/screamz2k/PhoenixC2/pages/images/logo.png" width="100px" height="100px" alt="PhoenixC2" />
+    <img align="center" src="pages/images/logo.png" width="100px" height="100px" alt="PhoenixC2" />
     <h1 align="center">PhoenixC2</h1>
     <p align="center"> An Open-Source C2-Framework written in pure Python3.</p>
 </p>
