@@ -23,9 +23,8 @@ jobs:
           username: screamz2k
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - 
-        name: Build and push the Docker image
+        name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
           push: true
           tags: screamz2k/phoenixc2:latest
