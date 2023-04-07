@@ -167,7 +167,7 @@ class UserModel(Base):
     def get_profile_picture(self) -> str:
         """Get the profile picture"""
         return (
-            str(get_resource(PICTURES, self.username))
+            str(get_resource(PICTURES, f"{self.id}-user"))
             if self.profile_picture
             else get_resource("web/static/images", "icon.png")
         )
@@ -175,15 +175,15 @@ class UserModel(Base):
     def set_profile_picture(self, file: FileStorage) -> None:
         """Set the profile picture and save it"""
         if self.profile_picture:
-            get_resource(PICTURES, self.username, skip_file_check=True).unlink()
+            get_resource(PICTURES, f"{self.id}-user", skip_file_check=True).unlink()
 
         self.profile_picture = True
-        file.save(get_resource(PICTURES, self.username, skip_file_check=True))
+        file.save(get_resource(PICTURES, f"{self.id}-user", skip_file_check=True))
 
     def delete_profile_picture(self) -> None:
         """Delete the profile picture"""
         if self.profile_picture:
-            get_resource(PICTURES, self.username, skip_file_check=True).unlink()
+            get_resource(PICTURES, f"{self.id}-user", skip_file_check=True).unlink()
             self.profile_picture = False
 
     @classmethod
