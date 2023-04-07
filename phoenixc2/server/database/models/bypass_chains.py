@@ -13,7 +13,7 @@ from phoenixc2.server.bypasses import get_bypass, BaseBypass
 from .users import UserModel
 
 if TYPE_CHECKING:
-    from phoenixc2.server.kits.base_payload import FinalPayload
+    from phoenixc2.server.kits.payload_base import FinalPayload
     from phoenixc2.server.commander.commander import Commander
 
 

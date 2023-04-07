@@ -1,5 +1,5 @@
 from phoenixc2.server.database import StagerModel, Session
-from phoenixc2.server.kits.base_payload import FinalPayload
+from phoenixc2.server.kits.payload_base import FinalPayload
 
 
 def get_finished_payload(stager: StagerModel, recompile: bool = False) -> FinalPayload:

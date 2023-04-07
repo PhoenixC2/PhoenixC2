@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from phoenixc2.server.database import ListenerModel
 from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringType
 
-from ..base_listener import BaseListener
+from ..listener_base import BaseListener
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander

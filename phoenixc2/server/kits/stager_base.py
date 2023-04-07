@@ -3,7 +3,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 from phoenixc2.server.utils.options import DefaultStagerPool
-from .base_payload import BasePayload, FinalPayload
+from .payload_base import BasePayload, FinalPayload
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander

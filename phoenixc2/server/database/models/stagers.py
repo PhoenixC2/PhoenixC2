@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from flask import escape
 from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -16,7 +16,7 @@ from .operations import OperationModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.kits.base_stager import BasePayload, BaseStager, FinalPayload
+    from phoenixc2.server.kits.stager_base import BasePayload, BaseStager, FinalPayload
 
     from .devices import DeviceModel
     from .listeners import ListenerModel
@@ -124,7 +124,7 @@ class StagerModel(Base):
     @staticmethod
     def get_class_from_type(type: str) -> "BaseStager":
         """Return the stager class based on its type."""
-        type = type.replace("-", "_")
+        type = escape(type.replace("-", "_"))
         if type not in get_all_kits():
             raise ValueError(f"Stager '{type}' isn't installed.")
         try:

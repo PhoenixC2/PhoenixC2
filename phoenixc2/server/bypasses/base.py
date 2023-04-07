@@ -2,7 +2,7 @@ import abc
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from phoenixc2.server.kits.base_payload import FinalPayload
+    from phoenixc2.server.kits.payload_base import FinalPayload
     from phoenixc2.server.commander.commander import Commander
 
 from phoenixc2.server.utils.options import OptionPool
@@ -38,7 +38,9 @@ class BaseBypass(abc.ABC):
             FinalPayload: Modified FinalPayload object
         """
         if final_payload.payload.language not in self.supported_languages:
-            raise Exception("Language not supported")
+            raise Exception(
+                f"Language of the payload is not supported by '{self.name}'."
+            )
 
         self.generate(final_payload, args)
 

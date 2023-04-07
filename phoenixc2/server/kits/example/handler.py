@@ -1,6 +1,6 @@
 from phoenixc2.server.database import DeviceModel
 
-from ..base_handler import BaseHandler
+from ..handler_base import BaseHandler
 
 
 class Handler(BaseHandler):
