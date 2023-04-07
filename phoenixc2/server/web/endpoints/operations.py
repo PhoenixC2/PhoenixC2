@@ -126,7 +126,7 @@ def set_picture(operation_id: int):
     )
     return {
         "status": Status.Success,
-        "message": "Operation picture updated successfully.",
+        "message": "Operation's picture updated successfully.",
     }
 
 
@@ -144,12 +144,12 @@ def delete_picture(operation_id: int):
     LogEntryModel.log(
         "success",
         ENDPOINT,
-        f"Operation '{operation.name}' picture deleted successfully.",
+        f"Operation '{operation.name}''s picture deleted successfully.",
         UserModel.get_current_user(),
     )
     return {
         "status": Status.Success,
-        "message": "Operation picture deleted successfully.",
+        "message": "Operation's picture deleted successfully.",
     }
 
 
@@ -167,11 +167,12 @@ def post_add():
     except TypeError as e:
         return ({"status": Status.Danger, "message": str(e)}), 400
 
+    Session.add(operation)
+    Session.commit()
     if "picture" in request.files:
         operation.set_picture(request.files["picture"])
 
-    Session.add(operation)
-    Session.commit()
+    Session.commit()  # Commit again to save the picture because the id is needed
 
     LogEntryModel.log(
         Status.Success,
@@ -200,10 +201,10 @@ def delete_remove(operation_id: int):
     operation.delete(delete_elements)
     Session.commit()
 
-    message = f"Operation '{operation.name}' deleted successfully."
+    message = "Operation deleted successfully."
 
     if delete_elements:
-        message += " All associated elements were deleted."
+        message += "And all associated elements were deleted."
 
     LogEntryModel.log(
         Status.Success,
@@ -238,7 +239,7 @@ def put_edit(operation_id: int):
     LogEntryModel.log(
         Status.Success,
         ENDPOINT,
-        f"Operation '{operation.name}' edited successfully.",
+        "Operation edited successfully.",
         UserModel.get_current_user(),
     )
     return {"status": "success", "operation": operation.to_dict()}
@@ -273,7 +274,7 @@ def post_assign_user(operation_id: int):
     )
     return {
         "status": Status.Success,
-        "message": f"Operation '{operation.name}' assigned to {user.username}.",
+        "message": "Operation assigned to user.",
     }
 
 
@@ -305,7 +306,7 @@ def delete_unassign_user(operation_id: int):
     )
     return {
         "status": Status.Success,
-        "message": f"Operation '{operation.name}' unassigned from {user.username}.",
+        "message": "Operation unassigned from user.",
     }
 
 
@@ -334,7 +335,7 @@ def post_add_subnet(operation_id: int):
     )
     return {
         "status": Status.Success,
-        "message": f"Subnet '{subnet}' added to '{operation.name}'.",
+        "message": "Subnet added to operation.",
     }
 
 
@@ -363,7 +364,7 @@ def delete_remove_subnet(operation_id: int):
     )
     return {
         "status": Status.Success,
-        "message": f"Subnet '{subnet}' removed from '{operation.name}'.",
+        "message": "Subnet removed from operation.",
     }
 
 
@@ -390,7 +391,7 @@ def change_operation(operation_id: int):
     response = make_response(
         {
             "status": Status.Success,
-            "message": f"Operation '{operation.name}' changed successfully.",
+            "message": "Changed Operation successfully.",
         }
     )
     # set cookie with unlimited expiration

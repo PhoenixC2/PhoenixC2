@@ -45,7 +45,7 @@ endpoints: dict[str, Blueprint] = {
 
 def create_web(commander: Commander) -> Flask:
     web_server = Flask(__name__)
-
+    web_server.jinja_options["autoescape"] = lambda _: True
     if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(
         "PHOENIX_DEBUG", ""
     ):

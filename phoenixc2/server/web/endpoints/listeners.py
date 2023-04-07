@@ -91,7 +91,7 @@ def listeners_bp(commander: Commander):
             else:
                 return {
                     "status": Status.Danger,
-                    "message": f"Invalid network interface: '{data['address']}'.",
+                    "message": "Invalid network interface.",
                 }, 400
         try:
             # Check if data is valid and clean it
@@ -142,21 +142,17 @@ def listeners_bp(commander: Commander):
         name = listener.name
         type = listener.type
         listener.delete(stop, commander)
-        message = (
-            f"Deleted and stopped listener '{name}' ({type})"
-            if stop
-            else f"Deleted listener '{name}' ({type})"
-        )
+        message = "Listener deleted and stopped" if stop else "Listener deleted"
         Session.commit()
         LogEntryModel.log(
             Status.Success,
             "listeners",
-            message,
+            f"{message} '{name}' ({type})",
             UserModel.get_current_user(),
         )
         return {
             "status": Status.Success,
-            "message": message,
+            "message": f"{message} successfully.",
             "listener": listener.to_dict(commander),
         }
 
@@ -220,12 +216,12 @@ def listeners_bp(commander: Commander):
         )
 
         try:
-            status = listener.start(commander)
+            message = listener.start(commander)
         except Exception as e:
             LogEntryModel.log(
                 Status.Danger,
                 "listeners",
-                status,
+                message,
                 UserModel.get_current_user(),
             )
             return ({"status": Status.Danger, "message": str(e)}), 400
@@ -233,12 +229,12 @@ def listeners_bp(commander: Commander):
             LogEntryModel.log(
                 Status.Success,
                 "listeners",
-                status,
+                message,
                 UserModel.get_current_user(),
             )
             return {
                 "status": Status.Success,
-                "message": status,
+                "message": "Listener started successfully.",
                 "listener": listener.to_dict(commander),
             }
 
@@ -272,7 +268,7 @@ def listeners_bp(commander: Commander):
             )
         return {
             "status": Status.Success,
-            "message": f"Stopped listener '{listener.name}' ({listener.type})",
+            "message": "Stopped listener successfully.",
             "listener": listener.to_dict(commander),
         }
 
@@ -310,7 +306,7 @@ def listeners_bp(commander: Commander):
 
         return {
             "status": Status.Success,
-            "message": f"Restarted listener '{listener.name}'.",
+            "message": "Restarted listener successfully.",
             "listener": listener.to_dict(commander),
         }
 

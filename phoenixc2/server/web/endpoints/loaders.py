@@ -11,6 +11,6 @@ def get_loader(loader_name: str = None):
     use_json = request.args.get("json", "").lower() == "true"
 
     if use_json:
-        return {"status": "error", "message": "Not implemented."}, 501
+        return {"status": "error", "message": "Not implemented yet."}, 501
 
     return render_template("loaders.j2")

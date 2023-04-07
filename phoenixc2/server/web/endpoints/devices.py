@@ -118,7 +118,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             Status.Info,
             "devices",
-            f"Created reverse shell task for '{device.name}'.",
+            "Created reverse shell task.",
             UserModel.get_current_user(),
         )
         return {
@@ -164,7 +164,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             "info",
             "devices",
-            f"Created remote command execution task for '{device.name}'.",
+            "Created remote command execution task.",
             UserModel.get_current_user(),
         )
         return {
@@ -208,7 +208,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             Status.Info,
             "devices",
-            f"Created get infos task for '{device.name}'.",
+            "Created get infos task.",
             UserModel.get_current_user(),
         )
         return {
@@ -254,7 +254,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             Status.Info,
             "devices",
-            f"Created list directory contents task for '{device.name}'.",
+            "Created list directory contents task.",
             UserModel.get_current_user(),
         )
         return {
@@ -314,7 +314,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             "info",
             "devices",
-            f"Created upload task for '{device.name}'.",
+            "Created upload task.",
             UserModel.get_current_user(),
         )
         return {
@@ -374,7 +374,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             Status.Info,
             "devices",
-            f"Created download task for '{device.name}'.",
+            "Created download task for.",
             UserModel.get_current_user(),
         )
 
@@ -448,7 +448,7 @@ def devices_bp(commander: Commander):
         LogEntryModel.log(
             "info",
             "devices",
-            f"Created module execution task for '{device.name}'.",
+            "Created module execution task.",
             UserModel.get_current_user(),
         )
         return {
