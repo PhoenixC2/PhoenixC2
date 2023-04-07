@@ -13,8 +13,13 @@ from phoenixc2.server.utils.misc import Status
 DIRECTORIES = ["stagers", "downloads", "uploads", "pictures"]
 
 
-def generate_database():
+def generate_database(reset: bool = False):
     """Create the database."""
+    if reset:
+        log("Resetting the database", Status.Info)
+        Base.metadata.drop_all(engine)
+        log("Reset the database.", Status.Success)
+
     log("Creating database", Status.Info)
     Base.metadata.create_all(engine)
     log("Created the database.", Status.Success)
@@ -95,7 +100,7 @@ def regenerate_ssl():
 
 
 def reset_directories():
-    """Delete and recreate the directories for the server where the data is stored."""
+    """Delete and recreate the data directories."""
     has_to_create = False
     for dir in DIRECTORIES:
         dir = get_resource("data", dir, skip_file_check=True)
@@ -105,12 +110,6 @@ def reset_directories():
 
     if has_to_create:
         log("Created directories.", Status.Success)
-
-
-def reset_database():
-    """Reset the database."""
-    Base.metadata.drop_all(engine)
-    generate_database()
 
 
 def reset_table(table: str):
@@ -146,8 +145,8 @@ def recreate_super_user():
     log(f"API Key: '{admin._api_key}'", Status.Info)
 
 
-def reset_server(reset: bool = False):
-    """Reset the server to the default state."""
+def setup_server(reset: bool = False):
+    """Setup the server or reset it."""
     if reset:
         log("Resetting server", "critical")
     else:
@@ -157,7 +156,7 @@ def reset_server(reset: bool = False):
     if not check_for_ssl() or reset:
         regenerate_ssl()
     if not check_for_database() or reset:
-        generate_database()
+        generate_database(reset)
     if not check_for_super_user() or reset:
         recreate_super_user()
 
