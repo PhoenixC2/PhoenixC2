@@ -3,7 +3,6 @@ name: Push to docker hub
 on:
   release:
       types: [published]
-  workflow_dispatch:
     
 jobs:
   deploy:
