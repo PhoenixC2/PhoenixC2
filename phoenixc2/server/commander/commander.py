@@ -3,8 +3,8 @@ from multiprocessing import Process
 from threading import Thread
 from typing import Optional, TYPE_CHECKING
 from flask import Flask
-from phoenixc2.server.kits.base_handler import BaseHandler
-from phoenixc2.server.kits.base_listener import BaseListener
+from phoenixc2.server.kits.handler_base import BaseHandler
+from phoenixc2.server.kits.listener_base import BaseListener
 from phoenixc2.server.plugins.base import (
     BasePlugin,
     BlueprintPlugin,

@@ -8,7 +8,7 @@ from phoenixc2.server.utils.options import OptionPool
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.misc import Status
 
-from .base_handler import BaseHandler
+from .handler_base import BaseHandler
 
 # to enable type hinting without circular imports
 if TYPE_CHECKING:

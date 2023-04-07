@@ -4,6 +4,7 @@ from tempfile import TemporaryFile
 from pathlib import Path
 from phoenixc2.server.utils.options import OptionPool
 from phoenixc2.server.utils.features import Feature
+from phoenixc2.server.utils.resources import get_resource
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
@@ -32,14 +33,23 @@ class BasePayload(ABC):
     option_pool: OptionPool = OptionPool()
     features: list[Feature] = []
 
+    @classmethod
+    def get_output_file(cls, stager_db: "StagerModel") -> Path:
+        """Save the output to the stager file"""
+        return get_resource(
+            "data/stagers", f"{stager_db.id}.{cls.end_format}", skip_file_check=True
+        )
+
+    @classmethod
     @abstractmethod
     def generate(
-        self, stager_db: "StagerModel", recompile: bool = False
+        cls, stager_db: "StagerModel", recompile: bool = False
     ) -> "FinalPayload":
         """Generate the payload"""
         ...
 
     @classmethod
+    @abstractmethod
     def already_compiled(cls, stager_db: "StagerModel") -> bool:
         """Return if the payload was already compiled"""
         return False

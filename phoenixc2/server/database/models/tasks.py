@@ -184,7 +184,6 @@ class TaskModel(Base):
             raise TypeError("File path is missing.")
 
         task = TaskModel.generate_task(device_or_id)
-        task.name = str(uuid1()).split("-")[0]
 
         with get_resource("data/uploads/", task.name, skip_file_check=True).open(
             "wb"
@@ -293,8 +292,7 @@ class TaskModel(Base):
 
         if execution_method not in module.execution_methods:
             raise ValueError(
-                f"Execution method '{execution_method}'"
-                f"not supported by module '{module.name}'."
+                f"Execution method not supported by module '{module.name}'."
             )
 
         # validate data

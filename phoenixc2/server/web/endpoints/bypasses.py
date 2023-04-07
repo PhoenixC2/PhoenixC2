@@ -1,4 +1,3 @@
-import tempfile
 from flask import Blueprint, render_template, request, send_file
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.utils.misc import Status
@@ -65,32 +64,33 @@ def bypasses_bp(commander: "Commander"):
             return {"status": Status.Danger, "message": "No stager provided."}, 400
 
         try:
-            payload = stager.generate_payload()
+            final_payload = stager.generate_payload()
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
         try:
-            bypass.execute(payload)
+            bypass.execute(final_payload)
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
-        if payload.payload.compiled:
+        if final_payload.payload.compiled:
             return send_file(
-                payload.output,
+                final_payload.output,
                 as_attachment=True,
-                download_name=payload.name,
+                download_name=final_payload.name,
             )
         if use_json:
             return {
                 "status": Status.Success,
                 "message": "Stager generated successfully.",
-                "stager": payload.output,
+                "stager": final_payload.output,
             }
         else:
-            tmp = tempfile.TemporaryFile()
-            tmp.write(payload.output.encode())
-            tmp.seek(0)
-            return send_file(tmp, as_attachment=True, download_name=payload.name)
+            return send_file(
+                final_payload.as_file,
+                as_attachment=True,
+                download_name=final_payload.name,
+            )
 
     @bypasses_bp.route("/chains")
     @bypasses_bp.route("/chains/<int:chain_id>")
@@ -251,36 +251,30 @@ def bypasses_bp(commander: "Commander"):
         if chain is None:
             return {"status": Status.Danger, "message": "Chain not found."}, 400
 
-        stager = Session.query(StagerModel).filter_by(id=stager_id).first()
+        stager: StagerModel = Session.query(StagerModel).filter_by(id=stager_id).first()
 
         if stager is None:
             return {"status": Status.Danger, "message": "Stager not found."}, 400
         try:
-            payload = stager.generate_payload()
+            final_payload = stager.generate_payload()
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
         try:
-            payload = chain.execute(payload)
+            final_payload = chain.execute(final_payload)
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
-        if payload.payload.compiled:
+        if final_payload.payload.compiled or not use_json:
             return send_file(
-                payload.output,
+                final_payload.as_file,
                 as_attachment=True,
-                download_name=payload.name,
+                download_name=final_payload.name,
             )
-        if use_json:
-            return {
-                "status": Status.Success,
-                "message": "Stager generated successfully.",
-                "stager": payload.output,
-            }
-        else:
-            tmp = tempfile.TemporaryFile()
-            tmp.write(payload.output.encode())
-            tmp.seek(0)
-            return send_file(tmp, as_attachment=True, download_name=payload.name)
+        return {
+            "status": Status.Success,
+            "message": "Stager generated successfully.",
+            "stager": final_payload.output,
+        }
 
     return bypasses_bp

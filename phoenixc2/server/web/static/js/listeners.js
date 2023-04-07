@@ -66,7 +66,7 @@ function startListener(id) {
 }
 
 function restartListener(id) {
-    showNotification(`Restarting listener ${id}.`, "info");
+    showNotification(`Restarting listener.`, "info");
     // set listener activity status to false
     document.getElementById("active-" + id).innerHTML = '<i class="material-icons" style="color: red; margin-top: 4px;">circle</i>'
     fetch("/listeners/" + id + "/restart?json=true", {

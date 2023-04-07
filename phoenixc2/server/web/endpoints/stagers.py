@@ -86,42 +86,39 @@ def stagers_bp(commander: Commander):
         # Get request data
         name = request.form.get("name")
         data = dict(request.form)
+
+        # check if listener exists
+        listener: ListenerModel = (
+            Session.query(ListenerModel).filter_by(id=data.get("listener")).first()
+        )
+
+        if listener is None:
+            return {"status": Status.Danger, "message": "Listener does not exist."}, 400
+
+        # check if name is given
+        if not name:
+            return {"status": Status.Danger, "message": "Name is required."}, 400
+
+        # check if stager name is already taken
+        if Session.query(StagerModel).filter_by(name=name).first():
+            return {"status": Status.Danger, "message": "Name is already taken."}, 400
+
+        # get class for options
+        stager_class = StagerModel.get_class_from_type(listener.type)
+        option_pool = stager_class.option_pool
+
+        # get payload options
+        if "payload" in data and data["payload"] in stager_class.payloads:
+            option_pool.extend(stager_class.payloads[data["payload"]].option_pool)
+        else:
+            return {"status": Status.Danger, "message": "Invalid payload."}, 400
         try:
-            # check if listener exists
-            listener: ListenerModel = (
-                Session.query(ListenerModel).filter_by(id=data.get("listener")).first()
-            )
-
-            if listener is None:
-                raise ValueError("Listener does not exist.")
-
-            # check if name is given
-            if not name:
-                raise ValueError("Name is required.")
-
-            # check if stager name is already taken
-            if Session.query(StagerModel).filter_by(name=name).first():
-                raise ValueError("Stager name is already taken.")
-
-            # get class for options
-            stager_class = StagerModel.get_class_from_type(listener.type)
-            option_pool = stager_class.option_pool
-
-            # get payload options
-            if "payload" in data and data["payload"] in stager_class.payloads:
-                option_pool.extend(stager_class.payloads[data["payload"]].option_pool)
-
-            # Check if data is valid and clean it
             data = option_pool.validate_all(data)
-
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
         # Add stager
-        try:
-            stager = StagerModel.create_from_data(data)
-        except Exception as e:
-            return {"status": Status.Danger, "message": str(e)}, 400
+        stager = StagerModel.create_from_data(data)
 
         Session.add(stager)
         Session.commit()

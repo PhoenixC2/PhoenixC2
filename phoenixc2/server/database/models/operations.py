@@ -124,7 +124,7 @@ class OperationModel(Base):
     def get_picture(self) -> str:
         """Get the picture"""
         return (
-            str(get_resource(PICTURES, self.name + "-operation"))
+            str(get_resource(PICTURES, f"{self.id}-operation"))
             if self.picture
             else get_resource("web/static/images", "icon.png")
         )
@@ -133,17 +133,17 @@ class OperationModel(Base):
         """Set the picture and save it"""
 
         if self.picture:
-            get_resource(PICTURES, self.name + "-operation").unlink()
-
+            get_resource(PICTURES, f"{self.id}-operation").unlink()
+ 
         self.picture = True
         file.save(
-            get_resource(PICTURES, self.name + "-operation", skip_file_check=True)
+            get_resource(PICTURES, f"{self.id}-operation", skip_file_check=True)
         )
 
     def delete_picture(self) -> None:
         """Delete the profile picture"""
         if self.picture:
-            get_resource(PICTURES, self.name + "-operation").unlink()
+            get_resource(PICTURES, f"{self.id}-operation").unlink()
             self.picture = False
 
     def assign_user(self, user: "UserModel") -> None:
@@ -212,7 +212,7 @@ class OperationModel(Base):
             try:
                 operation.expiry = datetime.strptime(expiry, "%Y-%m-%d")
             except ValueError:
-                raise ValueError("Invalid expiry date")
+                raise ValueError("Invalid expiry date: Format must be YYYY-MM-DD")
         return operation
 
     @staticmethod

@@ -8,8 +8,8 @@ from phoenixc2.server.database.base import Base
 from phoenixc2.server.utils.admin import (
     recreate_super_user,
     regenerate_ssl,
-    reset_database,
-    reset_server,
+    generate_database,
+    setup_server,
     reset_table,
 )
 from phoenixc2.server.utils.ui import log, logo, ph_print
@@ -111,7 +111,13 @@ def parse_args(args, config: dict) -> dict:
 
     # admin args
     if args.reset:
-        reset_server(True)
+        if (
+            input("Are you sure, that you want to reset the server [Y/n]: ").lower()
+            == "y"
+        ):
+            setup_server(True)
+        else:
+            log("Database reset aborted.", "info")
     if args.recreate_super_user:
         recreate_super_user()
     if args.reset_database:
@@ -119,7 +125,7 @@ def parse_args(args, config: dict) -> dict:
             input("Are you sure, that you want to reset the database [Y/n]: ").lower()
             == "y"
         ):
-            reset_database()
+            generate_database(True)
         else:
             log("Database reset aborted.", "info")
     if (

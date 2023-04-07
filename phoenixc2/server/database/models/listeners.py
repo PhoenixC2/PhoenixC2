@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from random import randint
 from typing import TYPE_CHECKING, List, Optional
-
+from flask import escape
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,7 +18,7 @@ from .operations import OperationModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.kits.base_listener import BaseListener
+    from phoenixc2.server.kits.listener_base import BaseListener
 
     from .stagers import StagerModel
 
@@ -114,7 +114,7 @@ class ListenerModel(Base):
     @staticmethod
     def get_class_from_type(type: str) -> "BaseListener":
         """Get the listener class based on its type"""
-        type = type.replace("-", "_")
+        type = escape(type.replace("-", "_"))
         if type not in get_all_kits():
             raise ValueError(f"Listener '{type}' isn't installed.")
         try:
@@ -147,7 +147,7 @@ class ListenerModel(Base):
             listener_obj.stop()
             commander.remove_active_listener(self.id)
         else:
-            raise ValueError(f"Listener '{self.name}' isn't active.")
+            raise ValueError("Listener isn't active.")
 
     def restart(self, commander: "Commander"):
         """Restart the listener"""
@@ -165,7 +165,10 @@ class ListenerModel(Base):
         options = self.listener_class.option_pool
 
         for key, value in data.items():
-            option = options.get_option(key)
+            try:
+                option = options.get_option(key)
+            except KeyError:
+                raise ValueError(f"Option '{escape(key)}' doesn't exist.")
 
             value = option.validate_data(value)
             if not option.editable:

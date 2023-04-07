@@ -7,7 +7,7 @@ from phoenixc2.server.utils.options import (
     StringType,
 )
 
-from ..base_stager import BasePayload, BaseStager
+from ..stager_base import BasePayload, BaseStager
 
 if TYPE_CHECKING:
     from phoenixc2.server.database import StagerModel

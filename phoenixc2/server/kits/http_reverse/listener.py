@@ -19,7 +19,7 @@ from phoenixc2.server.utils.options import DefaultListenerPool, Option, StringTy
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.web import FlaskThread
 
-from ..base_listener import BaseListener
+from ..listener_base import BaseListener
 from .handler import Handler
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class Listener(BaseListener):
 
     name = "http-reverse"
     description = (
-        "Listener based on the http protocol"
+        "Listener based on the http protocol "
         "that uses a stager to connect back to the server"
     )
     author: str = "Screamz2k"

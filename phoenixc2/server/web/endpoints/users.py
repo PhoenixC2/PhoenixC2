@@ -165,7 +165,7 @@ def add_user():
     LogEntryModel.log(
         Status.Success,
         "users",
-        f"{'Admin' if user.admin else 'User'} {username} added.",
+        f"{'Admin' if user.admin else 'User'} {user} added.",
         UserModel.get_current_user(),
     )
 
@@ -191,7 +191,7 @@ def delete_user(id: int = None):
     if user.id == 1:
         return {
             "status": Status.Danger,
-            "message": "You can't delete the super user.",
+            "message": "The super user can't be deleted.",
         }
 
     # Check if user is the operator
@@ -208,10 +208,10 @@ def delete_user(id: int = None):
     LogEntryModel.log(
         Status.Success,
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username} deleted.",
+        f"{'Admin' if user.admin else 'User'} {user} deleted.",
         current_user,
     )
-    return {"status": Status.Success, "message": "User deleted."}
+    return {"status": Status.Success, "message": "User deleted successfully."}
 
 
 @users_bp.route("/<int:id>/edit", methods=["PUT"])
@@ -254,11 +254,11 @@ def edit_user(id: int = None):
     LogEntryModel.log(
         Status.Success,
         "users",
-        f"{'Admin' if user.admin else 'User'} {user.username} edited.",
+        f"{'Admin' if user.admin else 'User'} {user} edited.",
         current_user,
     )
 
-    return {"status": Status.Success, "message": "User edited."}
+    return {"status": Status.Success, "message": "User edited successfully."}
 
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])

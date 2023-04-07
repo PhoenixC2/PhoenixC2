@@ -29,7 +29,7 @@ def post_login():
             if use_json:
                 return (
                     {
-                        "status": Status.ERROR,
+                        "status": Status.Error,
                         "message": INVALID_CREDENTIALS,
                         "user": None,
                     }

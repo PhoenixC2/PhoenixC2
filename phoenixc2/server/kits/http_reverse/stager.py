@@ -14,8 +14,8 @@ from phoenixc2.server.utils.options import (
 from phoenixc2.server.utils.resources import get_resource
 
 from phoenixc2.server.utils.features import Feature
-from ..base_stager import BaseStager
-from ..base_payload import BasePayload, FinalPayload
+from ..stager_base import BaseStager
+from ..payload_base import BasePayload, FinalPayload
 
 if TYPE_CHECKING:
     from phoenixc2.server.database import StagerModel
@@ -94,7 +94,7 @@ class GoPayload(BasePayload):
     ]
 
     @classmethod
-    def already_compiled(cls, stager_db: "StagerModel") -> bool:
+    def already_compiled(cls, stager_db: "StagerModel"):
         try:
             get_resource(
                 "data/stagers/",
@@ -105,9 +105,7 @@ class GoPayload(BasePayload):
         return True
 
     @classmethod
-    def generate(
-        cls, stager_db: "StagerModel", recompile: bool = False
-    ) -> "FinalPayload":
+    def generate(cls, stager_db, recompile=False):
         if cls.already_compiled(stager_db) and not recompile:
             final_payload = FinalPayload(
                 cls,
@@ -133,9 +131,7 @@ class GoPayload(BasePayload):
         go_file = get_resource(
             "data/stagers/", f"{stager_db.name}.go", skip_file_check=True
         )
-        executable = get_resource(
-            "data/stagers/", f"{stager_db.name}.exe", skip_file_check=True
-        )
+        output_file = cls.get_output_file(stager_db)
 
         with go_file.open("w") as f:
             f.write(output)
@@ -146,7 +142,7 @@ class GoPayload(BasePayload):
 
         status_code = os.system(
             f"GOOS={operation_system} GOARCH={architecture} go build"
-            f" -o {executable} {go_file}"
+            f" -o {output_file} {go_file}"
         )
         # remove go file
         go_file.unlink()
@@ -158,7 +154,7 @@ class GoPayload(BasePayload):
             cls,
             stager_db,
         )
-        final_payload.set_output_from_path(executable)
+        final_payload.set_output_from_path(output_file)
         return final_payload
 
 
