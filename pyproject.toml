@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "phoenixc2"
-version = "1.01"
+version = "1.0.1"
 description = "A C2 Framework for Red Team Operations"
 authors = ["Screamz2k"]
 readme = "README.md"
