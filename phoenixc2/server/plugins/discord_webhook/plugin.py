@@ -1,7 +1,9 @@
 import requests
 from phoenixc2.server.plugins.base import ConnectionEventPlugin
 
-IMAGE_URL = "https://github.com/screamz2k/PhoenixC2/pages/images/logo.png"
+IMAGE_URL = (
+    "https://raw.githubusercontent.com/screamz2k/PhoenixC2/main/pages/images/logo.png"
+)
 
 
 class Plugin(ConnectionEventPlugin):
