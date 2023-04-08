@@ -74,3 +74,7 @@ Contributions are welcome! Please read the [contribution guidelines](https://git
 
 ## LICENSE
 View license [here](https://github.com/screamz2k/PhoenixC2/LICENSE)
+
+# Star History
+<img src="https://api.star-history.com/svg?repos=screamz2k/phoenixc2&type=Date"/>
+Thank you all for over 50 stars in just two days :)
