@@ -1,9 +1,8 @@
 [web]
 address = "localhost"
 port = 8080
-ssl = false
+ssl = true
 secret_key = ""
-# hide server except cookies is set
 show_cookie = false
 show_cookie_name = "show_server"
 show_cookie_value = "plsshowtheserver"
@@ -15,11 +14,10 @@ user = "phoenix"
 pass = "YourS3cuReP4ss"
 host = "localhost"
 port = 3306
-database = "PhoenixFramework"
+database = "PhoenixC2"
 
 [logging]
-location = "/data/phoenix.log"
+name = "phoenix"
 enabled = false
 
 [plugins]
-
