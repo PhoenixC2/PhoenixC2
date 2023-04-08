@@ -6,7 +6,7 @@ Add this to your config file to enable the plugin:
 ```toml
 [plugins.discord_webhook]
 enabled = true
-webhook_url = "your webhook url"
+webhook = "your webhook url"
 ```
 
 ## Preview
