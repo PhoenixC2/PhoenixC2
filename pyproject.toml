@@ -41,7 +41,6 @@ bleach = "*"
 markdown = "*"
 pyOpenSSL = "*"
 mysqlclient = {version = "*", optional = true}
-psycopg2 = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -51,16 +50,15 @@ pre-commit = "*"
 
 [tool.poetry.extras]
 mysql = ["mysqlclient"]
-postgresql = ["psycopg2"]
 
 [tool.poetry.scripts]
 phserver = "phoenixc2.server.__main__:main"
 phclient = "phoenixc2.client.__main__:main"
 
 [tool.poetry.urls]
-homepage = "https://github.com/Screamz2k/PhoenixC2"
-documentation = "https://screamz2k.gitbook.io/phoenixc2/"
-repository = "https://github.com/Screamz2k/PhoenixC2"
+Homepage = "https://github.com/Screamz2k/PhoenixC2"
+Documentation = "https://screamz2k.gitbook.io/phoenixc2/"
+Repository = "https://github.com/Screamz2k/PhoenixC2"
 
 [tool.ruff]
 extend-exclude = [
