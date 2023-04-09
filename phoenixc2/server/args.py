@@ -115,7 +115,7 @@ def parse_args(args, config: dict) -> dict:
             input("Are you sure, that you want to reset the server [Y/n]: ").lower()
             == "y"
         ):
-            setup_server(True)
+            setup_server(reset=True)
         else:
             log("Database reset aborted.", "info")
     if args.recreate_super_user:
