@@ -80,4 +80,5 @@ View license [here](https://github.com/screamz2k/PhoenixC2/LICENSE)
 # Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=screamz2k/phoenixc2&type=Date)](https://star-history.com/#screamz2k/phoenixc2&Date)
 
-Thank you all for over 50 stars in just two days :)
+- 08/04/23 Thank you all for over 50 stars in just two days :)
+- 09/04/23 100 stars! I just 3 days. Thanks for the great support!
