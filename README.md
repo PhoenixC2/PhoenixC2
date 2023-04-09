@@ -72,6 +72,8 @@ The documentation is available [here](https://screamz2k.gitbook.io/phoenixc2/)
 ## Contributing
 Contributions are welcome! Please read the [contribution guidelines](https://github.com/screamz2k/PhoenixC2/.github/CONTRIBUTING.md) first.
 
+Please vote in the [Discussion Tab](https://github.com/screamz2k/PhoenixC2/discussions/categories/polls) for development choices and new features.
+
 ## LICENSE
 View license [here](https://github.com/screamz2k/PhoenixC2/LICENSE)
 
