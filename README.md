@@ -11,7 +11,7 @@
 
 ## Disclaimer
 This project is still in **development** and **not** ready for professional use.
-This framework is intended for educational and research purposes only. The author and its affiliates do not endorse or condone any illegal or malicious activity conducted with this framework. Users of this framework are solely responsible for ensuring that their use of this framework is in compliance with all applicable laws and regulations.
+The author and its affiliates do not endorse or condone any illegal or malicious activity conducted with this framework. Users of this framework are solely responsible for ensuring that their use of this framework is in compliance with all applicable laws and regulations.
 
 ## Features
 - [x] Modern Web-Interface
