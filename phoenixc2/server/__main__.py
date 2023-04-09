@@ -11,6 +11,7 @@ from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.misc import Status
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.web import create_web
+from phoenixc2.utils.update import check_for_update
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     config = parse_args(args, config)
 
     log("Welcome to PhoenixC2", Status.Success)
-
+    check_for_update()
     if not check_for_setup():
         setup_server()
     if args.exit:
