@@ -1,5 +1,5 @@
 <p align="center">
-    <img align="center" src="pages/images/logo.png" width="100px" height="100px" alt="PhoenixC2" />
+    <img align="center" src="https://raw.githubusercontent.com/screamz2k/PhoenixC2/main/pages/images/logo.png" width="100px" height="100px" alt="PhoenixC2" />
     <h1 align="center">PhoenixC2</h1>
     <p align="center"> An Open-Source C2-Framework written in pure Python3.</p>
 </p>
@@ -7,6 +7,8 @@
     <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/tests.yml/badge.svg"/>
     <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/docker.yml/badge.svg"/>
     <img align="center" src="https://github.com/screamz2k/PhoenixC2/actions/workflows/pypi-publish.yml/badge.svg"/>
+    <img align="center" src="https://img.shields.io/docker/image-size/screamz2k/phoenixc2?color=success"/>
+    <img align="center" src="https://img.shields.io/pypi/dw/phoenixc2?color=success"/>
 </p>
 
 ## Disclaimer
