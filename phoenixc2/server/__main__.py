@@ -10,7 +10,7 @@ from phoenixc2.server.utils.admin import check_for_setup, setup_server
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.misc import Status
 from phoenixc2.server.utils.ui import log
-from phoenixc2.server.web import create_web
+from phoenixc2.server.api import create_api
 from phoenixc2.utils.update import check_for_update
 
 
@@ -31,9 +31,9 @@ def main():
     commander = Commander()
 
     # Create web server
-    web_server = create_web(commander)
+    api = create_api(commander)
 
-    commander.web_server = web_server
+    commander.api = api
 
     # load plugins
     log("Loading plugins.", Status.Info)

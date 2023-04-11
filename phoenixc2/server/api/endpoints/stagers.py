@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, request, send_file
 
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import (
@@ -23,7 +23,6 @@ def stagers_bp(commander: Commander):
     @stagers_bp.route("/<int:stager_id>", methods=["GET"])
     @UserModel.authenticated
     def get_stagers(stager_id: int = None):
-        use_json = request.args.get("json", "") == "true"
         show_listener = request.args.get("listener", "") == "true"
         show_stagers = request.args.get("stagers", "") == "true"
         show_all = request.args.get("all", "") == "true"
@@ -37,31 +36,19 @@ def stagers_bp(commander: Commander):
             stagers: list[StagerModel] = Session.query(StagerModel).filter(
                 StagerModel.operation == OperationModel.get_current_operation()
             )
-        stager_types = StagerModel.get_all_classes()
-        listeners: list[ListenerModel] = Session.query(ListenerModel).all()
 
-        if use_json:
-            if opened_stager is not None:
-                return {
-                    "status": Status.Success,
-                    "stager": opened_stager.to_dict(
-                        commander, show_listener, show_stagers
-                    ),
-                }
+        if opened_stager is not None:
             return {
                 "status": Status.Success,
-                "stagers": [
-                    stager.to_dict(commander, show_listener, show_stagers)
-                    for stager in stagers
-                ],
+                "stager": opened_stager.to_dict(commander, show_listener, show_stagers),
             }
-        return render_template(
-            "stagers.j2",
-            stagers=stagers,
-            opened_stager=opened_stager,
-            listeners=listeners,
-            stager_types=stager_types,
-        )
+        return {
+            "status": Status.Success,
+            "stagers": [
+                stager.to_dict(commander, show_listener, show_stagers)
+                for stager in stagers
+            ],
+        }
 
     @stagers_bp.route("/available", methods=["GET"])
     @UserModel.authenticated
@@ -84,8 +71,8 @@ def stagers_bp(commander: Commander):
     @UserModel.authenticated
     def post_add():
         # Get request data
-        name = request.form.get("name")
-        data = dict(request.form)
+        name = request.json.get("name")
+        data = dict(request.json)
 
         # check if listener exists
         listener: ListenerModel = (
@@ -166,7 +153,7 @@ def stagers_bp(commander: Commander):
     @UserModel.authenticated
     def put_edit(id: int = None):
         # Get request data
-        form_data = dict(request.form)
+        form_data = dict(request.json)
         if id is None:
             if form_data.get("id") is None:
                 return {"status": Status.Danger, "message": INVALID_ID}, 400

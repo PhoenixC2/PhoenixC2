@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 
 from phoenixc2.server.database import (
     CredentialModel,
@@ -17,7 +17,6 @@ credentials_bp = Blueprint(ENDPOINT, __name__, url_prefix="/credentials")
 @credentials_bp.route("/<int:cred_id>", methods=["GET"])
 @UserModel.authenticated
 def get_credentials(cred_id: int = None):
-    use_json = request.args.get("json", "").lower() == "true"
     show_operation = request.args.get("operation", "").lower() == "true"
     show_all = request.args.get("all", "").lower() == "true"
 
@@ -35,34 +34,28 @@ def get_credentials(cred_id: int = None):
             .all()
         )
 
-    if use_json:
-        if opened_credential is not None:
-            return {
-                "status": Status.Success,
-                "credential": opened_credential.to_dict(show_operation=show_operation),
-            }
+    if opened_credential is not None:
         return {
             "status": Status.Success,
-            ENDPOINT: [
-                credential.to_dict(show_operation=show_operation)
-                for credential in credentials
-            ],
+            "credential": opened_credential.to_dict(show_operation=show_operation),
         }
-    return render_template(
-        "credentials.j2",
-        credentials=credentials,
-        opened_credential=opened_credential,
-    )
+    return {
+        "status": Status.Success,
+        ENDPOINT: [
+            credential.to_dict(show_operation=show_operation)
+            for credential in credentials
+        ],
+    }
 
 
 @credentials_bp.route("/add", methods=["POST"])
 @UserModel.authenticated
 def add_credential():
-    value = request.form.get("value", "")
-    hash = request.form.get("hash", "").lower() == "true"
-    user = request.form.get("user", "")
-    admin = request.form.get("admin", "").lower() == "true"
-    notes = request.form.get("notes", "")
+    value = request.json.get("value", "")
+    hash = request.json.get("hash", "").lower() == "true"
+    user = request.json.get("user", "")
+    admin = request.json.get("admin", "").lower() == "true"
+    notes = request.json.get("notes", "")
 
     credential = CredentialModel.create(value, hash, user, admin, notes)
     Session.add(credential)
@@ -114,7 +107,7 @@ def edit_credential(cred_id: int):
             "message": "Credential does not exist",
         }, 400
 
-    credential.edit(request.form)
+    credential.edit(request.json)
     Session.commit()
     LogEntryModel.log(
         Status.Success,

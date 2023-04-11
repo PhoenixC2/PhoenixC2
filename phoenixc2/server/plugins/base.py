@@ -79,7 +79,7 @@ class BlueprintPlugin(BasePlugin):
 
     @staticmethod
     @abstractmethod
-    def execute(commander, config) -> Blueprint:
+    def execute(commander: "Commander", config: dict) -> Blueprint:
         """Returns the blueprint to be added to the web api."""
         pass
 
@@ -98,24 +98,6 @@ class RoutePlugin(BasePlugin):
     @abstractmethod
     def execute():
         """The function to be added to the route."""
-        pass
-
-
-class InjectedPlugin(BasePlugin):
-    """The Base Injected Plugin class.
-
-    Used for plugins which inject code into existing templates, like html, js, css, etc.
-    """
-
-    # the name of the routes where the code will be injected
-    # - empty - inject the code into all routes
-    # - list of routes
-    routes: list[str] = []
-
-    @staticmethod
-    @abstractmethod
-    def execute(commander, config) -> str:
-        """Returns the code to be injected into the template."""
         pass
 
 

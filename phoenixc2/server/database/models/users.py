@@ -6,7 +6,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, List, Optional
 from uuid import uuid1
 
-from flask import request, session, flash, redirect
+from flask import request, session
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from werkzeug.datastructures import FileStorage
@@ -22,7 +22,6 @@ from .association import (
     user_operation_assignment_table,
 )
 
-AUTH_ENDPOINT = "/auth/login"
 
 if TYPE_CHECKING:
     from .logs import LogEntryModel
@@ -229,27 +228,20 @@ class UserModel(Base):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            use_json = request.args.get("json", "false").lower() == "true"
 
             if os.getenv("PHOENIX_TEST") == "true":
                 if session.get("api_key") is None:
                     session["api_key"] = Session.query(UserModel).first()._api_key
             user = UserModel.get_current_user()
             if user is None:
-                if use_json:
-                    return {"status": Status.Danger, "message": "You have to login."}
-                flash("You have to login.", Status.Danger)
-                return redirect(AUTH_ENDPOINT)
+                return {"status": Status.Danger, "message": "You have to login."}
             else:
                 if user.disabled:
                     session.clear()
-                    if use_json:
-                        return {
+                    return {
                             "status": Status.Danger,
                             "message": "This account got disabled.",
                         }
-                    flash("This account got disabled.", Status.Danger)
-                    return redirect(AUTH_ENDPOINT)
                 user.last_activity = datetime.now()
                 Session.commit()
                 return func(*args, **kwargs)
@@ -262,7 +254,6 @@ class UserModel(Base):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            use_json = request.args.get("json", "false").lower() == "true"
             if os.getenv("PHOENIX_TEST") == "true":
                 if session.get("api_key") is None:
                     session["api_key"] = Session.query(UserModel).first()._api_key
@@ -270,27 +261,18 @@ class UserModel(Base):
             if user is not None:
                 if user.disabled:
                     session.clear()
-                    if use_json:
-                        return {
+                    return {
                             "status": Status.Danger,
                             "message": "This account got disabled.",
                         }
-                    flash("This account got disabled.", Status.Danger)
-                    return redirect(AUTH_ENDPOINT)
                 if not user.admin:
-                    if use_json:
-                        return {
+                    return {
                             "status": Status.Danger,
                             "message": "You don't have the permission to do this.",
                         }
-                    flash("You don't have the permission to do this.", Status.Danger)
-                    return redirect(AUTH_ENDPOINT)
                 else:
                     return func(*args, **kwargs)
             else:
-                if use_json:
-                    return {"status": Status.Danger, "message": "You have to login."}
-                flash("You have to login.", Status.Danger)
-                return redirect(AUTH_ENDPOINT)
+                return {"status": Status.Danger, "message": "You have to login."}
 
         return wrapper

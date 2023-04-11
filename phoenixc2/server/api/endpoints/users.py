@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, request, send_file
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
@@ -14,7 +14,6 @@ users_bp = Blueprint(ENDPOINT, __name__, url_prefix="/users")
 @users_bp.route("/<int:user_id>", methods=["GET"])
 @UserModel.authenticated
 def get_users(user_id: int = None):
-    use_json = request.args.get("json", "").lower() == "true"
     show_logs = request.args.get("logs", "").lower() == "true"
     show_unseen_logs = request.args.get("unseen", "").lower() == "true"
     show_assigned_operations = (
@@ -25,35 +24,47 @@ def get_users(user_id: int = None):
     opened_user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     users: list[UserModel] = Session.query(UserModel).all()
 
-    if use_json:
-        if opened_user is not None:
-            return {
-                "status": "success",
-                "user": opened_user.to_dict(
-                    show_logs,
-                    show_unseen_logs,
-                    show_assigned_operations,
-                    show_owned_operations,
-                ),
-            }
-
+    if opened_user is not None:
         return {
             "status": "success",
-            ENDPOINT: [
-                user.to_dict(
-                    show_logs,
-                    show_unseen_logs,
-                    show_assigned_operations,
-                    show_owned_operations,
-                )
-                for user in users
-            ],
+            "user": opened_user.to_dict(
+                show_logs,
+                show_unseen_logs,
+                show_assigned_operations,
+                show_owned_operations,
+            ),
         }
-    return render_template(
-        "users.j2",
-        users=users,
-        opened_user=opened_user,
+
+    return {
+        "status": "success",
+        ENDPOINT: [
+            user.to_dict(
+                show_logs,
+                show_unseen_logs,
+                show_assigned_operations,
+                show_owned_operations,
+            )
+            for user in users
+        ],
+    }
+
+
+@users_bp.route("/user")
+@UserModel.authenticated
+def get_current_user():
+    show_logs = request.args.get("logs", "").lower() == "true"
+    show_unseen_logs = request.args.get("unseen", "").lower() == "true"
+    show_assigned_operations = (
+        request.args.get("assigned_operations", "").lower() == "true"
     )
+    show_owned_operations = request.args.get("owned_operations", "").lower() == "true"
+    current_user = UserModel.get_current_user()
+    return {
+        "status": "success",
+        "user": current_user.to_dict(
+            show_logs, show_unseen_logs, show_assigned_operations, show_owned_operations
+        ),
+    }
 
 
 @users_bp.route("/<int:user_id>/picture", methods=["GET"])
@@ -134,10 +145,10 @@ def delete_profile_picture(user_id: int = None):
 @users_bp.route("/add", methods=["POST"])
 @UserModel.admin_required
 def add_user():
-    username = request.form.get("username")
-    password = request.form.get("password")
-    admin = request.form.get("admin", "") == "on"
-    disabled = request.form.get("disabled", "").lower() == "on"
+    username = request.json.get("username")
+    password = request.json.get("password")
+    admin = request.json.get("admin", "") == "on"
+    disabled = request.json.get("disabled", "").lower() == "on"
 
     if not username or not password:
         return {
@@ -218,7 +229,7 @@ def delete_user(id: int = None):
 @UserModel.admin_required
 def edit_user(id: int = None):
     # Get request data
-    form_data = dict(request.form)
+    form_data = dict(request.json)
     current_user = UserModel.get_current_user()
 
     if id is None:

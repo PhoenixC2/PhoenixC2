@@ -7,10 +7,10 @@ class BypassTest(unittest.TestCase):
     def setUpClass(cls):
         change_to_memory_database()
         from phoenixc2.server.commander.commander import Commander
-        from phoenixc2.server.web import create_web
+        from phoenixc2.server.api import create_api
 
         cls.commander = Commander()
-        cls.app = create_web(cls.commander)
+        cls.app = create_api(cls.commander)
         cls.client = cls.app.test_client()
         cls.stager = generate_stager()
 

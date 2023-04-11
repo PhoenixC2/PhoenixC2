@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import (
@@ -18,7 +18,6 @@ def tasks_bp(commander: Commander):
     @blueprint.route("/<int:task_id>", methods=["GET"])
     @UserModel.authenticated
     def get_tasks(task_id: int = None):
-        use_json = request.args.get("json", "") == "true"
         show_device = request.args.get("device", "") == "true"
         show_all = request.args.get("all", "") == "true"
         opened_task: TaskModel = Session.query(TaskModel).filter_by(id=task_id).first()
@@ -32,17 +31,15 @@ def tasks_bp(commander: Commander):
                 .all()
             )
 
-        if use_json:
-            if opened_task is not None:
-                return {
-                    "status": Status.Success,
-                    "task": opened_task.to_dict(commander, show_device),
-                }
+        if opened_task is not None:
             return {
                 "status": Status.Success,
-                "tasks": [task.to_dict(commander, show_device) for task in tasks],
+                "task": opened_task.to_dict(commander, show_device),
             }
-        return render_template("tasks.j2", tasks=tasks, opened_task=opened_task)
+        return {
+            "status": Status.Success,
+            "tasks": [task.to_dict(commander, show_device) for task in tasks],
+        }
 
     @blueprint.route("/<string:task_id>/clear", methods=["DELETE"])
     @UserModel.authenticated

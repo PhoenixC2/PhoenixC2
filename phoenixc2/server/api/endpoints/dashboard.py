@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint
 
 import phoenixc2
 from phoenixc2.server.kits import get_all_kits
@@ -21,7 +21,6 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
     @dashboard_bp.route("/")
     @UserModel.authenticated
     def get_index():
-        use_json = request.args.get("json", "").lower() == "true"
         devices: list[DeviceModel] = Session.query(DeviceModel).all()
         operations: list[OperationModel] = Session.query(OperationModel).all()
         # get count of connections from today
@@ -41,29 +40,19 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
             .filter(UserModel.last_activity >= datetime.now() - timedelta(minutes=5))
             .count()
         )
-        if use_json:
-            return {
-                "status": Status.Success,
-                "version": phoenixc2.__version__,
-                "devices": len(devices),
-                "operations": len(operations),
-                "active_devices": len(commander.active_handlers),
-                "active_listeners": len(commander.active_listeners),
-                "active_users": active_users,
-                "connections_last_hour": connections_last_hour,
-                "connections_today": connections_today,
-                "installed_kits": get_all_kits(),
-                "installed_loaders": [],
-            }
-        return render_template(
-            "dashboard.j2",
-            devices=devices,
-            operations=operations,
-            active_devices=len(commander.active_handlers),
-            active_listeners=len(commander.active_listeners),
-            active_users=active_users,
-            connections_last_hour=connections_last_hour,
-            connections_today=connections_today,
-        )
+
+        return {
+            "status": Status.Success,
+            "version": phoenixc2.__version__,
+            "devices": len(devices),
+            "operations": len(operations),
+            "active_devices": len(commander.active_handlers),
+            "active_listeners": len(commander.active_listeners),
+            "active_users": active_users,
+            "connections_last_hour": connections_last_hour,
+            "connections_today": connections_today,
+            "installed_kits": get_all_kits(),
+            "installed_loaders": [],
+        }
 
     return dashboard_bp

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import (
@@ -8,7 +8,7 @@ from phoenixc2.server.database import (
     Session,
     UserModel,
 )
-from phoenixc2.server.utils.misc import Status, get_network_interfaces, get_platform
+from phoenixc2.server.utils.misc import Status, get_network_interfaces
 from phoenixc2.server.utils.ui import log
 
 INVALID_ID = "Invalid ID."
@@ -23,40 +23,29 @@ def listeners_bp(commander: Commander):
     @blueprint.route("/<int:listener_id>", methods=["GET"])
     @UserModel.authenticated
     def get_listeners(listener_id: int = None):
-        use_json = request.args.get("json", "").lower() == "true"
         show_operation = request.args.get("show_operation", "").lower() == "true"
         show_stagers = request.args.get("show_stagers", "").lower() == "true"
         show_all = request.args.get("all", "").lower() == "true"
         opened_listener = Session.query(ListenerModel).filter_by(id=listener_id).first()
-        listener_types = ListenerModel.get_all_classes()
 
         if show_all or OperationModel.get_current_operation() is None:
             listeners: list[ListenerModel] = Session.query(ListenerModel).all()
         else:
             listeners = OperationModel.get_current_operation().listeners
-        if use_json:
-            if opened_listener is not None:
-                return {
-                    "status": Status.Success,
-                    "listener": opened_listener.to_dict(
-                        commander, show_operation, show_stagers
-                    ),
-                }
+        if opened_listener is not None:
             return {
                 "status": Status.Success,
-                ENDPOINT: [
-                    listener.to_dict(commander, show_operation, show_stagers)
-                    for listener in listeners
-                ],
+                "listener": opened_listener.to_dict(
+                    commander, show_operation, show_stagers
+                ),
             }
-        return render_template(
-            "listeners.j2",
-            listeners=listeners,
-            opened_listener=opened_listener,
-            listener_types=listener_types,
-            network_interfaces=get_network_interfaces(),
-            platform=get_platform(),
-        )
+        return {
+            "status": Status.Success,
+            ENDPOINT: [
+                listener.to_dict(commander, show_operation, show_stagers)
+                for listener in listeners
+            ],
+        }
 
     @blueprint.route("/available", methods=["GET"])
     @UserModel.authenticated
@@ -80,9 +69,9 @@ def listeners_bp(commander: Commander):
     @UserModel.authenticated
     def post_add():
         # Get request data
-        listener_type = request.form.get("type")
+        listener_type = request.json.get("type")
         is_interface = request.args.get("is_interface", "").lower() == "true"
-        data = dict(request.form)
+        data = dict(request.json)
 
         if is_interface:
             interfaces = get_network_interfaces()
@@ -131,7 +120,7 @@ def listeners_bp(commander: Commander):
     @UserModel.authenticated
     def delete_remove(listener_id: int):
         # Get request data
-        stop = request.form.get("stop", "").lower() != "false"
+        stop = request.json.get("stop", "").lower() != "false"
 
         # Check if listener exists
         listener: ListenerModel = (
@@ -160,7 +149,7 @@ def listeners_bp(commander: Commander):
     @UserModel.authenticated
     def put_edit(listener_id: int = None):
         # Get request data
-        form_data = dict(request.form)
+        form_data = dict(request.json)
 
         if listener_id is None:
             if form_data.get("id") is None:

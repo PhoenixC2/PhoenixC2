@@ -10,7 +10,6 @@ from phoenixc2.server.plugins.base import (
     BlueprintPlugin,
     ExecutedPlugin,
     RoutePlugin,
-    InjectedPlugin,
     PolyPlugin,
     ConnectionEventPlugin,
 )
@@ -30,11 +29,10 @@ class Commander:
 
     def __init__(self):
         self.web_thread: FlaskThread
-        self.web_server: Flask
+        self.api: Flask
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}
         self.active_plugins: dict[str, BasePlugin] = {}
-        self.injection_plugins: dict[InjectedPlugin, str] = {}  # plugin : output
         self.connection_event_plugins: list[tuple[ConnectionEventPlugin, dict]] = []
 
     def get_active_handler(self, handler_id: int) -> Optional[BaseHandler]:
@@ -117,13 +115,11 @@ class Commander:
                 raise Exception(f"Failed to load plugin '{plugin.name}'") from e
 
         elif issubclass(plugin, BlueprintPlugin):
-            self.web_server.register_blueprint(plugin.execute(self, config))
+            blue_print = plugin.execute(self, config)
+            self.api.register_blueprint(blue_print, url_prefix=blue_print.url_prefix)
 
         elif issubclass(plugin, RoutePlugin):
-            self.web_server.add_url_rule(plugin.rule, plugin.name, plugin.execute)
-
-        elif issubclass(plugin, InjectedPlugin):
-            self.injection_plugins[plugin] = plugin.execute(self, config)
+            self.api.add_url_rule(plugin.rule, plugin.name, plugin.execute)
 
         elif issubclass(plugin, ConnectionEventPlugin):
             self.connection_event_plugins.append((plugin, config))

@@ -39,12 +39,10 @@ def start_listeners(commander: Commander):
 def start_web(address: str, port: int, ssl: bool, commander: Commander):
     """Start the web server in a thread and return the Flask object"""
     # Create Thread
-    commander.web_thread = FlaskThread(
-        commander.web_server, address, port, ssl, "WebServer"
-    )
+    commander.web_thread = FlaskThread(commander.api, address, port, ssl, "WebServer")
     # Start Thread
     commander.web_thread.start()
-    return commander.web_server
+    return commander.api
 
 
 def load_plugins(commander: Commander):

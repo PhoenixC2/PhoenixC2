@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import (
@@ -22,7 +22,6 @@ def devices_bp(commander: Commander):
     @blueprint.route("/<int:device_id>", methods=["GET"])
     @UserModel.authenticated
     def get_devices(device_id: int = None):
-        use_json = request.args.get("json", "").lower() == "true"
         show_stager = request.args.get("stager", "").lower() == "true"
         show_operation = request.args.get("operation", "").lower() == "true"
         show_tasks = request.args.get("tasks", "").lower() == "true"
@@ -37,25 +36,20 @@ def devices_bp(commander: Commander):
             devices: list[DeviceModel] = Session.query(DeviceModel).filter(
                 DeviceModel.operation == OperationModel.get_current_operation()
             )
-        if use_json:
-            if opened_device is not None:
-                return {
-                    "status": Status.Success,
-                    "device": opened_device.to_dict(
-                        commander, show_stager, show_operation, show_tasks
-                    ),
-                }
+        if opened_device is not None:
             return {
                 "status": Status.Success,
-                "devices": [
-                    device.to_dict(commander, show_stager, show_operation, show_tasks)
-                    for device in devices
-                ],
+                "device": opened_device.to_dict(
+                    commander, show_stager, show_operation, show_tasks
+                ),
             }
-
-        return render_template(
-            "devices.j2", devices=devices, opened_device=opened_device
-        )
+        return {
+            "status": Status.Success,
+            "devices": [
+                device.to_dict(commander, show_stager, show_operation, show_tasks)
+                for device in devices
+            ],
+        }
 
     @blueprint.route("/<string:device_id>/clear", methods=["POST"])
     @UserModel.authenticated
@@ -82,8 +76,8 @@ def devices_bp(commander: Commander):
     @blueprint.route("/<int:device_id>/reverse_shell", methods=["POST"])
     @UserModel.authenticated
     def post_reverse_shell(device_id: int = None):
-        address = request.form.get("address")
-        port = request.form.get("port")
+        address = request.json.get("address")
+        port = request.json.get("port")
 
         # check if device exists
         device = Session.query(DeviceModel).filter_by(id=device_id).first()
@@ -130,7 +124,7 @@ def devices_bp(commander: Commander):
     @blueprint.route("/<int:device_id>/rce", methods=["POST"])
     @UserModel.authenticated
     def post_rce(device_id: int = None):
-        cmd = request.form.get("cmd")
+        cmd = request.json.get("cmd")
 
         # check if device exists
         device = Session.query(DeviceModel).filter_by(id=device_id).first()
@@ -387,9 +381,9 @@ def devices_bp(commander: Commander):
     @blueprint.route("/<int:device_id>/module", methods=["POST"])
     @UserModel.authenticated
     def post_execute_module(device_id: int = None):
-        path = request.form.get("path")
-        execution_method = request.form.get("method")
-        data = request.form.get("data", {})
+        path = request.json.get("path")
+        execution_method = request.json.get("method")
+        data = request.json.get("data", {})
 
         # check if device exists
         device = Session.query(DeviceModel).filter_by(id=device_id).first()

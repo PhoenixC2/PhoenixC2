@@ -7,11 +7,11 @@ class StagerTest(unittest.TestCase):
     def setUpClass(cls):
         change_to_memory_database()
         from phoenixc2.server.commander.commander import Commander
-        from phoenixc2.server.web import create_web
+        from phoenixc2.server.api import create_api
         from phoenixc2.server.utils.admin import recreate_super_user
 
         recreate_super_user()
-        cls.app = create_web(Commander())
+        cls.app = create_api(Commander())
         cls.client = cls.app.test_client()
         cls.listener = generate_listener()
 

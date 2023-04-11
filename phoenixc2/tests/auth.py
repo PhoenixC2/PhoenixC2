@@ -7,11 +7,11 @@ class TestAuth(unittest.TestCase):
     def setUpClass(cls):
         change_to_memory_database()
         # imports here because of the database change
-        from phoenixc2.server.web import create_web
+        from phoenixc2.server.api import create_api
         from phoenixc2.server.commander.commander import Commander
         from phoenixc2.server.database import UserModel, Session
 
-        cls.app = create_web(Commander())
+        cls.app = create_api(Commander())
         cls.client = cls.app.test_client()
         cls.user = UserModel.create(
             "test",

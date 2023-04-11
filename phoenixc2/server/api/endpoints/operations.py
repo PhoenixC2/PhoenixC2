@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, render_template, request, send_file
+from flask import Blueprint, make_response, request, send_file
 
 from phoenixc2.server.database import LogEntryModel, OperationModel, Session, UserModel
 from phoenixc2.server.utils.misc import Status
@@ -13,7 +13,6 @@ operations_bp = Blueprint(ENDPOINT, __name__, url_prefix="/operations")
 @operations_bp.route("/<int:operation_id>", methods=["GET"])
 @UserModel.authenticated
 def get_operations(operation_id: int = None):
-    use_json = request.args.get("json", "").lower() == "true"
     show_owner = request.args.get("owner", "").lower() == "true"
     show_assigned_users = request.args.get("assigned", "").lower() == "true"
     show_listeners = request.args.get("listeners", "").lower() == "true"
@@ -25,38 +24,31 @@ def get_operations(operation_id: int = None):
     )
     operations: list[OperationModel] = Session.query(OperationModel).all()
 
-    if use_json:
-        if opened_operation is not None:
-            {
-                "status": Status.Success,
-                "operation": opened_operation.to_dict(
-                    show_owner,
-                    show_assigned_users,
-                    show_listeners,
-                    show_credentials,
-                    show_logs,
-                ),
-            }
-
-        return {
+    if opened_operation is not None:
+        {
             "status": Status.Success,
-            ENDPOINT: [
-                operation.to_dict(
-                    show_owner,
-                    show_assigned_users,
-                    show_listeners,
-                    show_credentials,
-                    show_logs,
-                )
-                for operation in operations
-            ],
+            "operation": opened_operation.to_dict(
+                show_owner,
+                show_assigned_users,
+                show_listeners,
+                show_credentials,
+                show_logs,
+            ),
         }
 
-    return render_template(
-        "operations.j2",
-        operations=operations,
-        opened_operation=opened_operation,
-    )
+    return {
+        "status": Status.Success,
+        ENDPOINT: [
+            operation.to_dict(
+                show_owner,
+                show_assigned_users,
+                show_listeners,
+                show_credentials,
+                show_logs,
+            )
+            for operation in operations
+        ],
+    }
 
 
 @operations_bp.route("/current", methods=["GET"])
@@ -156,9 +148,9 @@ def delete_picture(operation_id: int):
 @operations_bp.route("/add", methods=["POST"])
 @UserModel.admin_required
 def post_add():
-    name = request.form.get("name", "")
-    description = request.form.get("description", "")
-    expiry = request.form.get("expiry", None)
+    name = request.json.get("name", "")
+    description = request.json.get("description", "")
+    expiry = request.json.get("expiry", None)
 
     if not name:
         return ({"status": Status.Danger, "message": "No name provided."}), 400
@@ -190,7 +182,7 @@ def post_add():
 @operations_bp.route("/<int:operation_id>/remove", methods=["DELETE"])
 @UserModel.admin_required
 def delete_remove(operation_id: int):
-    delete_elements = request.form.get("delete_elements", "").lower() == "true"
+    delete_elements = request.json.get("delete_elements", "").lower() == "true"
 
     operation: OperationModel = (
         Session.query(OperationModel).filter_by(id=operation_id).first()
@@ -221,7 +213,7 @@ def delete_remove(operation_id: int):
 @operations_bp.route("/<int:operation_id>/edit", methods=["PUT"])
 @UserModel.admin_required
 def put_edit(operation_id: int):
-    data = request.form
+    data = request.json
 
     operation: OperationModel = (
         Session.query(OperationModel).filter_by(id=operation_id).first()
@@ -248,7 +240,7 @@ def put_edit(operation_id: int):
 @operations_bp.route("/<int:operation_id>/assign", methods=["POST"])
 @UserModel.admin_required
 def post_assign_user(operation_id: int):
-    user_id = request.form.get("user_id", None)
+    user_id = request.json.get("user_id", None)
 
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:
@@ -281,7 +273,7 @@ def post_assign_user(operation_id: int):
 @operations_bp.route("/<int:operation_id>/unassign", methods=["DELETE"])
 @UserModel.admin_required
 def delete_unassign_user(operation_id: int):
-    user_id = request.form.get("user_id", None)
+    user_id = request.json.get("user_id", None)
 
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:
@@ -313,7 +305,7 @@ def delete_unassign_user(operation_id: int):
 @operations_bp.route("/<int:operation_id>/add_subnet", methods=["POST"])
 @UserModel.admin_required
 def post_add_subnet(operation_id: int):
-    subnet = request.form.get("subnet", None)
+    subnet = request.json.get("subnet", None)
 
     operation: OperationModel = (
         Session.query(OperationModel).filter_by(id=operation_id).first()
@@ -342,7 +334,7 @@ def post_add_subnet(operation_id: int):
 @operations_bp.route("/<int:operation_id>/remove_subnet", methods=["DELETE"])
 @UserModel.admin_required
 def delete_remove_subnet(operation_id: int):
-    subnet = request.form.get("subnet", None)
+    subnet = request.json.get("subnet", None)
 
     operation: OperationModel = (
         Session.query(OperationModel).filter_by(id=operation_id).first()

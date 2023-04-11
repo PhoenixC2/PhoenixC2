@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 
 from phoenixc2.server.database import LogEntryModel, Session, UserModel, OperationModel
 from phoenixc2.server.utils.misc import Status
@@ -11,7 +11,6 @@ logs_bp = Blueprint(ENDPOINT, __name__, url_prefix="/logs")
 @logs_bp.route("/<int:log_id>", methods=["GET"])
 @UserModel.authenticated
 def get_logs(log_id: int = None):
-    use_json = request.args.get("json", "").lower() == "true"
     show_user = request.args.get("user", "").lower() == "true"
     show_unseen_users = request.args.get("unseen", "").lower() == "true"
     show_operation = request.args.get("operation", "").lower() == "true"
@@ -39,24 +38,17 @@ def get_logs(log_id: int = None):
             .all()
         )
 
-    if use_json:
-        if opened_log is not None:
-            return {
-                "status": Status.Success,
-                "log": opened_log.to_dict(show_user, show_unseen_users, show_operation),
-            }
+    if opened_log is not None:
         return {
             "status": Status.Success,
-            ENDPOINT: [
-                log.to_dict(show_user, show_unseen_users, show_operation)
-                for log in logs
-            ],
+            "log": opened_log.to_dict(show_user, show_unseen_users, show_operation),
         }
-    return render_template(
-        "logs.j2",
-        logs=logs,
-        opened_log=opened_log,
-    )
+    return {
+        "status": Status.Success,
+        ENDPOINT: [
+            log.to_dict(show_user, show_unseen_users, show_operation) for log in logs
+        ],
+    }
 
 
 @logs_bp.route("/read", methods=["GET"])
