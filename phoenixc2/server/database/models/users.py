@@ -73,8 +73,11 @@ class UserModel(Base):
     @property
     def api_key(self) -> str | None:
         """Get the API key for the user if the user requesting it is authorized"""
-        curr_user = self.get_current_user()
-        if (curr_user.admin and self.id != 0) or curr_user.id == self.id:
+        try:
+            curr_user = self.get_current_user()
+            if (curr_user.admin and self.id != 0) or curr_user.id == self.id:
+                return self._api_key
+        except AttributeError:
             return self._api_key
         return None
 
@@ -168,7 +171,7 @@ class UserModel(Base):
         return (
             str(get_resource(PICTURES, f"{self.id}-user"))
             if self.profile_picture
-            else get_resource("web/static/images", "icon.png")
+            else None
         )
 
     def set_profile_picture(self, file: FileStorage) -> None:
@@ -208,19 +211,26 @@ class UserModel(Base):
     def get_current_user() -> "UserModel":
         """Get the current user"""
         if request.headers.get("Api-Key") is not None:
-            try:
-                user = (
-                    Session.query(UserModel)
-                    .filter_by(_api_key=request.headers.get("Api-Key"))
-                    .first()
-                )
-            except Exception:
-                return None
-            if user is not None:
-                return user
-        return (
-            Session.query(UserModel).filter_by(_api_key=session.get("api_key")).first()
-        )
+            user = (
+                Session.query(UserModel)
+                .filter_by(_api_key=request.headers.get("Api-Key"))
+                .first()
+            )
+        elif request.args.get("api_key") is not None:
+            user = (
+                Session.query(UserModel)
+                .filter_by(_api_key=request.args.get("api_key"))
+                .first()
+            )
+        elif session.get("api_key") is not None:
+            user = (
+                Session.query(UserModel)
+                .filter_by(_api_key=session.get("api_key"))
+                .first()
+            )
+        else:
+            user = None
+        return user if user is not None else None
 
     @staticmethod
     def authenticated(func):
@@ -228,20 +238,19 @@ class UserModel(Base):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-
             if os.getenv("PHOENIX_TEST") == "true":
                 if session.get("api_key") is None:
                     session["api_key"] = Session.query(UserModel).first()._api_key
             user = UserModel.get_current_user()
             if user is None:
-                return {"status": Status.Danger, "message": "You have to login."}
+                return {"status": Status.Danger, "message": "You have to login."}, 401
             else:
                 if user.disabled:
                     session.clear()
                     return {
-                            "status": Status.Danger,
-                            "message": "This account got disabled.",
-                        }
+                        "status": Status.Danger,
+                        "message": "This account got disabled.",
+                    }, 403
                 user.last_activity = datetime.now()
                 Session.commit()
                 return func(*args, **kwargs)
@@ -262,17 +271,17 @@ class UserModel(Base):
                 if user.disabled:
                     session.clear()
                     return {
-                            "status": Status.Danger,
-                            "message": "This account got disabled.",
-                        }
+                        "status": Status.Danger,
+                        "message": "This account got disabled.",
+                    }, 403
                 if not user.admin:
                     return {
-                            "status": Status.Danger,
-                            "message": "You don't have the permission to do this.",
-                        }
+                        "status": Status.Danger,
+                        "message": "You don't have the permission to do this.",
+                    }, 403
                 else:
                     return func(*args, **kwargs)
             else:
-                return {"status": Status.Danger, "message": "You have to login."}
+                return {"status": Status.Danger, "message": "You have to login."}, 401
 
         return wrapper
