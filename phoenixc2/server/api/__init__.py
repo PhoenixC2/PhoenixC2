@@ -1,4 +1,4 @@
-"""The Web Server Class to interact with the Server using an API and a Web Interface"""
+"""The Rest API Class"""
 import logging
 import os
 import secrets
@@ -41,8 +41,7 @@ endpoints: dict[str, Blueprint] = {
 
 
 def create_api(commander: Commander) -> Flask:
-    web_server = Flask(__name__)
-    web_server.jinja_options["autoescape"] = lambda _: True
+    api = Flask(__name__)
     if "2" not in os.getenv("PHOENIX_DEBUG", "") and "4" not in os.getenv(
         "PHOENIX_DEBUG", ""
     ):
@@ -50,28 +49,28 @@ def create_api(commander: Commander) -> Flask:
         logging.getLogger("werkzeug").disabled = True
 
     config = load_config()
-    secret_key = config["web"]["secret_key"]
+    secret_key = config["api"]["secret_key"]
 
     if secret_key == "":
         # check if the secret key is set in the config
         # if not, generate a new one and save it
         secret_key = secrets.token_urlsafe(32)
-        config["web"]["secret_key"] = secret_key
+        config["api"]["secret_key"] = secret_key
         save_config(config)
     elif len(secret_key) < 30:
         log("The session secret key is short. Consider changing it.", "critical")
 
-    web_server.secret_key = secret_key
+    api.secret_key = secret_key
 
-    @web_server.before_request
+    @api.before_request
     def before_request():
         # check if the show cookie is enabled and if the request has the cookie
         # if not show 403
 
         if (
-            config["web"]["show_cookie"]
-            and request.cookies.get(config["web"]["show_cookie_name"])
-            != config["web"]["show_cookie_value"]
+            config["api"]["show_cookie"]
+            and request.cookies.get(config["api"]["show_cookie_name"])
+            != config["api"]["show_cookie_value"]
         ):
             return abort(403)
 
@@ -80,8 +79,8 @@ def create_api(commander: Commander) -> Flask:
         # check if endpoint is a function
         if callable(endpoints[endpoint]):
             endpoints[endpoint] = endpoints[endpoint](commander)
-        web_server.register_blueprint(
+        api.register_blueprint(
             endpoints[endpoint], url_prefix="/api/" + endpoints[endpoint].url_prefix
         )
     log(f"Registered {len(endpoints)} endpoints", "info")
-    return web_server
+    return api

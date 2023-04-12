@@ -1,12 +1,12 @@
-[web]
-address = "Address of the web server"
-port = Port of the web server
+[api]
+address = "Address of the api"
+port = Port
 ssl = true/false
-secret_key = "Secret key for the web server"
-show_cookie = true/false # If true, the web app can only be accessed using the cookie
+secret_key = "Secret key for the api"
+# If true, the api will only be accessible if the cookie is set
+show_cookie = true/false 
 show_cookie_name = "Name of the cookie"
 show_cookie_value = "Value of the cookie"
-[/web]
 
 [database]
 type = "Type of the database"
@@ -21,6 +21,7 @@ database = Name of the database
 [logging]
 location = "Location of the log file"
 enabled = true/false
+
 [/logging]
 
 [plugins]

@@ -20,10 +20,10 @@ parser = ArgumentParser(
     description="Start the PhoenixC2 server.",
 )
 
-web = parser.add_argument_group("Web Server")
-web.add_argument("-a", "--address", help="The address")
-web.add_argument("-p", "--port", help="The port", type=int)
-web.add_argument("-s", "--ssl", help="Use SSL", action="store_true")
+api = parser.add_argument_group("Rest API")
+api.add_argument("-a", "--address", help="The address")
+api.add_argument("-p", "--port", help="The port", type=int)
+api.add_argument("-s", "--ssl", help="Use SSL", action="store_true")
 
 output = parser.add_argument_group("Output")
 
@@ -139,12 +139,12 @@ def parse_args(args, config: dict) -> dict:
     if args.regenerate_ssl:
         regenerate_ssl()
 
-    # web-server args
+    # api args
     if args.address:
-        config["web"]["address"] = args.address
+        config["api"]["address"] = args.address
     if args.port:
-        config["web"]["port"] = args.port
+        config["api"]["port"] = args.port
     if args.ssl:
-        config["web"]["ssl"] = args.ssl
+        config["api"]["ssl"] = args.ssl
 
     return config

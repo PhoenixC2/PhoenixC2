@@ -1,4 +1,4 @@
-[web]
+[api]
 address = "localhost"
 port = 8080
 ssl = true

@@ -5,7 +5,7 @@ import time
 
 from phoenixc2.server.args import parse_args, parser
 from phoenixc2.server.commander.commander import Commander
-from phoenixc2.server.commander.services import load_plugins, start_listeners, start_web
+from phoenixc2.server.commander.services import load_plugins, start_listeners, start_api
 from phoenixc2.server.utils.admin import check_for_setup, setup_server
 from phoenixc2.server.utils.config import load_config
 from phoenixc2.server.utils.misc import Status
@@ -22,15 +22,18 @@ def main():
     config = parse_args(args, config)
 
     log("Welcome to PhoenixC2", Status.Success)
+
     check_for_update()
+
     if not check_for_setup():
         setup_server()
+
     if args.exit:
         os._exit(0)
     # Initialize commander
     commander = Commander()
 
-    # Create web server
+    # Create the API
     api = create_api(commander)
 
     commander.api = api
@@ -43,22 +46,22 @@ def main():
     log("Starting listeners.", Status.Info)
     start_listeners(commander)
 
-    # Start the web server
-    log("Starting web server.", Status.Info)
+    # Start the API
+    log("Starting Rest API.", Status.Info)
     try:
-        web_config = config["web"]  # shorten code
-        start_web(
-            web_config["address"], web_config["port"], web_config["ssl"], commander
+        api_config = config["api"]  # shorten code
+        start_api(
+            api_config["address"], api_config["port"], api_config["ssl"], commander
         )
     except Exception as e:
         log(str(e), Status.Danger)
         os._exit(1)
     else:
-        log("Web server started.", Status.Success)
+        log("Rest API started.", Status.Success)
 
     log(
-        f"Accessible at http{'s' if web_config['ssl'] else ''}"
-        f"://{web_config['address']}:{web_config['port']}",
+        f"Accessible at http{'s' if api_config['ssl'] else ''}"
+        f"://{api_config['address']}:{api_config['port']}",
         Status.Info,
     )
 

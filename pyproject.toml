@@ -70,12 +70,12 @@ extend-exclude = [
 extend-exclude = '''
 (
 .*payload.py
-| phoenixc2/server/data*
+| phoenixc2/server/data/stagers*
 )
 '''
 force-exclude = '''
 (
 .*payload.py
-| phoenixc2/server/data*
+| phoenixc2/server/data/stagers*
 )
 '''

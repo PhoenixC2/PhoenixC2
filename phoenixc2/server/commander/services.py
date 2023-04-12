@@ -36,12 +36,12 @@ def start_listeners(commander: Commander):
     Session.remove()
 
 
-def start_web(address: str, port: int, ssl: bool, commander: Commander):
-    """Start the web server in a thread and return the Flask object"""
+def start_api(address: str, port: int, ssl: bool, commander: Commander):
+    """Start the rest api in a thread and return the Flask object"""
     # Create Thread
-    commander.web_thread = FlaskThread(commander.api, address, port, ssl, "WebServer")
+    commander.api_thread = FlaskThread(commander.api, address, port, ssl, "Rest API")
     # Start Thread
-    commander.web_thread.start()
+    commander.api_thread.start()
     return commander.api
 
 

@@ -28,7 +28,7 @@ class Commander:
     """This is the Commander is used as a registry for all devices and listeners"""
 
     def __init__(self):
-        self.web_thread: FlaskThread
+        self.api_thread: FlaskThread
         self.api: Flask
         self.active_listeners: dict[int, BaseListener] = {}
         self.active_handlers: dict[int, BaseHandler] = {}

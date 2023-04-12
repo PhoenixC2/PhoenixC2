@@ -12,7 +12,6 @@ class User:
         self.id: int = data["id"]
         self.username: str = data["username"]
         self.admin: bool = data["admin"]
-        self.api_key: str = data["api_key"]
 
     def read_messages(self) -> list:
         """Read all messages for the user"""
