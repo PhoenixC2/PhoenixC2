@@ -13,9 +13,8 @@ class DevicesTest(unittest.TestCase):
         cls.client = cls.app.test_client()
 
     def test_list_devices(self):
-        response = self.client.get("/devices?json=true", follow_redirects=True)
+        response = self.client.get("/api/devices/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.is_json, True)
 
 
 if __name__ == "__main__":

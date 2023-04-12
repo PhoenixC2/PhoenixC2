@@ -16,19 +16,16 @@ class StagerTest(unittest.TestCase):
         cls.listener = generate_listener()
 
     def test_get_stagers_json(self):
-        response = self.client.get("/stagers?json=true", follow_redirects=True)
+        response = self.client.get("/api/stagers/?json=true")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.is_json, True)
 
     def test_get_stagers(self):
-        response = self.client.get("/stagers", follow_redirects=True)
+        response = self.client.get("/api/stagers/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.is_json, False)
 
     def test_get_single_stager(self):
-        response = self.client.get("/stagers/1?json=true", follow_redirects=True)
+        response = self.client.get("/api/stagers/1?json=true")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.is_json, True)
 
     def test_stager_simulation(self):
         # Create a stager
@@ -37,7 +34,7 @@ class StagerTest(unittest.TestCase):
             "listener": 1,
             "payload": "python",
         }
-        response = self.client.post("/stagers/add", data=data, follow_redirects=True)
+        response = self.client.post("/api/stagers/add", json=data)
         self.assertEqual(response.status_code, 201, "Failed to create stager")
         stager = response.json["stager"]
         self.assertEqual(stager["name"], "test", "Wrong stager name")
@@ -46,15 +43,15 @@ class StagerTest(unittest.TestCase):
         data = {
             "name": "testchange",
         }
-        response = self.client.put("/stagers/1/edit", data=data, follow_redirects=True)
+        response = self.client.put("/api/stagers/1/edit", json=data)
         self.assertEqual(response.status_code, 200, "Failed to edit stager")
 
         # Download a stager
-        response = self.client.get("/stagers/1/download", follow_redirects=True)
+        response = self.client.get("/api/stagers/1/download")
         self.assertEqual(response.status_code, 200, "Failed to download stager")
 
         # Delete a stager
-        response = self.client.delete("/stagers/1/remove", follow_redirects=True)
+        response = self.client.delete("/api/stagers/1/remove")
         self.assertEqual(response.status_code, 200, "Failed to delete stager")
 
 

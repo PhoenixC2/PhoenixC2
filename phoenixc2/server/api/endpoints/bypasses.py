@@ -195,7 +195,7 @@ def bypasses_bp(commander: "Commander"):
                 "message": "New position not specified.",
             }, 400
 
-        if not new_position.isdigit():
+        if not isinstance(new_position, int) and not new_position.isdigit():
             return {
                 "status": Status.Danger,
                 "message": "New position must be a number.",

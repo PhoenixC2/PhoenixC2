@@ -25,24 +25,21 @@ class TestAuth(unittest.TestCase):
 
     def test_login(self):
         response = self.client.post(
-            "/auth/login?json=true",
-            data=dict(username="test", password="testtest123"),
-            follow_redirects=True,
+            "/api/auth/login",
+            json=dict(username="test", password="testtest123"),
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.is_json)
         self.assertTrue(response.json["user"]["admin"])
 
     def test_failed_login(self):
         response = self.client.post(
-            "/auth/login",
-            data=dict(username="test", password="wrong"),
-            follow_redirects=True,
+            "/api/auth/login",
+            json=dict(username="test", password="wrong"),
         )
         self.assertEqual(response.status_code, 401)
 
     def test_logout(self):
-        response = self.client.get("/auth/logout", follow_redirects=True)
+        response = self.client.get("/api/auth/logout")
         self.assertEqual(response.status_code, 200)
 
     @classmethod

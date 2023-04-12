@@ -13,9 +13,8 @@ class CredentialsTest(unittest.TestCase):
         cls.client = cls.app.test_client()
 
     def test_credentials(self):
-        response = self.client.get("/credentials?json=true", follow_redirects=True)
+        response = self.client.get("/api/credentials/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.is_json)
         self.assertEqual(response.json["status"], "success")
 
 

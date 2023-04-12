@@ -15,34 +15,19 @@ class BypassTest(unittest.TestCase):
         cls.stager = generate_stager()
 
     def test_get_bypasses(self):
-        response = self.client.get("/bypasses", follow_redirects=True)
+        response = self.client.get("/api/bypasses/")
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.is_json)
-
-    def test_get_bypasses_json(self):
-        response = self.client.get("/bypasses?json=true", follow_redirects=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.is_json)
 
     def test_run_single_bypass(self):
         data = {
             "stager": self.stager.id,
         }
-        response = self.client.post(
-            "/bypasses/run/encoders/base64", follow_redirects=True, data=data
-        )
+        response = self.client.post("/api/bypasses/run/encoders/base64", json=data)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.is_json)
 
     def test_get_bypass_chains(self):
-        response = self.client.get("/bypasses/chains", follow_redirects=True)
+        response = self.client.get("/api/bypasses/chains")
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.is_json)
-
-    def test_get_bypass_chains_json(self):
-        response = self.client.get("/bypasses/chains?json=true", follow_redirects=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.is_json)
 
     def test_chain_simulation(self):
         data = {
@@ -50,9 +35,7 @@ class BypassTest(unittest.TestCase):
             "description": "test chain description",
         }
 
-        response = self.client.post(
-            "/bypasses/chains/add", follow_redirects=True, data=data
-        )
+        response = self.client.post("/api/bypasses/chains/add", json=data)
         self.assertEqual(response.status_code, 201, "Failed to add chain")
 
         chain = response.json["chain"]
@@ -62,7 +45,7 @@ class BypassTest(unittest.TestCase):
         }
 
         response = self.client.put(
-            f"/bypasses/chains/{chain['id']}/edit", follow_redirects=True, data=data
+            f"/api/bypasses/chains/{chain['id']}/edit", json=data
         )
         self.assertEqual(response.status_code, 200, "Failed to edit chain")
 
@@ -72,9 +55,8 @@ class BypassTest(unittest.TestCase):
         }
 
         response = self.client.post(
-            f"/bypasses/chains/{chain['id']}/bypass/add",
-            follow_redirects=True,
-            data=data,
+            f"/api/bypasses/chains/{chain['id']}/bypass/add",
+            json=data,
         )
         self.assertEqual(response.status_code, 201, "Failed to add bypass to chain")
 
@@ -84,9 +66,8 @@ class BypassTest(unittest.TestCase):
         }
 
         response = self.client.post(
-            f"/bypasses/chains/{chain['id']}/bypass/add",
-            follow_redirects=True,
-            data=data,
+            f"/api/bypasses/chains/{chain['id']}/bypass/add",
+            json=data,
         )
         self.assertEqual(
             response.status_code, 201, "Failed to add second bypass to chain"
@@ -96,15 +77,12 @@ class BypassTest(unittest.TestCase):
             "position": 1,
         }
         response = self.client.put(
-            f"/bypasses/chains/{chain['id']}/bypass/2/move",
-            follow_redirects=True,
-            data=data,
+            f"/api/bypasses/chains/{chain['id']}/bypass/2/move",
+            json=data,
         )
         self.assertEqual(response.status_code, 200, "Failed to move bypass up in chain")
 
-        response = self.client.get(
-            f"/bypasses/chains/{chain['id']}?json=true", follow_redirects=True
-        )
+        response = self.client.get(f"/api/bypasses/chains/{chain['id']}")
 
         self.assertEqual(response.status_code, 200, "Failed to get chain")
         update_chain = response.json["chain"]
@@ -115,13 +93,11 @@ class BypassTest(unittest.TestCase):
             "stager": self.stager.id,
         }
         response = self.client.post(
-            f"/bypasses/chains/{chain['id']}/run", follow_redirects=True, data=data
+            f"/api/bypasses/chains/{chain['id']}/run", json=data
         )
         self.assertEqual(response.status_code, 200, "Failed to run chain on stager")
 
-        response = self.client.delete(
-            f"/bypasses/chains/{chain['id']}/remove", follow_redirects=True
-        )
+        response = self.client.delete(f"/api/bypasses/chains/{chain['id']}/remove")
         self.assertEqual(response.status_code, 200, "Failed to delete chain")
 
 

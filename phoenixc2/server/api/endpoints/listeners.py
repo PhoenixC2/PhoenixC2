@@ -120,7 +120,7 @@ def listeners_bp(commander: Commander):
     @UserModel.authenticated
     def delete_remove(listener_id: int):
         # Get request data
-        stop = request.json.get("stop", "").lower() != "false"
+        stop = request.args.get("stop", "").lower() != "false"
 
         # Check if listener exists
         listener: ListenerModel = (

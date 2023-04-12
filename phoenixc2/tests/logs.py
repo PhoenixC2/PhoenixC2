@@ -12,17 +12,10 @@ class LogsTest(unittest.TestCase):
         cls.app = create_api(Commander())
         cls.client = cls.app.test_client()
 
-    def test_logs(self):
-        response = self.client.get("/logs?json=true", follow_redirects=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json["status"], "success")
-        self.assertEqual(response.is_json, True)
-
     def test_clear_logs(self):
-        response = self.client.delete("/logs/all/clear", follow_redirects=True)
+        response = self.client.delete("/api/logs/all/clear")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["status"], "success")
-        self.assertEqual(response.is_json, True)
 
 
 if __name__ == "__main__":

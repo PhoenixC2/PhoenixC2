@@ -150,8 +150,8 @@ def delete_profile_picture(user_id: int = None):
 def add_user():
     username = request.json.get("username")
     password = request.json.get("password")
-    admin = request.json.get("admin", "") == "on"
-    disabled = request.json.get("disabled", "").lower() == "on"
+    admin = request.json.get("admin", "")
+    disabled = request.json.get("disabled", "")
 
     if not username or not password:
         return {
