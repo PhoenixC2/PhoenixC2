@@ -74,7 +74,10 @@ def get_profile_picture(user_id: int):
     if user is None:
         return {"status": "error", "message": USER_DOES_NOT_EXIST}, 400
 
-    return send_file(user.get_profile_picture())
+    if user.profile_picture:
+        return send_file(user.profile_picture)
+    else:
+        return "", 204
 
 
 @users_bp.route("/picture", methods=["POST", "PUT"])

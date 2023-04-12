@@ -89,7 +89,11 @@ def get_picture(operation_id: int):
     if operation is None:
         return {"status": Status.Danger, "message": INVALID_ID}, 400
 
-    return send_file(operation.get_picture())
+    if operation.picture is not None:
+        return send_file(
+            operation.get_picture(),
+        )
+    return "", 204
 
 
 @operations_bp.route("/<int:operation_id>/picture", methods=["POST", "PUT"])

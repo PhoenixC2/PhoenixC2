@@ -126,7 +126,7 @@ class OperationModel(Base):
         return (
             str(get_resource(PICTURES, f"{self.id}-operation"))
             if self.picture
-            else get_resource("web/static/images", "icon.png")
+            else None
         )
 
     def set_picture(self, file: FileStorage) -> None:
@@ -134,11 +134,9 @@ class OperationModel(Base):
 
         if self.picture:
             get_resource(PICTURES, f"{self.id}-operation").unlink()
- 
+
         self.picture = True
-        file.save(
-            get_resource(PICTURES, f"{self.id}-operation", skip_file_check=True)
-        )
+        file.save(get_resource(PICTURES, f"{self.id}-operation", skip_file_check=True))
 
     def delete_picture(self) -> None:
         """Delete the profile picture"""
