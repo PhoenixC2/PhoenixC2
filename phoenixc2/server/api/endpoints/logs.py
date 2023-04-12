@@ -51,6 +51,38 @@ def get_logs(log_id: int = None):
     }
 
 
+@logs_bp.route("/unseen")
+@UserModel.authenticated
+def get_unseen_logs():
+    show_user = request.args.get("user", "").lower() == "true"
+    show_unseen_users = request.args.get("unseen", "").lower() == "true"
+    show_operation = request.args.get("operation", "").lower() == "true"
+    show_all = request.args.get("all", "").lower() == "true"
+    status_filter = request.args.get("status", "").lower()
+
+    curr_user = UserModel.get_current_user()
+
+    unseen_logs = curr_user.unseen_logs
+    logs: list[LogEntryModel] = []
+
+    for log in unseen_logs:
+        if status_filter:
+            if log.status != status_filter:
+                continue
+        if show_all or OperationModel.get_current_operation() is None:
+            logs.append(log)
+        else:
+            if log.operation == OperationModel.get_current_operation():
+                logs.append(log)
+
+    return {
+        "status": Status.Success,
+        ENDPOINT: [
+            log.to_dict(show_user, show_unseen_users, show_operation) for log in logs
+        ],
+    }
+
+
 @logs_bp.route("/read", methods=["GET"])
 @UserModel.authenticated
 def get_read_logs():
