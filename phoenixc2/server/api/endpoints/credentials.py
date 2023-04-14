@@ -52,9 +52,9 @@ def get_credentials(cred_id: int = None):
 @UserModel.authenticated
 def add_credential():
     value = request.json.get("value", "")
-    hash = request.json.get("hash", "").lower() == "true"
+    hash = request.json.get("hash", False)
     user = request.json.get("user", "")
-    admin = request.json.get("admin", "").lower() == "true"
+    admin = request.json.get("admin", False)
     notes = request.json.get("notes", "")
 
     credential = CredentialModel.create(value, hash, user, admin, notes)

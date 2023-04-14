@@ -29,14 +29,7 @@ class FlaskThread(threading.Thread):
     """Stoppable Flask thread"""
 
     def __init__(self, app: Flask, address: str, port: int, ssl: bool, name: str):
-        from phoenixc2.server.database import Session
-
         threading.Thread.__init__(self)
-
-        @app.teardown_request
-        def remove(*args, **kwargs):
-            Session.remove()
-
         self.app = app
         self.name = name
         if ssl:
