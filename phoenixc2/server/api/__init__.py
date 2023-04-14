@@ -5,6 +5,7 @@ import secrets
 from flask import Blueprint, Flask, abort, cli, request
 
 from phoenixc2.server.commander.commander import Commander
+from phoenixc2.server.database import Session
 from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.api.endpoints.auth import auth_bp
@@ -73,6 +74,10 @@ def create_api(commander: Commander) -> Flask:
             != config["api"]["show_cookie_value"]
         ):
             return abort(403)
+
+    @api.teardown_request
+    def remove(*args, **kwargs):
+        Session.remove()
 
     # register the blueprints
     for endpoint in endpoints:
