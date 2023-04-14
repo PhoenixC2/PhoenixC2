@@ -4,7 +4,7 @@ import bleach
 import markdown
 from flask import Flask
 from werkzeug.serving import make_server
-
+from phoenixc2.server.database import Session
 from phoenixc2.server.utils.resources import get_resource
 
 
@@ -30,6 +30,11 @@ class FlaskThread(threading.Thread):
 
     def __init__(self, app: Flask, address: str, port: int, ssl: bool, name: str):
         threading.Thread.__init__(self)
+
+        @app.teardown_request
+        def remove(*args, **kwargs):
+            Session.remove()
+
         self.app = app
         self.name = name
         if ssl:
