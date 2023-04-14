@@ -32,7 +32,7 @@ class StringType(OptionType):
     data_type = str
 
     def __str__(self) -> str:
-        return "text"
+        return "string"
 
 
 @dataclass
@@ -42,7 +42,7 @@ class IntegerType(OptionType):
     data_type = int
 
     def __str__(self) -> str:
-        return "number"
+        return "integer"
 
 
 @dataclass
@@ -62,7 +62,7 @@ class BooleanType(OptionType):
             raise ValueError(f"'{name}' must be a boolean.")
 
     def __str__(self) -> str:
-        return "checkbox"
+        return "boolean"
 
 
 @dataclass
@@ -151,7 +151,7 @@ class ChoiceType(OptionType):
         return choice
 
     def __str__(self) -> str:
-        return "select"
+        return "choice"
 
 
 @dataclass
