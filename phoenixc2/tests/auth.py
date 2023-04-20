@@ -21,7 +21,9 @@ class TestAuth(unittest.TestCase):
         )
         Session.commit()
 
-    # cant test login because the password always changes
+    def tearDown(self):
+        # clear cookies after each test
+        self.client.cookie_jar.clear()
 
     def test_login(self):
         response = self.client.post(
@@ -37,6 +39,22 @@ class TestAuth(unittest.TestCase):
             json=dict(username="test", password="wrong"),
         )
         self.assertEqual(response.status_code, 401)
+
+    def test_api_key_in_header_login(self):
+        response = self.client.post(
+            "/api/auth/login", headers={"Api-Key": self.user._api_key}
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_key_in_params_login(self):
+        response = self.client.get(f"/api/dashboard?api_key={self.user._api_key}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_key_in_cookie_login(self):
+        self.client.set_cookie("localhost", "api_key", self.user._api_key)
+        response = self.client.get("/api/dashboard")
+        self.assertEqual(response.status_code, 200)
+        self.client.delete_cookie("localhost", "api_key")
 
     def test_logout(self):
         response = self.client.get("/api/auth/logout")
