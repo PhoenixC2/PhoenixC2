@@ -94,17 +94,6 @@ class GoPayload(BasePayload):
     ]
 
     @classmethod
-    def already_compiled(cls, stager_db: "StagerModel"):
-        try:
-            get_resource(
-                "data/stagers/",
-                f"{stager_db.name}.exe",
-            )
-        except FileNotFoundError:
-            return False
-        return True
-
-    @classmethod
     def generate(cls, stager_db, recompile=False):
         if cls.already_compiled(stager_db) and not recompile:
             final_payload = FinalPayload(
@@ -112,11 +101,9 @@ class GoPayload(BasePayload):
                 stager_db,
             )
             final_payload.set_output_from_path(
-                get_resource(
-                    "data/stagers/",
-                    f"{stager_db.name}.exe",
-                )
+                cls.get_output_file(stager_db),
             )
+            return final_payload
 
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
@@ -129,7 +116,7 @@ class GoPayload(BasePayload):
 
         # write to file
         go_file = get_resource(
-            "data/stagers/", f"{stager_db.name}.go", skip_file_check=True
+            "data/stagers/", f"{stager_db.id}.go", skip_file_check=True
         )
         output_file = cls.get_output_file(stager_db)
 
@@ -145,8 +132,8 @@ class GoPayload(BasePayload):
             f" -o {output_file} {go_file}"
         )
         # remove go file
-        go_file.unlink()
-        os.unlink
+        # go_file.unlink()
+
         if status_code != 0:
             raise Exception("Failed to compile")
 

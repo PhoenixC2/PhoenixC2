@@ -37,7 +37,7 @@ class BasePayload(ABC):
     def get_output_file(cls, stager_db: "StagerModel") -> Path:
         """Save the output to the stager file"""
         return get_resource(
-            "data/stagers", f"{stager_db.id}.{cls.end_format}", skip_file_check=True
+            "data/stagers", f"{stager_db.id}{cls.end_format}", skip_file_check=True
         )
 
     @classmethod
@@ -52,6 +52,8 @@ class BasePayload(ABC):
     @abstractmethod
     def already_compiled(cls, stager_db: "StagerModel") -> bool:
         """Return if the payload was already compiled"""
+        if cls.compiled:
+            return cls.get_output_file(stager_db).exists()
         return False
 
     @classmethod
