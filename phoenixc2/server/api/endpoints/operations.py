@@ -92,6 +92,7 @@ def get_picture(operation_id: int):
     if operation.picture is not None:
         return send_file(
             operation.get_picture(),
+            mimetype="image/png",
         )
     return "", 204
 
@@ -106,12 +107,13 @@ def set_picture(operation_id: int):
     if operation is None:
         return ({"status": Status.Danger, "message": INVALID_ID}), 400
 
-    if "picture" not in request.files:
+    if len(request.data) == 0:
         return (
             ({"status": Status.Danger, "message": "No picture provided."}),
             400,
         )
-    operation.set_picture(request.files["picture"])
+
+    operation.set_picture(request.data)
     Session.commit()
 
     LogEntryModel.log(
@@ -160,7 +162,7 @@ def post_add():
         return ({"status": Status.Danger, "message": "No name provided."}), 400
     try:
         operation = OperationModel.create(name, description, expiry)
-    except TypeError as e:
+    except Exception as e:
         return ({"status": Status.Danger, "message": str(e)}), 400
 
     Session.add(operation)
@@ -186,7 +188,7 @@ def post_add():
 @operations_bp.route("/<int:operation_id>/remove", methods=["DELETE"])
 @UserModel.admin_required
 def delete_remove(operation_id: int):
-    delete_elements = request.json.get("delete_elements", "").lower() == "true"
+    delete_elements = request.args.get("delete_elements", False)
 
     operation: OperationModel = (
         Session.query(OperationModel).filter_by(id=operation_id).first()
@@ -244,7 +246,7 @@ def put_edit(operation_id: int):
 @operations_bp.route("/<int:operation_id>/assign", methods=["POST"])
 @UserModel.admin_required
 def post_assign_user(operation_id: int):
-    user_id = request.json.get("user_id", None)
+    user_id = request.json.get("user", None)
 
     user: UserModel = Session.query(UserModel).filter_by(id=user_id).first()
     if user is None:

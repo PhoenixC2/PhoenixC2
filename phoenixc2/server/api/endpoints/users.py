@@ -75,7 +75,7 @@ def get_profile_picture(user_id: int):
         return {"status": "error", "message": USER_DOES_NOT_EXIST}, 400
 
     if user.profile_picture:
-        return send_file(user.profile_picture)
+        return send_file(user.get_profile_picture(), mimetype="image/png")
     else:
         return "", 204
 
@@ -103,12 +103,12 @@ def set_profile_picture(user_id: int = None):
     if user is None:
         return {"status": Status.Danger, "message": USER_DOES_NOT_EXIST}, 400
 
-    if "profile-picture" in request.files:
-        profile_picture = request.files["profile-picture"]
-        user.set_profile_picture(profile_picture)
-    else:
+    if len(request.data) == 0:
         return {"status": Status.Danger, "message": "No profile picture provided."}, 400
+
+    user.set_profile_picture(request.data)
     Session.commit()
+
     return {"status": Status.Success, "message": "Profile picture set."}
 
 
@@ -148,10 +148,10 @@ def delete_profile_picture(user_id: int = None):
 @users_bp.route("/add", methods=["POST"])
 @UserModel.admin_required
 def add_user():
-    username = request.json.get("username")
-    password = request.json.get("password")
-    admin = request.json.get("admin", "")
-    disabled = request.json.get("disabled", "")
+    username = request.json.get("username", "")
+    password = request.json.get("password", "")
+    admin = request.json.get("admin", False)
+    disabled = request.json.get("disabled", False)
 
     if not username or not password:
         return {
@@ -170,10 +170,6 @@ def add_user():
         user = UserModel.create(username, password, admin, disabled)
     except ValueError as e:
         return {"status": Status.Danger, "message": str(e)}, 400
-
-    if "profile-picture" in request.files and request.stream:
-        profile_picture = request.files["profile-picture"]
-        user.set_profile_picture(profile_picture)
 
     Session.commit()
     LogEntryModel.log(
@@ -231,19 +227,7 @@ def delete_user(id: int = None):
 @users_bp.route("/<int:id>/edit", methods=["PUT"])
 @UserModel.admin_required
 def edit_user(id: int = None):
-    # Get request data
-    form_data = dict(request.json)
     current_user = UserModel.get_current_user()
-
-    if id is None:
-        if form_data.get("id") is None:
-            return {
-                "status": Status.Danger,
-                "message": INVALID_ID,
-            }, 400
-
-        id = int(form_data.get("id"))
-        form_data.pop("id")
 
     # Check if user exists
     user: UserModel = Session.query(UserModel).filter_by(id=id).first()
@@ -259,7 +243,7 @@ def edit_user(id: int = None):
 
     # Edit user
     try:
-        user.edit(form_data)
+        user.edit(request.json)
     except Exception as e:
         return {"status": Status.Danger, "message": str(e)}, 400
 
@@ -272,7 +256,11 @@ def edit_user(id: int = None):
         current_user,
     )
 
-    return {"status": Status.Success, "message": "User edited successfully."}
+    return {
+        "status": Status.Success,
+        "message": "User edited successfully.",
+        "user": user.to_dict(),
+    }
 
 
 @users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])

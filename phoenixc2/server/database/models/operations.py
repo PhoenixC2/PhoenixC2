@@ -7,7 +7,6 @@ from flask import request
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from werkzeug.datastructures import FileStorage
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -88,7 +87,11 @@ class OperationModel(Base):
             "subnets": self.subnets,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "owner": self.owner.to_dict() if show_owner else self.owner.id,
+            "owner": self.owner.to_dict()
+            if show_owner and self.owner
+            else self.owner_id
+            if self.owner_id
+            else None,
             "users": [user.to_dict() for user in self.assigned_users]
             if show_assigned_users
             else [user.id for user in self.assigned_users],
@@ -129,14 +132,17 @@ class OperationModel(Base):
             else None
         )
 
-    def set_picture(self, file: FileStorage) -> None:
+    def set_picture(self, file: bytes) -> None:
         """Set the picture and save it"""
 
         if self.picture:
             get_resource(PICTURES, f"{self.id}-operation").unlink()
 
         self.picture = True
-        file.save(get_resource(PICTURES, f"{self.id}-operation", skip_file_check=True))
+        with get_resource(PICTURES, f"{self.id}-operation", skip_file_check=True).open(
+            "wb"
+        ) as f:
+            f.write(file)
 
     def delete_picture(self) -> None:
         """Delete the profile picture"""

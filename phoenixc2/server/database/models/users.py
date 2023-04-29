@@ -9,7 +9,6 @@ from uuid import uuid1
 from flask import request, session
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship, mapped_column, Mapped
-from werkzeug.datastructures import FileStorage
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from phoenixc2.server.database.base import Base
@@ -154,12 +153,20 @@ class UserModel(Base):
     def edit(self, data: dict) -> None:
         """Edit the user"""
         self.username = data.get("username", self.username)
-        if self.id != 1:  # don't allow editing these values for the admin user
-            self.admin = data.get("admin", "false") == "true"
-            self.disabled = data.get("disabled", "false") == "true"
 
-        if data.get("password", None) is not None:
+        if self.id != 1:  # don't allow editing these values for the admin user
+            self.admin = data.get("admin", self.admin)
+            self.disabled = data.get("disabled", self.disabled)
+        else:
+            raise ValueError("The user'S admin and disabled status cannot be edited.")
+
+        if data.get("password", None):
+            if len(data.get("password", "")) > 50:
+                raise ValueError("Password is too short")
             self.set_password(data.get("password", None))
+
+        if len(self.username) > 50:
+            raise ValueError("Username is too long")
 
     def delete(self) -> None:
         """Delete the user and profile picture and read all logs"""
@@ -174,13 +181,16 @@ class UserModel(Base):
             else None
         )
 
-    def set_profile_picture(self, file: FileStorage) -> None:
+    def set_profile_picture(self, file: bytes) -> None:
         """Set the profile picture and save it"""
         if self.profile_picture:
             get_resource(PICTURES, f"{self.id}-user", skip_file_check=True).unlink()
 
         self.profile_picture = True
-        file.save(get_resource(PICTURES, f"{self.id}-user", skip_file_check=True))
+        with get_resource(PICTURES, f"{self.id}-user", skip_file_check=True).open(
+            "wb"
+        ) as f:
+            f.write(file)
 
     def delete_profile_picture(self) -> None:
         """Delete the profile picture"""
