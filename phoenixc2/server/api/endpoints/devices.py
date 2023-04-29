@@ -276,8 +276,12 @@ def devices_bp(commander: Commander):
                 400,
             )
 
-        # get file
-        file = request.get_data()
+        if not request.data:
+            return {
+                "status": Status.Danger,
+                "message": "File is empty or not provided.",
+                "task": None,
+            }
 
         if target_path is None:
             return (
@@ -291,7 +295,7 @@ def devices_bp(commander: Commander):
                 400,
             )
         try:
-            task = TaskModel.upload(device, file, target_path)
+            task = TaskModel.upload(device, request.data, target_path)
         except Exception as e:
             return (
                 (

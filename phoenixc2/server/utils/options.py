@@ -24,6 +24,10 @@ class OptionType:
     def validate(name: str, data: any) -> bool:
         return data
 
+    @classmethod
+    def to_dict(cls) -> dict:
+        return {}
+
 
 @dataclass
 class StringType(OptionType):
@@ -122,6 +126,12 @@ class AddressType(StringType):
     def __str__(self) -> str:
         return "address"
 
+    @classmethod
+    def to_dict(cls) -> dict:
+        return {
+            "interfaces": AddressType.interfaces,
+        }
+
 
 class PortType(IntegerType):
     """The option-type of port"""
@@ -130,7 +140,7 @@ class PortType(IntegerType):
     def validate(name: str, port: int) -> bool:
         if port < 0 or port > 65535:
             raise ValueError(f"The port '{port}' for the option '{name}' is invalid.")
-        if Session.query(ListenerModel).filter_by(port=port).first():
+        if Session.query(ListenerModel).filter_by(port=port).first() is not None:
             raise ValueError(
                 f"The port '{port}' for the option '{name}' is already in use."
             )
@@ -185,6 +195,12 @@ class TableType(OptionType):
 
     def __str__(self) -> str:
         return "table"
+
+    @classmethod
+    def to_dict(cls) -> dict:
+        return {
+            "choices": cls.choices,
+        }
 
 
 @dataclass
@@ -259,6 +275,7 @@ class Option:
             "name": self.name,
             "real_name": self.real_name,
             "type": str(self.type),
+            "type_data": self.type.to_dict(),
             "required": self.required,
             "description": self.description,
             "default": self.default,

