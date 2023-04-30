@@ -23,16 +23,18 @@ class UserTest(unittest.TestCase):
             "admin": True,
             "disabled": False,
         }
+
         response = self.client.post("/api/users/add", json=data)
         self.assertEqual(response.status_code, 201, response.json["message"])
+        user_id = response.json["user"]["id"]
 
         # Get profile picture
-        response = self.client.get("/api/users/1/picture")
+        response = self.client.get(f"/api/users/{user_id}/picture")
         self.assertEqual(response.status_code, 204)
 
         # Update the user
         data = {"username": "testchanged"}
-        response = self.client.put("/api/users/1/edit", json=data)
+        response = self.client.put(f"/api/users/{user_id}/edit", json=data)
         self.assertEqual(response.status_code, 200, response.json["message"])
 
 
