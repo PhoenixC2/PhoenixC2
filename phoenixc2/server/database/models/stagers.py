@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from flask import escape
+from markupsafe import escape
 from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session

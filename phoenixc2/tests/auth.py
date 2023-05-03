@@ -23,7 +23,7 @@ class TestAuth(unittest.TestCase):
 
     def tearDown(self):
         # clear cookies after each test
-        self.client.cookie_jar.clear()
+        self.client.delete_cookie("session")
 
     def test_login(self):
         response = self.client.post(
@@ -51,10 +51,10 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_api_key_in_cookie_login(self):
-        self.client.set_cookie("localhost", "api_key", self.user._api_key)
+        self.client.set_cookie("api_key", self.user._api_key)
         response = self.client.get("/api/dashboard")
         self.assertEqual(response.status_code, 200)
-        self.client.delete_cookie("localhost", "api_key")
+        self.client.delete_cookie("api_key")
 
     def test_logout(self):
         response = self.client.get("/api/auth/logout")
