@@ -14,6 +14,7 @@ class BaseBypass(abc.ABC):
     Attributes:
         name (str): Name of the bypass
         description (str): Description of the bypass
+        author (str): Author of the bypass
         os (tuple): Tuple of supported operating systems
         options (OptionPool): OptionPool object containing the bypass options
         final (bool): If the bypass is final, it cannot be chained with other bypasses
@@ -21,7 +22,8 @@ class BaseBypass(abc.ABC):
     """
 
     name: str
-    description: str
+    description: str = ""
+    author: str = ""
     os = ("windows", "linux", "macos")
     option_pool = OptionPool()
     final = False
@@ -70,6 +72,7 @@ class BaseBypass(abc.ABC):
         return {
             "name": self.name,
             "description": self.description,
+            "author": self.author,
             "os": self.os,
             "options": self.option_pool.to_dict(commander),
             "final": self.final,

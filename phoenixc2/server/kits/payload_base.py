@@ -28,7 +28,7 @@ class BasePayload(ABC):
     module_code_types: list[str] = ["shellcode", "compiled", "native"]
     module_languages: list[str] = ["python"]
     language = "python"
-    end_format: str = ""
+    file_ending: str = ""
     compiled: bool = False
     option_pool: OptionPool = OptionPool()
     features: list[Feature] = []
@@ -36,9 +36,7 @@ class BasePayload(ABC):
     @classmethod
     def get_output_file(cls, stager_db: "StagerModel") -> Path:
         """Save the output to the stager file"""
-        return get_resource(
-            "data/stagers", f"{stager_db.id}{cls.end_format}", skip_file_check=True
-        )
+        return get_resource("data/stagers", f"{stager_db.id}", skip_file_check=True)
 
     @classmethod
     @abstractmethod
@@ -68,7 +66,7 @@ class BasePayload(ABC):
             "supported_code_types": cls.module_code_types,
             "supported_languages": cls.module_languages,
             "language": cls.language,
-            "end_format": cls.end_format,
+            "file_ending": cls.file_ending,
             "compiled": cls.compiled,
             "options": cls.option_pool.to_dict(commander),
         }
@@ -81,14 +79,25 @@ class FinalPayload:
     payload: BasePayload
     stager: "StagerModel"
     output: bytes | str
+    _file_ending: str = None
 
     def __init__(self, payload: BasePayload, stager_db: "StagerModel"):
         self.stager: "StagerModel" = stager_db
         self.payload: BasePayload = payload
 
     @property
+    def file_ending(self) -> str:
+        if self._file_ending is not None:
+            return self._file_ending
+        return self.payload.file_ending
+
+    @file_ending.setter
+    def file_ending(self, value: str) -> None:
+        self._file_ending = value
+
+    @property
     def name(self) -> str:
-        return self.stager.name + "." + self.payload.end_format
+        return self.stager.name + self.file_ending
 
     @property
     def as_file(self) -> BinaryIO:

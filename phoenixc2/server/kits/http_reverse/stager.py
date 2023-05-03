@@ -33,7 +33,7 @@ class PythonPayload(BasePayload):
     supported_code_types = ["shellcode", "compiled", "native"]
     supported_languages = ["python", "bash"]
     language = "python"
-    end_format = "py"
+    file_ending = ".py"
     compiled = False
     option_pool = OptionPool()
 
@@ -63,7 +63,7 @@ class GoPayload(BasePayload):
     module_code_types = []
     module_languages = ["bash"]
     language = "go"
-    end_format = ".exe"
+    file_ending = ".exe"
     compiled = True
     option_pool = OptionPool(
         [
@@ -100,6 +100,8 @@ class GoPayload(BasePayload):
                 cls,
                 stager_db,
             )
+            if stager_db.options["os"] == "linux":
+                final_payload.file_ending = ""
             final_payload.set_output_from_path(
                 cls.get_output_file(stager_db),
             )
@@ -131,8 +133,8 @@ class GoPayload(BasePayload):
             f"GOOS={operation_system} GOARCH={architecture} go build"
             f" -o {output_file} {go_file}"
         )
-        # remove go file
-        # go_file.unlink()
+        # remove go file (comment out for debugging)
+        go_file.unlink()
 
         if status_code != 0:
             raise Exception("Failed to compile")
@@ -141,6 +143,9 @@ class GoPayload(BasePayload):
             cls,
             stager_db,
         )
+        if stager_db.options["os"] == "linux":
+            final_payload.file_ending = ""
+
         final_payload.set_output_from_path(output_file)
         return final_payload
 
@@ -154,7 +159,8 @@ class Stager(BaseStager):
         [
             Option(
                 name="Sleep Time",
-                description="The time to sleep between each request",
+                description="The time to sleep between each request."
+                " Should be less than the listener timeout.",
                 real_name="sleep-time",
                 type=IntegerType(),
                 default=5,
@@ -163,7 +169,7 @@ class Stager(BaseStager):
             Option(
                 name="Request User-Agent",
                 real_name="user-agent",
-                description="The User-Agent to use.",
+                description="The User-Agent to use for the requests.",
                 type=StringType(),
                 default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
@@ -179,7 +185,7 @@ class Stager(BaseStager):
                 real_name="proxy_port",
                 description="The port of a proxy to use.",
                 type=IntegerType(),
-                default=8080,
+                default=80,
             ),
             Option(
                 name="Proxy authentication",
