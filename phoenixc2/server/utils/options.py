@@ -1,4 +1,5 @@
 """Options for creating listeners and stagers."""
+
 # Inspired by https://github.com/BC-SECURITY/Empire
 import socket
 from dataclasses import dataclass, field
@@ -25,7 +26,7 @@ class OptionType:
         return data
 
     @classmethod
-    def to_dict(cls) -> dict:
+    def to_dict(cls, commander: "Commander") -> dict:
         return {}
 
 
@@ -127,7 +128,7 @@ class AddressType(StringType):
         return "address"
 
     @classmethod
-    def to_dict(cls) -> dict:
+    def to_dict(cls, commander) -> dict:
         return {
             "interfaces": AddressType.interfaces,
         }
@@ -163,6 +164,11 @@ class ChoiceType(OptionType):
     def __str__(self) -> str:
         return "choice"
 
+    def to_dict(self, commander) -> dict:
+        return {
+            "choices": self.choices,
+        }
+
 
 @dataclass
 class TableType(OptionType):
@@ -171,14 +177,11 @@ class TableType(OptionType):
     # if choices is all listeners and a new one is added it's not in the choices.
     model: any
 
-    @property
-    def choices(self) -> MutableSequence:
-        return self._choices()
-
     def validate(self, name: str, id_or_name: int | str) -> bool:
+        choices = self._choices()
         if str(id_or_name).isdigit():
             object = Session.query(self.model).filter_by(id=id_or_name).first()
-            if object not in self.choices:
+            if object not in choices:
                 raise ValueError(
                     f"There's no element with the id ({id_or_name}) "
                     f"in the available choices for '{name}'.)"
@@ -186,7 +189,7 @@ class TableType(OptionType):
             return object
         else:
             object = Session.query(self.model).filter_by(name=id_or_name).first()
-            if object not in self.choices:
+            if object not in choices:
                 raise ValueError(
                     f"There's no element with the name '{id_or_name}' "
                     f"in the available choices for '{name}'.)"
@@ -196,11 +199,8 @@ class TableType(OptionType):
     def __str__(self) -> str:
         return "table"
 
-    @classmethod
-    def to_dict(cls) -> dict:
-        return {
-            "choices": cls.choices,
-        }
+    def to_dict(self, commander) -> dict:
+        return {"choices": item.to_dict(commander) for item in self._choices()}
 
 
 @dataclass
@@ -275,21 +275,13 @@ class Option:
             "name": self.name,
             "real_name": self.real_name,
             "type": str(self.type),
-            "type_data": self.type.to_dict(),
+            "type_data": self.type.to_dict(commander),
             "required": self.required,
             "description": self.description,
             "default": self.default,
             "editable": self.editable,
+            "render": self.render,
         }
-        if type(self.type) == ChoiceType:
-            data["choices"] = self.type.choices
-        elif type(self.type) == TableType:
-            try:
-                data["choices"] = [choice.to_dict() for choice in self.type.choices]
-            except TypeError:
-                data["choices"] = [
-                    choice.to_dict(commander) for choice in self.type.choices
-                ]
         return data
 
     def __repr__(self) -> str:
@@ -364,21 +356,20 @@ class DefaultListenerPool(OptionPool):
             ),
             Option(
                 name="SSL",
-                description="True if the listener should use ssl.",
+                description="If the listener should use SSL.",
                 type=BooleanType(),
                 default=True,
             ),
             Option(
                 name="Enabled",
-                description="True if the listener should be enabled.",
+                description="If the listener should be enabled on startup.",
                 type=BooleanType(),
                 default=True,
             ),
             Option(
                 name="Connection limit",
                 real_name="limit",
-                description="How many devices can be connected "
-                "to the listener at once.",
+                description="How many devices can be connected at the same time",
                 type=IntegerType(),
                 default=5,
             ),
@@ -386,7 +377,7 @@ class DefaultListenerPool(OptionPool):
                 name="Response timeout",
                 real_name="timeout",
                 description="How long the listener should wait for a"
-                "response before closing the connection.",
+                " response before marking the device as offline.",
                 type=IntegerType(),
                 default=10,
             ),
@@ -419,14 +410,7 @@ class DefaultStagerPool(OptionPool):
                 render=False,
             ),
             Option(
-                name="Random size",
-                real_name="random_size",
-                description="Add random sized strings to the payload to bypass the AV.",
-                type=BooleanType(),
-                default=False,
-            ),
-            Option(
-                name="Timeout",
+                name="Retries",
                 description="How often the stager should try to connect, "
                 "before it will exit.",
                 type=IntegerType(),

