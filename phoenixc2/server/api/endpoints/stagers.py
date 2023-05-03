@@ -1,5 +1,5 @@
 from flask import Blueprint, request, send_file
-
+from copy import deepcopy
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.database import (
     ListenerModel,
@@ -53,19 +53,21 @@ def stagers_bp(commander: Commander):
     @stagers_bp.route("/available", methods=["GET"])
     @UserModel.authenticated
     def get_available():
-        stagers = {}
-        type = request.args.get("type")
+        types = {}
+        type = request.args.get("type", "all")
         try:
-            if type == "all" or type is None:
+            if type == "all":
                 for stager in StagerModel.get_all_classes():
-                    stagers[stager.name] = stager.to_dict(commander)
+                    types[stager.name] = stager.to_dict(commander)
             else:
-                stagers[type] = StagerModel.get_class_from_type(type).to_dict(commander)
+                types[type] = StagerModel.get_class_from_type(type).to_dict(commander)
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
-
         else:
-            return stagers
+            return {
+                "status": Status.Success,
+                "available": types,
+            }
 
     @stagers_bp.route("/add", methods=["POST"])
     @UserModel.authenticated
@@ -92,7 +94,8 @@ def stagers_bp(commander: Commander):
 
         # get class for options
         stager_class = StagerModel.get_class_from_type(listener.type)
-        option_pool = stager_class.option_pool
+        # so we don't modify the original option pool
+        option_pool = deepcopy(stager_class.option_pool)
 
         # get payload options
         if "payload" in data and data["payload"] in stager_class.payloads:

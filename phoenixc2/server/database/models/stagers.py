@@ -3,7 +3,7 @@ import importlib
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from flask import escape
@@ -32,8 +32,7 @@ class StagerModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100))
     payload: Mapped[str] = mapped_column(String(100))
-    random_size: Mapped[bool] = mapped_column(Boolean)
-    timeout: Mapped[int] = mapped_column(Integer)
+    retries: Mapped[int] = mapped_column(Integer)
     delay: Mapped[int] = mapped_column(Integer)
     different_address: Mapped[str] = mapped_column(String(100))
     options: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
@@ -74,8 +73,7 @@ class StagerModel(Base):
             "id": self.id,
             "name": self.name,
             "payload": self.payload,
-            "random_size": self.random_size,
-            "timeout": self.timeout,
+            "retries": self.retries,
             "delay": self.delay,
             "different_address": self.different_address,
             "options": self.options,
@@ -130,7 +128,7 @@ class StagerModel(Base):
         try:
             stager = importlib.import_module(
                 "phoenixc2.server.kits." + type.replace("-", "_") + ".stager"
-            ).Stager
+            ).Stager()
         except ModuleNotFoundError as e:
             raise FileNotFoundError(f"Stager '{type}' doesn't exist.") from e
         else:
@@ -150,8 +148,7 @@ class StagerModel(Base):
             "name",
             "listener",
             "payload",
-            "random_size",
-            "timeout",
+            "retries",
             "delay",
             "different_address",
         ]:
@@ -160,10 +157,9 @@ class StagerModel(Base):
             name=standard[0],
             listener=standard[1],
             payload=standard[2],
-            random_size=standard[3],
-            timeout=standard[4],
-            delay=standard[5],
-            different_address=standard[6],
+            retries=standard[3],
+            delay=standard[4],
+            different_address=standard[5],
             options=data,
         )
 
