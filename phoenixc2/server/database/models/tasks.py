@@ -2,7 +2,6 @@
 import base64
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
-from uuid import uuid1
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableDict
@@ -12,7 +11,7 @@ from werkzeug.utils import secure_filename
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.modules import get_module
-from phoenixc2.server.utils.misc import Status
+from phoenixc2.server.utils.misc import Status, generate_name
 from phoenixc2.server.utils.resources import get_resource
 
 from .credentials import CredentialModel
@@ -29,9 +28,7 @@ class TaskModel(Base):
 
     __tablename__ = "Tasks"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(
-        String(10), unique=True, default=lambda: str(uuid1()).split("-")[0]
-    )
+    name: Mapped[str] = mapped_column(String(10), unique=True, default=generate_name)
     description: Mapped[Optional[str]] = mapped_column(Text)
     action: Mapped[str] = mapped_column(String(10))
     args: Mapped[Optional[dict]] = mapped_column(
@@ -156,6 +153,7 @@ class TaskModel(Base):
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
         task = TaskModel()
+        task.name = generate_name()
         if isinstance(device_or_id, DeviceModel):
             task.device = device_or_id
         else:
@@ -296,7 +294,7 @@ class TaskModel(Base):
             )
 
         # validate data
-        data = module.options.validate_all(data)
+        data = module.option_pool.validate_all(data)
 
         task = TaskModel.generate_task(device_or_id)
         task.action = "module"

@@ -70,7 +70,6 @@ def main():
         print("Finished startup.")
     while True:
         try:
-            # print(input("Server > "))
             time.sleep(1)
         except KeyboardInterrupt:
             log("Exiting", status=Status.Info)

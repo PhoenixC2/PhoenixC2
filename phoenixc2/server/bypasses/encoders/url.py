@@ -5,6 +5,7 @@ from phoenixc2.server.bypasses.base import BaseBypass
 class Bypass(BaseBypass):
     name = "Url"
     description = "Url Encoder"
+    author = "screamz2k"
     supported_languages = ("python",)
 
     def generate_body(self, final_payload, args):

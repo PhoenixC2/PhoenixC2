@@ -79,7 +79,7 @@ class Listener(BaseListener):
                     f"A Stager is trying to connect to '{self.db_entry.name}'"
                     "but the listeners limit is reached.",
                 )
-                return 404
+                return "", 404
             try:
                 hostname = data.get("hostname", "")
                 os = data.get("os", "")
@@ -102,7 +102,7 @@ class Listener(BaseListener):
                     hostname, request.remote_addr, os, architecture, user, admin, stager
                 )
             except Exception:
-                return 404
+                return "", 404
             Session.add(device)
             Session.commit()
             self.commander.new_connection(device)
@@ -123,7 +123,7 @@ class Listener(BaseListener):
                     self.add_handler(handler)
                     self.commander.new_connection(device, reconnect=True)
                 else:
-                    return 404
+                    return "", 404
             handler.db_entry.last_online = datetime.now()  # update last online
             Session.commit()
             return jsonify(
@@ -137,11 +137,11 @@ class Listener(BaseListener):
         @self.api.route("/finish/<string:device_name>", methods=["POST"])
         def finish_task(device_name: str = None):
             if device_name is None:
-                return 404
+                return "", 404
 
             handler = self.get_handler(device_name)
             if handler is None:
-                return 404
+                return "", 404
 
             data = request.get_json()
             task_id = data.get("task", "")
@@ -152,7 +152,7 @@ class Listener(BaseListener):
             task = handler.get_task(task_id)
 
             if task is None:
-                return 404
+                return "", 404
 
             task.finish(output, success, credentials)
             Session.commit()
@@ -162,11 +162,11 @@ class Listener(BaseListener):
         def update_task_output(device_name: str = None):
             """Update the output of a task in the database"""
             if device_name is None:
-                return 404
+                return "", 404
 
             handler = self.get_handler(device_name)
             if handler is None:
-                return 404
+                return "", 404
 
             data: dict = request.get_json()
             task_id = data.get("id", "")
@@ -174,7 +174,7 @@ class Listener(BaseListener):
 
             task = handler.get_task(task_id)
             if task is None:
-                return 404
+                return "", 404
 
             task.output = output
             Session.commit()
@@ -188,15 +188,11 @@ class Listener(BaseListener):
         @self.api.route("/download/<string:task_name>", methods=["GET"])
         def download(task_name: str = None):
             if task_name is None:
-                return 404
-
-            task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
-            if task is None:
-                return 404
+                return "", 404
 
             return send_from_directory(
                 str(get_resource("data/uploads")),
-                task.id,
+                task_name,
                 as_attachment=True,
             )
 
@@ -205,11 +201,11 @@ class Listener(BaseListener):
             task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
 
             if task is None:
-                return 404
+                return "", 404
             try:
                 module = task.get_module()
             except Exception:
-                return 404
+                return "", 404
 
             return jsonify(module.to_dict(self.commander))
 
@@ -218,11 +214,11 @@ class Listener(BaseListener):
             task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
 
             if task is None:
-                return 404
+                return "", 404
             try:
                 module = task.get_module()
             except Exception:
-                return 404
+                return "", 404
 
             return module.code(task)
 

@@ -1,8 +1,8 @@
 """The Credentials Model"""
 
 from typing import List, Tuple, Dict, Optional, TYPE_CHECKING
-from sqlalchemy import Integer, String, DateTime, ForeignKey, JSON
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import Integer, String, DateTime, JSON
+from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.ext.mutable import MutableList
 from datetime import datetime
 
@@ -10,7 +10,6 @@ from datetime import datetime
 from phoenixc2.server.database.base import Base
 
 from phoenixc2.server.bypasses import get_bypass, BaseBypass
-from .users import UserModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.kits.payload_base import FinalPayload
@@ -28,17 +27,6 @@ class BypassChainModel(Base):
     bypasses: Mapped[Optional[List[Tuple[str, str, Dict[str, any]]]]] = mapped_column(
         MutableList.as_mutable(JSON), default=[]
     )
-    creator_id: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey("Users.id"),
-        default=lambda: UserModel.get_current_user().id
-        if UserModel.get_current_user()
-        else None,
-    )
-    creator: Mapped["UserModel"] = relationship(
-        "UserModel",
-        back_populates="created_bypass_chains",
-    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, onupdate=datetime.now
@@ -49,11 +37,6 @@ class BypassChainModel(Base):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "creator": self.creator.to_dict()
-            if show_creator
-            else self.creator.id
-            if self.creator is not None
-            else None,
             "bypasses": [bypass.to_dict(commander) for bypass in self.get_bypasses()],
         }
 
@@ -112,5 +95,4 @@ class BypassChainModel(Base):
         chain = cls()
         chain.name = data["name"]
         chain.description = data.get("description", "")
-        chain.creator = UserModel.get_current_user()
         return chain

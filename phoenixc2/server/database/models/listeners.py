@@ -29,7 +29,7 @@ class ListenerModel(Base):
     __tablename__ = "Listeners"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(100), default=lambda: generate_name())
+    name: Mapped[str] = mapped_column(String(100), default=generate_name)
     type: Mapped[str] = mapped_column(String(100))
     address: Mapped[str] = mapped_column(String(15), default="0.0.0.0")
     port: Mapped[int] = mapped_column(Integer, default=lambda: randint(1024, 65535))

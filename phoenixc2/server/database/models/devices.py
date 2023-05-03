@@ -1,13 +1,13 @@
 """The Devices Model"""
 from datetime import datetime
 from typing import TYPE_CHECKING, List
-from uuid import uuid1
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
+from phoenixc2.server.utils.misc import generate_name
 
 from .operations import OperationModel
 
@@ -27,9 +27,7 @@ class DeviceModel(Base):
     }  # needed to avoid error bc of cascade delete
     __tablename__ = "Devices"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(
-        String, default=lambda: str(uuid1()).split("-")[0], unique=True
-    )
+    name: Mapped[str] = mapped_column(String, default=generate_name, unique=True)
     hostname: Mapped[str] = mapped_column(String(100))
     address: Mapped[str] = mapped_column(String(100))
     os: Mapped[str] = mapped_column(String(10))

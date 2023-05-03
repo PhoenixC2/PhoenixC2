@@ -5,6 +5,7 @@ from phoenixc2.server.bypasses.base import BaseBypass
 class Bypass(BaseBypass):
     name = "Base64"
     description = "Base64 encoder"
+    author = "screamz2k"
     supported_languages = "python"
 
     def generate_body(self, final_payload, args):

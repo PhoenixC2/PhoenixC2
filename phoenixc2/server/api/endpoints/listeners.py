@@ -128,10 +128,16 @@ def listeners_bp(commander: Commander):
         )
         if listener is None:
             return {"status": Status.Danger, "message": LISTENER_DOES_NOT_EXIST}, 400
+
         name = listener.name
         type = listener.type
+        active = listener.is_active(commander)
         listener.delete(stop, commander)
-        message = "Listener deleted and stopped" if stop else "Listener deleted"
+
+        message = (
+            "Listener deleted and stopped" if stop and active else "Listener deleted"
+        )
+
         Session.commit()
         LogEntryModel.log(
             Status.Success,

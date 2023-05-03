@@ -82,7 +82,7 @@ def bypasses_bp(commander: "Commander"):
     @bypasses_bp.route("/chains/<int:chain_id>")
     def get_chains(chain_id: int = None):
         if chain_id is None:
-            chains = Session.query(BypassChainModel).all()
+            chains: list[BypassChainModel] = Session.query(BypassChainModel).all()
             return {
                 "status": Status.Success,
                 "chains": [chain.to_dict(commander) for chain in chains],

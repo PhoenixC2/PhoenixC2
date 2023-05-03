@@ -1,6 +1,4 @@
 from abc import abstractmethod, ABC
-from datetime import datetime
-from uuid import uuid1
 
 from phoenixc2.server.database import DeviceModel, ListenerModel, Session, TaskModel
 from phoenixc2.server.modules.base import BaseModule
@@ -22,13 +20,6 @@ class BaseHandler(ABC):
     @property
     def db_entry(self) -> DeviceModel:
         return Session().query(DeviceModel).filter_by(id=self.id).first()
-
-    def generate_task(self) -> TaskModel:
-        return TaskModel(
-            name=str(uuid1).split("-")[0],
-            device=self.db_entry,
-            created_at=datetime.now(),
-        )
 
     def add_task(self, task: TaskModel):
         self.tasks.append(task)

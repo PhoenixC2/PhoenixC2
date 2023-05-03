@@ -43,6 +43,7 @@ class BaseStager(ABC):
         """Return a dict of the stager."""
         return {
             "name": cls.name,
+            "author": cls.author,
             "description": cls.description,
             "options": cls.option_pool.to_dict(commander),
             "payloads": {x: cls.payloads[x].to_dict(commander) for x in cls.payloads},

@@ -90,6 +90,6 @@ def log_connection(device: "DeviceModel", reconnect: bool = False):
     LogEntryModel.log(
         Status.Success,
         "devices",
-        f"Device '{device.name}' connected to '{device.name}'.",
+        f"Device '{device.name}' connected to '{device.stager.listener.name}'",
         log_to_cli=False,
     )

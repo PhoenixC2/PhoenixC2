@@ -16,8 +16,8 @@ class BaseModule(ABC):
     author: str = "Screamz2k"
     language: str = "python"
     os: list[str] = ["linux", "windows", "osx"]
-    options = OptionPool()
-    admin: bool = False
+    option_pool = OptionPool()
+    admin_required: bool = False
     # code types:
     # - native: code is written in the language of the module
     # - shellcode: shellcode
@@ -53,8 +53,8 @@ class BaseModule(ABC):
             "author": cls.author,
             "language": cls.language,
             "os": cls.os,
-            "options": cls.options.to_dict(commander),
-            "admin": cls.admin,
+            "options": cls.option_pool.to_dict(commander),
+            "admin": cls.admin_required,
             "code_type": cls.code_type,
             "execution_methods": cls.execution_methods,
         }
