@@ -4,7 +4,7 @@ import shlex
 import jinja2
 
 from phoenixc2.server.utils.options import (
-    AddressType,
+    ChoiceType,
     Option,
     OptionPool,
     StringType,
@@ -69,9 +69,11 @@ class GoPayload(BasePayload):
         [
             Option(
                 name="Operating System",
-                description="The operating system to compile for",
+                description="The target operating system",
                 real_name="os",
-                type=StringType(),
+                type=ChoiceType(
+                    ["windows", "linux", "darwin", "freebsd", "netbsd", "openbsd"], str
+                ),
                 default="windows",
                 required=True,
             ),
@@ -79,7 +81,7 @@ class GoPayload(BasePayload):
                 name="Architecture",
                 description="The architecture to compile for",
                 real_name="arch",
-                type=StringType(),
+                type=ChoiceType(["amd64", "386", "arm", "arm64"], str),
                 default="amd64",
                 required=True,
             ),
@@ -173,26 +175,6 @@ class Stager(BaseStager):
                 type=StringType(),
                 default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-            ),
-            Option(
-                name="Proxy address",
-                real_name="proxy_address",
-                description="The address of a proxy to use.",
-                type=AddressType(),
-            ),
-            Option(
-                name="Proxy port",
-                real_name="proxy_port",
-                description="The port of a proxy to use.",
-                type=IntegerType(),
-                default=80,
-            ),
-            Option(
-                name="Proxy authentication",
-                real_name="proxy_auth",
-                description="The Authentication to use (format=username:password).",
-                type=StringType(),
-                default="",
             ),
         ],
         list(payloads.keys()),

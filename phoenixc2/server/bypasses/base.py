@@ -41,7 +41,7 @@ class BaseBypass(abc.ABC):
         """
         if final_payload.payload.language not in self.supported_languages:
             raise Exception(
-                f"Language of the payload is not supported by '{self.name}'."
+                f"Language of the payload is not supported by the bypass '{self.name}'."
             )
 
         self.generate(final_payload, args)

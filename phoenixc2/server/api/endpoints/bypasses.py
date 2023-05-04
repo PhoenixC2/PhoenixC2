@@ -37,9 +37,9 @@ def bypasses_bp(commander: "Commander"):
                 return {"status": Status.Danger, "message": "Bypass not found."}, 400
         return {"status": Status.Success, "bypass": bypass.to_dict(commander)}
 
-    @bypasses_bp.route("/run/<string:category>/<string:name>", methods=["POST"])
-    def post_run_single_bypass(category: str, name: str):
-        stager_id = request.json.get("stager", "")
+    @bypasses_bp.route("/run/<string:category>/<string:name>", methods=["GET"])
+    def get_run_single_bypass(category: str, name: str):
+        stager_id = request.args.get("stager", None)
 
         try:
             bypass = get_bypass(category, name)
@@ -221,9 +221,10 @@ def bypasses_bp(commander: "Commander"):
             "chain": chain.to_dict(commander),
         }, 200
 
-    @bypasses_bp.route("/chains/<int:chain_id>/run", methods=["POST"])
-    def put_run_chain(chain_id: int):
-        stager_id = request.json.get("stager", None)
+    @bypasses_bp.route("/chains/<int:chain_id>/run", methods=["GET"])
+    def get_run_chain(chain_id: int):
+        stager_id = request.args.get("stager", None)
+
         chain: BypassChainModel = (
             Session.query(BypassChainModel).filter_by(id=chain_id).first()
         )

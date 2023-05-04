@@ -3,7 +3,7 @@ import os
 
 from phoenixc2.server.database import ListenerModel, Session
 from phoenixc2.server.plugins import get_plugin
-from phoenixc2.server.utils.config import load_config
+from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.web import FlaskThread
 from phoenixc2.server.utils.misc import Status
@@ -48,7 +48,12 @@ def start_api(address: str, port: int, ssl: bool, commander: Commander):
 def load_plugins(commander: Commander):
     """Load all plugins which are specified in the config"""
 
-    plugins = load_config()["plugins"]
+    config = load_config()
+    if "plugins" not in config.keys():
+        config["plugins"] = {}
+        save_config(config)
+
+    plugins = config["plugins"]
     for plugin in plugins.keys():
         plugin_config = plugins[plugin]
         if plugin_config["enabled"]:
