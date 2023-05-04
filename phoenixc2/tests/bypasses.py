@@ -19,10 +19,9 @@ class BypassTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_run_single_bypass(self):
-        data = {
-            "stager": self.stager.id,
-        }
-        response = self.client.post("/api/bypasses/run/encoders/base64", json=data)
+        response = self.client.get(
+            f"/api/bypasses/run/encoders/base64?stager={self.stager.id}"
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_get_bypass_chains(self):
@@ -92,8 +91,8 @@ class BypassTest(unittest.TestCase):
         data = {
             "stager": self.stager.id,
         }
-        response = self.client.post(
-            f"/api/bypasses/chains/{chain['id']}/run", json=data
+        response = self.client.get(
+            f"/api/bypasses/chains/{chain['id']}/run?stager={self.stager.id}"
         )
         self.assertEqual(response.status_code, 200, "Failed to run chain on stager")
 

@@ -2,7 +2,7 @@ from multiprocessing.util import get_temp_dir
 import os
 import secrets
 import shutil
-import imp
+from importlib.machinery import SourceFileLoader
 import zipfile
 import tempfile
 import requests
@@ -195,7 +195,9 @@ def check_plugin(path: str) -> BasePlugin:
         exit(1)
 
     try:
-        return imp.load_module("plugin", *imp.find_module("plugin", [path])).Plugin
+        return (
+            SourceFileLoader("plugin", os.path.join(path, "plugin.py")).load_module()
+        ).Plugin
     except Exception as e:
         log(f"Error while importing plugin: {e}", Status.Danger)
         exit(1)
