@@ -11,6 +11,9 @@ from phoenixc2.server.utils.admin import (
     generate_database,
     setup_server,
     reset_table,
+    add_plugin,
+    add_plugin_zip,
+    add_plugin_zip_url,
 )
 from phoenixc2.server.utils.ui import log, logo, ph_print
 
@@ -68,7 +71,6 @@ admin.add_argument(
 admin.add_argument(
     "--recreate-super-user", help="Recreate the super user.", action="store_true"
 )
-admin.add_argument("--backup-database", help="Backup database to the given location.")
 admin.add_argument("--reset-database", help="Reset the database", action="store_true")
 admin.add_argument(
     "--reset-table",
@@ -80,6 +82,18 @@ admin.add_argument(
     "--regenerate-ssl",
     help="Regenerate the ssl certificates",
     action="store_true",
+)
+admin.add_argument(
+    "--add-plugin",
+    help="Add a plugin to the server.",
+)
+admin.add_argument(
+    "--add-plugin-zip",
+    help="Extract the plugin and add it to theto the server.",
+)
+admin.add_argument(
+    "--add-plugin-url",
+    help="Download and extract the plugin and add it to the server.",
 )
 
 
@@ -138,6 +152,15 @@ def parse_args(args, config: dict) -> dict:
         reset_table(args.reset_table)
     if args.regenerate_ssl:
         regenerate_ssl()
+
+    if args.add_plugin:
+        add_plugin(args.add_plugin)
+
+    if args.add_plugin_zip:
+        add_plugin_zip(args.add_plugin_zip)
+
+    if args.add_plugin_url:
+        add_plugin_zip_url(args.add_plugin_url)
 
     # api args
     if args.address:

@@ -1,14 +1,21 @@
+from multiprocessing.util import get_temp_dir
 import os
 import secrets
+import shutil
+import imp
+import zipfile
+import tempfile
+import requests
 
 from sqlalchemy import inspect
 from OpenSSL import crypto
 from phoenixc2.server.database import Session, UserModel, engine
 from phoenixc2.server.database.base import Base
-from phoenixc2.server.utils.config import load_config
+from phoenixc2.server.utils.config import load_config, save_config
 from phoenixc2.server.utils.resources import get_resource
 from phoenixc2.server.utils.ui import log
 from phoenixc2.server.utils.misc import Status
+from phoenixc2.server.plugins.base import BasePlugin
 
 DIRECTORIES = ["stagers", "downloads", "uploads", "pictures"]
 
@@ -23,11 +30,6 @@ def generate_database(reset: bool = False):
     log("Creating database", Status.Info)
     Base.metadata.create_all(engine)
     log("Created the database.", Status.Success)
-
-
-def backup_database():
-    """Backup the database."""
-    ...
 
 
 def check_for_super_user():
@@ -176,3 +178,77 @@ def check_for_setup():
             check_for_database(),
         ]
     )
+
+
+def check_plugin(path: str) -> BasePlugin:
+    """Check if a plugin is valid."""
+    if not os.path.exists(path):
+        log("Plugin's path doesn't exist.", Status.Danger)
+        exit(1)
+
+    if not os.path.isdir(path):
+        log("Plugin is not a directory.", Status.Danger)
+        exit(1)
+
+    if not os.path.exists(os.path.join(path, "plugin.py")):
+        log("Plugin doesn't have a plugin.py file.", Status.Danger)
+        exit(1)
+
+    try:
+        return imp.load_module("plugin", *imp.find_module("plugin", [path])).Plugin
+    except Exception as e:
+        log(f"Error while importing plugin: {e}", Status.Danger)
+        exit(1)
+
+
+def enable_plugin(plugin: BasePlugin):
+    """Enable a plugin."""
+    config = load_config()
+    config["plugins"] = config.get("plugins", {})
+    config["plugins"][plugin.name] = {"enabled": True}
+    save_config(config)
+
+    log(f"Plugin '{plugin.name}' enabled.", Status.Success)
+
+
+def add_plugin(path: str):
+    """Add a plugin."""
+    plugin_dir = get_resource("plugins")
+
+    plugin = check_plugin(path)
+
+    try:
+        shutil.copytree(path, os.path.join(plugin_dir, plugin.name))
+    except Exception as e:
+        log(f"Error while copying plugin: {e}", Status.Danger)
+        exit(1)
+
+    log(f"Plugin '{plugin.name}' added.", Status.Success)
+
+    enable_plugin(plugin)
+
+    return plugin
+
+
+def add_plugin_zip(path: str):
+    """Add a plugin zip."""
+    temp_plugin_dir = os.path.join(tempfile.gettempdir(), "phoenix_plugin")
+
+    with zipfile.ZipFile(path, "r") as zip_ref:
+        zip_ref.extractall(temp_plugin_dir)
+
+    add_plugin(temp_plugin_dir)
+
+
+def add_plugin_zip_url(url: str):
+    """Add a plugin zip url."""
+
+    try:
+        r = requests.get(url)
+        with open(os.path.join(get_temp_dir(), "plugin.zip"), "wb") as f:
+            f.write(r.content)
+    except Exception as e:
+        log(f"Error while downloading plugin: {e}", Status.Danger)
+        exit(1)
+
+    add_plugin_zip(os.path.join(get_temp_dir(), "plugin.zip"))
