@@ -1,4 +1,5 @@
 import os
+import subprocess
 from typing import TYPE_CHECKING
 import shlex
 import jinja2
@@ -94,6 +95,7 @@ class GoPayload(BasePayload):
             pro=True,
         )
     ]
+    required_applications = ["go"]
 
     @classmethod
     def generate(cls, stager_db, recompile=False):
@@ -108,7 +110,7 @@ class GoPayload(BasePayload):
                 cls.get_output_file(stager_db),
             )
             return final_payload
-
+        cls.check_for_required_applications()
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
             trim_blocks=True,
@@ -128,17 +130,17 @@ class GoPayload(BasePayload):
             f.write(output)
 
         # compile
-        operation_system = shlex.quote(stager_db.options["os"])
-        architecture = shlex.quote(stager_db.options["arch"])
-
-        status_code = os.system(
-            f"GOOS={operation_system} GOARCH={architecture} go build"
-            f" -o {output_file} {go_file}"
+        os.environ["GOOS"] = shlex.quote(stager_db.options["os"])
+        os.environ["GOARCH"] = shlex.quote(stager_db.options["arch"])
+        process = subprocess.run(
+            ["go", "build", "-ldflags", "-s -w", "-o", output_file, go_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         # remove go file (comment out for debugging)
-        go_file.unlink()
+        # go_file.unlink()
 
-        if status_code != 0:
+        if process.returncode != 0:
             raise Exception("Failed to compile")
 
         final_payload = FinalPayload(
@@ -152,11 +154,138 @@ class GoPayload(BasePayload):
         return final_payload
 
 
+class GoDllPayload(BasePayload):
+    name = "Golang DLL Payload"
+    description = "Compiled cross-platform Golang DLL Payload"
+    module_execution_methods = [
+        "command",
+    ]
+    module_code_types = []
+    module_languages = ["bash"]
+    language = "go"
+    file_ending = ".dll"
+    compiled = True
+    option_pool = OptionPool(
+        [
+            Option(
+                name="Architecture",
+                description="The architecture to compile for",
+                real_name="arch",
+                type=ChoiceType(["amd64", "386", "arm", "arm64"], str),
+                default="amd64",
+                required=True,
+            ),
+            Option(
+                name="Exported function",
+                description="Name of the exported function",
+                real_name="exported_function",
+                type=StringType(),
+                default="Execute",
+                required=True,
+            ),
+        ]
+    )
+    features = [
+        Feature(
+            name="Cross-Platform",
+            description="The payload can be compiled for multiple platforms",
+            pro=True,
+        ),
+        Feature(
+            name="DLL",
+            description="The payload is a DLL and can be injected into other processes",
+            pro=True,
+        ),
+    ]
+    required_applications = ["x86_64-w64-mingw32-gcc", "i686-w64-mingw32-gcc", "go"]
+
+    @classmethod
+    def generate(cls, stager_db, recompile=False):
+        if cls.already_compiled(stager_db) and not recompile:
+            final_payload = FinalPayload(
+                cls,
+                stager_db,
+            )
+            final_payload.set_output_from_path(
+                cls.get_output_file(stager_db),
+            )
+            return final_payload
+
+        cls.check_for_required_applications()  # check for required applications
+        jinja2_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            autoescape=True,
+        )
+        template = jinja2_env.get_template("payloads/go_dll.go")
+        output = template.render(stager=stager_db)
+
+        # write to file
+        go_file = get_resource(
+            "data/stagers/", f"{stager_db.id}.go", skip_file_check=True
+        )
+        output_file = cls.get_output_file(stager_db)
+
+        with go_file.open("w") as f:
+            f.write(output)
+
+        os.environ["GOOS"] = "windows"
+        os.environ["GOARCH"] = shlex.quote(stager_db.options["arch"])
+        os.environ["CGO_ENABLED"] = "1"
+        if stager_db.options["arch"] == "386":
+            os.environ["CC"] = "i686-w64-mingw32-gcc"
+        else:
+            os.environ["CC"] = "x86_64-w64-mingw32-gcc"
+
+        # compile
+        env = os.environ.copy().update(
+            {
+                "GOOS": "windows",
+                "GOARCH": shlex.quote(stager_db.options["arch"]),
+                "CGO_ENABLED": "1",
+                "CC": "x86_64-w64-mingw32-gcc",
+            }
+        )
+        ldflags = ["-s", "-w", "-H=windowsgui"]
+        cmd = [
+            "go",
+            "build",
+            "-buildmode=c-shared",
+            "-ldflags=" + " ".join(ldflags),
+            "-o",
+            str(output_file),
+            str(go_file),
+        ]
+        result = subprocess.run(
+            cmd,
+            env=env,
+        )
+
+        # remove go file (comment out for debugging)
+        go_file.unlink()
+
+        if result.returncode != 0:
+            raise Exception("Failed to compile")
+
+        # remove header
+        get_resource("data/stagers/", f"{stager_db.id}.h", skip_file_check=True).unlink(
+            missing_ok=True
+        )
+        final_payload = FinalPayload(
+            cls,
+            stager_db,
+        )
+
+        final_payload.set_output_from_path(output_file)
+        return final_payload
+
+
 class Stager(BaseStager):
     name = "http-reverse"
     description = "Reverse HTTP(S) stager"
     author: str = "Screamz2k"
-    payloads = {"python": PythonPayload, "go": GoPayload}
+    payloads = {"python": PythonPayload, "go": GoPayload, "go_dll": GoDllPayload}
     option_pool = DefaultStagerPool(
         [
             Option(

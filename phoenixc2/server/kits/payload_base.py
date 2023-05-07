@@ -1,3 +1,4 @@
+import shutil
 from typing import TYPE_CHECKING, BinaryIO
 from abc import ABC, abstractmethod
 from tempfile import TemporaryFile
@@ -32,11 +33,24 @@ class BasePayload(ABC):
     compiled: bool = False
     option_pool: OptionPool = OptionPool()
     features: list[Feature] = []
+    # applications required to compile the payload
+    required_applications: list[str] = []
+
+    @classmethod
+    def check_for_required_applications(cls):
+        """Check if all required applications are installed"""
+        for application in cls.required_applications:
+            if shutil.which(application) is None:
+                raise FileNotFoundError(
+                    f"Application {application} " "is required to compile this payload"
+                )
 
     @classmethod
     def get_output_file(cls, stager_db: "StagerModel") -> Path:
-        """Save the output to the stager file"""
-        return get_resource("data/stagers", f"{stager_db.id}", skip_file_check=True)
+        """Get the output file for the payload"""
+        return get_resource(
+            "data/stagers", f"{stager_db.id}.stager", skip_file_check=True
+        )
 
     @classmethod
     @abstractmethod

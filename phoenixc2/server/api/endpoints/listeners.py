@@ -69,7 +69,7 @@ def listeners_bp(commander: Commander):
     @UserModel.authenticated
     def post_add():
         # Get request data
-        listener_type = request.json.get("type")
+        listener_type = request.json.get("type", None)
         is_interface = request.args.get("is_interface", "").lower() == "true"
         data = dict(request.json)
 

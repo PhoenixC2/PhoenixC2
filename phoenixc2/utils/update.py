@@ -7,7 +7,8 @@ import phoenixc2
 def check_for_update() -> bool:
     try:
         response = requests.get(
-            "https://api.github.com/repos/screamz2k/phoenixc2/releases/latest"
+            "https://api.github.com/repos/screamz2k/phoenixc2/releases/latest",
+            timeout=1,
         )
         response.raise_for_status()
     except requests.exceptions.RequestException:
