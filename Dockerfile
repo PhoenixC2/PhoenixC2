@@ -10,7 +10,7 @@ RUN pip install poetry --disable-pip-version-check
 
 RUN poetry install
 
-RUN apt update && apt install -y golang-go
+RUN apt update && apt install -y golang-go mingw-w64
 
 ENTRYPOINT ["poetry", "run"]
 

