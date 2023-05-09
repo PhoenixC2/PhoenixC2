@@ -66,17 +66,11 @@ def bypasses_bp(commander: "Commander"):
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
 
-        if final_payload.payload.compiled:
-            return send_file(
-                final_payload.output,
-                as_attachment=True,
-                download_name=final_payload.name,
-            )
-        return {
-            "status": Status.Success,
-            "message": "Stager generated successfully.",
-            "stager": final_payload.output,
-        }
+        return send_file(
+            final_payload.as_file,
+            as_attachment=True,
+            download_name=final_payload.name,
+        )
 
     @bypasses_bp.route("/chains")
     @bypasses_bp.route("/chains/<int:chain_id>")

@@ -191,7 +191,6 @@ def stagers_bp(commander: Commander):
     @stagers_bp.route("/<int:id>/download", methods=["GET"])
     def get_download(id: int):
         # Get Request Data
-        use_json = request.args.get("json", "").lower() == "true"
         recompile = request.args.get("recompile", "") == "true"
 
         # Check if Stager exists
@@ -205,16 +204,10 @@ def stagers_bp(commander: Commander):
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
         else:
-            if final_payload.payload.compiled or not use_json:
-                return send_file(
-                    final_payload.as_file,
-                    as_attachment=True,
-                    download_name=final_payload.name,
-                )
-            return {
-                "status": Status.Success,
-                "message": "Stager generated successfully.",
-                "stager": final_payload.output,
-            }
+            return send_file(
+                final_payload.as_file,
+                as_attachment=True,
+                download_name=final_payload.name,
+            )
 
     return stagers_bp

@@ -6,7 +6,7 @@ class Bypass(BaseBypass):
     name = "Base64"
     description = "Base64 encoder"
     author = "screamz2k"
-    supported_languages = "python"
+    supported_languages = ("python",)
 
     def generate_body(self, final_payload, args):
         return base64.b64encode(final_payload.output.encode()).decode()

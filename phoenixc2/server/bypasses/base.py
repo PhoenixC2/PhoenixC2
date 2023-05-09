@@ -76,6 +76,7 @@ class BaseBypass(abc.ABC):
             "os": self.os,
             "options": self.option_pool.to_dict(commander),
             "final": self.final,
+            "supported_languages": self.supported_languages,
         }
 
     def __repr__(self) -> str:

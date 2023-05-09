@@ -1,7 +1,6 @@
 import os
 import subprocess
 from typing import TYPE_CHECKING
-import shlex
 import jinja2
 
 from phoenixc2.server.utils.options import (
@@ -130,8 +129,8 @@ class GoPayload(BasePayload):
             f.write(output)
 
         # compile
-        os.environ["GOOS"] = shlex.quote(stager_db.options["os"])
-        os.environ["GOARCH"] = shlex.quote(stager_db.options["arch"])
+        os.environ["GOOS"] = stager_db.options["os"]
+        os.environ["GOARCH"] = stager_db.options["arch"]
         process = subprocess.run(
             ["go", "build", "-ldflags", "-s -w", "-o", output_file, go_file],
             stdout=subprocess.PIPE,
@@ -231,22 +230,14 @@ class GoDllPayload(BasePayload):
             f.write(output)
 
         os.environ["GOOS"] = "windows"
-        os.environ["GOARCH"] = shlex.quote(stager_db.options["arch"])
+        os.environ["GOARCH"] = stager_db.options["arch"]
         os.environ["CGO_ENABLED"] = "1"
-        if stager_db.options["arch"] == "386":
+
+        if stager_db.options["arch"] == "i386":
             os.environ["CC"] = "i686-w64-mingw32-gcc"
         else:
             os.environ["CC"] = "x86_64-w64-mingw32-gcc"
 
-        # compile
-        env = os.environ.copy().update(
-            {
-                "GOOS": "windows",
-                "GOARCH": shlex.quote(stager_db.options["arch"]),
-                "CGO_ENABLED": "1",
-                "CC": "x86_64-w64-mingw32-gcc",
-            }
-        )
         ldflags = ["-s", "-w", "-H=windowsgui"]
         cmd = [
             "go",
@@ -259,7 +250,8 @@ class GoDllPayload(BasePayload):
         ]
         result = subprocess.run(
             cmd,
-            env=env,
+            # stdout=subprocess.PIPE,
+            # stderr=subprocess.PIPE,
         )
 
         # remove go file (comment out for debugging)
@@ -268,10 +260,11 @@ class GoDllPayload(BasePayload):
         if result.returncode != 0:
             raise Exception("Failed to compile")
 
-        # remove header
+        # remove header if it exists
         get_resource("data/stagers/", f"{stager_db.id}.h", skip_file_check=True).unlink(
             missing_ok=True
         )
+
         final_payload = FinalPayload(
             cls,
             stager_db,
