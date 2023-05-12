@@ -8,7 +8,7 @@ from phoenixc2.server.database import (
     Session,
     UserModel,
 )
-from phoenixc2.server.utils.misc import Status, get_network_interfaces
+from phoenixc2.server.utils.misc import Status
 from phoenixc2.server.utils.ui import log
 
 INVALID_ID = "Invalid ID."
@@ -70,18 +70,7 @@ def listeners_bp(commander: Commander):
     def post_add():
         # Get request data
         listener_type = request.json.get("type", None)
-        is_interface = request.args.get("is_interface", "").lower() == "true"
         data = dict(request.json)
-
-        if is_interface:
-            interfaces = get_network_interfaces()
-            if data.get("address", "") in interfaces:
-                data["address"] = interfaces[data["address"]]
-            else:
-                return {
-                    "status": Status.Danger,
-                    "message": "Invalid network interface.",
-                }, 400
         try:
             # Check if data is valid and clean it
             data = ListenerModel.get_class_from_type(
