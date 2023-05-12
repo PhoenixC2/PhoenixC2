@@ -9,5 +9,5 @@ class Feature:
     description: str
     pro: bool = True
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {"name": self.name, "description": self.description, "pro": self.pro}

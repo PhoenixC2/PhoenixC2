@@ -380,6 +380,7 @@ def change_operation(operation_id: int):
             "status": Status.Danger,
             "message": "You are not assigned to this operation.",
         }
+
     LogEntryModel.log(
         "success",
         ENDPOINT,

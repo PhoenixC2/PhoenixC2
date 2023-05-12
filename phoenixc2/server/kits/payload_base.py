@@ -83,6 +83,7 @@ class BasePayload(ABC):
             "file_ending": cls.file_ending,
             "compiled": cls.compiled,
             "options": cls.option_pool.to_dict(commander),
+            "features": [feature.to_dict() for feature in cls.features],
         }
 
     def __repr__(self) -> str:

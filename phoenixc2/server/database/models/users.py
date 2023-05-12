@@ -151,7 +151,7 @@ class UserModel(Base):
             self.admin = data.get("admin", self.admin)
             self.disabled = data.get("disabled", self.disabled)
         else:
-            raise ValueError("The user'S admin and disabled status cannot be edited.")
+            raise ValueError("The user's admin and disabled status cannot be edited.")
 
         if data.get("password", None):
             if len(data.get("password", "")) > 50:

@@ -109,7 +109,9 @@ class GoPayload(BasePayload):
                 cls.get_output_file(stager_db),
             )
             return final_payload
+
         cls.check_for_required_applications()
+
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
             trim_blocks=True,
@@ -131,13 +133,16 @@ class GoPayload(BasePayload):
         # compile
         os.environ["GOOS"] = stager_db.options["os"]
         os.environ["GOARCH"] = stager_db.options["arch"]
+        os.environ["CGO_ENABLED"] = "0"
+
         process = subprocess.run(
             ["go", "build", "-ldflags", "-s -w", "-o", output_file, go_file],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
+
         # remove go file (comment out for debugging)
-        # go_file.unlink()
+        go_file.unlink()
 
         if process.returncode != 0:
             raise Exception("Failed to compile")

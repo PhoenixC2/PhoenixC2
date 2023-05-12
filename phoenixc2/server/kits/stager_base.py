@@ -11,9 +11,9 @@ if TYPE_CHECKING:
 
 
 class BaseStager(ABC):
+    """The stager class is an abstract which handles the payloads and options."""
+
     name: str = "Base Stager"
-    description: str = "This is the base stager"
-    author: str = "Unknown"
     option_pool = DefaultStagerPool()
     payloads: dict[str, BasePayload] = {}
 
@@ -43,8 +43,6 @@ class BaseStager(ABC):
         """Return a dict of the stager."""
         return {
             "name": cls.name,
-            "author": cls.author,
-            "description": cls.description,
             "options": cls.option_pool.to_dict(commander),
             "payloads": {x: cls.payloads[x].to_dict(commander) for x in cls.payloads},
         }
