@@ -255,8 +255,8 @@ class GoDllPayload(BasePayload):
         ]
         result = subprocess.run(
             cmd,
-            # stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
 
         # remove go file (comment out for debugging)

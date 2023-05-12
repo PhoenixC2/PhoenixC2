@@ -152,6 +152,7 @@ class TaskModel(Base):
 
     @staticmethod
     def generate_task(device_or_id: DeviceModel | int | str) -> "TaskModel":
+        """Generate a new task for the given device."""
         task = TaskModel()
         task.name = generate_name()
         if isinstance(device_or_id, DeviceModel):

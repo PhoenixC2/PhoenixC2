@@ -66,6 +66,11 @@ class UserModel(Base):
     )
 
     @property
+    def is_super_user(self) -> bool:
+        """Returns whether the user is the super user"""
+        return self.id == 1
+
+    @property
     def api_key(self) -> str | None:
         """Get the API key for the user if the user requesting it is authorized"""
         try:

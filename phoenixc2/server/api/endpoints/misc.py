@@ -27,22 +27,34 @@ def get_downloads(file_name: str):
     )
 
 
-@misc_bp.route("/uploads/clear", methods=["POST"])
+@misc_bp.route("/uploads/clear", methods=["DELETE"])
 @UserModel.admin_required
 def post_clear_uploads():
-    uploads = get_resource("data", "uploads")
-    files = list(uploads.iterdir())
+    if not UserModel.get_current_user().is_super_user:
+        return {"status": Status.ERROR, "message": "Only the super user can do this."}
 
-    for file in files:
+    for file in get_resource("data", "uploads").iterdir():
         file.unlink()
     return {"status": Status.Success, "message": "Uploads cleared."}
 
 
-@misc_bp.route("/downloads/clear", methods=["POST"])
+@misc_bp.route("/downloads/clear", methods=["DELETE"])
 @UserModel.admin_required
 def post_clear_downloads():
-    downloads = get_resource("data", "downloads")
-    files = list(downloads.iterdir())
-    for file in files:
+    if not UserModel.get_current_user().is_super_user:
+        return {"status": Status.ERROR, "message": "Only the super user can do this."}
+
+    for file in get_resource("data", "downloads").iterdir():
         file.unlink()
     return {"status": Status.Success, "message": "Downloads cleared."}
+
+
+@misc_bp.route("/stagers/clear", methods=["DELETE"])
+@UserModel.admin_required
+def post_clear_stagers():
+    if not UserModel.get_current_user().is_super_user:
+        return {"status": Status.ERROR, "message": "Only the super user can do this."}
+
+    for file in get_resource("data", "stagers").iterdir():
+        file.unlink()
+    return {"status": Status.Success, "message": "Stagers cleared."}

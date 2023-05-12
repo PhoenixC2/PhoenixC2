@@ -62,6 +62,7 @@ def tasks_bp(commander: Commander):
                 message,
                 UserModel.get_current_user(),
             )
-        return {"status": Status.Success, "message": message}
+            return {"status": Status.Success, "message": message}
+        return {"status": Status.Error, "message": "No tasks were cleared."}
 
     return blueprint

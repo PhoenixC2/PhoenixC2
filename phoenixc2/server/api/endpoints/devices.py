@@ -71,7 +71,8 @@ def devices_bp(commander: Commander):
                 f"Cleared {count} devices.",
                 UserModel.get_current_user(),
             )
-        return {"status": Status.Success, "message": f"Cleared {count} devices."}
+            return {"status": Status.Success, "message": f"Cleared {count} devices."}
+        return {"status": Status.Danger, "message": "No devices were cleared."}
 
     @blueprint.route("/<int:device_id>/reverse_shell", methods=["POST"])
     @UserModel.authenticated
