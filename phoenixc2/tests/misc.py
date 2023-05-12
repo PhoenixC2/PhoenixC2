@@ -21,11 +21,15 @@ class MiscTest(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_post_clear_uploads(self):
-        response = self.client.post("/api/misc/uploads/clear")
+        response = self.client.delete("/api/misc/uploads/clear")
         self.assertEqual(response.status_code, 200)
 
     def test_post_clear_downloads(self):
-        response = self.client.post("/api/misc/downloads/clear")
+        response = self.client.delete("/api/misc/downloads/clear")
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_clear_stagers(self):
+        response = self.client.delete("/api/misc/stagers/clear")
         self.assertEqual(response.status_code, 200)
 
 
