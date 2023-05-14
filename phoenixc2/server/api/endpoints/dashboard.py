@@ -40,7 +40,6 @@ def dashboard_bp(commander: "Commander") -> Blueprint:
             .filter(UserModel.last_activity >= datetime.now() - timedelta(minutes=5))
             .count()
         )
-
         return {
             "status": Status.Success,
             "version": phoenixc2.__version__,

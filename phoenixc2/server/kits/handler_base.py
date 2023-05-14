@@ -10,10 +10,10 @@ class BaseHandler(ABC):
     def __repr__(self) -> TaskModel:
         return str(self.addr)
 
-    def __init__(self, db_entry: DeviceModel, listener: ListenerModel):
-        self.addr = db_entry.address
-        self.id = db_entry.id
-        self.name = db_entry.name
+    def __init__(self, device_db: DeviceModel, listener: ListenerModel):
+        self.addr = device_db.address
+        self.id = device_db.id
+        self.name = device_db.name
         self.modules: list[BaseModule] = []
         self.listener = listener
 

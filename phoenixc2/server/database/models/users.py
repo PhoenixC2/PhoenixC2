@@ -1,5 +1,4 @@
 """The Users Model"""
-import json
 import os
 from datetime import datetime
 from functools import wraps
@@ -128,9 +127,6 @@ class UserModel(Base):
             if show_owned_operations
             else [operation.id for operation in self.owned_operations],
         }
-
-    def to_json(self, show_logs: bool = False, show_unseen_logs: bool = False) -> str:
-        return json.dumps(self.to_dict(show_logs, show_unseen_logs), default=str)
 
     def __str__(self) -> str:
         return self.username

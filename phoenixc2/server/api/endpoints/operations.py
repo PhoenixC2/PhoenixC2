@@ -170,7 +170,7 @@ def post_add():
     if "picture" in request.files:
         operation.set_picture(request.files["picture"])
 
-    Session.commit()  # Commit again to save the picture because the id is needed
+    Session.commit()  # Commit again to save the picture because the id is required
 
     LogEntryModel.log(
         Status.Success,

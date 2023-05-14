@@ -1,7 +1,12 @@
 from flask import Blueprint, request, send_file
 from phoenixc2.server.commander.commander import Commander
 from phoenixc2.server.utils.misc import Status
-from phoenixc2.server.database import BypassChainModel, StagerModel, Session
+from phoenixc2.server.database import (
+    BypassChainModel,
+    StagerModel,
+    OperationModel,
+    Session,
+)
 from phoenixc2.server.bypasses import get_all_bypasses, get_bypass
 
 
@@ -73,19 +78,33 @@ def bypasses_bp(commander: "Commander"):
         )
 
     @bypasses_bp.route("/chains")
-    @bypasses_bp.route("/chains/<int:chain_id>")
-    def get_chains(chain_id: int = None):
-        if chain_id is None:
-            chains: list[BypassChainModel] = Session.query(BypassChainModel).all()
+    @bypasses_bp.route("/chains/<string:chain_id>")
+    def get_chains(chain_id: str = None):
+        show_all = request.args.get("all", "").lower() == "true"
+
+        if chain_id == "all" or chain_id is None:
+            if show_all or OperationModel.get_current_operation() is None:
+                chains = Session.query(BypassChainModel).all()
+            else:
+                chains = (
+                    Session.query(BypassChainModel)
+                    .filter_by(operation=OperationModel.get_current_operation())
+                    .all()
+                )
             return {
                 "status": Status.Success,
                 "chains": [chain.to_dict(commander) for chain in chains],
             }
         else:
-            chain = Session.query(BypassChainModel).filter_by(id=chain_id).first()
+            chain: BypassChainModel = (
+                Session.query(BypassChainModel).filter_by(id=chain_id).first()
+            )
             if chain is None:
                 return {"status": Status.Danger, "message": "Chain not found."}, 400
-            return {"status": Status.Success, "chain": chain.to_dict(commander)}
+            return {
+                "status": Status.Success,
+                "chain": chain.to_dict(commander),
+            }
 
     @bypasses_bp.route("/chains/add", methods=["POST"])
     def post_add_chain():

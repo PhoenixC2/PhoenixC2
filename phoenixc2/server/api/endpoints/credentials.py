@@ -20,32 +20,34 @@ def get_credentials(cred_id: int = None):
     show_operation = request.args.get("operation", "").lower() == "true"
     show_all = request.args.get("all", "").lower() == "true"
 
-    opened_credential: CredentialModel = (
-        Session.query(CredentialModel).filter_by(id=cred_id).first()
-    )
-
-    if show_all or OperationModel.get_current_operation() is None:
-        credentials: list[CredentialModel] = Session.query(CredentialModel).all()
-
-    else:
-        credentials: list[CredentialModel] = (
-            Session.query(CredentialModel)
-            .filter_by(operation=OperationModel.get_current_operation())
-            .all()
-        )
-
-    if opened_credential is not None:
+    if cred_id == "all" or cred_id is None:
+        if show_all or OperationModel.get_current_operation() is None:
+            credentials: list[CredentialModel] = Session.query(CredentialModel).all()
+        else:
+            credentials: list[CredentialModel] = (
+                Session.query(CredentialModel)
+                .filter_by(operation=OperationModel.get_current_operation())
+                .all()
+            )
         return {
             "status": Status.Success,
-            "credential": opened_credential.to_dict(show_operation=show_operation),
+            "credentials": [
+                credential.to_dict(show_operation=show_operation)
+                for credential in credentials
+            ],
         }
-    return {
-        "status": Status.Success,
-        ENDPOINT: [
-            credential.to_dict(show_operation=show_operation)
-            for credential in credentials
-        ],
-    }
+    else:
+        credential = Session.query(CredentialModel).filter_by(id=cred_id).first()
+        if credential is None:
+            return {
+                "status": Status.Danger,
+                "message": "Credential does not exist",
+                "credential": None,
+            }
+        return {
+            "status": Status.Success,
+            "credential": credential.to_dict(show_operation=show_operation),
+        }
 
 
 @credentials_bp.route("/add", methods=["POST"])
