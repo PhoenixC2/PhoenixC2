@@ -87,6 +87,7 @@ class Listener(BaseListener):
                 user = data.get("user", "")
                 admin = data.get("admin", False)
                 stager_id = data.get("stager", "")
+                uid = data.get("uid", "")
 
                 stager = Session.query(StagerModel).filter_by(id=stager_id).first()
 
@@ -98,14 +99,24 @@ class Listener(BaseListener):
                         "but the stager id is invalid.",
                     )
                     raise ValueError("Invalid Stager ID")
-                device = DeviceModel.register(
-                    hostname, request.remote_addr, os, architecture, user, admin, stager
+                device, reconnect = DeviceModel.register(
+                    hostname,
+                    request.remote_addr,
+                    os,
+                    architecture,
+                    user,
+                    admin,
+                    stager,
+                    uid,
                 )
             except Exception:
                 return "", 404
-            Session.add(device)
+
+            if not reconnect:
+                Session.add(device)
+
             Session.commit()
-            self.commander.new_connection(device)
+            self.commander.new_connection(device, reconnect=reconnect)
             self.add_handler(Handler(device, self))
             return jsonify({"name": device.name})
 

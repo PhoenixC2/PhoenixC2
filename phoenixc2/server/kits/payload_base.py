@@ -1,4 +1,5 @@
 import shutil
+import uuid
 from typing import TYPE_CHECKING, BinaryIO
 from abc import ABC, abstractmethod
 from tempfile import TemporaryFile
@@ -9,7 +10,7 @@ from phoenixc2.server.utils.resources import get_resource
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.database import StagerModel
+    from phoenixc2.server.database import StagerModel, DeviceIdentifierModel
 
 
 class BasePayload(ABC):
@@ -33,12 +34,19 @@ class BasePayload(ABC):
     compiled: bool = False
     option_pool: OptionPool = OptionPool()
     features: list[Feature] = []
-    # applications required to compile the payload
+    # applications which have to be installed on the system
     required_applications: list[str] = []
 
     @classmethod
     def check_for_required_applications(cls):
-        """Check if all required applications are installed"""
+        """Check if all required applications are installed
+
+        Raises:
+        ------
+            `FileNotFoundError`:
+                If an application is not installed.
+        """
+
         for application in cls.required_applications:
             if shutil.which(application) is None:
                 raise FileNotFoundError(
@@ -46,8 +54,30 @@ class BasePayload(ABC):
                 )
 
     @classmethod
+    def generate_uid(cls) -> str:
+        """Generate a unique identifier for the payload
+
+        Returns:
+        ------
+            `str`:
+                The unique identifier.
+        """
+        return str(uuid.uuid4())
+
+    @classmethod
     def get_output_file(cls, stager_db: "StagerModel") -> Path:
-        """Get the output file for the payload"""
+        """Get the output file for the payload
+
+        Args:
+        -----
+            stager_db: `StagerModel`
+                The stager database entry.
+
+        Returns:
+        ------
+            `Path`:
+                The output file.
+        """
         return get_resource(
             "data/stagers", f"{stager_db.id}.stager", skip_file_check=True
         )
@@ -55,15 +85,45 @@ class BasePayload(ABC):
     @classmethod
     @abstractmethod
     def generate(
-        cls, stager_db: "StagerModel", recompile: bool = False
+        cls,
+        stager_db: "StagerModel",
+        recompile: bool = False,
+        identifier: "DeviceIdentifierModel" = None,
     ) -> "FinalPayload":
-        """Generate the payload"""
+        """Generate the payload
+
+        Args:
+        -----
+            stager_db: `StagerModel`
+                The stager database entry.
+            recompile: `bool`
+                If the stager should be recompiled.
+            identifier: `DeviceIdentifierModel`
+                The device identifier database entry.
+
+        Returns:
+        ------
+            `FinalPayload`:
+                The final payload.
+        """
         ...
 
     @classmethod
     @abstractmethod
     def already_compiled(cls, stager_db: "StagerModel") -> bool:
-        """Return if the payload was already compiled"""
+        """Return if the payload was already compiled
+
+        Args:
+        -----
+            stager_db: `StagerModel`
+                The stager database entry.
+
+        Returns:
+        ------
+            `bool`:
+                If the payload was already compiled.
+        """
+
         if cls.compiled:
             return cls.get_output_file(stager_db).exists()
         return False

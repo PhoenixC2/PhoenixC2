@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from phoenixc2.server.kits.payload_base import FinalPayload
 
 from phoenixc2.server.utils.options import (
     DefaultStagerPool,
@@ -9,9 +9,6 @@ from phoenixc2.server.utils.options import (
 
 from ..stager_base import BasePayload, BaseStager
 
-if TYPE_CHECKING:
-    from phoenixc2.server.database import StagerModel
-
 
 class ExamplePayload(BasePayload):
     supported_target_os = ["linux", "windows", "osx"]
@@ -20,8 +17,12 @@ class ExamplePayload(BasePayload):
     compiled = False
     options = OptionPool()
 
-    def generate(self, stager_db, recompile=False):
+    @classmethod
+    def generate(cls, stager_db, recompile=False, uid_tracking=False):
         print("Generating example payload")
+        final_payload = FinalPayload(cls, stager_db)
+        final_payload.set_output_from_content("Example Payload Content")
+        return final_payload
 
 
 class Stager(BaseStager):
@@ -39,9 +40,3 @@ class Stager(BaseStager):
         ]
     )
     payloads = {"example": ExamplePayload}
-
-    def generate(self, stager_db: "StagerModel") -> tuple[bytes | str, bool]:
-        if stager_db.payload not in self.payloads:
-            raise ValueError("Invalid payload type")
-
-        return self.payloads[stager_db.payload].generate(stager_db)

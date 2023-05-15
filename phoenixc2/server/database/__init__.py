@@ -14,3 +14,4 @@ from .models.stagers import StagerModel
 from .models.tasks import TaskModel
 from .models.users import UserModel
 from .models.bypass_chains import BypassChainModel
+from .models.identifiers import DeviceIdentifierModel

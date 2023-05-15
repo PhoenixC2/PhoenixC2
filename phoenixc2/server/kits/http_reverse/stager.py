@@ -36,10 +36,23 @@ class PythonPayload(BasePayload):
     file_ending = ".py"
     compiled = False
     option_pool = OptionPool()
+    features = [
+        Feature(
+            name="Cross-Platform",
+            description="The payload can be compiled for multiple platforms",
+            pro=True,
+        ),
+        Feature(
+            name="Requires Python",
+            description="The payload requires python and the dependencies"
+            " to be installed on the target",
+            pro=False,
+        ),
+    ]
 
     @classmethod
     def generate(
-        cls, stager_db: "StagerModel", recompile: bool = False
+        cls, stager_db: "StagerModel", recompile: bool = False, identifier=None
     ) -> "FinalPayload":
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
@@ -50,7 +63,9 @@ class PythonPayload(BasePayload):
         template = jinja2_env.get_template("payloads/python.payload.py")
 
         final_payload = FinalPayload(cls, stager_db)
-        final_payload.set_output_from_content(template.render(stager=stager_db))
+        final_payload.set_output_from_content(
+            template.render(stager=stager_db, identifier=identifier)
+        )
         return final_payload
 
 
@@ -97,7 +112,7 @@ class GoPayload(BasePayload):
     required_applications = ["go"]
 
     @classmethod
-    def generate(cls, stager_db, recompile=False):
+    def generate(cls, stager_db, recompile=False, identifier=None):
         if cls.already_compiled(stager_db) and not recompile:
             final_payload = FinalPayload(
                 cls,
@@ -119,7 +134,7 @@ class GoPayload(BasePayload):
             autoescape=True,
         )
         template = jinja2_env.get_template("payloads/go.go")
-        output = template.render(stager=stager_db)
+        output = template.render(stager=stager_db, identifier=identifier)
 
         # write to file
         go_file = get_resource(
@@ -142,7 +157,7 @@ class GoPayload(BasePayload):
         )
 
         # remove go file (comment out for debugging)
-        go_file.unlink()
+        # go_file.unlink()
 
         if process.returncode != 0:
             raise Exception("Failed to compile")
@@ -204,7 +219,7 @@ class GoDllPayload(BasePayload):
     required_applications = ["x86_64-w64-mingw32-gcc", "i686-w64-mingw32-gcc", "go"]
 
     @classmethod
-    def generate(cls, stager_db, recompile=False):
+    def generate(cls, stager_db, recompile=False, identifier=None):
         if cls.already_compiled(stager_db) and not recompile:
             final_payload = FinalPayload(
                 cls,
@@ -216,6 +231,7 @@ class GoDllPayload(BasePayload):
             return final_payload
 
         cls.check_for_required_applications()  # check for required applications
+
         jinja2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__))),
             trim_blocks=True,
@@ -223,7 +239,7 @@ class GoDllPayload(BasePayload):
             autoescape=True,
         )
         template = jinja2_env.get_template("payloads/go_dll.go")
-        output = template.render(stager=stager_db)
+        output = template.render(stager=stager_db, identifier=identifier)
 
         # write to file
         go_file = get_resource(
