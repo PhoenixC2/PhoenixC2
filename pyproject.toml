@@ -30,7 +30,7 @@ exclude = [
 
 [tool.poetry.dependencies]
 python = ">=3.11"
-sqlalchemy = "==2.0.10"
+sqlalchemy = "==2.0.13"
 flask = "*"
 rich = "*"
 requests = "*"
