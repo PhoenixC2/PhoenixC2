@@ -57,9 +57,10 @@ def add_credential():
     hash = request.json.get("hash", False)
     user = request.json.get("user", "")
     admin = request.json.get("admin", False)
-    notes = request.json.get("notes", "")
-
-    credential = CredentialModel.create(value, hash, user, admin, notes)
+    try:
+        credential = CredentialModel.create(value, hash, user, admin)
+    except ValueError as e:
+        return {"status": Status.Danger, "message": str(e)}
     Session.add(credential)
     Session.commit()
     LogEntryModel.log(
@@ -108,8 +109,10 @@ def edit_credential(cred_id: int):
             "status": "danger",
             "message": "Credential does not exist",
         }, 400
-
-    credential.edit(request.json)
+    try:
+        credential.edit(request.json)
+    except ValueError as e:
+        return {"status": Status.Danger, "message": str(e)}
     Session.commit()
     LogEntryModel.log(
         Status.Success,

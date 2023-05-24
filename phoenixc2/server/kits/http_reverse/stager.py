@@ -141,7 +141,6 @@ class GoPayload(BasePayload):
             "data/stagers/", f"{stager_db.id}.go", skip_file_check=True
         )
         output_file = cls.get_output_file(stager_db)
-
         with go_file.open("w") as f:
             f.write(output)
 
@@ -157,7 +156,7 @@ class GoPayload(BasePayload):
         )
 
         # remove go file (comment out for debugging)
-        # go_file.unlink()
+        go_file.unlink()
 
         if process.returncode != 0:
             raise Exception("Failed to compile")
