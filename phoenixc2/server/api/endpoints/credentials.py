@@ -66,12 +66,12 @@ def add_credential():
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Added credential to the database",
+        "Added credential successfully",
         UserModel.get_current_user(),
     )
     return {
         "status": Status.Success,
-        "message": "Credential added Successfully",
+        "message": "Credential added successfully",
         "credential": credential.to_dict(),
     }
 
@@ -93,7 +93,7 @@ def remove_credential(cred_id: int):
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Removed credential from the database",
+        "Removed credential successfully",
         UserModel.get_current_user(),
     )
     return {"status": Status.Success, "message": "Credential removed Successfully"}
@@ -117,12 +117,12 @@ def edit_credential(cred_id: int):
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Edited credential in the database",
+        "Edited credential successfully",
         UserModel.get_current_user(),
     )
 
     return {
         "status": Status.Success,
-        "message": "Credential edited Successfully",
+        "message": "Credential edited successfully",
         "credential": credential.to_dict(),
     }
