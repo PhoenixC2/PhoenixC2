@@ -1,9 +1,10 @@
 import threading
-
+import os
 import bleach
 import markdown
 from flask import Flask
 from werkzeug.serving import make_server
+from werkzeug.debug import DebuggedApplication
 from phoenixc2.server.database import Session
 from phoenixc2.server.utils.resources import get_resource
 
@@ -37,11 +38,18 @@ class FlaskThread(threading.Thread):
 
         self.app = app
         self.name = name
+
+        # enable debug mode and reloader if PHOENIX_DEBUG is set to 1
+        if "2" in os.environ.get("PHOENIX_DEBUG", "0") or "4" in os.environ.get(
+            "PHOENIX_DEBUG", "0"
+        ):
+            self.app = DebuggedApplication(self.app, evalex=True)
+
         if ssl:
             self.server = make_server(
                 address,
                 port,
-                app,
+                self.app,
                 threaded=True,
                 ssl_context=(
                     str(get_resource("data", "ssl.pem")),
@@ -49,7 +57,7 @@ class FlaskThread(threading.Thread):
                 ),
             )
         else:
-            self.server = make_server(address, port, app, threaded=True)
+            self.server = make_server(address, port, self.app, threaded=True)
 
     def run(self):
         self.server.serve_forever()

@@ -1,7 +1,7 @@
 """The Credentials Model"""
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from .operations import OperationModel
@@ -16,7 +16,6 @@ class CredentialModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     value: Mapped[str] = mapped_column(String(100))
     hash: Mapped[bool] = mapped_column(Boolean, default=False)
-    notes: Mapped[Optional[str]] = mapped_column(Text(500))
     user: Mapped[str] = mapped_column(String(100))
     admin: Mapped[bool] = mapped_column(Boolean, default=False)
     found_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -39,7 +38,6 @@ class CredentialModel(Base):
             "id": self.id,
             "value": self.value,
             "hash": self.hash,
-            "notes": self.notes,
             "user": self.user,
             "admin": self.admin,
             "found_at": self.found_at,
@@ -52,27 +50,31 @@ class CredentialModel(Base):
     @classmethod
     def create(
         cls,
-        value: str,
-        hash: bool,
-        user: str,
-        admin: bool,
-        notes: str = None,
+        data: dict,
     ) -> "CredentialModel":
+        value = data.get("value", "")
+        hash = data.get("hash", False)
+        user = data.get("user", "")
+        admin = data.get("admin", False)
+
+        if value is None or value == "":
+            raise ValueError("Value cannot be empty")
+
         return cls(
             value=value,
             hash=hash,
             user=user,
             admin=admin,
-            notes=notes,
             operation=OperationModel.get_current_operation(),
         )
 
     def edit(self, data: dict) -> None:
+        if not data.get("value", self.value):
+            raise ValueError("Value cannot be empty")
         self.value = data.get("value", self.value)
         self.hash = str(data.get("hash", self.hash)).lower() == "true"
         self.user = data.get("user", self.user)
         self.admin = str(data.get("admin", self.admin)).lower() == "true"
-        self.notes = data.get("notes", self.notes)
 
     def __repr__(self) -> str:
         return (

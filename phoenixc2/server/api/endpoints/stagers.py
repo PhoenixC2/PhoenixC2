@@ -8,6 +8,7 @@ from phoenixc2.server.database import (
     Session,
     StagerModel,
     UserModel,
+    DeviceIdentifierModel,
 )
 from phoenixc2.server.utils.misc import Status
 
@@ -192,15 +193,20 @@ def stagers_bp(commander: Commander):
     def get_download(id: int):
         # Get Request Data
         recompile = request.args.get("recompile", "") == "true"
+        uid = request.args.get("uid", "")
 
         # Check if Stager exists
         stager_db: StagerModel = Session.query(StagerModel).filter_by(id=id).first()
         if stager_db is None:
             return {"status": Status.Danger, "message": INVALID_ID}, 400
 
+        identifier = None
+        if "uid" in request.args and request.args["uid"] != "":
+            identifier = DeviceIdentifierModel.get_or_create(uid)
+
         # Get Stager
         try:
-            final_payload = stager_db.generate_payload(recompile)
+            final_payload = stager_db.generate_payload(recompile, identifier)
         except Exception as e:
             return {"status": Status.Danger, "message": str(e)}, 400
         else:

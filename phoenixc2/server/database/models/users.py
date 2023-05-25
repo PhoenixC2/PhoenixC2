@@ -1,5 +1,4 @@
 """The Users Model"""
-import json
 import os
 from datetime import datetime
 from functools import wraps
@@ -129,9 +128,6 @@ class UserModel(Base):
             else [operation.id for operation in self.owned_operations],
         }
 
-    def to_json(self, show_logs: bool = False, show_unseen_logs: bool = False) -> str:
-        return json.dumps(self.to_dict(show_logs, show_unseen_logs), default=str)
-
     def __str__(self) -> str:
         return self.username
 
@@ -152,11 +148,14 @@ class UserModel(Base):
         """Edit the user"""
         self.username = data.get("username", self.username)
 
-        if self.id != 1:  # don't allow editing these values for the admin user
+        if self.id == 1 and not (
+            self.admin == data.get("admin", self.admin)
+            and self.disabled == data.get("disabled", self.disabled)
+        ):
+            raise ValueError("The user's admin and disabled status cannot be edited.")
+        else:
             self.admin = data.get("admin", self.admin)
             self.disabled = data.get("disabled", self.disabled)
-        else:
-            raise ValueError("The user's admin and disabled status cannot be edited.")
 
         if data.get("password", None):
             if len(data.get("password", "")) > 50:

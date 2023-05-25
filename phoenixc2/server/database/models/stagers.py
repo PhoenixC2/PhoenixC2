@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
     from .devices import DeviceModel
     from .listeners import ListenerModel
+    from .identifiers import DeviceIdentifierModel
 
 
 class StagerModel(Base):
@@ -27,7 +28,7 @@ class StagerModel(Base):
 
     __mapper_args__ = {
         "confirm_deleted_rows": False
-    }  # needed to avoid error bc of cascade delete
+    }  # required to avoid error bc of cascade delete
     __tablename__ = "Stagers"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100))
@@ -115,9 +116,11 @@ class StagerModel(Base):
         for payload in get_resource("data", "stagers").glob(f"{self.name}*"):
             payload.unlink()
 
-    def generate_payload(self, recompile: bool = False) -> "FinalPayload":
+    def generate_payload(
+        self, recompile: bool = False, identifier: "DeviceIdentifierModel" = None
+    ) -> "FinalPayload":
         """Generate the payload"""
-        return self.stager_class.generate(self, recompile)
+        return self.stager_class.generate(self, recompile, identifier)
 
     @staticmethod
     def get_class_from_type(type: str) -> "BaseStager":
@@ -142,24 +145,13 @@ class StagerModel(Base):
     @classmethod
     def create_from_data(cls, data: dict):
         """Create the stager using custom validated data"""
-        standard = []
-        # gets standard keys and store the rest in options
-        for st_value in [
-            "name",
-            "listener",
-            "payload",
-            "retries",
-            "delay",
-            "different_address",
-        ]:
-            standard.append(data.pop(st_value))
         return cls(
-            name=standard[0],
-            listener=standard[1],
-            payload=standard[2],
-            retries=standard[3],
-            delay=standard[4],
-            different_address=standard[5],
+            name=data.pop("name"),
+            listener=data.pop("listener"),
+            payload=data.pop("payload"),
+            retries=data.pop("retries"),
+            delay=data.pop("delay"),
+            different_address=data.pop("different_address"),
             options=data,
         )
 

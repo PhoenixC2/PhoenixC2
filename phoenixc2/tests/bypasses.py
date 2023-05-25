@@ -54,7 +54,7 @@ class BypassTest(unittest.TestCase):
         }
 
         response = self.client.post(
-            f"/api/bypasses/chains/{chain['id']}/bypass/add",
+            f"/api/bypasses/chains/{chain['id']}/bypasses/add",
             json=data,
         )
         self.assertEqual(response.status_code, 201, "Failed to add bypass to chain")
@@ -65,7 +65,7 @@ class BypassTest(unittest.TestCase):
         }
 
         response = self.client.post(
-            f"/api/bypasses/chains/{chain['id']}/bypass/add",
+            f"/api/bypasses/chains/{chain['id']}/bypasses/add",
             json=data,
         )
         self.assertEqual(
@@ -76,7 +76,7 @@ class BypassTest(unittest.TestCase):
             "position": 1,
         }
         response = self.client.put(
-            f"/api/bypasses/chains/{chain['id']}/bypass/2/move",
+            f"/api/bypasses/chains/{chain['id']}/bypasses/2/move",
             json=data,
         )
         self.assertEqual(response.status_code, 200, "Failed to move bypass up in chain")

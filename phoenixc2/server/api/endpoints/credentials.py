@@ -20,55 +20,54 @@ def get_credentials(cred_id: int = None):
     show_operation = request.args.get("operation", "").lower() == "true"
     show_all = request.args.get("all", "").lower() == "true"
 
-    opened_credential: CredentialModel = (
-        Session.query(CredentialModel).filter_by(id=cred_id).first()
-    )
-
-    if show_all or OperationModel.get_current_operation() is None:
-        credentials: list[CredentialModel] = Session.query(CredentialModel).all()
-
-    else:
-        credentials: list[CredentialModel] = (
-            Session.query(CredentialModel)
-            .filter_by(operation=OperationModel.get_current_operation())
-            .all()
-        )
-
-    if opened_credential is not None:
+    if cred_id == "all" or cred_id is None:
+        if show_all or OperationModel.get_current_operation() is None:
+            credentials: list[CredentialModel] = Session.query(CredentialModel).all()
+        else:
+            credentials: list[CredentialModel] = (
+                Session.query(CredentialModel)
+                .filter_by(operation=OperationModel.get_current_operation())
+                .all()
+            )
         return {
             "status": Status.Success,
-            "credential": opened_credential.to_dict(show_operation=show_operation),
+            "credentials": [
+                credential.to_dict(show_operation=show_operation)
+                for credential in credentials
+            ],
         }
-    return {
-        "status": Status.Success,
-        ENDPOINT: [
-            credential.to_dict(show_operation=show_operation)
-            for credential in credentials
-        ],
-    }
+    else:
+        credential = Session.query(CredentialModel).filter_by(id=cred_id).first()
+        if credential is None:
+            return {
+                "status": Status.Danger,
+                "message": "Credential does not exist",
+                "credential": None,
+            }
+        return {
+            "status": Status.Success,
+            "credential": credential.to_dict(show_operation=show_operation),
+        }
 
 
 @credentials_bp.route("/add", methods=["POST"])
 @UserModel.authenticated
 def add_credential():
-    value = request.json.get("value", "")
-    hash = request.json.get("hash", False)
-    user = request.json.get("user", "")
-    admin = request.json.get("admin", False)
-    notes = request.json.get("notes", "")
-
-    credential = CredentialModel.create(value, hash, user, admin, notes)
+    try:
+        credential = CredentialModel.create(request.json)
+    except ValueError as e:
+        return {"status": Status.Danger, "message": str(e)}
     Session.add(credential)
     Session.commit()
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Added credential to the database",
+        "Added credential successfully",
         UserModel.get_current_user(),
     )
     return {
         "status": Status.Success,
-        "message": "Credential added Successfully",
+        "message": "Credential added successfully",
         "credential": credential.to_dict(),
     }
 
@@ -90,7 +89,7 @@ def remove_credential(cred_id: int):
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Removed credential from the database",
+        "Removed credential successfully",
         UserModel.get_current_user(),
     )
     return {"status": Status.Success, "message": "Credential removed Successfully"}
@@ -106,18 +105,20 @@ def edit_credential(cred_id: int):
             "status": "danger",
             "message": "Credential does not exist",
         }, 400
-
-    credential.edit(request.json)
+    try:
+        credential.edit(request.json)
+    except ValueError as e:
+        return {"status": Status.Danger, "message": str(e)}
     Session.commit()
     LogEntryModel.log(
         Status.Success,
         "credentials",
-        "Edited credential in the database",
+        "Edited credential successfully",
         UserModel.get_current_user(),
     )
 
     return {
         "status": Status.Success,
-        "message": "Credential edited Successfully",
+        "message": "Credential edited successfully",
         "credential": credential.to_dict(),
     }

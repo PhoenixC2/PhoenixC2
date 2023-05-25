@@ -1,6 +1,6 @@
 """The Devices Model"""
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -10,11 +10,10 @@ from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.misc import generate_name
 
 from .operations import OperationModel
+from .identifiers import DeviceIdentifierModel
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-
-    from .listeners import ListenerModel
     from .stagers import StagerModel
     from .tasks import TaskModel
 
@@ -24,9 +23,9 @@ class DeviceModel(Base):
 
     __mapper_args__ = {
         "confirm_deleted_rows": False
-    }  # needed to avoid error bc of cascade delete
+    }  # required to avoid error bc of cascade delete
     __tablename__ = "Devices"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String, default=generate_name, unique=True)
     hostname: Mapped[str] = mapped_column(String(100))
     address: Mapped[str] = mapped_column(String(100))
@@ -36,6 +35,10 @@ class DeviceModel(Base):
     admin: Mapped[bool] = mapped_column(Boolean, default=False)
     connection_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     last_online: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    identifier_id: Mapped[Optional[int]] = mapped_column(Integer)
+    identifier: Mapped[Optional["DeviceIdentifierModel"]] = relationship(
+        "DeviceIdentifierModel", back_populates="device", cascade="all, delete-orphan"
+    )
     stager_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("Stagers.id"), nullable=False
     )
@@ -61,9 +64,15 @@ class DeviceModel(Base):
         show_stager: bool = False,
         show_operation: bool = False,
         show_tasks: bool = False,
+        show_identifier: bool = False,
     ) -> dict:
         data = {
             "id": self.id,
+            "identifier": self.identifier.to_dict(commander)
+            if show_identifier
+            else self.identifier.id
+            if self.identifier
+            else None,
             "name": self.name,
             "hostname": self.hostname,
             "address": self.address,
@@ -114,8 +123,40 @@ class DeviceModel(Base):
         user: str,
         admin: bool,
         stager: "StagerModel",
-    ) -> "ListenerModel":
-        return cls(
+        uid: str,
+    ) -> tuple["DeviceModel", bool]:
+        """Register a new device or return an existing one if the UID matches
+
+        Args:
+        ----
+            hostname: `str`
+                The hostname
+            address: `str`
+                The address
+            os: `str`
+                The operating system
+            architecture: `str`
+                The architecture
+            user: `str`
+                The user who started the stager
+            admin: `bool`
+                Whether the user is an admin
+            stager: `StagerModel`
+                The stager database model
+            uid: `str`
+                The UID of the device
+
+        Returns:
+        -------
+            `DeviceModel`:
+                The device database model
+            `bool`:
+                Whether the device reconnected or not
+
+
+        """
+
+        device = cls(
             hostname=hostname,
             address=address,
             os=os,
@@ -124,6 +165,19 @@ class DeviceModel(Base):
             admin=admin,
             stager=stager,
         )
+
+        identifier = Session.query(DeviceIdentifierModel).filter_by(uid=uid).first()
+
+        if identifier is not None:
+            if identifier.device is not None:
+                device = identifier.device
+                device.connection_time = datetime.now()
+                device.last_online = datetime.now()
+                return identifier.device, True
+            else:
+                device.identifier = identifier
+
+        return device, False
 
     def __repr__(self) -> str:
         return f"<DeviceModel(id={self.id}, name={self.name})>"

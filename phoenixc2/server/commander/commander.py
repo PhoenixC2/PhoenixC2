@@ -138,6 +138,7 @@ class Commander:
         """Called when a new device connects"""
         log_connection(device, reconnect)
 
+        # run connection event plugins
         for plugin, config in self.connection_event_plugins:
             try:
                 plugin.execute(device, config)

@@ -5,6 +5,7 @@ from phoenixc2.server.database import (
     DeviceModel,
     LogEntryModel,
     OperationModel,
+    DeviceIdentifierModel,
     Session,
     TaskModel,
     UserModel,
@@ -25,35 +26,78 @@ def devices_bp(commander: Commander):
         show_stager = request.args.get("stager", "").lower() == "true"
         show_operation = request.args.get("operation", "").lower() == "true"
         show_tasks = request.args.get("tasks", "").lower() == "true"
+        show_identifier = request.args.get("identifier", "").lower() == "true"
         show_all = request.args.get("all", "").lower() == "true"
 
-        opened_device: DeviceModel = (
-            Session.query(DeviceModel).filter_by(id=device_id).first()
-        )
+        if device_id is not None and device_id != "all":
+            device: DeviceModel = (
+                Session.query(DeviceModel).filter_by(id=device_id).first()
+            )
+
+            if device is None:
+                return {"status": Status.Danger, "message": "Device not found."}
+
+            return {
+                "status": Status.Success,
+                "device": device.to_dict(
+                    commander, show_stager, show_operation, show_tasks, show_identifier
+                ),
+            }
+
         if show_all or OperationModel.get_current_operation() is None:
             devices: list[DeviceModel] = Session.query(DeviceModel).all()
         else:
             devices: list[DeviceModel] = Session.query(DeviceModel).filter(
                 DeviceModel.operation == OperationModel.get_current_operation()
             )
-        if opened_device is not None:
-            return {
-                "status": Status.Success,
-                "device": opened_device.to_dict(
-                    commander, show_stager, show_operation, show_tasks
-                ),
-            }
         return {
             "status": Status.Success,
             "devices": [
-                device.to_dict(commander, show_stager, show_operation, show_tasks)
+                device.to_dict(
+                    commander, show_stager, show_operation, show_tasks, show_identifier
+                )
                 for device in devices
             ],
         }
 
-    @blueprint.route("/<string:device_id>/clear", methods=["POST"])
+    @blueprint.route("/<string:device_id>/identifier", methods=["GET"])
     @UserModel.authenticated
-    def post_clear_devices(device_id: str = "all"):
+    def get_device_identifier(device_id: str = None):
+        show_device = request.args.get("device", "").lower() == "true"
+        show_all = request.args.get("all", "").lower() == "true"
+
+        if device_id is not None and device_id != "all":
+            device = Session.query(DeviceModel).filter_by(id=device_id).first()
+
+            if device is None:
+                return {"status": Status.Danger, "message": "Device not found."}
+
+            if device.identifier is None:
+                return {"status": Status.Danger, "message": "Identifier not found."}
+
+            return {
+                "status": Status.Success,
+                "identifier": device.identifier.to_dict(commander, show_device),
+            }
+
+        if OperationModel.get_current_operation() is None or show_all:
+            identifiers = Session.query(DeviceIdentifierModel).all()
+        else:
+            identifiers = Session.query(DeviceIdentifierModel).filter(
+                DeviceIdentifierModel.operation
+                == OperationModel.get_current_operation()
+            )
+
+        return {
+            "status": Status.Success,
+            "identifiers": [
+                identifier.to_dict(commander, show_device) for identifier in identifiers
+            ],
+        }
+
+    @blueprint.route("/<string:device_id>/clear", methods=["DELETE"])
+    @UserModel.authenticated
+    def delete_clear_devices(device_id: str = "all"):
         count = 0
         for device in (
             Session.query(DeviceModel).all()
@@ -73,6 +117,28 @@ def devices_bp(commander: Commander):
             )
             return {"status": Status.Success, "message": f"Cleared {count} devices."}
         return {"status": Status.Danger, "message": "No devices were cleared."}
+
+    @blueprint.route("/identifiers/<string:identifier_id>/clear", methods=["DELETE"])
+    @UserModel.authenticated
+    def delete_clear_identifiers(identifier_id: str = "all"):
+        count = 0
+        for identifier in Session.query(DeviceIdentifierModel).all():
+            if identifier.device is None:
+                count += 1
+                Session.delete(identifier)
+        Session.commit()
+        if count > 0:
+            LogEntryModel.log(
+                Status.Info,
+                "devices",
+                f"Cleared {count} identifiers.",
+                UserModel.get_current_user(),
+            )
+            return {
+                "status": Status.Success,
+                "message": f"Cleared {count} identifiers.",
+            }
+        return {"status": Status.Danger, "message": "No identifiers were cleared."}
 
     @blueprint.route("/<int:device_id>/reverse_shell", methods=["POST"])
     @UserModel.authenticated

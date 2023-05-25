@@ -1,4 +1,3 @@
-import json
 from abc import ABC
 from typing import TYPE_CHECKING
 
@@ -7,7 +6,7 @@ from .payload_base import BasePayload, FinalPayload
 
 if TYPE_CHECKING:
     from phoenixc2.server.commander.commander import Commander
-    from phoenixc2.server.database import StagerModel
+    from phoenixc2.server.database import StagerModel, DeviceIdentifierModel
 
 
 class BaseStager(ABC):
@@ -19,24 +18,34 @@ class BaseStager(ABC):
 
     @classmethod
     def generate(
-        cls, stager_db: "StagerModel", recompile: bool = False
+        cls,
+        stager_db: "StagerModel",
+        recompile: bool = False,
+        identifier: "DeviceIdentifierModel" = None,
     ) -> FinalPayload:
         """Generate a stager based on the stager_db entry.
 
         Args:
         -----
-            stager_db (StagerModel): The stager database entry.
-            recompile (bool, optional): If the stager should be recompiled
+            stager_db: `StagerModel`
+                The stager database entry.
+            recompile: `bool`
+                If the stager should be recompiled.
+            identifier: `DeviceIdentifierModel`
+                The device identifier to use for the stager.
+
         Returns:
         ------
-            bytes | str: The stager or the stager path.
-            bool: If the stager is a path or not.
+            `FinalPayload`:
+                The final payload.
         """
         # credit to BC-SECURITY/Empire for the using jinja2 for stagers
         if stager_db.payload not in cls.payloads:
             raise ValueError("Invalid payload type")
 
-        return cls.payloads[stager_db.payload].generate(stager_db, recompile)
+        return cls.payloads[stager_db.payload].generate(
+            stager_db, recompile, identifier
+        )
 
     @classmethod
     def to_dict(cls, commander: "Commander") -> dict:
@@ -46,11 +55,6 @@ class BaseStager(ABC):
             "options": cls.option_pool.to_dict(commander),
             "payloads": {x: cls.payloads[x].to_dict(commander) for x in cls.payloads},
         }
-
-    @classmethod
-    def to_json(cls, commander: "Commander") -> str:
-        """Return a json of the stager."""
-        return json.dumps(cls.to_dict(commander), default=str)
 
     @classmethod
     def __repr__(cls) -> str:
