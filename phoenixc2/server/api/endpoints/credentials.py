@@ -53,12 +53,8 @@ def get_credentials(cred_id: int = None):
 @credentials_bp.route("/add", methods=["POST"])
 @UserModel.authenticated
 def add_credential():
-    value = request.json.get("value", "")
-    hash = request.json.get("hash", False)
-    user = request.json.get("user", "")
-    admin = request.json.get("admin", False)
     try:
-        credential = CredentialModel.create(value, hash, user, admin)
+        credential = CredentialModel.create(request.json)
     except ValueError as e:
         return {"status": Status.Danger, "message": str(e)}
     Session.add(credential)

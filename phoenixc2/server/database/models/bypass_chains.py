@@ -90,9 +90,11 @@ class BypassChainModel(Base):
     @classmethod
     def create(cls, data: dict) -> "BypassChainModel":
         """Creates a bypass chain."""
-        if "name" not in data:
-            raise ValueError("Name is required.")
         chain = cls()
-        chain.name = data["name"]
+        name = data.get("name", "")
+
+        if not name:
+            raise ValueError("Name is required.")
+        chain.name = name
         chain.description = data.get("description", "")
         return chain

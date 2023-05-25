@@ -1,13 +1,17 @@
 from flask import Blueprint, request, send_file
 from phoenixc2.server.commander.commander import Commander
+from phoenixc2.server.database.models.users import UserModel
 from phoenixc2.server.utils.misc import Status
 from phoenixc2.server.database import (
     BypassChainModel,
     StagerModel,
     OperationModel,
     Session,
+    LogEntryModel,
 )
 from phoenixc2.server.bypasses import get_all_bypasses, get_bypass
+
+ENDPOINT = "bypasses"
 
 
 def bypasses_bp(commander: "Commander"):
@@ -108,9 +112,20 @@ def bypasses_bp(commander: "Commander"):
 
     @bypasses_bp.route("/chains/add", methods=["POST"])
     def post_add_chain():
-        chain = BypassChainModel.create(request.json)
+        try:
+            chain = BypassChainModel.create(request.json)
+        except ValueError as e:
+            return {"status": Status.Danger, "message": str(e)}, 400
         Session.add(chain)
         Session.commit()
+
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Chain '{chain.name}' added.",
+            UserModel.get_current_user(),
+        )
+
         return {
             "status": Status.Success,
             "message": "Chain added successfully.",
@@ -124,6 +139,13 @@ def bypasses_bp(commander: "Commander"):
         if chain is None:
             return {"status": Status.Danger, "message": "Chain not found."}, 400
 
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Chain '{chain.name}' removed.",
+            UserModel.get_current_user(),
+        )
+
         Session.delete(chain)
         Session.commit()
         return {"status": Status.Success, "message": "Chain removed successfully."}, 200
@@ -136,6 +158,14 @@ def bypasses_bp(commander: "Commander"):
             return {"status": Status.Danger, "message": "Chain not found."}, 400
 
         chain.edit(request.json)
+
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Chain '{chain.name}' edited.",
+            UserModel.get_current_user(),
+        )
+
         Session.commit()
         return {
             "status": Status.Success,
@@ -143,7 +173,7 @@ def bypasses_bp(commander: "Commander"):
             "chain": chain.to_dict(commander),
         }, 200
 
-    @bypasses_bp.route("/chains/<int:chain_id>/bypass/add", methods=["POST"])
+    @bypasses_bp.route("/chains/<int:chain_id>/bypasses/add", methods=["POST"])
     def post_add_bypass_to_chain(chain_id: int):
         data = dict(request.json)
         name = data.pop("name", "")
@@ -168,6 +198,13 @@ def bypasses_bp(commander: "Commander"):
         chain.add_bypass(category, name, data)
         Session.commit()
 
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Bypass {name} added to chain '{chain.name}'.",
+            UserModel.get_current_user(),
+        )
+
         return {
             "status": Status.Success,
             "message": "Bypass added successfully.",
@@ -175,7 +212,7 @@ def bypasses_bp(commander: "Commander"):
         }, 201
 
     @bypasses_bp.route(
-        "/chains/<int:chain_id>/bypass/<int:bypass_id>/remove/", methods=["DELETE"]
+        "/chains/<int:chain_id>/bypasses/<int:bypass_id>/remove/", methods=["DELETE"]
     )
     def delete_bypass_from_chain(chain_id: int, bypass_id: int):
         chain: BypassChainModel = (
@@ -190,6 +227,13 @@ def bypasses_bp(commander: "Commander"):
             return {"status": Status.Danger, "message": str(e)}, 400
         Session.commit()
 
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Bypass removed from chain '{chain.name}'.",
+            UserModel.get_current_user(),
+        )
+
         return {
             "status": Status.Success,
             "message": "Bypass removed successfully.",
@@ -197,7 +241,7 @@ def bypasses_bp(commander: "Commander"):
         }, 200
 
     @bypasses_bp.route(
-        "/chains/<int:chain_id>/bypass/<int:bypass_id>/move", methods=["PUT"]
+        "/chains/<int:chain_id>/bypasses/<int:bypass_id>/move", methods=["PUT"]
     )
     def put_move_bypass_in_chain(chain_id: int, bypass_id: int):
         new_position = request.json.get("position", None)
@@ -228,9 +272,41 @@ def bypasses_bp(commander: "Commander"):
             return {"status": Status.Danger, "message": str(e)}, 400
         Session.commit()
 
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Bypass moved in chain '{chain.name}'.",
+            UserModel.get_current_user(),
+        )
+
         return {
             "status": Status.Success,
             "message": "Bypass moved successfully.",
+            "chain": chain.to_dict(commander),
+        }, 200
+
+    @bypasses_bp.route("/chains/<int:chain_id>/bypasses/clear", methods=["DELETE"])
+    def delete_all_bypasses_from_chain(chain_id: int):
+        chain: BypassChainModel = (
+            Session.query(BypassChainModel).filter_by(id=chain_id).first()
+        )
+
+        if chain is None:
+            return {"status": Status.Danger, "message": "Chain not found."}, 400
+
+        chain.bypasses.clear()
+        Session.commit()
+
+        LogEntryModel.log(
+            Status.Success,
+            ENDPOINT,
+            f"Bypasses cleared from chain '{chain.name}'.",
+            UserModel.get_current_user(),
+        )
+
+        return {
+            "status": Status.Success,
+            "message": "Bypasses cleared successfully.",
             "chain": chain.to_dict(commander),
         }, 200
 
