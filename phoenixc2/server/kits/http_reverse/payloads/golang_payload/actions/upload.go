@@ -25,7 +25,6 @@ func UploadFile(task types.Task) {
 
 	buffer := bufio.NewReader(file)
 	_, err = buffer.Read(bytes)
-
 	if err != nil {
 		utils.Finish(task, "Could not read file.", false)
 		return

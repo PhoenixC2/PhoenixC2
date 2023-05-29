@@ -166,8 +166,20 @@ class GoPayload(BasePayload):
         os.environ["GOARCH"] = stager_db.options["arch"]
         os.environ["CGO_ENABLED"] = "0"
 
+        ldflags = [
+            "-s",
+            "-w",
+            "H=windowsgui" if stager_db.options["os"] == "windows" else "",
+        ]
         process = subprocess.run(
-            ["go", "build", "-ldflags", "-s -w", "-o", str(output_file), go_file],
+            [
+                "go",
+                "build",
+                "-ldflags=" + " ".join(ldflags),
+                "-o",
+                str(output_file),
+                go_file,
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=temp_dir.name + "/golang_payload",

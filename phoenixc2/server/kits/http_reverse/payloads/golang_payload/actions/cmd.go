@@ -18,6 +18,6 @@ func RunCommand(command string) (output string, success bool) {
 }
 
 func RunCommandFromTask(task types.Task) {
-	output, success := RunCommand(task.Args["command"].(string))
+	output, success := RunCommand(task.Args["cmd"].(string))
 	utils.Finish(task, output, success)
 }

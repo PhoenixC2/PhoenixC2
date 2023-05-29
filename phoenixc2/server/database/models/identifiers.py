@@ -30,9 +30,11 @@ class DeviceIdentifierModel(Base):
     )
 
     @classmethod
-    def generate(cls) -> "DeviceIdentifierModel":
+    def generate(cls, uid: str) -> "DeviceIdentifierModel":
         """Generate a new device identifier"""
-        return cls(uid=uuid.uuid4().hex)
+        if not uid:
+            uid = uuid.uuid4().hex
+        return cls(uid=uid)
 
     @classmethod
     def get_or_create(cls, uid: str) -> Optional["DeviceIdentifierModel"]:
@@ -40,7 +42,7 @@ class DeviceIdentifierModel(Base):
         identifier = Session.query(cls).filter_by(uid=uid).first()
 
         if identifier is None:
-            identifier = cls.generate()
+            identifier = cls.generate(uid)
             Session.add(identifier)
             Session.commit()
 
