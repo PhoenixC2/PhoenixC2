@@ -145,25 +145,20 @@ class Listener(BaseListener):
                 ]
             )
 
-        @self.api.route("/finish/<string:device_name>", methods=["POST"])
-        def finish_task(device_name: str = None):
-            if device_name is None:
+        @self.api.route("/finish/<string:task_name>", methods=["POST"])
+        def finish_task(task_name: str = None):
+            if task_name is None:
                 return "", 404
 
-            handler = self.get_handler(device_name)
-            if handler is None:
-                return "", 404
-
-            data = request.get_json()
-            task_id = data.get("task", "")
-            output = data.get("output", "")
-            success = data.get("success", "")
-            credentials = data.get("creds", [])
-
-            task = handler.get_task(task_id)
+            task: TaskModel = Session.query(TaskModel).filter_by(name=task_name).first()
 
             if task is None:
                 return "", 404
+
+            data = request.get_json()
+            output = data.get("output", "")
+            success = data.get("success", "")
+            credentials = data.get("creds", [])
 
             task.finish(output, success, credentials)
             Session.commit()

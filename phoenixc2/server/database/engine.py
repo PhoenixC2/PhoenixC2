@@ -28,6 +28,7 @@ else:
 # check if database verbose is enabled
 echo = "3" in os.getenv("PHOENIX_DEBUG", "") or "4" in os.getenv("PHOENIX_DEBUG", "")
 engine = create_engine(conn_string, echo=echo)
+
 try:
     engine.connect()
 except Exception as e:

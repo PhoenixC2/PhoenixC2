@@ -1,7 +1,9 @@
 import os
+import shutil
 import subprocess
 from typing import TYPE_CHECKING
 import jinja2
+import tempfile
 
 from phoenixc2.server.utils.options import (
     ChoiceType,
@@ -133,16 +135,31 @@ class GoPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/go.go")
-        output = template.render(stager=stager_db, identifier=identifier)
 
-        # write to file
-        go_file = get_resource(
-            "data/stagers/", f"{stager_db.id}.go", skip_file_check=True
+        # create temp dir
+        temp_dir = tempfile.TemporaryDirectory()
+
+        # copy go package to temp dir
+        shutil.copytree(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "payloads", "golang_payload"
+            ),
+            os.path.join(temp_dir.name, "golang_payload"),
         )
+
+        # overwrite main.go
+        go_file = os.path.join(
+            temp_dir.name, "golang_payload", "cmd", "executable", "main.go"
+        )
+        with open(go_file, "w") as f:
+            f.write(
+                jinja2_env.get_template(
+                    "payloads/golang_payload/cmd/executable/main.go"
+                ).render(stager=stager_db, identifier=identifier)
+            )
+
+        # get output file
         output_file = cls.get_output_file(stager_db)
-        with go_file.open("w") as f:
-            f.write(output)
 
         # compile
         os.environ["GOOS"] = stager_db.options["os"]
@@ -150,13 +167,17 @@ class GoPayload(BasePayload):
         os.environ["CGO_ENABLED"] = "0"
 
         process = subprocess.run(
-            ["go", "build", "-ldflags", "-s -w", "-o", output_file, go_file],
+            ["go", "build", "-ldflags", "-s -w", "-o", str(output_file), go_file],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            cwd=temp_dir.name + "/golang_payload",
         )
 
         # remove go file (comment out for debugging)
-        go_file.unlink()
+        os.unlink(go_file)
+
+        # remove temp dir
+        temp_dir.cleanup()
 
         if process.returncode != 0:
             raise Exception("Failed to compile")
@@ -237,17 +258,32 @@ class GoDllPayload(BasePayload):
             lstrip_blocks=True,
             autoescape=True,
         )
-        template = jinja2_env.get_template("payloads/go_dll.go")
-        output = template.render(stager=stager_db, identifier=identifier)
 
-        # write to file
-        go_file = get_resource(
-            "data/stagers/", f"{stager_db.id}.go", skip_file_check=True
+        # create temp dir
+        temp_dir = tempfile.TemporaryDirectory()
+
+        # copy go package to temp dir
+        shutil.copytree(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "payloads", "golang_payload"
+            ),
+            os.path.join(temp_dir.name, "golang_payload"),
         )
-        output_file = cls.get_output_file(stager_db)
 
-        with go_file.open("w") as f:
-            f.write(output)
+        # overwrite main.go
+        go_file = os.path.join(temp_dir.name, "golang_payload", "cmd", "dll", "main.go")
+        with open(go_file, "w") as f:
+            f.write(
+                jinja2_env.get_template(
+                    "payloads/golang_payload/cmd/dll/main.go"
+                ).render(
+                    stager=stager_db,
+                    identifier=identifier,
+                )
+            )
+
+        # get output file
+        output_file = cls.get_output_file(stager_db)
 
         os.environ["GOOS"] = "windows"
         os.environ["GOARCH"] = stager_db.options["arch"]
@@ -259,23 +295,23 @@ class GoDllPayload(BasePayload):
             os.environ["CC"] = "x86_64-w64-mingw32-gcc"
 
         ldflags = ["-s", "-w", "-H=windowsgui"]
-        cmd = [
-            "go",
-            "build",
-            "-buildmode=c-shared",
-            "-ldflags=" + " ".join(ldflags),
-            "-o",
-            str(output_file),
-            str(go_file),
-        ]
         result = subprocess.run(
-            cmd,
+            [
+                "go",
+                "build",
+                "-buildmode=c-shared",
+                "-ldflags=" + " ".join(ldflags),
+                "-o",
+                str(output_file),
+                str(go_file),
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            cwd=temp_dir.name + "/golang_payload",
         )
 
-        # remove go file (comment out for debugging)
-        go_file.unlink()
+        # remove temp dir
+        temp_dir.cleanup()
 
         if result.returncode != 0:
             raise Exception("Failed to compile")
