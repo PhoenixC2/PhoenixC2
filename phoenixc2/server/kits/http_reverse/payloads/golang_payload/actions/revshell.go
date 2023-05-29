@@ -1,8 +1,8 @@
 package actions
 
 import (
-	types "golang_payload/types"
-	utils "golang_payload/utils"
+	"golang_payload/types"
+	"golang_payload/utils"
 	"net"
 	"os/exec"
 	"runtime"

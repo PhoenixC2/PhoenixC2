@@ -1,4 +1,4 @@
-package communication
+package comms
 
 import (
 	"encoding/json"

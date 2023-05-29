@@ -3,8 +3,8 @@ package actions
 import (
 	"strings"
 	"os/exec"
-	types "golang_payload/types"
-	utils "golang_payload/utils"
+	"golang_payload/types"
+	"golang_payload/utils"
 )
 
 func RunCommand(command string) (output string, success bool) {

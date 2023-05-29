@@ -1,15 +1,15 @@
 package utils
 
 import (
-	"net/http"
+	"golang_payload/comms"
 	types "golang_payload/types"
-	com "golang_payload/communication"
+	"net/http"
 )
 
-func Finish(task types.Task, output any, success bool) (res *http.Response, err error){
+func Finish(task types.Task, output any, success bool) (res *http.Response, err error) {
 	// Create json payload
 	payload := map[string]interface{}{
-		"output": output,
+		"output":  output,
 		"success": success,
 	}
 	if err != nil {
@@ -17,7 +17,7 @@ func Finish(task types.Task, output any, success bool) (res *http.Response, err 
 	}
 
 	// Send the payload
-	res, err = com.PostRequest("/finish/"+task.Name, payload)
+	res, err = comms.PostRequest("/finish/"+task.Name, payload)
 
 	if err != nil || res.StatusCode != http.StatusOK {
 		return

@@ -1,9 +1,9 @@
 package actions
 
 import (
-	types "golang_payload/types"
-	utils "golang_payload/utils"
-	comms "golang_payload/communication"
+	"golang_payload/types"
+	"golang_payload/utils"
+	"golang_payload/comms"
 	"io"
 	"net/http"
 	"os"

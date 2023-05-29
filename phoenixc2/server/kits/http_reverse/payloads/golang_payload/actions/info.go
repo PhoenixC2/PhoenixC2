@@ -4,8 +4,8 @@ import (
 	"os"
 	"os/user"
 	"runtime"
-	types "golang_payload/types"
-	utils "golang_payload/utils"
+	"golang_payload/types"
+	"golang_payload/utils"
 )
 
 func SystemInfo() (data map[string]interface{}) {

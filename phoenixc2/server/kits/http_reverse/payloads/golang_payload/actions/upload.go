@@ -3,8 +3,8 @@ package actions
 import (
 	"bufio"
 	"encoding/base64"
-	types "golang_payload/types"
-	utils "golang_payload/utils"
+	"golang_payload/types"
+	"golang_payload/utils"
 	"os"
 )
 

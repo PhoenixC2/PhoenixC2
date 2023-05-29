@@ -2,9 +2,9 @@ package actions
 
 import (
 	"encoding/json"
-	comms "golang_payload/communication"
-	types "golang_payload/types"
-	utils "golang_payload/utils"
+	"golang_payload/comms"
+	"golang_payload/types"
+	"golang_payload/utils"
 	"io"
 	"net/http"
 )
