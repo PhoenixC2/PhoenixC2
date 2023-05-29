@@ -54,6 +54,10 @@ func (s Stager) SetUrl(Address string, Port string, Ssl string) {
 	comms.SetUrl(url)
 }
 
+func (s Stager) SetUserAgent(userAgent string) {
+	comms.SetUserAgent(userAgent)
+}
+
 func (s Stager) checkConection() {
 	_, err := comms.GetRequest("")
 

