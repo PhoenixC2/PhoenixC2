@@ -7,7 +7,9 @@ from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Tex
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from werkzeug.utils import secure_filename
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.modules import get_module
@@ -59,8 +61,8 @@ class TaskModel(Base):
             "action": self.action,
             "args": self.args,
             Status.Success: self.success,
-            "created_at": self.created_at,
-            "finished_at": self.finished_at,
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "finished_at": convert_to_unix_timestamp(self.finished_at),
             "output": self.output,
             "device": self.device.to_dict(commander)
             if show_device and self.device is not None

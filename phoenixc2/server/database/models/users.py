@@ -4,7 +4,9 @@ from datetime import datetime
 from functools import wraps
 from typing import TYPE_CHECKING, List, Optional
 from uuid import uuid1
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from flask import request, session
 from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship, mapped_column, Mapped
@@ -108,8 +110,8 @@ class UserModel(Base):
             "disabled": self.disabled,
             "profile_picture": self.profile_picture,
             "status": self.activity_status,
-            "last_login": self.last_login,
-            "last_activity": self.last_activity,
+            "last_login": convert_to_unix_timestamp(self.last_login),
+            "last_activity": convert_to_unix_timestamp(self.last_activity),
             "logs": [log.to_dict() for log in self.logs]
             if show_logs
             else [log.id for log in self.logs],

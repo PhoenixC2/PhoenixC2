@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship, mapped_column, Mapped
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.ui import log as cli_log
@@ -50,7 +52,7 @@ class LogEntryModel(Base):
             "status": self.status,
             "endpoint": self.endpoint,
             "description": self.description,
-            "time": self.time,
+            "time": convert_to_unix_timestamp(self.time),
             "unseen_users": [user.to_dict() for user in self.unseen_users]
             if show_unseen_users
             else [user.id for user in self.unseen_users],

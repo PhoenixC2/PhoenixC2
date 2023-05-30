@@ -1,10 +1,13 @@
 """The Device Identifier Model"""
+from datetime import datetime
 import uuid
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 
@@ -27,6 +30,10 @@ class DeviceIdentifierModel(Base):
     device_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("Devices.id"))
     device: Mapped["DeviceModel"] = relationship(
         "DeviceModel", back_populates="identifier"
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
     )
 
     @classmethod
@@ -61,4 +68,6 @@ class DeviceIdentifierModel(Base):
             else self.device.id
             if self.device
             else None,
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
         }

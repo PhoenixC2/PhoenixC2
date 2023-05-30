@@ -263,7 +263,7 @@ def edit_user(id: int = None):
     }
 
 
-@users_bp.route("/<int:id>/reset_api_key", methods=["PUT", "POST"])
+@users_bp.route("/<int:id>/key", methods=["PUT", "POST", "DELETE"])
 @UserModel.authenticated
 def reset_api_key(id: int = None):
     current_user = UserModel.get_current_user()
