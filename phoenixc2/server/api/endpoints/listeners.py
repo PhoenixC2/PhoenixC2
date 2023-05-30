@@ -108,9 +108,6 @@ def listeners_bp(commander: Commander):
     @blueprint.route("/<int:listener_id>/remove", methods=["DELETE"])
     @UserModel.authenticated
     def delete_remove(listener_id: int):
-        # Get request data
-        stop = request.args.get("stop", "").lower() != "false"
-
         # Check if listener exists
         listener: ListenerModel = (
             Session.query(ListenerModel).filter_by(id=listener_id).first()
@@ -120,12 +117,9 @@ def listeners_bp(commander: Commander):
 
         name = listener.name
         type = listener.type
-        active = listener.is_active(commander)
-        listener.delete(stop, commander)
+        listener.delete(commander)
 
-        message = (
-            "Listener deleted and stopped" if stop and active else "Listener deleted"
-        )
+        message = "Listener deleted and stopped"
 
         Session.commit()
         LogEntryModel.log(

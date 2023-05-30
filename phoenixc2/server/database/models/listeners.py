@@ -181,9 +181,9 @@ class ListenerModel(Base):
             else:
                 self.options[key] = value
 
-    def delete(self, stop: bool, commander: "Commander"):
+    def delete(self, commander: "Commander"):
         """Delete the listener"""
-        if stop and self.is_active(commander):
+        if self.is_active(commander):
             self.stop(commander)
         self.delete_stagers()
         Session.delete(self)
