@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import Optional
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, mapped_column, Mapped
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from .operations import OperationModel
 
 from phoenixc2.server.database.base import Base
@@ -40,8 +42,8 @@ class CredentialModel(Base):
             "hash": self.hash,
             "user": self.user,
             "admin": self.admin,
-            "found_at": self.found_at,
-            "updated_at": self.updated_at,
+            "found_at": convert_to_unix_timestamp(self.found_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
             "operation": self.operation.to_dict()
             if show_operation and self.operation is not None
             else self.operation_id,

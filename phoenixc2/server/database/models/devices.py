@@ -1,7 +1,9 @@
 """The Devices Model"""
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -80,8 +82,8 @@ class DeviceModel(Base):
             "architecture": self.architecture,
             "user": self.user,
             "admin": self.admin,
-            "connection_time": self.connection_time,
-            "last_online": self.last_online,
+            "connection_time": convert_to_unix_timestamp(self.connection_time),
+            "last_online": convert_to_unix_timestamp(self.last_online),
             "stager": self.stager.to_dict(commander) if show_stager else self.stager.id,
             "tasks": [task.to_dict(commander) for task in self.tasks]
             if show_tasks

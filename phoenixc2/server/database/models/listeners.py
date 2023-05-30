@@ -8,7 +8,9 @@ from markupsafe import escape
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from phoenixc2.server.kits import get_all_kits
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
@@ -97,8 +99,8 @@ class ListenerModel(Base):
             "timeout": self.timeout,
             "active": self.is_active(commander),
             "options": self.options,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
             "stagers": [stager.to_dict(commander) for stager in self.stagers]
             if show_stagers
             else [stager.id for stager in self.stagers],

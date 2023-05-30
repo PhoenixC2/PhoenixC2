@@ -2,7 +2,10 @@
 import ipaddress
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, List, Optional
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+    convert_from_unix_timestamp,
+)
 from flask import request
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.mutable import MutableList
@@ -11,7 +14,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from phoenixc2.server.database.base import Base
 from phoenixc2.server.database.engine import Session
 from phoenixc2.server.utils.resources import PICTURES, get_resource
-from phoenixc2.server.utils.web import generate_html_from_markdown
 
 from .association import user_operation_assignment_table
 from .users import UserModel
@@ -85,8 +87,8 @@ class OperationModel(Base):
             "expiry": self.expiry,
             "picture": self.picture,
             "subnets": self.subnets,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
             "owner": self.owner.to_dict()
             if show_owner and self.owner
             else self.owner_id
@@ -182,39 +184,36 @@ class OperationModel(Base):
 
     def edit(self, data: dict) -> None:
         """Edit the operation."""
-        for key, value in data.items():
-            if key == "name":
-                self.name = value
-            elif key == "description":
-                try:
-                    generate_html_from_markdown(value)
-                except SyntaxError:
-                    raise ValueError("Invalid markdown")
-                else:
-                    self.description = value
-            elif key == "expiry":
-                try:
-                    self.expiry = datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    raise ValueError("Invalid expiry date")
+        name = data.get("name", self.name)
+        description = data.get("description", self.description)
+        expiry = data.get("expiry", int(self.expiry.timestamp()))
+
+        if name != self.name:
+            self.name = name
+        if description != self.description:
+            self.description = description
+        if expiry != int(self.expiry.timestamp()):
+            if isinstance(expiry, int):
+                self.expiry = convert_from_unix_timestamp(expiry)
             else:
-                raise ValueError(f"Invalid Change: {key}")
+                raise ValueError("Expiry date must be a unix timestamp.")
 
     @classmethod
     def create(
         cls,
         name: str,
         description: str,
-        expiry: datetime = None,
+        expiry: int = None,
     ) -> "OperationModel":
         """Add a new operation to the database."""
         operation = cls(
             name=name,
             description=description,
         )
+
         if expiry is not None:
             try:
-                operation.expiry = datetime.strptime(expiry, "%Y-%m-%d")
+                operation.expiry = convert_from_unix_timestamp(expiry)
             except ValueError:
                 raise ValueError("Invalid expiry date: Format must be YYYY-MM-DD")
         return operation

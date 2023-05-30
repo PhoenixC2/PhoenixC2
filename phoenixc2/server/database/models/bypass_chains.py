@@ -5,6 +5,9 @@ from sqlalchemy import Integer, String, DateTime, JSON
 from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.ext.mutable import MutableList
 from datetime import datetime
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 
 
 from phoenixc2.server.database.base import Base
@@ -38,6 +41,8 @@ class BypassChainModel(Base):
             "name": self.name,
             "description": self.description,
             "bypasses": [bypass.to_dict(commander) for bypass in self.get_bypasses()],
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
         }
 
     def get_bypasses(self) -> List[BaseBypass]:

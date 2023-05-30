@@ -2,7 +2,9 @@
 import importlib
 from datetime import datetime
 from typing import TYPE_CHECKING, List
-
+from phoenixc2.server.utils.dates import (
+    convert_to_unix_timestamp,
+)
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -78,8 +80,8 @@ class StagerModel(Base):
             "delay": self.delay,
             "different_address": self.different_address,
             "options": self.options,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": convert_to_unix_timestamp(self.created_at),
+            "updated_at": convert_to_unix_timestamp(self.updated_at),
             "listener": self.listener.to_dict(commander)
             if show_listener
             else self.listener.id,
