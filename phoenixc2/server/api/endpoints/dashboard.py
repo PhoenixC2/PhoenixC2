@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 def dashboard_bp(commander: "Commander") -> Blueprint:
     dashboard_bp = Blueprint("routes", __name__, url_prefix="/")
 
-    @dashboard_bp.route("/home")
     @dashboard_bp.route("/dashboard")
     @dashboard_bp.route("/info")
     @dashboard_bp.route("/")

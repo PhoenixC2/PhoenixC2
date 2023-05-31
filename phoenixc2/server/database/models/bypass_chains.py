@@ -12,11 +12,12 @@ from phoenixc2.server.utils.dates import (
 
 from phoenixc2.server.database.base import Base
 
-from phoenixc2.server.bypasses import get_bypass, BaseBypass
+from phoenixc2.server.bypasses import get_bypass
 
 if TYPE_CHECKING:
     from phoenixc2.server.kits.payload_base import FinalPayload
     from phoenixc2.server.commander.commander import Commander
+    from phoenixc2.server.bypasses.base import BaseBypass
 
 
 class BypassChainModel(Base):
@@ -45,7 +46,7 @@ class BypassChainModel(Base):
             "updated_at": convert_to_unix_timestamp(self.updated_at),
         }
 
-    def get_bypasses(self) -> List[BaseBypass]:
+    def get_bypasses(self) -> List["BaseBypass"]:
         """Returns the bypasses for the chain."""
         return [get_bypass(category, name) for category, name, _ in self.bypasses]
 
@@ -63,7 +64,7 @@ class BypassChainModel(Base):
                 raise ValueError("Cannot add a bypass to a final bypass.")
         self.bypasses.append((category, name, options or {}))
 
-    def remove_bypass(self, index: int) -> BaseBypass:
+    def remove_bypass(self, index: int) -> "BaseBypass":
         """Removes a bypass from the chain."""
         return self.bypasses.pop(index)
 

@@ -1,5 +1,8 @@
+from typing import TYPE_CHECKING
 import importlib
-from .base import BaseBypass
+
+if TYPE_CHECKING:
+    from .base import BaseBypass
 from phoenixc2.server.utils.resources import get_resource
 
 IGNORE = ("__pycache__",)

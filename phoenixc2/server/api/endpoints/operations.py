@@ -308,7 +308,7 @@ def delete_unassign_user(operation_id: int):
     }
 
 
-@operations_bp.route("/<int:operation_id>/add_subnet", methods=["POST"])
+@operations_bp.route("/<int:operation_id>/subnets/add", methods=["POST"])
 @UserModel.admin_required
 def post_add_subnet(operation_id: int):
     subnet = request.json.get("subnet", None)
@@ -337,7 +337,7 @@ def post_add_subnet(operation_id: int):
     }
 
 
-@operations_bp.route("/<int:operation_id>/remove_subnet", methods=["DELETE"])
+@operations_bp.route("/<int:operation_id>/subnets/remove", methods=["DELETE"])
 @UserModel.admin_required
 def delete_remove_subnet(operation_id: int):
     subnet = request.json.get("subnet", None)

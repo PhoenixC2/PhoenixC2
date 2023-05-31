@@ -212,7 +212,7 @@ def bypasses_bp(commander: "Commander"):
         }, 201
 
     @bypasses_bp.route(
-        "/chains/<int:chain_id>/bypasses/<int:bypass_id>/remove/", methods=["DELETE"]
+        "/chains/<int:chain_id>/bypasses/<int:bypass_id>/remove", methods=["DELETE"]
     )
     def delete_bypass_from_chain(chain_id: int, bypass_id: int):
         chain: BypassChainModel = (

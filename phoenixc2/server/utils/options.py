@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, MutableSequence
 import requests
 
 from phoenixc2.server.database import ListenerModel, Session
-
+from .dates import convert_from_unix_timestamp
 from .misc import generate_name, get_network_interfaces
 
 if TYPE_CHECKING:
@@ -68,6 +68,22 @@ class BooleanType(OptionType):
 
     def __str__(self) -> str:
         return "boolean"
+
+
+class DateType(OptionType):
+    """The option-type of date"""
+
+    data_type = int
+
+    @staticmethod
+    def validate(name: str, data: any) -> bool:
+        try:
+            return convert_from_unix_timestamp(data)
+        except ValueError as e:
+            raise ValueError(f"'{name}' must be a date.") from e
+
+    def __str__(self) -> str:
+        return "date"
 
 
 @dataclass
