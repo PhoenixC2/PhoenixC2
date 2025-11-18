@@ -43,11 +43,12 @@ pyOpenSSL = "*"
 mysqlclient = {version = "*", optional = true}
 psycopg2 = {version = "*", optional = true}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "*"
 isort = "*"
 ruff = "*"
 pre-commit = "*"
+
 
 [tool.poetry.extras]
 mysql = ["mysqlclient"]

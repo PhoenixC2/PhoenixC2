@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from random import randint
 from typing import TYPE_CHECKING, List, Optional
-from flask import escape
+from markupsafe import escape
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
