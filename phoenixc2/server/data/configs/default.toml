@@ -2,7 +2,7 @@
 address = "localhost"
 port = 8080
 ssl = true
-secret_key = ""
+secret_key = "CbZiqA1rfSkPmIgm8h8wwwrHsk4V6kWumaMdXX1g3y8"
 show_cookie = false
 show_cookie_name = "show_server"
 show_cookie_value = "plsshowtheserver"
